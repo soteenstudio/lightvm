@@ -33,7 +33,7 @@ jobs:
         run: |
           # Cari file yang isinya cuma comment sampah kayak // LightVM.ts
           # -r (recursive), -l (tampilkan nama file aja)
-          JUNK_FILES=$(grep -rl "// LightVM.ts" ./src/**/*.ts || true)
+          JUNK_FILES=$(grep -rl "//" ./src/**/*.ts || true)
 
           if [ -n "$JUNK_FILES" ]; then
             echo "❌ Clay, hapus dulu comment sampah di file ini:"
