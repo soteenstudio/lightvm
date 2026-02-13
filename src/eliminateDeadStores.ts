@@ -20,7 +20,7 @@ export function eliminateDeadStores(
 
   for (let i = bytecode.length - 1; i >= 0; i--) {
     const [op, arg] = bytecode[i];
-'
+
     if (op === "set") {
       if (typeof arg === "string" && !usage.read.has(arg)) {
         continue; 
