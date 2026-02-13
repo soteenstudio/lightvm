@@ -1,0 +1,45 @@
+name: Code Quality Check
+
+# Kapan automation ini jalan? 
+# Tiap kali ada Push atau Pull Request ke branch main
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest # Pake server Linux-nya GitHub
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4 # Ambil kode kamu dari repo
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22' # Sesuaikan sama versi Node kamu
+
+      - name: Install Dependencies
+        run: npm install
+      
+      - name: Type Check
+        run: npm run typecheck
+
+      # 1. CEK ERROR: Coba build pake esbuild
+      - name: Check Build
+        run: npm run build 
+
+      - name: Audit Copyright Header
+        run: |
+          # Cari file .ts yang GAK ada kata "Copyright"
+          MISSING_HEADERS=$(grep -L "Copyright" ./src/**/*.ts)
+
+          if [ -z "$MISSING_HEADERS" ]; then
+            echo "✅ Semua file udah ada headernya. Mantap Clay!"
+          else
+            echo "❌ Waduh, file-file ini belum ada headernya:"
+            echo "$MISSING_HEADERS"
+            exit 1 # Gagalin build biar gak lolos
+          fi

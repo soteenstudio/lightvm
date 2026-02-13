@@ -1,0 +1,5 @@
+/dist/
+/assembly/dist/
+/node_modules/
+/tests/
+*.tgznode_modules/

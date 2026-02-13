@@ -1,0 +1,38 @@
+{
+  "name": "lightvm",
+  "version": "0.1.0-notable",
+  "description": "m",
+  "type": "module",
+  "typings": "./typings/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.min.mjs",
+      "require": "./dist/index.min.cjs"
+    },
+    "./assembly/dist/*": "./assembly/dist/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "assembly/dist/"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node ./esbuild.config.js && asc ./assembly/src/index.ts -o ./assembly/dist/main.wasm",
+    "typecheck": "tsc"
+  },
+  "keywords": [
+    "lightvm"
+  ],
+  "author": "SoTeen Studio",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "chalk": "^5.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.8.0",
+    "assemblyscript": "^0.28.9",
+    "esbuild": "^0.25.12",
+    "typescript": "^5.9.3"
+  }
+}

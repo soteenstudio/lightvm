@@ -1,0 +1,8 @@
+/node_modules/
+/src/
+/tests/
+/assembly/src/
+esbuild.config.js
+package-lock.json
+*.tgz
+*.map
