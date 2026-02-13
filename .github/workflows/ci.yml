@@ -31,16 +31,31 @@ jobs:
 
       - name: Check Junk Comments
         run: |
-          # Cari file yang isinya cuma comment sampah kayak // LightVM.ts
-          # -r (recursive), -l (tampilkan nama file aja)
-          JUNK_FILES=$(grep -rl "//" ./src/**/*.ts || true)
+          echo "Checking for low-effort junk comments at the top of files..."
+          
+          # Cari semua file .ts
+          # Cek apakah baris pertama isinya cuma "// NamaFile.ts"
+          # Regex: ^// [A-Za-z0-9_-]+\.ts$
+          
+          JUNK_FILES=""
+          
+          while read -r file; do
+            # Ambil baris pertama, hapus whitespace
+            FIRST_LINE=$(head -n 1 "$file" | xargs)
+            
+            # Cek pake regex: starts with //, ends with .ts, gak ada teks lain
+            if [[ "$FIRST_LINE" =~ ^\/\/\ [A-Za-z0-9_-]+\.ts$ ]]; then
+              JUNK_FILES="$JUNK_FILES"$'\n'"$file"
+            fi
+          done < <(find ./src -name "*.ts")
 
           if [ -n "$JUNK_FILES" ]; then
-            echo "❌ Clay, hapus dulu comment sampah di file ini:"
+            echo "❌ Clay, baris pertama file ini isinya cuma sampah nama file:"
             echo "$JUNK_FILES"
+            echo "Hapus atau ganti dengan header Copyright yang bener!"
             exit 1
           else
-            echo "✅ Gak ada comment sampah. Aman!"
+            echo "✅ Baris pertama aman dari sampah. Lanjut!"
           fi
 
       - name: Audit Copyright Header
