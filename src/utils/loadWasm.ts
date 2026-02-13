@@ -24,8 +24,8 @@ export function loadWasm(filename: string) {
 
     const importObject = {
       env: {
-        abort: (m, f, l, c) => console.error(`[Abort] ${f}:${l}:${c}`),
-        trace: (m, n) => console.log(`[Trace] ${n}`)
+        abort: (m: number, f: number, l: number, c: number) => console.error(`[Abort] ${f}:${l}:${c}`),
+        trace: (m: number, n: number) => console.log(`[Trace] ${n}`)
       }
     };
 
