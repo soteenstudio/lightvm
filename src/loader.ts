@@ -1,4 +1,3 @@
-// BytecodeLoader.ts
 import { Instruction } from "./Instruction.js";
 
 export function parseLTC(code: string): Instruction[] {
