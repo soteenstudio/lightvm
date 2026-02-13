@@ -1,3 +1,13 @@
+/*  
+ * Copyright 2026 SoTeen Studio  
+ *  
+ * Licensed under the Apache License, Version 2.0 (the "License");  
+ * you may not use this file except in compliance with the License.  
+ * You may obtain a copy of the License at  
+ *  
+ *     http://www.apache.org/licenses/LICENSE-2.0  
+ */
+
 import { Instruction } from "./Instruction.js";
 import { loadWasm, getValueType, normalizeType } from "./utils/index.js";
 import util from "node:util";
@@ -12,10 +22,9 @@ function markerFormatter(text: string) {
   return text;
 }
 
-// di atas loop
 function computeHotThreshold(stackLen: number) {
-  const baseHot = 10;        // dasar
-  const scaleStep = 100;     // tiap 100 stack -> +1x base
+  const baseHot = 10;
+  const scaleStep = 100;
   const minHot = 5;
   const maxHot = 2000;
 
