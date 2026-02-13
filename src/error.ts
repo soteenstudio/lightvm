@@ -1,4 +1,13 @@
-// === Custom Parser Error ===
+/*  
+ * Copyright 2026 SoTeen Studio  
+ *  
+ * Licensed under the Apache License, Version 2.0 (the "License");  
+ * you may not use this file except in compliance with the License.  
+ * You may obtain a copy of the License at  
+ *  
+ *     http://www.apache.org/licenses/LICENSE-2.0  
+ */
+
 import chalk from "chalk";
 
 let filename: string = "";
@@ -26,7 +35,6 @@ function highlight(message: string) {
   return message.replace(
     /\b(cannot\s+compare|cannot|name|expected|unexpected\s+token|unexpected|got|for|with)\s+(?:'?\$?Type\.?)?'?([a-zA-Z0-9_$]+)'?([.,:;!?])?/gi,
     (_, word, next, punc) => {
-      // Support kata, angka, atau teks yang diapit tanda kutip
       return `${chalk.white(word)} ${chalk.blue(word.toLowerCase() === "name" ? `'${next}'` : next)}${punc || ""}`;
     }
   );

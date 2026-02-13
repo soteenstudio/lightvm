@@ -1,4 +1,3 @@
-// LightVM.ts
 import { Instruction } from "./Instruction.js";
 import { runBytecode } from "./runBytecode.js";
 import { optimizeBytecode } from "./optimizeBytecode.js";
@@ -26,9 +25,6 @@ export class LightVM {
     caps.forEach(c => this.caps.add(c));
   }
 
-  /* =====================
-   * Capability Guard
-   * ===================== */
   private require(cap: Capability) {
     if (!this.caps.has(cap)) {
       throw new Error(`Capability '${cap}' not granted`);
@@ -62,7 +58,6 @@ export class LightVM {
 
   load(bytecode: Instruction[] | string) {
     if (typeof bytecode === "string") {
-      // detect file atau raw text
       const code = fs.existsSync(bytecode)
         ? fs.readFileSync(bytecode, "utf8")
         : bytecode;
@@ -105,7 +100,6 @@ export class LightVM {
     this.outputs = [];
     this.lastValue = undefined;
 
-    // hook output
     const originalLog = console.log;
     const originalWrite = process.stdout.write;
 
@@ -123,7 +117,6 @@ export class LightVM {
       runBytecode(this.bytecode);
       this.state = "halted";
     } finally {
-      // restore
       console.log = originalLog;
       process.stdout.write = originalWrite;
     }

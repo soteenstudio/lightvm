@@ -1,3 +1,13 @@
+/*  
+ * Copyright 2026 SoTeen Studio  
+ *  
+ * Licensed under the Apache License, Version 2.0 (the "License");  
+ * you may not use this file except in compliance with the License.  
+ * You may obtain a copy of the License at  
+ *  
+ *     http://www.apache.org/licenses/LICENSE-2.0  
+ */
+
 import { Instruction } from "./Instruction.js";
 import { isPureLoop } from "./isPureLoop.js";
 
@@ -12,7 +22,6 @@ export function eliminateDeadLoops(bytecode: Instruction[]): Instruction[] {
       const loopEnd = i;
 
       if (isPureLoop(bytecode, loopStart, loopEnd)) {
-        // skip seluruh loop
         i = loopEnd;
         continue;
       }

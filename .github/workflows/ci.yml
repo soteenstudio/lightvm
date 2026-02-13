@@ -1,7 +1,5 @@
 name: Code Quality Check
 
-# Kapan automation ini jalan? 
-# Tiap kali ada Push atau Pull Request ke branch main
 on:
   push:
     branches: [ main ]
@@ -10,7 +8,7 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest # Pake server Linux-nya GitHub
+    runs-on: ubuntu-latest # Pake server Linux-nya 
 
     steps:
       - name: Checkout Code
@@ -30,6 +28,20 @@ jobs:
       # 1. CEK ERROR: Coba build pake esbuild
       - name: Check Build
         run: npm run build 
+
+      - name: Check Junk Comments
+        run: |
+          # Cari file yang isinya cuma comment sampah kayak // LightVM.ts
+          # -r (recursive), -l (tampilkan nama file aja)
+          JUNK_FILES=$(grep -rl "// LightVM.ts" ./src/**/*.ts || true)
+
+          if [ -n "$JUNK_FILES" ]; then
+            echo "❌ Clay, hapus dulu comment sampah di file ini:"
+            echo "$JUNK_FILES"
+            exit 1
+          else
+            echo "✅ Gak ada comment sampah. Aman!"
+          fi
 
       - name: Audit Copyright Header
         run: |
