@@ -4,3 +4,4 @@
 /tests/
 *.tgznode_modules/
 /rust/target/
+lz4.js
