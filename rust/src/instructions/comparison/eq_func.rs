@@ -2,7 +2,6 @@ use crate::instructions::comparison::eq::{
   eq_f32in::eq_f32in, eq_f64in::eq_f64in, eq_i32in::eq_i32in, eq_i64in::eq_i64in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
-
 #[inline]
 pub fn eq_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {

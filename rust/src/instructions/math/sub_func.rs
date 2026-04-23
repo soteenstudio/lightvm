@@ -2,7 +2,6 @@ use crate::instructions::math::sub::{
   sub_f32in::sub_f32in, sub_f64in::sub_f64in, sub_i32in::sub_i32in, sub_i64in::sub_i64in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
-
 #[inline]
 pub fn sub_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {

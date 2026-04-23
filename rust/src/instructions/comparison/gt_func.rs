@@ -2,7 +2,6 @@ use crate::instructions::comparison::gt::{
   gt_f32in::gt_f32in, gt_f64in::gt_f64in, gt_i32in::gt_i32in, gt_i64in::gt_i64in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
-
 #[inline]
 pub fn gt_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {

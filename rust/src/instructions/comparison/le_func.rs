@@ -2,7 +2,6 @@ use crate::instructions::comparison::le::{
   le_f32in::le_f32in, le_f64in::le_f64in, le_i32in::le_i32in, le_i64in::le_i64in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
-
 #[inline]
 pub fn le_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {

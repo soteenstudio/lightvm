@@ -1,4 +1,5 @@
 pub mod instructions;
+pub mod optimizer;
 pub mod types;
 pub mod utils;
 pub mod vm;
@@ -7,19 +8,14 @@ use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::value::Value;
 use napi_derive::napi;
 use serde_json::Value as JsonValue;
-
 #[napi]
 pub fn run_bytecode(bytecode_json: String) -> String {
-  // 1. Parse JSON mentah sebagai Value
   let raw_bytecode: Vec<JsonValue> = serde_json::from_str(&bytecode_json).expect("Invalid JSON");
-
-  // 2. Convert Array ["op", args] ke Enum Instructions yang lo kenal
   let bytecode: Vec<Instructions> = raw_bytecode
     .into_iter()
     .map(|item| {
       let arr = item.as_array().expect("Instruction must be an array");
       let op = arr[0].as_str().expect("Opcode must be a string");
-
       match op {
         "push" => {
           let val = &arr[1];
@@ -38,43 +34,30 @@ pub fn run_bytecode(bytecode_json: String) -> String {
           };
           Instructions::Push(value_internal)
         }
-
-        // Handle Math dengan 4 tipe data lo
         "add" => Instructions::Add(map_primitive(arr.get(1))),
         "sub" => Instructions::Sub(map_primitive(arr.get(1))),
         "mul" => Instructions::Mul(map_primitive(arr.get(1))),
         "div" => Instructions::Div(map_primitive(arr.get(1))),
         "mod" => Instructions::Mod(map_primitive(arr.get(1))),
-
-        // Handle Comparison
         "gt" => Instructions::Gt(map_primitive(arr.get(1))),
         "lt" => Instructions::Lt(map_primitive(arr.get(1))),
         "ge" => Instructions::Ge(map_primitive(arr.get(1))),
         "le" => Instructions::Le(map_primitive(arr.get(1))),
         "eq" => Instructions::Eq(map_primitive(arr.get(1))),
-
         "set" => Instructions::Set(arr[1].as_str().unwrap().to_string()),
         "get" => Instructions::Get(arr[1].as_str().unwrap().to_string()),
         "val" => Instructions::Val(arr[1].as_str().unwrap().to_string()),
-
         "print" => Instructions::Print,
         "println" => Instructions::Println,
-
-        // ... di dalam match op ...
-        
         "if_false" => {
-            // Ambil target jump-nya dari index ke-1 (biasanya angka)
-            let target = arr[1].as_u64().expect("Target jump IF_FALSE harus angka") as usize;
-            Instructions::IfFalse(target)
-        },
-        
+          let target = arr[1].as_u64().expect("Target jump IF_FALSE harus angka") as usize;
+          Instructions::IfFalse(target)
+        }
         "jump" => {
-            let target = arr[1].as_u64().expect("Target jump harus angka") as usize;
-            Instructions::Jump(target)
-        },
-        
+          let target = arr[1].as_u64().expect("Target jump harus angka") as usize;
+          Instructions::Jump(target)
+        }
         "func" => {
-          // ["func", string, number, number, number, ...names]
           let name = arr[1].as_str().unwrap().to_string();
           let params = arr[2].as_u64().unwrap() as u32;
           let start = arr[3].as_u64().unwrap() as usize;
@@ -85,33 +68,24 @@ pub fn run_bytecode(bytecode_json: String) -> String {
           }
           Instructions::Func(name, params, start, end, names)
         }
-
         "export" => Instructions::Export(arr[1].as_str().unwrap().to_string()),
         "return" => Instructions::Return,
         "call" => {
-            // Ambil nama fungsi (index 1)
-            let name = arr[1].as_str().expect("Function name must be a string").to_string();
-            
-            // Ambil jumlah argumen (index 2)
-            let argc = arr[2].as_u64().expect("Argc must be a number") as u32;
-            
-            Instructions::Call(name, argc)
+          let name = arr[1]
+            .as_str()
+            .expect("Function name must be a string")
+            .to_string();
+          let argc = arr[2].as_u64().expect("Argc must be a number") as u32;
+          Instructions::Call(name, argc)
         }
         "stop" => Instructions::Stop,
-
         _ => panic!("Opcode '{}' belum di-map atau sampah!", op),
       }
     })
     .collect();
-
-  // 3. Jalankan VM
   let result = crate::vm::run_bytecode(bytecode, None);
-
-  // 4. Balikin hasil
   serde_json::to_string(&result).unwrap()
 }
-
-// Helper biar nggak nulis match Primitive berulang-ulang
 fn map_primitive(val: Option<&JsonValue>) -> PrimitiveTypes {
   match val.and_then(|v| v.as_str()) {
     Some("int") => PrimitiveTypes::Int,
@@ -119,6 +93,6 @@ fn map_primitive(val: Option<&JsonValue>) -> PrimitiveTypes {
     Some("flt") => PrimitiveTypes::Flt,
     Some("dbl") => PrimitiveTypes::Dbl,
     Some("str") => PrimitiveTypes::Str,
-    _ => PrimitiveTypes::Int, // Default kalau nggak disebutin
+    _ => PrimitiveTypes::Int,
   }
 }

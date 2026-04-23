@@ -2,7 +2,6 @@ use crate::instructions::math::add::{
   add_f32in::add_f32in, add_f64in::add_f64in, add_i32in::add_i32in, add_i64in::add_i64in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
-
 #[inline]
 pub fn add_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   println!("{} {}", a.as_i32(), b.as_i32());

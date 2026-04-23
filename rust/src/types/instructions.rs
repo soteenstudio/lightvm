@@ -1,13 +1,12 @@
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
 use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Clone, Serialize, Deserialize)] // TAMBAHIN INI
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Instructions {
   Push(Value),
   Val(String),
   Set(String),
   Get(String),
-  Add(PrimitiveTypes), // String di sini mungkin buat nentuin NumType-nya
+  Add(PrimitiveTypes),
   Sub(PrimitiveTypes),
   Mul(PrimitiveTypes),
   Div(PrimitiveTypes),
@@ -22,19 +21,18 @@ pub enum Instructions {
   Or,
   Print,
   Println,
-  IfFalse(usize), // Alamat jump pake usize biar kenceng
+  IfFalse(usize),
   Jump(usize),
   Inc(String),
   Dec(String),
   Call(String, u32),
-  // Func: name, params_count, start_ip, end_ip, param_names
   Func(String, u32, usize, usize, Vec<String>),
   Stop,
   Return,
   Break,
   Access(String),
   AccessIndex,
-  ToString, // Ganti nama dikit biar gak konflik sama reserved word
+  ToString,
   ToNumber,
   ToInteger,
   ToFloat,

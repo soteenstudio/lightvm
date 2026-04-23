@@ -2,7 +2,6 @@ use crate::instructions::math::div::{
   div_f32in::div_f32in, div_f64in::div_f64in, div_i32in::div_i32in, div_i64in::div_i64in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
-
 #[inline]
 pub fn div_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
