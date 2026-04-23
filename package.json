@@ -14,11 +14,13 @@
   },
   "files": [
     "dist",
-    "assembly/dist/"
+    "assembly/dist/",
+    "rust/target/release/liblightvm_rust.so",
+    "typings"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node ./esbuild.config.js && asc ./assembly/src/index.ts -o ./assembly/dist/main.wasm",
+    "build": "node ./esbuild.config.js",
     "typecheck": "tsc"
   },
   "keywords": [
@@ -31,8 +33,6 @@
   },
   "devDependencies": {
     "@types/node": "^24.8.0",
-    "assemblyscript": "^0.28.9",
-    "esbuild": "^0.25.12",
-    "typescript": "^5.9.3"
+    "esbuild": "^0.25.12"
   }
 }

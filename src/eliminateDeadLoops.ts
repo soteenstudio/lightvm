@@ -13,21 +13,37 @@ import { isPureLoop } from "./isPureLoop.js";
 
 export function eliminateDeadLoops(bytecode: Instruction[]): Instruction[] {
   const out: Instruction[] = [];
+  // Kita perlu track index original ke index di 'out'
+  const indexMap = new Map<number, number>();
 
   for (let i = 0; i < bytecode.length; i++) {
-    const [op, , , target] = bytecode[i];
+    const inst = bytecode[i];
+    const [op, , , target] = inst;
 
-    if (op === "if_false" && typeof target === "number") {
+    // Cek apakah ini instruksi jump yang balik ke belakang (Backwards Jump)
+    // Biasanya ini penanda akhir dari sebuah loop
+    if ((op === "jump" || op === "if_false" || op === "if_true") && typeof target === "number" && target < i) {
       const loopStart = target;
       const loopEnd = i;
 
       if (isPureLoop(bytecode, loopStart, loopEnd)) {
-        i = loopEnd;
-        continue;
+        // DAPET! Loop ini "pure" (gak ada side effect).
+        // Kita hapus instruksi yang udah terlanjur masuk ke 'out' 
+        // mulai dari posisi loopStart tadi.
+        const outStartIndex = indexMap.get(loopStart);
+        
+        if (outStartIndex !== undefined) {
+          // Potong array 'out' dari titik awal loop sampe sekarang
+          out.splice(outStartIndex);
+          // Jangan lupa lanjut ke instruksi berikutnya, instruksi jump ini jgn di-push
+          continue; 
+        }
       }
     }
 
-    out.push(bytecode[i]);
+    // Catat posisi index 'out' buat tiap index original bytecode
+    indexMap.set(i, out.length);
+    out.push(inst);
   }
 
   return out;

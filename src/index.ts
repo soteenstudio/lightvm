@@ -9,11 +9,13 @@
  */
 
 import { Instruction } from "./Instruction.js";
-import { runBytecode } from "./runBytecode.js";
+import { loadNapi } from "./utils/loadNapi.js";
 import { optimizeBytecode } from "./optimizeBytecode.js";
 import * as loader from "./loader.js";
 import fs from "fs";
 import type { VMEvent, VMResult, Capability, Listener } from "../typings/index.d.ts";
+
+const napi = loadNapi();
 
 export class LightVM {
   private bytecode: Instruction[] = [];
@@ -93,7 +95,7 @@ export class LightVM {
     this.emit("tick", { state: "start" });
 
     try {
-      runBytecode(this.bytecode, {
+      napi.runBytecode(JSON.stringify(this.bytecode), {
         __imports: this.imports
       });
       this.state = "halted";
@@ -140,31 +142,34 @@ export class LightVM {
 
   export(name: string) {
     this.require("control");
-  
-    if (!this.exported.has(name)) {
-      throw new Error(`Function '${name}' is not exported`);
-    }
+    if (!this.exported.has(name)) throw new Error(`Function '${name}' is not exported`);
   
     const fn = this.functions.get(name);
-    if (!fn) {
-      throw new Error(`Function '${name}' not found`);
-    }
+    if (!fn) throw new Error(`Function '${name}' not found`);
   
     return (...args: any[]) => {
-      if (args.length !== fn.params) {
-        throw new Error(
-          `Function '${name}' expects ${fn.params} args, got ${args.length}`
-        );
-      }
-  
       this.state = "running";
       try {
-        return runBytecode(this.bytecode, {
+        // Langsung stringify array mentah ["push", 10], gak pake mapping sampah!
+        const payload = JSON.stringify(this.bytecode);
+        
+        const options = JSON.stringify({
           entry: fn.start,
-          args,
-          captureReturn: true,
-          __imports: this.imports
+          args: args.map(arg => {
+              if (typeof arg === 'number') return Number.isInteger(arg) ? { Int64: arg } : { Float64: arg };
+              if (typeof arg === 'boolean') return { Bool: arg };
+              return { String: String(arg) };
+          }),
+          capture_return: true
         });
+  
+        // Tetep manggil napi.runBytecode sesuai instruksi lo
+        const rawResult = napi.runBytecode(payload, options); 
+        const parsed = JSON.parse(rawResult);
+  
+        // Unbox hasil otomatis berdasarkan 4 tipe data lo
+        if (!parsed || parsed === "Undefined") return undefined;
+        return typeof parsed === 'object' ? Object.values(parsed)[0] : parsed;
       } finally {
         this.state = "halted";
       }
@@ -226,7 +231,7 @@ export class LightVM {
   
   tools() {
     return {
-      runBytecode,
+      runBytecode: napi.runBytecode,
       optimizeBytecode,
       loader: {
         stringifyLTC: loader.stringifyLTC,
