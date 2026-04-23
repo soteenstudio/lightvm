@@ -1,5 +1,6 @@
 /dist/
-/assembly/dist/
+/assembly/
 /node_modules/
 /tests/
 *.tgznode_modules/
+/rust/target/
