@@ -15,7 +15,7 @@ use crate::types::{
 };
 use crate::utils::compute_hot_threshold::compute_hot_threshold;
 use std::collections::{HashMap, HashSet};
-pub fn run_bytecode(
+pub fn execute(
   bytecode: Vec<Instructions>,
   options: Option<RunOptions>,
 ) -> Result<Value, String> {
