@@ -18,6 +18,7 @@ pub struct FuncMetadata {
   pub start: usize,
   pub end: usize,
 }
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RunOptions {
   pub entry: Option<usize>,
   pub args: Vec<Value>,
