@@ -18,6 +18,7 @@ use crate::instructions::{
     add_func::add_func, div_func::div_func, mod_func::mod_func, mul_func::mul_func,
     sub_func::sub_func,
   },
+  stack::{get_func::get_func, push_func::push_func, set_func::set_func, val_func::val_func},
 };
 use crate::types::{
   instructions::Instructions,
@@ -72,26 +73,16 @@ pub fn execute(bytecode: Vec<Instructions>, options: Option<RunOptions>) -> Resu
     let _hot_threshold = compute_hot_threshold(stack.len());
     match instr {
       Instructions::Push(val) => {
-        stack.push(val.clone());
+        push_func(&mut stack, val.clone());
       }
       Instructions::Val(name) => {
-        if !vars.contains_key(name) {
-          vars.insert(name.clone(), Value::Marker("NoInitExpression".to_string()));
-        }
+        val_func(&mut vars, name.clone());
       }
       Instructions::Set(name) => {
-        if let Some(val) = stack.pop() {
-          vars.insert(name.clone(), val);
-          if stack.len() > 50 {
-            stack.truncate(50);
-          }
-        } else {
-          panic!("Stack underflow on SET");
-        }
+        set_func(&mut stack, &mut vars, name.clone());
       }
       Instructions::Get(name) => {
-        let val = vars.get(name).cloned().unwrap_or(Value::Undefined);
-        stack.push(val);
+        get_func(&mut stack, &vars, name.clone());
       }
       Instructions::Add(num_type) => {
         println!("Add jalan");

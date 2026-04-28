@@ -8,5 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod execute;
-pub mod run;
+use crate::types::value::Value;
+pub fn push_func(stack: &mut Vec<Value>, val: Value) {
+  stack.push(val);
+}
