@@ -19,3 +19,6 @@ serde_json = "1.0"
 lto = true          # Optimasi lintas crate/module
 codegen-units = 1   # Bikin compiler lebih teliti (tapi build jadi lama)
 panic = "abort"     # Ngurangin ukuran binary & overhead error handling
+dynasmrt = "3.0"
+dynasm = "3.0"
+memmap2 = "0.9"

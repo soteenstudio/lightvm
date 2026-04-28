@@ -1,3 +1,13 @@
+/*
+ * Copyright 2026 SoTeen Studio
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ */
+
 use crate::instructions::{
   comparison::{
     eq_func::eq_func, ge_func::ge_func, gt_func::gt_func, le_func::le_func, lt_func::lt_func,
@@ -15,10 +25,7 @@ use crate::types::{
 };
 use crate::utils::compute_hot_threshold::compute_hot_threshold;
 use std::collections::{HashMap, HashSet};
-pub fn execute(
-  bytecode: Vec<Instructions>,
-  options: Option<RunOptions>,
-) -> Result<Value, String> {
+pub fn execute(bytecode: Vec<Instructions>, options: Option<RunOptions>) -> Result<Value, String> {
   let mut last_return = Value::Undefined;
   let mut stack: Vec<Value> = Vec::with_capacity(100);
   let mut vars: HashMap<String, Value> = HashMap::new();
@@ -226,7 +233,7 @@ pub fn execute(
           break;
         }
       }
-      _ => { /* Handle opcode lainnya */ }
+      _ => {}
     }
     ip += 1;
   }

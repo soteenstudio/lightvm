@@ -1,3 +1,13 @@
+/*
+ * Copyright 2026 SoTeen Studio
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ */
+
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
 use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -48,29 +58,22 @@ pub enum Instructions {
   Instantiate(String, u32),
 }
 impl Instructions {
-    pub fn from_parts(op: String, args: Vec<serde_json::Value>) -> Self {
-        match op.as_str() {
-            "Push" => {
-                // Konversi serde_json::Value ke internal Value lo
-                // Gue asumsikan lo punya impl From<serde_json::Value> for Value
-                Instructions::Push(serde_json::from_value(args[0].clone()).unwrap())
-            },
-            "Set" => Instructions::Set(args[0].as_str().unwrap_or("").to_string()),
-            "Get" => Instructions::Get(args[0].as_str().unwrap_or("").to_string()),
-            "Jump" => Instructions::Jump(args[0].as_u64().unwrap_or(0) as usize),
-            "Stop" => Instructions::Stop,
-            // Tambahin variant lain sesuai enum lo di sini...
-            _ => Instructions::Stop, 
-        }
+  pub fn from_parts(op: String, args: Vec<serde_json::Value>) -> Self {
+    match op.as_str() {
+      "Push" => Instructions::Push(serde_json::from_value(args[0].clone()).unwrap()),
+      "Set" => Instructions::Set(args[0].as_str().unwrap_or("").to_string()),
+      "Get" => Instructions::Get(args[0].as_str().unwrap_or("").to_string()),
+      "Jump" => Instructions::Jump(args[0].as_u64().unwrap_or(0) as usize),
+      "Stop" => Instructions::Stop,
+      _ => Instructions::Stop,
     }
-
-    pub fn to_parts(&self) -> Vec<String> {
-        match self {
-            Instructions::Push(v) => vec!["Push".to_string(), format!("{:?}", v)],
-            Instructions::Set(s) => vec!["Set".to_string(), s.clone()],
-            Instructions::Stop => vec!["Stop".to_string()],
-            // Tambahin sisanya...
-            _ => vec!["Unknown".to_string()],
-        }
+  }
+  pub fn to_parts(&self) -> Vec<String> {
+    match self {
+      Instructions::Push(v) => vec!["Push".to_string(), format!("{:?}", v)],
+      Instructions::Set(s) => vec!["Set".to_string(), s.clone()],
+      Instructions::Stop => vec!["Stop".to_string()],
+      _ => vec!["Unknown".to_string()],
     }
+  }
 }

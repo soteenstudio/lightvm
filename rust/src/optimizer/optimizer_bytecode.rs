@@ -1,9 +1,13 @@
-/* * Copyright 2026 Clay
- * * Licensed under the Apache License, Version 2.0 (the "License");
+/*
+ * Copyright 2026 SoTeen Studio
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * * http:
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  */
+
 use crate::instructions::math::{add_func::add_func, div_func::div_func};
 use crate::optimizer::analyze_usage::analyze_usage;
 use crate::optimizer::eliminate_dead_loops::eliminate_dead_loops;
