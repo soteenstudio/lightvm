@@ -1,9 +1,0 @@
-export { add } from "./add.js";
-export { sub } from "./sub.js";
-export { mul } from "./mul.js";
-export { div } from "./div.js";
-export { mod } from "./mod.js";
-export { gt } from "./gt.js";
-export { lt } from "./lt.js";
-export { ge } from "./ge.js";
-export { le } from "./le.js";
