@@ -4,9 +4,9 @@ import { runBytecode } from './runBytecode.js';
 import { optimizeBytecode } from './optimizeBytecode.js';
 import * as loader from './loader.js';
 
-export type VMEvent = 'tick' | 'halt' | 'panic';
+export type VMEvent = 'Tick' | 'Halt' | 'Panic';
 export type Listener = (payload?: any) => void;
-export type Capability = 'control' | 'observe' | 'debug' | 'unsafe';
+export type Capability = 'Control' | 'Observe' | 'Debug' | 'Unsafe';
 
 export interface VMResult {
   value: any;

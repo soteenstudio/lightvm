@@ -8,7 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0  
  */
 
-//import { Instruction } from "./Instruction.js";
+import { Instruction } from "./Instruction.js";
 import { loadNapi } from "./utils/loadNapi.js";
 //import { optimizeBytecode } from "./optimizeBytecode.js";
 //import * as loader from "./loader.js";
