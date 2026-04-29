@@ -10,9 +10,9 @@
 
 use crate::types::instructions::Instructions;
 use serde_json::Value;
-pub fn parse_ltc(code: &str) -> Vec<Instructions> {
+pub fn parse_ltc(code: String) -> Vec<Instructions> {
   let re = regex::Regex::new(r"\s;; IP=(\d+)").unwrap();
-  let cleaned_code = re.replace_all(code, "");
+  let cleaned_code = re.replace_all(&code, "");
   cleaned_code
     .split(';')
     .map(|s| s.trim())

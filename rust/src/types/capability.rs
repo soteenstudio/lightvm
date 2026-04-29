@@ -10,11 +10,22 @@
 
 use napi_derive::napi;
 use serde::{Deserialize, Serialize};
-#[napi(string_enum)]
+#[napi]
 #[derive(Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum Capability {
   Control,
   Observe,
   Debug,
   Unsafe,
+}
+impl Capability {
+  pub fn from_str(s: &str) -> Option<Self> {
+    match s.to_lowercase().as_str() {
+      "control" => Some(Self::Control),
+      "observe" => Some(Self::Observe),
+      "debug" => Some(Self::Debug),
+      "unsafe" => Some(Self::Unsafe),
+      _ => None,
+    }
+  }
 }

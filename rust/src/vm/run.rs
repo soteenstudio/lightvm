@@ -14,6 +14,7 @@ use crate::utils::map_primitive::map_primitive;
 use serde_json::Value as JsonValue;
 pub fn run(bytecode_json: String) -> String {
   let raw_bytecode: Vec<JsonValue> = serde_json::from_str(&bytecode_json).expect("Invalid JSON");
+  println!("bjghjhghhjgddthjkkk {}", bytecode_json);
   let bytecode: Vec<Instructions> = raw_bytecode
     .into_iter()
     .map(|item| {

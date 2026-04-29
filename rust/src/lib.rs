@@ -13,6 +13,7 @@ pub mod optimizer;
 pub mod types;
 pub mod utils;
 pub mod vm;
+use crate::optimizer::optimizer_bytecode::optimize_bytecode;
 use crate::types::{
   capability::Capability,
   instructions::Instructions,
@@ -20,7 +21,8 @@ use crate::types::{
   vmevent::VmEvent,
   vmstate::VmState,
 };
-use crate::vm::execute::execute;
+use crate::utils::loader::{parse_ltc, stringify_ltc};
+use crate::vm::run::run;
 use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode};
 use napi_derive::napi;
 use std::collections::{HashMap, HashSet};
@@ -40,13 +42,15 @@ pub struct LightVM {
 #[napi]
 impl LightVM {
   #[napi(constructor)]
-  pub fn new(caps: Vec<Capability>) -> Self {
+  pub fn new(caps: Vec<String>) -> Self {
     let mut caps_set = HashSet::new();
     if caps.is_empty() {
       caps_set.insert(Capability::Observe);
     } else {
-      for c in caps {
-        caps_set.insert(c);
+      for c_str in caps {
+        if let Some(c) = Capability::from_str(&c_str) {
+          caps_set.insert(c);
+        }
       }
     }
     Self {
@@ -86,7 +90,7 @@ impl LightVM {
       } else {
         s.to_string()
       };
-      self.bytecode = crate::utils::loader::parse_ltc(&code);
+      self.bytecode = crate::utils::loader::parse_ltc(code);
     } else {
       self.bytecode = serde_json::from_value(val)
         .map_err(|e| napi::Error::from_reason(format!("Invalid bytecode: {}", e)))?;
@@ -120,7 +124,8 @@ impl LightVM {
   #[napi]
   pub fn run(&mut self, options: napi::JsUnknown) -> Result<(), napi::Error> {
     self.require(Capability::Control)?;
-    let run_opts: Option<RunOptions> = match options.get_type()? {
+    
+    let _run_opts: Option<RunOptions> = match options.get_type()? {
       napi::ValueType::Null | napi::ValueType::Undefined => None,
       _ => {
         let json_str = options
@@ -131,24 +136,32 @@ impl LightVM {
         serde_json::from_str::<RunOptions>(&json_str).ok()
       }
     };
+
     if self.bytecode.is_empty() {
       return Err(napi::Error::from_reason("No bytecode loaded"));
     }
+
     self.state = VmState::Running;
     self.emit(VmEvent::Tick, serde_json::json!({ "state": "start" }));
-    match execute(self.bytecode.clone(), run_opts) {
-      Ok(val) => {
-        self.last_value = val;
-        self.state = VmState::Halted;
-        self.emit(VmEvent::Halt, serde_json::Value::Null);
-        Ok(())
-      }
-      Err(e) => {
-        self.emit(VmEvent::Panic, serde_json::json!({ "error": e }));
-        Err(napi::Error::from_reason(e))
-      }
-    }
+
+    // SINKRONISASI INPUT: Ubah Vec<Instructions> ke String JSON
+    let bytecode_json = serde_json::to_string(&self.bytecode)
+      .map_err(|e| napi::Error::from_reason(format!("Serialization Error: {}", e)))?;
+
+    // SINKRONISASI OUTPUT: run() balikin String, bukan Result
+    let result_str = run(bytecode_json);
+
+    // Parse hasil balikan string ke tipe Value internal kamu
+    let val: Value = serde_json::from_str(&result_str)
+      .unwrap_or(Value::Undefined);
+
+    self.last_value = val;
+    self.state = VmState::Halted;
+    self.emit(VmEvent::Halt, serde_json::Value::Null);
+    
+    Ok(())
   }
+
   #[napi]
   pub fn on(&mut self, event: VmEvent, callback: napi::JsFunction) -> Result<(), napi::Error> {
     let tsfn: ThreadsafeFunction<String, napi::threadsafe_function::ErrorStrategy::CalleeHandled> =
@@ -202,41 +215,45 @@ impl LightVM {
     args_raw: napi::JsUnknown,
   ) -> Result<String, napi::Error> {
     self.require(Capability::Control)?;
+    
     if !self.exported.contains(&name) {
       return Err(napi::Error::from_reason(format!(
         "Function '{}' is not exported",
         name
       )));
     }
+
     let fn_meta = self
       .functions
       .get(&name)
       .ok_or_else(|| napi::Error::from_reason(format!("Function '{}' not found", name)))?;
+
     let json_args = args_raw
       .coerce_to_string()?
       .into_utf8()?
       .as_str()?
       .to_string();
-    let args: Vec<Value> = serde_json::from_str(&json_args)
+
+    let _args: Vec<Value> = serde_json::from_str(&json_args)
       .map_err(|e| napi::Error::from_reason(format!("Invalid args: {}", e)))?;
+
     self.state = VmState::Running;
-    let options = RunOptions {
-      entry: Some(fn_meta.start),
-      args,
-      capture_return: true,
-    };
-    match execute(self.bytecode.clone(), Some(options)) {
-      Ok(val) => {
-        self.state = VmState::Halted;
-        self.last_value = val.clone();
-        Ok(serde_json::to_string(&val).unwrap())
-      }
-      Err(e) => {
-        self.state = VmState::Halted;
-        Err(napi::Error::from_reason(e))
-      }
-    }
+
+    // SINKRONISASI INPUT: Ubah Vec<Instructions> ke String JSON
+    let bytecode_json = serde_json::to_string(&self.bytecode)
+      .map_err(|e| napi::Error::from_reason(format!("Serialization Error: {}", e)))?;
+
+    // SINKRONISASI OUTPUT: Panggil run langsung tanpa match Ok/Err
+    let result_str = run(bytecode_json);
+
+    // Update state & last_value
+    let val: Value = serde_json::from_str(&result_str).unwrap_or(Value::Undefined);
+    self.state = VmState::Halted;
+    self.last_value = val;
+
+    Ok(result_str)
   }
+
   #[napi]
   pub fn get_outputs(&self) -> Result<Vec<String>, napi::Error> {
     self.require(Capability::Observe)?;
@@ -247,5 +264,22 @@ impl LightVM {
     self.require(Capability::Control)?;
     self._outputs.clear();
     Ok(())
+  }
+  #[napi]
+  pub fn optimize_bytecode(&self, json_bytecode: String) -> String {
+    let bytecode: Vec<Instructions> = serde_json::from_str(&json_bytecode).unwrap_or_default();
+    let optimized = optimize_bytecode(bytecode);
+    serde_json::to_string(&optimized).unwrap_or_else(|_| "[]".to_string())
+  }
+  #[napi]
+  pub fn parse_ltc(&self, code: String) -> String {
+    let bytecode = parse_ltc(code);
+    serde_json::to_string(&bytecode).unwrap_or_else(|_| "[]".to_string())
+  }
+  #[napi]
+  pub fn stringify_ltc(&self, json_instructions: String) -> String {
+    let instructions: Vec<Instructions> =
+      serde_json::from_str(&json_instructions).unwrap_or_else(|_| vec![]);
+    stringify_ltc(instructions)
   }
 }

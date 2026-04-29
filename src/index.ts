@@ -20,14 +20,16 @@ export class LightVM {
   private instance: any;
   private listeners = new Map<VMEvent, Listener[]>();
 
-  constructor(caps: Capability[] = ["Observe"]) {
+  constructor(caps: Capability[] = ["observe"]) {
     // Panggil constructor Rust
-    this.instance = new native.LightVM(caps);
+    const finalCaps = Array.isArray(caps) ? caps : [caps];
+    this.instance = new native.LightVM(finalCaps);
   }
 
   load(source: Instruction[] | string) {
     // Kirim langsung ke Rust. Rust bakal handle mau itu path file atau JSON string.
     const payload = typeof source === "string" ? source : JSON.stringify(source);
+    console.log(`source: ${source}, payload: ${payload}`);
     this.instance.load(payload);
     return this;
   }
@@ -110,15 +112,16 @@ export class LightVM {
     };
   }
 
-  /*tools() {
+  tools() {
+    //console.log("Proto: ", Object.getOwnPropertyNames(Object.getPrototypeOf(this.instance)));
     return {
-      optimizeBytecode,
+      optimizeBytecode: (json: string) => typeof json === "string" ? json : this.instance.optimizeBytecode(JSON.stringify(json)),
       loader: {
-        stringifyLTC: loader.stringifyLTC,
-        parseLTC: loader.parseLTC
+        stringifyLTC: (json: string) => typeof json === "string" ? json : this.instance.stringifyLtc(JSON.stringify(json)),
+        parseLTC: (code: string) => JSON.parse(this.instance.parseLtc(code))
       }
     };
-  }*/
+  }
 }
 
 export { Instruction };
