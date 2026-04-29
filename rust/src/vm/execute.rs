@@ -12,7 +12,7 @@ use crate::instructions::{
   comparison::{
     eq_func::eq_func, ge_func::ge_func, gt_func::gt_func, le_func::le_func, lt_func::lt_func,
   },
-  control_flow::if_false_func::if_false_func,
+  control_flow::{if_false_func::if_false_func, jump_func::jump_func, call_func::call_func},
   io::{print::print_func, println::println_func},
   math::{
     add_func::add_func, div_func::div_func, mod_func::mod_func, mul_func::mul_func,
@@ -168,10 +168,7 @@ pub fn execute(bytecode: Vec<Instructions>, options: Option<RunOptions>) -> Resu
         }
       }
       Instructions::Jump(target_ip) => {
-        if stack.len() > 50 {
-          stack.truncate(50);
-        }
-        ip = *target_ip;
+        jump_func(&mut ip, *target_ip, &mut stack);
         continue;
       }
       Instructions::Return => {
@@ -187,30 +184,7 @@ pub fn execute(bytecode: Vec<Instructions>, options: Option<RunOptions>) -> Resu
         }
       }
       Instructions::Call(name, argc) => {
-        println!("{} {}", name, argc);
-        let fn_meta = functions
-          .get(name)
-          .ok_or(&format!("Function {} not found", name))?
-          .clone();
-        let mut args = Vec::new();
-        for _ in 0..*argc {
-          args.push(stack.pop().ok_or("Stack underflow on CALL arguments")?);
-        }
-        args.reverse();
-        _call_stack.push(ip);
-        if stack.len() > 50 {
-          stack.truncate(50);
-        }
-        for i in 0..fn_meta.params_count as usize {
-          let param_name = fn_meta
-            .param_names
-            .get(i)
-            .cloned()
-            .unwrap_or(format!("param{}", i));
-          let val = args.get(i).cloned().unwrap_or(Value::Undefined);
-          vars.insert(param_name, val);
-        }
-        ip = fn_meta.start;
+        call_func(name, *argc, &mut ip, &mut stack, &mut _call_stack, &mut vars, &functions)?;
         continue;
       }
       Instructions::Stop => {
