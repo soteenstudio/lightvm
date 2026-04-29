@@ -12,7 +12,7 @@ use crate::instructions::{
   comparison::{
     eq_func::eq_func, ge_func::ge_func, gt_func::gt_func, le_func::le_func, lt_func::lt_func,
   },
-  control_flow::{if_false_func::if_false_func, jump_func::jump_func, call_func::call_func},
+  control_flow::{call_func::call_func, if_false_func::if_false_func, jump_func::jump_func},
   io::{print::print_func, println::println_func},
   math::{
     add_func::add_func, div_func::div_func, mod_func::mod_func, mul_func::mul_func,
@@ -184,7 +184,15 @@ pub fn execute(bytecode: Vec<Instructions>, options: Option<RunOptions>) -> Resu
         }
       }
       Instructions::Call(name, argc) => {
-        call_func(name, *argc, &mut ip, &mut stack, &mut _call_stack, &mut vars, &functions)?;
+        call_func(
+          name,
+          *argc,
+          &mut ip,
+          &mut stack,
+          &mut _call_stack,
+          &mut vars,
+          &functions,
+        )?;
         continue;
       }
       Instructions::Stop => {

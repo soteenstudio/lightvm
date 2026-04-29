@@ -8,6 +8,6 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
+pub mod call_func;
 pub mod if_false_func;
 pub mod jump_func;
-pub mod call_func;
