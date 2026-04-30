@@ -147,7 +147,7 @@ export class LightVM {
     };
   }
 
-  tools() {
+  /*tools() {
     return {
       optimizeBytecode: native.LightVM.optimizeBytecode,
       loader: {
@@ -159,7 +159,7 @@ export class LightVM {
         parseLTCArray: (code) => native.LightVM.parseLtcArray(code)
       }
     };
-  }
+  }*/
 }
 
 export { Instruction };
