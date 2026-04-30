@@ -9,15 +9,14 @@
  */
 
 use crate::types::value::{FuncMetadata, Value};
-use std::collections::HashMap;
 pub fn call_func(
   name: &String,
   argc: u32,
   ip: &mut usize,
   stack: &mut Vec<Value>,
   call_stack: &mut Vec<usize>,
-  vars: &mut HashMap<String, Value>,
-  functions: &HashMap<String, FuncMetadata>,
+  vars: &mut Vec<Value>,
+  functions: &std::collections::HashMap<String, FuncMetadata>,
 ) -> Result<(), String> {
   let fn_meta = functions
     .get(name)
@@ -32,13 +31,10 @@ pub fn call_func(
     stack.truncate(50);
   }
   for i in 0..fn_meta.params_count as usize {
-    let param_name = fn_meta
-      .param_names
-      .get(i)
-      .cloned()
-      .unwrap_or_else(|| format!("param{}", i));
     let val = args.get(i).cloned().unwrap_or(Value::Undefined);
-    vars.insert(param_name, val);
+    if i < vars.len() {
+      vars[i] = val;
+    }
   }
   *ip = fn_meta.start;
   Ok(())

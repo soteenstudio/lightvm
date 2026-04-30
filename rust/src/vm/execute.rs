@@ -25,20 +25,26 @@ use crate::instructions::{
     mul_func::mul_func,
     sub_func::sub_func,
   },
-  stack::{get_func::get_func, push_func::push_func, set_func::set_func, val_func::val_func},
+  stack::{push_func::push_func, val_func::val_func},
 };
 use crate::types::{
   instructions::Instructions,
   value::{FuncMetadata, RunOptions, Value},
 };
-use crate::utils::compute_hot_threshold::compute_hot_threshold;
+use crate::utils::{
+  compute_hot_threshold::compute_hot_threshold, resolve_symbols::resolve_symbols,
+};
 use std::collections::{HashMap, HashSet};
-pub fn execute(bytecode: Vec<Instructions>, options: Option<RunOptions>) -> Result<Value, String> {
+pub fn execute(
+  mut bytecode: Vec<Instructions>,
+  options: Option<RunOptions>,
+) -> Result<Value, String> {
   let mut last_return = Value::Undefined;
   let mut stack: Vec<Value> = Vec::with_capacity(100);
-  let mut vars: HashMap<String, Value> = HashMap::new();
+  let var_count = resolve_symbols(&mut bytecode);
+  let mut vars: Vec<Value> = vec![Value::Undefined; var_count];
   let mut _call_stack: Vec<usize> = Vec::new();
-  let mut hit_counter: HashMap<usize, u32> = HashMap::new();
+  let mut hit_counter = vec![0u32; bytecode.len()];
   let mut ip: usize = options.as_ref().and_then(|o| o.entry).unwrap_or(0);
   let mut functions: HashMap<String, FuncMetadata> = HashMap::new();
   let mut exported: HashSet<String> = HashSet::new();
@@ -63,92 +69,92 @@ pub fn execute(bytecode: Vec<Instructions>, options: Option<RunOptions>) -> Resu
       let entry_fn = functions.values().find(|f| f.start == entry_ip);
       if let Some(fn_meta) = entry_fn {
         for i in 0..fn_meta.params_count as usize {
-          let name = fn_meta
-            .param_names
-            .get(i)
-            .cloned()
-            .unwrap_or(format!("param{}", i));
           let val = opts.args.get(i).cloned().unwrap_or(Value::Undefined);
-          vars.insert(name, val);
+          if i < vars.len() {
+            vars[i] = val;
+          }
         }
       }
     }
   }
   while ip < bytecode.len() {
     let instr = &bytecode[ip];
-    *hit_counter.entry(ip).or_insert(0) += 1;
+    hit_counter[ip] += 1;
+    let is_hot = hit_counter[ip] >= 1000;
     let _hot_threshold = compute_hot_threshold(stack.len());
     match instr {
       Instructions::Push(val) => {
         push_func(&mut stack, val.clone());
       }
-      Instructions::Val(name) => {
-        val_func(&mut vars, name.clone());
+      Instructions::ValIdx(idx) => {
+        val_func(&mut vars, *idx);
       }
-      Instructions::Set(name) => {
-        set_func(&mut stack, &mut vars, name.clone());
+      Instructions::SetIdx(idx) => {
+        if let Some(val) = stack.pop() {
+          vars[*idx] = val;
+        }
       }
-      Instructions::Get(name) => {
-        get_func(&mut stack, &vars, name.clone());
+      Instructions::GetIdx(idx) => {
+        stack.push(vars[*idx].clone());
       }
       Instructions::Add(num_type) => {
         let b = stack.pop().ok_or("Stack underflow on ADD (b)")?;
         let a = stack.pop().ok_or("Stack underflow on ADD (a)")?;
-        let result = add_func(a, b, num_type.clone());
+        let result = add_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Sub(num_type) => {
         let b = stack.pop().ok_or("Stack underflow on SUB (b)")?;
         let a = stack.pop().ok_or("Stack underflow on SUB (a)")?;
-        let result = sub_func(a, b, num_type.clone());
+        let result = sub_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Mul(num_type) => {
         let b = stack.pop().ok_or("Stack underflow on MUL (b)")?;
         let a = stack.pop().ok_or("Stack underflow on MUL (a)")?;
-        let result = mul_func(a, b, num_type.clone());
+        let result = mul_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Div(num_type) => {
         let b = stack.pop().ok_or("Stack underflow on DIV (b)")?;
         let a = stack.pop().ok_or("Stack underflow on DIV (a)")?;
-        let result = div_func(a, b, num_type.clone());
+        let result = div_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Mod(num_type) => {
         let b = stack.pop().ok_or("Stack underflow on MOD (b)")?;
         let a = stack.pop().ok_or("Stack underflow on MOD (a)")?;
-        let result = mod_func(a, b, num_type.clone());
+        let result = mod_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Gt(num_type) => {
         let b = stack.pop().ok_or("Stack underflow on GT (b)")?;
         let a = stack.pop().ok_or("Stack underflow on GT (a)")?;
-        let result = gt_func(a, b, num_type.clone());
+        let result = gt_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Lt(num_type) => {
         let b = stack.pop().ok_or("Stack underflow on LT (b)")?;
         let a = stack.pop().ok_or("Stack underflow on LT (a)")?;
-        let result = lt_func(a, b, num_type.clone());
+        let result = lt_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Ge(num_type) => {
         let b = stack.pop().ok_or("Stack underflow on GE (b)")?;
         let a = stack.pop().ok_or("Stack underflow on GE (a)")?;
-        let result = ge_func(a, b, num_type.clone());
+        let result = ge_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Le(num_type) => {
         let b = stack.pop().ok_or("Stack underflow on LE (b)")?;
         let a = stack.pop().ok_or("Stack underflow on LE (a)")?;
-        let result = le_func(a, b, num_type.clone());
+        let result = le_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Eq(num_type) => {
         let b = stack.pop().ok_or("Stack underflow on EQ (b)")?;
         let a = stack.pop().ok_or("Stack underflow on EQ (a)")?;
-        let result = eq_func(a, b, num_type.clone());
+        let result = eq_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Print => {
@@ -202,19 +208,11 @@ pub fn execute(bytecode: Vec<Instructions>, options: Option<RunOptions>) -> Resu
           break;
         }
       }
-      Instructions::Inc(var_name, num_type) => {
-        let count = *hit_counter.get(&ip).unwrap_or(&0);
-        let is_hot = count >= 1000;
-        inc_func(
-          &mut vars,
-          &mut stack,
-          var_name.clone(),
-          num_type.clone(),
-          is_hot,
-        )?;
+      Instructions::IncIdx(idx, num_type) => {
+        inc_func(&mut vars, &mut stack, *idx, *num_type, is_hot)?;
       }
-      Instructions::Dec(var_name) => {
-        dec_func(&mut vars, var_name.clone())?;
+      Instructions::DecIdx(idx, num_type) => {
+        dec_func(&mut vars, *idx, *num_type)?;
       }
       _ => {}
     }

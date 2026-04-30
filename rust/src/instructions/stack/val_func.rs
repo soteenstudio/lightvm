@@ -9,9 +9,11 @@
  */
 
 use crate::types::value::Value;
-use std::collections::HashMap;
-pub fn val_func(vars: &mut HashMap<String, Value>, name: String) {
-  vars
-    .entry(name)
-    .or_insert_with(|| Value::Marker("NoInitExpression".to_string()));
+pub fn val_func(vars: &mut Vec<Value>, index: usize) {
+  if index >= vars.len() {
+    vars.resize(index + 1, Value::Undefined);
+  }
+  if vars[index] == Value::Undefined {
+    vars[index] = Value::Marker("NoInitExpression".to_string());
+  }
 }

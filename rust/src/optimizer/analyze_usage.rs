@@ -20,7 +20,7 @@ pub fn analyze_usage(bytecode: &[Instructions]) -> Usage {
       }
       Instructions::Set(var_name)
       | Instructions::Inc(var_name, _)
-      | Instructions::Dec(var_name) => {
+      | Instructions::Dec(var_name, _) => {
         written.insert(var_name.clone());
       }
       Instructions::Print | Instructions::Println => {

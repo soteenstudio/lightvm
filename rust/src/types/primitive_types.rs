@@ -9,7 +9,7 @@
  */
 
 use serde::{Deserialize, Serialize};
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum PrimitiveTypes {
   Int,
   Lng,

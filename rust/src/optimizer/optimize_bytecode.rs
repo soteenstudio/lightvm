@@ -18,13 +18,13 @@ pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
   while i < bytecode.len().saturating_sub(2) {
     match (&bytecode[i], &bytecode[i + 1], &bytecode[i + 2]) {
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Add(t)) => {
-        let result = add_func(v1.clone(), v2.clone(), t.clone());
+        let result = add_func(v1.clone(), v2.clone(), *t);
         bytecode.splice(i..i + 3, vec![Instructions::Push(result)]);
         i = i.saturating_sub(1);
         continue;
       }
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Div(t)) => {
-        let result = div_func(v1.clone(), v2.clone(), t.clone());
+        let result = div_func(v1.clone(), v2.clone(), *t);
         bytecode.splice(i..i + 3, vec![Instructions::Push(result)]);
         i = i.saturating_sub(1);
         continue;
