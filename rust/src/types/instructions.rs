@@ -52,25 +52,96 @@ pub enum Instructions {
 }
 impl Instructions {
   pub fn from_parts(op: String, args: Vec<serde_json::Value>) -> Self {
-    match op.as_str() {
-      "Push" => Instructions::Push(serde_json::from_value(args[0].clone()).unwrap()),
-      "Set" => Instructions::Set(args[0].as_str().unwrap_or("").to_string()),
-      "Get" => Instructions::Get(args[0].as_str().unwrap_or("").to_string()),
-      "Jump" => Instructions::Jump(args[0].as_u64().unwrap_or(0) as usize),
-      "Stop" => Instructions::Stop,
-      _ => Instructions::Stop,
+    let op_lower = op.to_lowercase();
+    if args.is_empty() {
+      return serde_json::from_value(serde_json::Value::String(op_lower))
+        .unwrap_or(Instructions::Stop);
     }
+    let json_map = serde_json::json!({
+        &op_lower: args[0]
+    });
+    serde_json::from_value(json_map).unwrap_or_else(|_| {
+      if op_lower == "push" {
+        let val = &args[0];
+        let value_internal = if val.is_i64() {
+          Value::Int64(val.as_i64().unwrap())
+        } else if val.is_f64() {
+          Value::Float64(val.as_f64().unwrap())
+        } else if val.is_boolean() {
+          Value::Bool(val.as_bool().unwrap())
+        } else if val.is_string() {
+          Value::String(val.as_str().unwrap().to_string())
+        } else {
+          Value::Null
+        };
+        Instructions::Push(value_internal)
+      } else {
+        Instructions::Stop
+      }
+    })
   }
   pub fn to_parts(&self) -> Vec<String> {
-    match self {
-      Instructions::Push(v) => vec!["Push".to_string(), format!("{:?}", v)],
-      Instructions::Set(s) => vec!["Set".to_string(), s.clone()],
-      Instructions::Stop => vec!["Stop".to_string()],
-      _ => vec!["Unknown".to_string()],
+    let json = serde_json::to_value(self).unwrap_or(serde_json::Value::Null);
+    if json.is_string() {
+      return vec![json.as_str().unwrap().to_string()];
+    } else if let Some(obj) = json.as_object() {
+      let (key, val) = obj.iter().next().unwrap();
+      let val_str = if key == "push" {
+        if let Some(s) = val.as_str() {
+          let clean_s = s.replace("\\\"", "\"").replace("\\\\", "\\");
+          format!("\"{}\"", clean_s)
+        } else if val.is_object() {
+          let inner_obj = val.as_object().unwrap();
+          let (_type_key, actual_val) = inner_obj.iter().next().unwrap();
+          actual_val.to_string()
+        } else {
+          val.to_string()
+        }
+      } else {
+        if let Some(s) = val.as_str() {
+          s.to_string()
+        } else {
+          val.to_string()
+        }
+      };
+      return vec![key.clone(), val_str];
     }
+    vec!["Unknown".to_string()]
   }
   pub fn from_json_array(item: &JsonValue) -> Self {
-    let arr = item.as_array().expect("Instruction must be an array");
+    if item.is_null() {
+      return Instructions::Stop;
+    }
+    if let Some(s) = item.as_str() {
+      return match s {
+        "stop" => Instructions::Stop,
+        "return" => Instructions::Return,
+        "and" => Instructions::And,
+        "or" => Instructions::Or,
+        "print" => Instructions::Print,
+        "println" => Instructions::Println,
+        "break" => Instructions::Break,
+        "accessindex" => Instructions::AccessIndex,
+        "tostring" => Instructions::ToString,
+        "tonumber" => Instructions::ToNumber,
+        "tointeger" => Instructions::ToInteger,
+        "tofloat" => Instructions::ToFloat,
+        "typeof" => Instructions::TypeOf,
+        "length" => Instructions::Length,
+        "concat" => Instructions::Concat,
+        "dup" => Instructions::Dup,
+        _ => Instructions::Stop,
+      };
+    }
+    if item.is_object() {
+      return serde_json::from_value(item.clone()).unwrap_or(Instructions::Stop);
+    }
+    let arr = match item.as_array() {
+      Some(a) => a,
+      None => {
+        return Instructions::Stop;
+      }
+    };
     let op = arr[0].as_str().expect("Opcode must be a string");
     match op {
       "push" => {

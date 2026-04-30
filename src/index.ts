@@ -46,27 +46,27 @@ export class LightVM {
   }
 
   load(source: Instruction[] | string) {
-    console.log("Instr: ", source);
-    let payload: any;
+    let payload: string;
     
     if (typeof source === "string") {
-      try {
-        // Coba parse, kalau ini string JSON (hasil parseLTC), 
-        // kita ubah jadi object biar Rust masuk ke blok 'else' (serde_json::from_value)
-        payload = JSON.parse(source);
-      } catch {
-        // Kalau bukan JSON, berarti ini path file atau raw LTC code
+      // Cek apakah ini string JSON atau path/raw code
+      if (source.trim().startsWith('[')) {
+        // Sudah string JSON, kirim langsung
+        payload = source;
+      } else {
+        // Ini path file atau raw LTC, kirim string aslinya
+        // (Rust bakal handle path.exists() atau parse_ltc)
         payload = source;
       }
     } else {
+      // Ini array instruksi, wajib stringify biar Rust gak dapet [object Object]
       payload = JSON.stringify(source);
     }
 
-    // Kirim ke Rust. Kalau payload berupa Object/Array, Rust bakal pake from_value.
-    // Kalau payload berupa String (path), Rust bakal ngebaca filenya.
     this.instance.load(payload);
     return this;
   }
+
 
 
   run(options: any = {}) {
@@ -155,7 +155,8 @@ export class LightVM {
           const input = typeof json === 'string' ? json : JSON.stringify(json);
           return native.LightVM.stringifyLtc(input);
         },
-        parseLTC: (code) => native.LightVM.parseLtc(code)
+        parseLTC: (code) => native.LightVM.parseLtc(code),
+        parseLTCArray: (code) => native.LightVM.parseLtcArray(code)
       }
     };
   }

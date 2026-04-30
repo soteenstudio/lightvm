@@ -4,21 +4,17 @@ version = "0.1.0"
 edition = "2021"
 
 [lib]
-# Ini yang tadi bikin error kalau gak ada [package] di atasnya
 crate-type = ["cdylib"]
 
 [dependencies]
-napi = { version = "2.16", features = ["napi4", "serde", "serde_json"] } 
-napi-derive = "2.12.2"
+napi = { version = "2.16", features = ["napi4", "serde", "serde-json"] } 
+napi-derive = "2.16"
 colored = "2"
 regex = "1.12.3"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
 [profile.release]
-lto = true          # Optimasi lintas crate/module
-codegen-units = 1   # Bikin compiler lebih teliti (tapi build jadi lama)
-panic = "abort"     # Ngurangin ukuran binary & overhead error handling
-dynasmrt = "3.0"
-dynasm = "3.0"
-memmap2 = "0.9"
+lto = true
+codegen-units = 1
+panic = "abort"

@@ -62,20 +62,29 @@ impl LightVM {
   }
   #[napi]
   pub fn load(&mut self, source: napi::JsUnknown) -> Result<(), napi::Error> {
+    println!("Load jalan!");
     match source.get_type()? {
       napi::ValueType::String => {
-        let s = source
+        let s: String = source
           .coerce_to_string()?
           .into_utf8()?
           .as_str()?
           .to_string();
-        let path = std::path::Path::new(&s);
-        let code = if path.exists() {
-          fs::read_to_string(path).map_err(|e| napi::Error::from_reason(e.to_string()))?
+        if s.trim().starts_with('[') {
+          self.bytecode = serde_json::from_str(&s)
+            .map_err(|e| napi::Error::from_reason(format!("Gagal parse JSON string: {}", e)))?;
         } else {
-          s
-        };
-        self.bytecode = crate::utils::loader::parse_ltc(&code);
+          let path = std::path::Path::new(&s);
+          if path.exists() {
+            let code =
+              fs::read_to_string(path).map_err(|e| napi::Error::from_reason(e.to_string()))?;
+            self.bytecode = crate::utils::loader::parse_ltc(&code);
+          } else {
+            return Err(napi::Error::from_reason(
+              "File gak ketemu dan bukan JSON valid",
+            ));
+          }
+        }
       }
       napi::ValueType::Object => {
         let json_str = source
@@ -84,11 +93,12 @@ impl LightVM {
           .as_str()?
           .to_string();
         self.bytecode = serde_json::from_str(&json_str)
-          .map_err(|e| napi::Error::from_reason(format!("Gagal parse object bytecode: {}", e)))?;
+          .map_err(|e| napi::Error::from_reason(format!("Gagal parse bytecode. Tips: Pastikan kirim JSON.stringify(bytecode) dari JS. Error: {}", e)))?;
       }
       _ => return Err(napi::Error::from_reason("Tipe data load gak disupport")),
     }
     self.index_metadata();
+    println!("Load berhenti!");
     Ok(())
   }
   fn index_metadata(&mut self) {
@@ -116,6 +126,7 @@ impl LightVM {
   }
   #[napi]
   pub fn run(&mut self, options: napi::JsUnknown) -> Result<(), napi::Error> {
+    println!("Run jalan!");
     self.require(Capability::Control)?;
     let _run_opts: Option<RunOptions> = match options.get_type()? {
       napi::ValueType::Null | napi::ValueType::Undefined => None,
@@ -135,6 +146,7 @@ impl LightVM {
     self.emit(VmEvent::Tick, serde_json::json!({ "state": "start" }));
     let bytecode_str = serde_json::to_string(&self.bytecode).unwrap();
     run(bytecode_str);
+    println!("Run berhenti!");
     Ok(())
   }
   #[napi]
@@ -237,10 +249,7 @@ impl LightVM {
       .to_string();
     let raw_list: Vec<serde_json::Value> = serde_json::from_str(&json_str)
       .map_err(|e| napi::Error::from_reason(format!("Invalid JSON format: {}", e)))?;
-    let bytecode: Vec<Instructions> = raw_list
-      .iter()
-      .map(Instructions::from_json_array)
-      .collect();
+    let bytecode: Vec<Instructions> = raw_list.iter().map(Instructions::from_json_array).collect();
     let optimized = optimizer::optimize_bytecode::optimize_bytecode(bytecode);
     serde_json::to_string(&optimized)
       .map_err(|e| napi::Error::from_reason(format!("Gagal stringify: {}", e)))
@@ -250,6 +259,11 @@ impl LightVM {
     let instructions = crate::utils::loader::parse_ltc(&code);
     serde_json::to_string(&instructions)
       .map_err(|e| napi::Error::from_reason(format!("Failed to stringify parsed LTC: {}", e)))
+  }
+  #[napi]
+  pub fn parse_ltc_array(code: String) -> serde_json::Value {
+    let instructions = crate::utils::loader::parse_ltc_to_vec(&code);
+    serde_json::to_value(&instructions).unwrap_or(serde_json::Value::Array(vec![]))
   }
   #[napi]
   pub fn stringify_ltc(bytecode_raw: napi::JsUnknown) -> Result<String, napi::Error> {
