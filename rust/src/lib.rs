@@ -1,13 +1,3 @@
-/*
- * Copyright 2026 SoTeen Studio
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- */
-
 pub mod instructions;
 pub mod optimizer;
 pub mod types;
@@ -20,7 +10,7 @@ use crate::types::{
   vmevent::VmEvent,
   vmstate::VmState,
 };
-use crate::vm::execute::execute;
+use crate::vm::run::run;
 use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode};
 use napi_derive::napi;
 use std::collections::{HashMap, HashSet};
@@ -72,24 +62,31 @@ impl LightVM {
   }
   #[napi]
   pub fn load(&mut self, source: napi::JsUnknown) -> Result<(), napi::Error> {
-    let json_str = source
-      .coerce_to_string()?
-      .into_utf8()?
-      .as_str()?
-      .to_string();
-    let val: serde_json::Value = serde_json::from_str(&json_str)
-      .map_err(|e| napi::Error::from_reason(format!("JSON Parse Error: {}", e)))?;
-    if let Some(s) = val.as_str() {
-      let path = std::path::Path::new(s);
-      let code = if path.exists() {
-        fs::read_to_string(path).map_err(|e| napi::Error::from_reason(e.to_string()))?
-      } else {
-        s.to_string()
-      };
-      self.bytecode = crate::utils::loader::parse_ltc(&code);
-    } else {
-      self.bytecode = serde_json::from_value(val)
-        .map_err(|e| napi::Error::from_reason(format!("Invalid bytecode: {}", e)))?;
+    match source.get_type()? {
+      napi::ValueType::String => {
+        let s = source
+          .coerce_to_string()?
+          .into_utf8()?
+          .as_str()?
+          .to_string();
+        let path = std::path::Path::new(&s);
+        let code = if path.exists() {
+          fs::read_to_string(path).map_err(|e| napi::Error::from_reason(e.to_string()))?
+        } else {
+          s
+        };
+        self.bytecode = crate::utils::loader::parse_ltc(&code);
+      }
+      napi::ValueType::Object => {
+        let json_str = source
+          .coerce_to_string()?
+          .into_utf8()?
+          .as_str()?
+          .to_string();
+        self.bytecode = serde_json::from_str(&json_str)
+          .map_err(|e| napi::Error::from_reason(format!("Gagal parse object bytecode: {}", e)))?;
+      }
+      _ => return Err(napi::Error::from_reason("Tipe data load gak disupport")),
     }
     self.index_metadata();
     Ok(())
@@ -120,7 +117,7 @@ impl LightVM {
   #[napi]
   pub fn run(&mut self, options: napi::JsUnknown) -> Result<(), napi::Error> {
     self.require(Capability::Control)?;
-    let run_opts: Option<RunOptions> = match options.get_type()? {
+    let _run_opts: Option<RunOptions> = match options.get_type()? {
       napi::ValueType::Null | napi::ValueType::Undefined => None,
       _ => {
         let json_str = options
@@ -136,18 +133,9 @@ impl LightVM {
     }
     self.state = VmState::Running;
     self.emit(VmEvent::Tick, serde_json::json!({ "state": "start" }));
-    match execute(self.bytecode.clone(), run_opts) {
-      Ok(val) => {
-        self.last_value = val;
-        self.state = VmState::Halted;
-        self.emit(VmEvent::Halt, serde_json::Value::Null);
-        Ok(())
-      }
-      Err(e) => {
-        self.emit(VmEvent::Panic, serde_json::json!({ "error": e }));
-        Err(napi::Error::from_reason(e))
-      }
-    }
+    let bytecode_str = serde_json::to_string(&self.bytecode).unwrap();
+    run(bytecode_str);
+    Ok(())
   }
   #[napi]
   pub fn on(&mut self, event: VmEvent, callback: napi::JsFunction) -> Result<(), napi::Error> {
@@ -220,22 +208,14 @@ impl LightVM {
     let args: Vec<Value> = serde_json::from_str(&json_args)
       .map_err(|e| napi::Error::from_reason(format!("Invalid args: {}", e)))?;
     self.state = VmState::Running;
-    let options = RunOptions {
+    let _options = RunOptions {
       entry: Some(fn_meta.start),
       args,
       capture_return: true,
     };
-    match execute(self.bytecode.clone(), Some(options)) {
-      Ok(val) => {
-        self.state = VmState::Halted;
-        self.last_value = val.clone();
-        Ok(serde_json::to_string(&val).unwrap())
-      }
-      Err(e) => {
-        self.state = VmState::Halted;
-        Err(napi::Error::from_reason(e))
-      }
-    }
+    let bytecode_str = serde_json::to_string(&self.bytecode).unwrap();
+    run(bytecode_str.clone());
+    Ok(bytecode_str)
   }
   #[napi]
   pub fn get_outputs(&self) -> Result<Vec<String>, napi::Error> {
@@ -247,5 +227,39 @@ impl LightVM {
     self.require(Capability::Control)?;
     self._outputs.clear();
     Ok(())
+  }
+  #[napi]
+  pub fn optimize_bytecode(bytecode_raw: napi::JsUnknown) -> Result<String, napi::Error> {
+    let json_str = bytecode_raw
+      .coerce_to_string()?
+      .into_utf8()?
+      .as_str()?
+      .to_string();
+    let raw_list: Vec<serde_json::Value> = serde_json::from_str(&json_str)
+      .map_err(|e| napi::Error::from_reason(format!("Invalid JSON format: {}", e)))?;
+    let bytecode: Vec<Instructions> = raw_list
+      .iter()
+      .map(Instructions::from_json_array)
+      .collect();
+    let optimized = optimizer::optimize_bytecode::optimize_bytecode(bytecode);
+    serde_json::to_string(&optimized)
+      .map_err(|e| napi::Error::from_reason(format!("Gagal stringify: {}", e)))
+  }
+  #[napi]
+  pub fn parse_ltc(code: String) -> Result<String, napi::Error> {
+    let instructions = crate::utils::loader::parse_ltc(&code);
+    serde_json::to_string(&instructions)
+      .map_err(|e| napi::Error::from_reason(format!("Failed to stringify parsed LTC: {}", e)))
+  }
+  #[napi]
+  pub fn stringify_ltc(bytecode_raw: napi::JsUnknown) -> Result<String, napi::Error> {
+    let json_str = bytecode_raw
+      .coerce_to_string()?
+      .into_utf8()?
+      .as_str()?
+      .to_string();
+    let instructions: Vec<Instructions> = serde_json::from_str(&json_str)
+      .map_err(|e| napi::Error::from_reason(format!("Invalid bytecode for stringify: {}", e)))?;
+    Ok(crate::utils::loader::stringify_ltc(instructions))
   }
 }

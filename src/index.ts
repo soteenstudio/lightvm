@@ -16,21 +16,58 @@ import type { VMEvent, VMResult, Capability, Listener } from "../typings/index.d
 
 const native = loadNapi();
 
+// Sesuaikan urutan ini sama yang ada di Rust (capability.rs)
+const CapabilityMap = {
+  "Observe": 0,
+  "Control": 1,
+  "Debug": 2,
+  "Unsafe": 3,
+  // Kalau di JS pake lowercase, tinggal ganti key-nya jadi kecil semua
+  "observe": 0,
+  "control": 1,
+  "debug": 2,
+  "unsafe": 3
+};
+
+
 export class LightVM {
   private instance: any;
   private listeners = new Map<VMEvent, Listener[]>();
 
-  constructor(caps: Capability[] = ["Observe"]) {
-    // Panggil constructor Rust
-    this.instance = new native.LightVM(caps);
+  constructor(caps: Capability[] = ["observe"]) {
+    const numericCaps = caps.map(cap => {
+      const val = CapabilityMap[cap];
+      if (val === undefined) {
+        throw new Error(`Capability "${cap}" gak dikenal nih, Clay!`);
+      }
+      return val;
+    });
+    this.instance = new native.LightVM(numericCaps);
   }
 
   load(source: Instruction[] | string) {
-    // Kirim langsung ke Rust. Rust bakal handle mau itu path file atau JSON string.
-    const payload = typeof source === "string" ? source : JSON.stringify(source);
+    console.log("Instr: ", source);
+    let payload: any;
+    
+    if (typeof source === "string") {
+      try {
+        // Coba parse, kalau ini string JSON (hasil parseLTC), 
+        // kita ubah jadi object biar Rust masuk ke blok 'else' (serde_json::from_value)
+        payload = JSON.parse(source);
+      } catch {
+        // Kalau bukan JSON, berarti ini path file atau raw LTC code
+        payload = source;
+      }
+    } else {
+      payload = JSON.stringify(source);
+    }
+
+    // Kirim ke Rust. Kalau payload berupa Object/Array, Rust bakal pake from_value.
+    // Kalau payload berupa String (path), Rust bakal ngebaca filenya.
     this.instance.load(payload);
     return this;
   }
+
 
   run(options: any = {}) {
     // Delegasi ke Rust run()
@@ -110,15 +147,18 @@ export class LightVM {
     };
   }
 
-  /*tools() {
+  tools() {
     return {
-      optimizeBytecode,
+      optimizeBytecode: native.LightVM.optimizeBytecode,
       loader: {
-        stringifyLTC: loader.stringifyLTC,
-        parseLTC: loader.parseLTC
+        stringifyLTC: (json) => {
+          const input = typeof json === 'string' ? json : JSON.stringify(json);
+          return native.LightVM.stringifyLtc(input);
+        },
+        parseLTC: (code) => native.LightVM.parseLtc(code)
       }
     };
-  }*/
+  }
 }
 
 export { Instruction };

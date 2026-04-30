@@ -2,7 +2,3 @@ target_dir = "src"
 entry_file = "lib.rs"
 auto_update = false
 auto_upgrade = false
-[copyright]
-license = "apache"
-year = "2026"
-owner = "SoTeen Studio"
