@@ -1,8 +1,21 @@
+/*
+ * Copyright 2026 SoTeen Studio
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ */
+
 use crate::instructions::{
   comparison::{
     eq_func::eq_func, ge_func::ge_func, gt_func::gt_func, le_func::le_func, lt_func::lt_func,
   },
-  control_flow::{call_func::call_func, if_false_func::if_false_func, jump_func::jump_func},
+  control_flow::{
+    call_func::call_func, if_false_func::if_false_func, jump_func::jump_func,
+    return_func::return_func, stop_func::stop_func,
+  },
   io::{print::print_func, println::println_func},
   math::{
     add_func::add_func, div_func::div_func, mod_func::mod_func, mul_func::mul_func,
@@ -162,12 +175,7 @@ pub fn execute(bytecode: Vec<Instructions>, options: Option<RunOptions>) -> Resu
         continue;
       }
       Instructions::Return => {
-        if let Some(result) = stack.pop() {
-          last_return = result.clone();
-          stack.push(result);
-        }
-        if let Some(return_addr) = _call_stack.pop() {
-          ip = return_addr + 1;
+        if return_func(&mut stack, &mut _call_stack, &mut ip, &mut last_return) {
           continue;
         } else {
           break;
@@ -186,11 +194,7 @@ pub fn execute(bytecode: Vec<Instructions>, options: Option<RunOptions>) -> Resu
         continue;
       }
       Instructions::Stop => {
-        if stack.len() > 50 {
-          stack.truncate(50);
-        }
-        if let Some(return_addr) = _call_stack.pop() {
-          ip = return_addr + 1;
+        if stop_func(&mut stack, &mut _call_stack, &mut ip) {
           continue;
         } else {
           break;

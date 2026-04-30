@@ -1,3 +1,13 @@
+/*
+ * Copyright 2026 SoTeen Studio
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ */
+
 use crate::instructions::comparison::eq::{
   eq_f32in::eq_f32in, eq_f64in::eq_f64in, eq_i32in::eq_i32in, eq_i64in::eq_i64in,
 };
