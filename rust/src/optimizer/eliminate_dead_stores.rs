@@ -31,7 +31,7 @@ pub fn eliminate_dead_stores(bytecode: &[Instructions], usage: &Usage) -> Vec<In
           continue;
         }
       }
-      Instructions::Inc(arg) | Instructions::Dec(arg) => {
+      Instructions::Inc(arg, _) | Instructions::Dec(arg) => {
         if !usage.read.contains(arg) {
           continue;
         }

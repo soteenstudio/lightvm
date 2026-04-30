@@ -72,7 +72,6 @@ impl LightVM {
   }
   #[napi]
   pub fn load(&mut self, source: napi::JsUnknown) -> Result<(), napi::Error> {
-    println!("Load jalan!");
     match source.get_type()? {
       napi::ValueType::String => {
         let s: String = source
@@ -108,7 +107,6 @@ impl LightVM {
       _ => return Err(napi::Error::from_reason("Tipe data load gak disupport")),
     }
     self.index_metadata();
-    println!("Load berhenti!");
     Ok(())
   }
   fn index_metadata(&mut self) {
@@ -136,7 +134,6 @@ impl LightVM {
   }
   #[napi]
   pub fn run(&mut self, options: napi::JsUnknown) -> Result<(), napi::Error> {
-    println!("Run jalan!");
     self.require(Capability::Control)?;
     let _run_opts: Option<RunOptions> = match options.get_type()? {
       napi::ValueType::Null | napi::ValueType::Undefined => None,
@@ -156,7 +153,6 @@ impl LightVM {
     self.emit(VmEvent::Tick, serde_json::json!({ "state": "start" }));
     let bytecode_str = serde_json::to_string(&self.bytecode).unwrap();
     run(bytecode_str);
-    println!("Run berhenti!");
     Ok(())
   }
   #[napi]

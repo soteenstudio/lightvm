@@ -35,6 +35,12 @@ pub struct RunOptions {
   pub capture_return: bool,
 }
 impl Value {
+  pub fn is_number(&self) -> bool {
+    match self {
+      Value::Int32(_) | Value::Int64(_) | Value::Float32(_) | Value::Float64(_) => true,
+      _ => false,
+    }
+  }
   pub fn as_i32(&self) -> i32 {
     match self {
       Value::Int32(v) => *v,

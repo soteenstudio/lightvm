@@ -18,7 +18,11 @@ use crate::instructions::{
   },
   io::{print::print_func, println::println_func},
   math::{
-    add_func::add_func, div_func::div_func, mod_func::mod_func, mul_func::mul_func,
+    add_func::add_func,
+    div_func::div_func,
+    inc_dec::{dec_func, inc_func},
+    mod_func::mod_func,
+    mul_func::mul_func,
     sub_func::sub_func,
   },
   stack::{get_func::get_func, push_func::push_func, set_func::set_func, val_func::val_func},
@@ -88,14 +92,12 @@ pub fn execute(bytecode: Vec<Instructions>, options: Option<RunOptions>) -> Resu
         get_func(&mut stack, &vars, name.clone());
       }
       Instructions::Add(num_type) => {
-        println!("Add jalan");
         let b = stack.pop().ok_or("Stack underflow on ADD (b)")?;
         let a = stack.pop().ok_or("Stack underflow on ADD (a)")?;
         let result = add_func(a, b, num_type.clone());
         stack.push(result);
       }
       Instructions::Sub(num_type) => {
-        println!("Sub jalan");
         let b = stack.pop().ok_or("Stack underflow on SUB (b)")?;
         let a = stack.pop().ok_or("Stack underflow on SUB (a)")?;
         let result = sub_func(a, b, num_type.clone());
@@ -199,6 +201,20 @@ pub fn execute(bytecode: Vec<Instructions>, options: Option<RunOptions>) -> Resu
         } else {
           break;
         }
+      }
+      Instructions::Inc(var_name, num_type) => {
+        let count = *hit_counter.get(&ip).unwrap_or(&0);
+        let is_hot = count >= 1000;
+        inc_func(
+          &mut vars,
+          &mut stack,
+          var_name.clone(),
+          num_type.clone(),
+          is_hot,
+        )?;
+      }
+      Instructions::Dec(var_name) => {
+        dec_func(&mut vars, var_name.clone())?;
       }
       _ => {}
     }

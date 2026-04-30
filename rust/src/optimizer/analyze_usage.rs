@@ -18,7 +18,9 @@ pub fn analyze_usage(bytecode: &[Instructions]) -> Usage {
       Instructions::Get(var_name) => {
         read.insert(var_name.clone());
       }
-      Instructions::Set(var_name) | Instructions::Inc(var_name) | Instructions::Dec(var_name) => {
+      Instructions::Set(var_name)
+      | Instructions::Inc(var_name, _)
+      | Instructions::Dec(var_name) => {
         written.insert(var_name.clone());
       }
       Instructions::Print | Instructions::Println => {

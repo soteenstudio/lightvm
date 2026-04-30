@@ -36,7 +36,7 @@ pub enum Instructions {
   Println,
   IfFalse(usize),
   Jump(usize),
-  Inc(String),
+  Inc(String, String),
   Dec(String),
   Call(String, u32),
   Func(String, u32, usize, usize, Vec<String>),
@@ -153,6 +153,7 @@ impl Instructions {
       }
     };
     let op = arr[0].as_str().expect("Opcode must be a string");
+    println!("DEBUG: Reading Opcode -> '{}'", op);
     match op {
       "push" => {
         let val = &arr[1];
@@ -193,6 +194,25 @@ impl Instructions {
       "jump" => {
         let target = arr[1].as_u64().expect("Target jump harus angka") as usize;
         Instructions::Jump(target)
+      }
+      "inc" => {
+        let var_name = arr[1]
+          .as_str()
+          .expect("Inc var name must be string")
+          .to_string();
+        let num_type = arr
+          .get(2)
+          .and_then(|v| v.as_str())
+          .unwrap_or("int")
+          .to_string();
+        Instructions::Inc(var_name, num_type)
+      }
+      "dec" => {
+        let var_name = arr[1]
+          .as_str()
+          .expect("Dec var name must be string")
+          .to_string();
+        Instructions::Dec(var_name)
       }
       "func" => {
         let name = arr[1].as_str().unwrap().to_string();

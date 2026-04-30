@@ -12,6 +12,7 @@ pub mod add;
 pub mod add_func;
 pub mod div;
 pub mod div_func;
+pub mod inc_dec;
 #[path = "mod/mod.rs"]
 pub mod r#mod;
 pub mod mod_func;
