@@ -146,20 +146,6 @@ export class LightVM {
       halted: true
     };
   }
-
-  /*tools() {
-    return {
-      optimizeBytecode: native.LightVM.optimizeBytecode,
-      loader: {
-        stringifyLTC: (json) => {
-          const input = typeof json === 'string' ? json : JSON.stringify(json);
-          return native.LightVM.stringifyLtc(input);
-        },
-        parseLTC: (code) => native.LightVM.parseLtc(code),
-        parseLTCArray: (code) => native.LightVM.parseLtcArray(code)
-      }
-    };
-  }*/
 }
 
 export { Instruction };
