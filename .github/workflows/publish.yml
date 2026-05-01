@@ -27,10 +27,10 @@ jobs:
           name: binary-${{ matrix.os }}
           # Pake pattern ini biar dapet filenya mau apapun extension-nya
           path: |
-            target/release/*.node
-            target/release/*.dll
-            target/release/*.so
-            target/release/*.dylib
+            rust/target/release/*.node
+            rust/target/release/*.dll
+            rust/target/release/*.so
+            rust/target/release/*.dylib
 
   publish:
     needs: build
