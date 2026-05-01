@@ -24,7 +24,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: binary-${{ matrix.os }}
-          path: target/release/*.node # Sesuaikan extension buat Windows (.dll/.node)
+          # Pake pattern ini biar dapet filenya mau apapun extension-nya
+          path: |
+            target/release/*.node
+            target/release/*.dll
+            target/release/*.so
+            target/release/*.dylib
+
   publish:
     needs: build
     runs-on: ubuntu-latest
