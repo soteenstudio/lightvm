@@ -87,7 +87,7 @@ jobs:
           EOF
 
             cd "publish/$PLATFORM"
-            npm publish --access public
+            npm publish --access public --tag latest
             cd ../..
           done
         env:
@@ -97,6 +97,6 @@ jobs:
         run: |
           # Update package.json utama buat pake optionalDependencies ke sub-package tadi
           # Biar pas user install 'lightvm', dia otomatis narik yang sesuai OS
-          npm publish --access public
+          npm publish --access public --tag latest
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
