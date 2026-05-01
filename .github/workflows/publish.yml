@@ -111,7 +111,7 @@ jobs:
           EOF
 
             cd "publish/$PLATFORM"
-            npm publish || echo "Skip existing version"
+            npm publish --tag latest || echo "Skip existing version"
             cd ../..
           done
 
@@ -119,6 +119,6 @@ jobs:
           # Kita pake jq buat inject versi tag ke package.json utama sebelum publish
           sudo apt-get install jq
           jq ".version = \"$VERSION\"" package.json > temp.json && mv temp.json package.json
-          npm publish --access public
+          npm publish --access public --tag latest
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
