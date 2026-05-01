@@ -97,6 +97,9 @@ jobs:
             # Cari biner di folder artifact (path rekursif karena upload-artifact v4 rada beda struktur foldernya)
             find "binaries/$ARTIFACT" -type f \( -name "*.node" -o -name "*.dll" -o -name "*.so" -o -name "*.dylib" \) -exec cp {} "publish/$PLATFORM/$BIN_NAME" \;
             
+            cp README.md "publish/$PLATFORM" || echo README.md "Not found README.md"
+            cp LICENSE "publish/$PLATFORM" || echo LICENSE "Not found LICENSE"
+            
             # Generate package.json sub-package dengan versi dari TAG
             cat <<EOF > "publish/$PLATFORM/package.json"
           {
