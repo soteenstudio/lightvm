@@ -9,26 +9,18 @@
  */
 
 use crate::types::value::Value;
+use std::io::{self, BufWriter, Write};
+use std::sync::OnceLock;
+static STDOUT_BUFFER: OnceLock<std::sync::Mutex<BufWriter<io::Stdout>>> = OnceLock::new();
+#[inline]
 pub fn format_output(val: &Value, newline: bool) {
-  let out = match val {
-    Value::Int32(v) => v.to_string(),
-    Value::Int64(v) => v.to_string(),
-    Value::Float32(v) => v.to_string(),
-    Value::Float64(v) => v.to_string(),
-    Value::Bool(v) => v.to_string(),
-    Value::String(s) => {
-      let cleaned = s.replace("::string", "");
-      cleaned.trim_matches(|c| c == '\'' || c == '\"').to_string()
-    }
-    Value::Null => "null".to_string(),
-    Value::Undefined => "undefined".to_string(),
-    Value::Marker(m) => format!("<Marker: {}>", m),
-  };
+  let mut writer = STDOUT_BUFFER
+    .get_or_init(|| std::sync::Mutex::new(BufWriter::with_capacity(16 * 1024, io::stdout())))
+    .lock()
+    .unwrap();
+  let _ = write!(writer, "{}", val);
   if newline {
-    println!("{}", out);
-  } else {
-    use std::io::{self, Write};
-    print!("{}", out);
-    let _ = io::stdout().flush();
+    let _ = writeln!(writer);
+    let _ = writer.flush();
   }
 }

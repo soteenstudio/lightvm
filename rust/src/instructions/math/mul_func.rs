@@ -12,7 +12,7 @@ use crate::instructions::math::mul::{
   mul_f32in::mul_f32in, mul_f64in::mul_f64in, mul_i32in::mul_i32in, mul_i64in::mul_i64in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
-#[inline(always)]
+#[inline]
 pub fn mul_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
     PrimitiveTypes::Int => Value::Int32(mul_i32in(a.as_i32(), b.as_i32())),

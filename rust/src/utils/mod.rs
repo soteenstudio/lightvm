@@ -9,6 +9,7 @@
  */
 
 pub mod compute_hot_threshold;
+pub mod filtered_writer;
 pub mod format_output;
 pub mod loader;
 pub mod map_primitive;

@@ -10,24 +10,24 @@
 
 use crate::types::{instructions::Instructions, usage::Usage};
 use std::collections::HashSet;
-pub fn analyze_usage(bytecode: &[Instructions]) -> Usage {
+pub fn analyze_usage<'a>(bytecode: &'a [Instructions]) -> Usage<'a> {
   let mut read = HashSet::new();
   let mut written = HashSet::new();
   for inst in bytecode {
     match inst {
       Instructions::Get(var_name) => {
-        read.insert(var_name.clone());
+        read.insert(var_name.as_str());
       }
       Instructions::Set(var_name)
       | Instructions::Inc(var_name, _)
       | Instructions::Dec(var_name, _) => {
-        written.insert(var_name.clone());
+        written.insert(var_name.as_str());
       }
       Instructions::Print | Instructions::Println => {
-        read.insert("*IO*".to_string());
+        read.insert("*IO*");
       }
       Instructions::Return => {
-        read.insert("*RETURN*".to_string());
+        read.insert("*RETURN*");
       }
       _ => {}
     }

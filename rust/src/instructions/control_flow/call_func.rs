@@ -9,7 +9,7 @@
  */
 
 use crate::types::value::{FuncMetadata, Value};
-#[inline(always)]
+#[inline]
 pub fn call_func(
   name: &String,
   argc: u32,

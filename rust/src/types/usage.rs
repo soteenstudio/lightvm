@@ -11,18 +11,20 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub struct Usage {
-  pub read: HashSet<String>,
-  pub written: HashSet<String>,
+pub struct Usage<'a> {
+  #[serde(borrow)]
+  pub read: HashSet<&'a str>,
+  #[serde(borrow)]
+  pub written: HashSet<&'a str>,
 }
-impl Usage {
+impl<'a> Usage<'a> {
   pub fn new() -> Self {
     Self::default()
   }
-  pub fn add_read(&mut self, variable: &str) {
-    self.read.insert(variable.to_string());
+  pub fn add_read(&mut self, variable: &'a str) {
+    self.read.insert(variable);
   }
-  pub fn add_written(&mut self, variable: &str) {
-    self.written.insert(variable.to_string());
+  pub fn add_written(&mut self, variable: &'a str) {
+    self.written.insert(variable);
   }
 }

@@ -64,6 +64,7 @@ pub enum Instructions {
   Import(String, String),
   Export(String),
   Instantiate(String, u32),
+  Nop,
 }
 impl Instructions {
   pub fn from_parts(op: String, args: Vec<serde_json::Value>) -> Self {
@@ -250,6 +251,7 @@ impl Instructions {
         let argc = arr[2].as_u64().expect("Argc must be a number") as u32;
         Instructions::Call(name, argc)
       }
+      "concat" => Instructions::Concat,
       "stop" => Instructions::Stop,
       _ => panic!("Opcode '{}' belum di-map atau sampah!", op),
     }

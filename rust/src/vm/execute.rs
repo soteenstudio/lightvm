@@ -25,7 +25,10 @@ use crate::instructions::{
     mul_func::mul_func,
     sub_func::sub_func,
   },
-  stack::{get_func::get_func, push_func::push_func, set_func::set_func, val_func::val_func},
+  stack::{
+    concat_func::concat_func, get_func::get_func, push_func::push_func, set_func::set_func,
+    val_func::val_func,
+  },
 };
 use crate::types::{
   instructions::Instructions,
@@ -94,6 +97,12 @@ pub fn execute(
       }
       Instructions::GetIdx(idx) => {
         get_func(&mut stack, &mut vars, *idx);
+      }
+      Instructions::Concat => {
+        let b = stack.pop().ok_or("Stack underflow on CONCAT (b)")?;
+        let a = stack.pop().ok_or("Stack underflow on CONCAT (a)")?;
+        let result = concat_func(&a, &b);
+        stack.push(result);
       }
       Instructions::Add(num_type) => {
         let b = stack.pop().ok_or("Stack underflow on ADD (b)")?;

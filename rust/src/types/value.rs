@@ -115,3 +115,19 @@ impl Value {
     }
   }
 }
+use std::fmt;
+impl fmt::Display for Value {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      Value::Int32(v) => write!(f, "{}", v),
+      Value::Int64(v) => write!(f, "{}", v),
+      Value::Float32(v) => write!(f, "{}", v),
+      Value::Float64(v) => write!(f, "{}", v),
+      Value::Bool(v) => write!(f, "{}", v),
+      Value::String(v) => write!(f, "{}", v),
+      Value::Null => write!(f, "null"),
+      Value::Undefined => write!(f, "undefined"),
+      Value::Marker(v) => write!(f, "<Marker: {}>", v),
+    }
+  }
+}

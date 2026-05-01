@@ -16,7 +16,7 @@ pub fn eliminate_dead_stores(bytecode: &[Instructions], usage: &Usage) -> Vec<In
   for inst in bytecode.iter().rev() {
     match inst {
       Instructions::Set(arg) => {
-        if !usage.read.contains(arg) {
+        if !usage.read.contains(arg.as_str()) {
           continue;
         }
         needed_by_next += 1;
@@ -32,7 +32,7 @@ pub fn eliminate_dead_stores(bytecode: &[Instructions], usage: &Usage) -> Vec<In
         }
       }
       Instructions::Inc(arg, _) | Instructions::Dec(arg, _) => {
-        if !usage.read.contains(arg) {
+        if !usage.read.contains(arg.as_str()) {
           continue;
         }
         result.push(inst.clone());

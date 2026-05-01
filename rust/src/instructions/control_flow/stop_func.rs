@@ -9,7 +9,7 @@
  */
 
 use crate::types::value::Value;
-#[inline(always)]
+#[inline]
 pub fn stop_func(stack: &mut Vec<Value>, call_stack: &mut Vec<usize>, ip: &mut usize) -> bool {
   if stack.len() > 50 {
     stack.truncate(50);

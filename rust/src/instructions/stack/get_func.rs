@@ -9,7 +9,7 @@
  */
 
 use crate::types::value::Value;
-#[inline(always)]
+#[inline]
 pub fn get_func(stack: &mut Vec<Value>, vars: &mut Vec<Value>, index: usize) {
   let val = vars.get(index).cloned().unwrap_or(Value::Undefined);
   stack.push(val);
