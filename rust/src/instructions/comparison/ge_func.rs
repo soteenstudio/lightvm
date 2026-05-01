@@ -12,7 +12,7 @@ use crate::instructions::comparison::ge::{
   ge_f32in::ge_f32in, ge_f64in::ge_f64in, ge_i32in::ge_i32in, ge_i64in::ge_i64in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
-#[inline]
+#[inline(always)]
 pub fn ge_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
     PrimitiveTypes::Int => Value::Bool(ge_i32in(a.as_i32(), b.as_i32())),

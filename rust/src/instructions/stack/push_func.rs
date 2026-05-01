@@ -9,6 +9,7 @@
  */
 
 use crate::types::value::Value;
+#[inline(always)]
 pub fn push_func(stack: &mut Vec<Value>, val: Value) {
   stack.push(val);
 }

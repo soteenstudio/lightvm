@@ -8,7 +8,6 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-#[inline]
 pub fn le_i64in(a: i64, b: i64) -> bool {
   a <= b
 }

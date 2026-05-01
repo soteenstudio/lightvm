@@ -9,6 +9,7 @@
  */
 
 use crate::types::value::Value;
+#[inline(always)]
 pub fn return_func(
   stack: &mut Vec<Value>,
   call_stack: &mut Vec<usize>,

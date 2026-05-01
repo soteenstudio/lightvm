@@ -9,6 +9,7 @@
  */
 
 use crate::types::value::Value;
+#[inline(always)]
 pub fn jump_func(ip: &mut usize, target_ip: usize, stack: &mut Vec<Value>) {
   if stack.len() > 50 {
     stack.truncate(50);

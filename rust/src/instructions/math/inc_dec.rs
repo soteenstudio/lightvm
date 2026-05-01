@@ -15,6 +15,7 @@ use crate::instructions::math::sub::{
   sub_f32in::sub_f32in, sub_f64in::sub_f64in, sub_i32in::sub_i32in, sub_i64in::sub_i64in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
+#[inline(always)]
 pub fn inc_func(
   vars: &mut Vec<Value>,
   stack: &mut Vec<Value>,
@@ -49,6 +50,7 @@ pub fn inc_func(
   stack.push(result);
   Ok(())
 }
+#[inline(always)]
 pub fn dec_func(
   vars: &mut Vec<Value>,
   index: usize,

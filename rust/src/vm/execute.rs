@@ -25,7 +25,7 @@ use crate::instructions::{
     mul_func::mul_func,
     sub_func::sub_func,
   },
-  stack::{push_func::push_func, val_func::val_func},
+  stack::{get_func::get_func, push_func::push_func, set_func::set_func, val_func::val_func},
 };
 use crate::types::{
   instructions::Instructions,
@@ -90,12 +90,10 @@ pub fn execute(
         val_func(&mut vars, *idx);
       }
       Instructions::SetIdx(idx) => {
-        if let Some(val) = stack.pop() {
-          vars[*idx] = val;
-        }
+        set_func(&mut stack, &mut vars, *idx);
       }
       Instructions::GetIdx(idx) => {
-        stack.push(vars[*idx].clone());
+        get_func(&mut stack, &mut vars, *idx);
       }
       Instructions::Add(num_type) => {
         let b = stack.pop().ok_or("Stack underflow on ADD (b)")?;

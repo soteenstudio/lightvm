@@ -9,6 +9,7 @@
  */
 
 use crate::types::value::Value;
+#[inline(always)]
 pub fn set_func(stack: &mut Vec<Value>, vars: &mut Vec<Value>, index: usize) {
   if let Some(val) = stack.pop() {
     vars.insert(index, val);

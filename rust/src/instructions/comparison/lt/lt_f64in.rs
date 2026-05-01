@@ -8,7 +8,6 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-#[inline]
 pub fn lt_f64in(a: f64, b: f64) -> bool {
   a < b
 }

@@ -9,6 +9,7 @@
  */
 
 use crate::types::value::Value;
+#[inline(always)]
 pub fn val_func(vars: &mut Vec<Value>, index: usize) {
   if index >= vars.len() {
     vars.resize(index + 1, Value::Undefined);
