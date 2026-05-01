@@ -108,7 +108,7 @@ jobs:
             "os": ["$OS_VAL"],
             "cpu": ["$CPU"],
             "main": "$BIN_NAME",
-            "files": ["$BIN_NAME"],
+            "files": ["$BIN_NAME", "README.md", "LICENSE"],
             "publishConfig": { "access": "public" }
           }
           EOF
