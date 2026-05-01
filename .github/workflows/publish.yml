@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -48,16 +48,52 @@ jobs:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
 
-      # Di sini lo pindahin file .node ke folder yang bener 
-      # supaya package.json bisa nemuin mereka.
-      - name: Prepare Package
+      - name: Generate Scoped Packages
         run: |
-          mkdir -p dist
-          cp binaries/binary-ubuntu-latest/*.node ./dist/index.linux.node
-          cp binaries/binary-windows-latest/*.node ./dist/index.win.node
-          cp binaries/binary-macos-latest/*.node ./dist/index.darwin.node
+          # Ambil versi asli dari package.json utama
+          VERSION=$(node -p "require('./package.json').version")
+          
+          # List platform yang mau dibuat
+          # Format: folder_artifact | platform_name | binary_name
+          PLATFORMS=(
+            "binary-ubuntu-latest|linux-x64|index.linux.node"
+            "binary-windows-latest|win32-x64|index.win.node"
+            "binary-macos-latest|darwin-x64|index.darwin.node"
+          )
 
-      - name: Publish to NPM
-        run: npm publish
+          for item in "${PLATFORMS[@]}"; do
+            IFS="|" read -r ARTIFACT PLATFORM BIN_NAME <<< "$item"
+            
+            PKG_NAME="@lightvm/core-$PLATFORM"
+            mkdir -p "publish/$PLATFORM"
+            
+            # Copy binary ke folder publish
+            cp "binaries/$ARTIFACT/"*.node "publish/$PLATFORM/$BIN_NAME"
+            
+            # Bikin package.json buat sub-package secara dinamis
+            cat <<EOF > "publish/$PLATFORM/package.json"
+          {
+            "name": "$PKG_NAME",
+            "version": "$VERSION",
+            "os": ["${PLATFORM%-*}"],
+            "cpu": ["x64"],
+            "main": "$BIN_NAME",
+            "files": ["$BIN_NAME"]
+          }
+          EOF
+
+            # Publish sub-package
+            cd "publish/$PLATFORM"
+            npm publish --access public
+            cd ../..
+          done
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Finalize Main Package
+        run: |
+          # Update package.json utama buat pake optionalDependencies ke sub-package tadi
+          # Biar pas user install 'lightvm', dia otomatis narik yang sesuai OS
+          npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
