@@ -1,0 +1,57 @@
+name: Build and Publish N-API
+on:
+  push:
+    tags:
+      - 'v*' # Jalan cuma pas lo bikin tag versi, misal v1.0.0
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Release
+        run: cargo build --release
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.os }}
+          path: target/release/*.node # Sesuaikan extension buat Windows (.dll/.node)
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./binaries
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      # Di sini lo pindahin file .node ke folder yang bener 
+      # supaya package.json bisa nemuin mereka.
+      - name: Prepare Package
+        run: |
+          mkdir -p dist
+          cp binaries/binary-ubuntu-latest/*.node ./dist/index.linux.node
+          cp binaries/binary-windows-latest/*.node ./dist/index.win.node
+          cp binaries/binary-macos-latest/*.node ./dist/index.darwin.node
+
+      - name: Publish to NPM
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -13,8 +13,8 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "dist",
-    "assembly/dist/",
+    "dist/index.min.cjs",
+    "dist/index.min.mjs",
     "rust/target/release/liblightvm_rust.so",
     "typings"
   ],
