@@ -80,6 +80,24 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "Publishing version: $VERSION"
 
+          # --- LOGIC AUTO TAG ---
+          # Default-nya kita set ke latest
+          TAG="latest"
+
+          # Cek apakah ada embel-embel prerelease
+          # Regex ini nyari kata -proto, -alpha, atau -beta
+          if [[ "$VERSION" =~ -(proto|alpha|beta) ]]; then
+            TAG="next"
+          fi
+
+          # Kalau ada kata -release, kita paksa balik ke latest (opsional)
+          if [[ "$VERSION" == *"-release"* ]]; then
+            TAG="latest"
+          fi
+
+          echo "Detected Tag: $TAG"
+          # ----------------------
+
           PLATFORMS=(
             "binary-linux-x64|linux-x64|index.linux.node|x64"
             "binary-win32-x64|win32-x64|index.win.node|x64"
@@ -94,13 +112,14 @@ jobs:
             
             mkdir -p "publish/$PLATFORM"
             
-            # Cari biner di folder artifact (path rekursif karena upload-artifact v4 rada beda struktur foldernya)
+            # Cari biner
             find "binaries/$ARTIFACT" -type f \( -name "*.node" -o -name "*.dll" -o -name "*.so" -o -name "*.dylib" \) -exec cp {} "publish/$PLATFORM/$BIN_NAME" \;
             
-            cp README.md "publish/$PLATFORM" || echo README.md "Not found README.md"
-            cp LICENSE "publish/$PLATFORM" || echo LICENSE "Not found LICENSE"
+            # Paksa copy README & LICENSE (pake -f biar galak)
+            cp -f README.md "publish/$PLATFORM/" || echo "Skip README"
+            cp -f LICENSE "publish/$PLATFORM/" || echo "Skip LICENSE"
             
-            # Generate package.json sub-package dengan versi dari TAG
+            # Generate package.json sub-package
             cat <<EOF > "publish/$PLATFORM/package.json"
           {
             "name": "$PKG_NAME",
@@ -109,19 +128,21 @@ jobs:
             "cpu": ["$CPU"],
             "main": "$BIN_NAME",
             "files": ["$BIN_NAME", "README.md", "LICENSE"],
-            "publishConfig": { "access": "public" }
+            "publishConfig": { "access": "public" },
+            "license": "Apache-2.0"
           }
-          EOF
 
             cd "publish/$PLATFORM"
-            npm publish --tag latest || echo "Skip existing version"
+            # Pake variabel $TAG hasil deteksi otomatis
+            npm publish --tag $TAG --access public || echo "Skip existing version"
             cd ../..
           done
 
           # Update & Publish main package
-          # Kita pake jq buat inject versi tag ke package.json utama sebelum publish
-          sudo apt-get install jq
+          sudo apt-get install -y jq
           jq ".version = \"$VERSION\"" package.json > temp.json && mv temp.json package.json
-          npm publish --access public --tag latest
+          
+          # Publish package utama pake $TAG yang sama
+          npm publish --access public --tag $TAG
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
