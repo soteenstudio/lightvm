@@ -1,6 +1,6 @@
 {
   "name": "lightvm",
-  "version": "0.1.0-notable",
+  "version": "0.1.0-proto.0",
   "description": "m",
   "type": "module",
   "typings": "./typings/index.d.ts",
