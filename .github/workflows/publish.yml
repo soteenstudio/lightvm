@@ -131,6 +131,7 @@ jobs:
             "publishConfig": { "access": "public" },
             "license": "Apache-2.0"
           }
+          EOF
 
             cd "publish/$PLATFORM"
             # Pake variabel $TAG hasil deteksi otomatis
