@@ -74,6 +74,11 @@ jobs:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Build JavaScript Interface
+        run: |
+          npm install
+          npm run build
+
       - name: Publish to NPM
         run: |
           # AMBIL VERSI DARI TAG (v1.0.0 -> 1.0.0)
