@@ -11,6 +11,7 @@
 use super::eq_func::eq_func;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::value::Value;
+#[inline]
 pub fn neq_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   let is_equal = eq_func(a, b, num_type);
   if let Value::Bool(val) = is_equal {

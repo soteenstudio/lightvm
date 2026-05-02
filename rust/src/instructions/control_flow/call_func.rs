@@ -9,16 +9,17 @@
  */
 
 use crate::types::value::{FuncMetadata, Value};
+use std::borrow::Cow;
 #[inline]
 pub fn call_func(
-  name: &String,
+  name: &str,
   argc: u32,
   ip: &mut usize,
   stack: &mut Vec<Value>,
   call_stack: &mut Vec<usize>,
   vars: &mut Vec<Value>,
-  functions: &std::collections::HashMap<String, FuncMetadata>,
-) -> Result<(), String> {
+  functions: &std::collections::HashMap<Cow<'static, str>, FuncMetadata>,
+) -> Result<(), Cow<'static, str>> {
   let fn_meta = functions
     .get(name)
     .ok_or_else(|| format!("Function {} not found", name))?;

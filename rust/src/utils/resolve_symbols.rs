@@ -9,9 +9,10 @@
  */
 
 use crate::types::instructions::Instructions;
+use std::borrow::Cow;
 use std::collections::HashMap;
 pub fn resolve_symbols(bytecode: &mut Vec<Instructions>) -> usize {
-  let mut symbol_table: HashMap<String, usize> = HashMap::new();
+  let mut symbol_table: HashMap<Cow<'static, str>, usize> = HashMap::new();
   let mut next_idx = 0;
   for instr in bytecode.iter_mut() {
     match instr {

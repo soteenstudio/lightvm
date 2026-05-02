@@ -23,6 +23,7 @@ use crate::types::{
 use crate::vm::run::run;
 use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode};
 use napi_derive::napi;
+use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
 use std::fs;
 #[napi(js_name = "LightVM")]
@@ -33,8 +34,8 @@ pub struct LightVM {
   state: VmState,
   _outputs: Vec<String>,
   last_value: Value,
-  functions: HashMap<String, FuncMetadata>,
-  exported: HashSet<String>,
+  functions: HashMap<Cow<'static, str>, FuncMetadata>,
+  exported: HashSet<Cow<'static, str>>,
   _imports: HashMap<String, Value>,
 }
 #[napi]
@@ -208,7 +209,7 @@ impl LightVM {
     args_raw: napi::JsUnknown,
   ) -> Result<String, napi::Error> {
     self.require(Capability::Control)?;
-    if !self.exported.contains(&name) {
+    if !self.exported.contains(name.as_str()) {
       return Err(napi::Error::from_reason(format!(
         "Function '{}' is not exported",
         name
@@ -216,7 +217,7 @@ impl LightVM {
     }
     let fn_meta = self
       .functions
-      .get(&name)
+      .get(name.as_str())
       .ok_or_else(|| napi::Error::from_reason(format!("Function '{}' not found", name)))?;
     let json_args = args_raw
       .coerce_to_string()?

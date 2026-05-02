@@ -12,12 +12,17 @@ use crate::types::{
   instructions::Instructions,
   value::{FuncMetadata, RunOptions},
 };
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::collections::HashSet;
 pub fn prepare_vm(
   bytecode: &[Instructions],
   options: &Option<RunOptions>,
-) -> (HashMap<String, FuncMetadata>, HashSet<String>, usize) {
+) -> (
+  HashMap<Cow<'static, str>, FuncMetadata>,
+  HashSet<Cow<'static, str>>,
+  usize,
+) {
   let mut functions = HashMap::new();
   let mut exported = HashSet::new();
   for instr in bytecode {
@@ -26,7 +31,7 @@ pub fn prepare_vm(
         name.clone(),
         FuncMetadata {
           params_count: *params,
-          param_names: names.clone(),
+          param_names: names.iter().map(|n| n.to_string().into()).collect(),
           start: *start,
           end: *end,
         },

@@ -12,15 +12,16 @@ use crate::types::{primitive_types::PrimitiveTypes, value::Value};
 use crate::utils::map_primitive::map_primitive;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
+use std::borrow::Cow;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Instructions {
   Push(Value),
-  Val(String),
+  Val(Cow<'static, str>),
   ValIdx(usize),
-  Set(String),
+  Set(Cow<'static, str>),
   SetIdx(usize),
-  Get(String),
+  Get(Cow<'static, str>),
   GetIdx(usize),
   Add(PrimitiveTypes),
   Sub(PrimitiveTypes),
@@ -39,16 +40,16 @@ pub enum Instructions {
   Println,
   IfFalse(usize),
   Jump(usize),
-  Inc(String, PrimitiveTypes),
+  Inc(Cow<'static, str>, PrimitiveTypes),
   IncIdx(usize, PrimitiveTypes),
-  Dec(String, PrimitiveTypes),
+  Dec(Cow<'static, str>, PrimitiveTypes),
   DecIdx(usize, PrimitiveTypes),
-  Call(String, u32),
-  Func(String, u32, usize, usize, Vec<String>),
+  Call(Cow<'static, str>, u32),
+  Func(Cow<'static, str>, u32, usize, usize, Vec<Cow<'static, str>>),
   Stop,
   Return,
   Break,
-  Access(String),
+  Access(Cow<'static, str>),
   AccessIndex,
   ToString,
   ToNumber,
@@ -60,10 +61,10 @@ pub enum Instructions {
   Length,
   Concat,
   Dup,
-  SetProp(String),
-  Import(String, String),
-  Export(String),
-  Instantiate(String, u32),
+  SetProp(Cow<'static, str>),
+  Import(Cow<'static, str>, Cow<'static, str>),
+  Export(Cow<'static, str>),
+  Instantiate(Cow<'static, str>, u32),
   Nop,
 }
 impl Instructions {
@@ -86,7 +87,9 @@ impl Instructions {
         } else if val.is_boolean() {
           Value::Bool(val.as_bool().unwrap())
         } else if val.is_string() {
-          Value::String(val.as_str().unwrap().to_string())
+          let s = val.as_str().unwrap();
+          let leaked = Box::leak(s.to_owned().into_boxed_str());
+          Value::String(Cow::Borrowed(leaked))
         } else {
           Value::Null
         };
@@ -99,7 +102,7 @@ impl Instructions {
   pub fn to_parts(&self) -> Vec<String> {
     let json = serde_json::to_value(self).unwrap_or(serde_json::Value::Null);
     if json.is_string() {
-      return vec![json.as_str().unwrap().to_string()];
+      return vec![json.as_str().unwrap().into()];
     } else if let Some(obj) = json.as_object() {
       let (key, val) = obj.iter().next().unwrap();
       let val_str = if key == "push" {
@@ -109,20 +112,20 @@ impl Instructions {
         } else if val.is_object() {
           let inner_obj = val.as_object().unwrap();
           let (_type_key, actual_val) = inner_obj.iter().next().unwrap();
-          actual_val.to_string()
+          actual_val.as_str().unwrap_or("").to_string()
         } else {
-          val.to_string()
+          val.as_str().unwrap_or("").to_string()
         }
       } else {
         if let Some(s) = val.as_str() {
-          s.to_string()
+          s.into()
         } else {
-          val.to_string()
+          val.as_str().unwrap_or("").to_string()
         }
       };
       return vec![key.clone(), val_str];
     }
-    vec!["Unknown".to_string()]
+    vec!["Unknown".into()]
   }
   pub fn from_json_array(item: &JsonValue) -> Self {
     if item.is_null() {
@@ -165,11 +168,15 @@ impl Instructions {
         let value_internal = if val.is_i64() {
           Value::Int64(val.as_i64().unwrap())
         } else if val.is_f64() {
-          Value::Float64(val.as_f64().unwrap())
+          let s = val.as_str().unwrap();
+          let leaked = Box::leak(s.to_owned().into_boxed_str());
+          Value::String(Cow::Borrowed(leaked))
         } else if val.is_boolean() {
           Value::Bool(val.as_bool().unwrap())
         } else if val.is_string() {
-          Value::String(val.as_str().unwrap().to_string())
+          let s = val.as_str().expect("Push value must be a string");
+          let leaked = Box::leak(s.to_owned().into_boxed_str());
+          Value::String(Cow::Borrowed(leaked))
         } else if val.is_null() {
           Value::Null
         } else {
@@ -190,9 +197,21 @@ impl Instructions {
       "neq" => Instructions::Neq(map_primitive(arr.get(1))),
       "and" => Instructions::And,
       "or" => Instructions::Or,
-      "set" => Instructions::Set(arr[1].as_str().unwrap().to_string()),
-      "get" => Instructions::Get(arr[1].as_str().unwrap().to_string()),
-      "val" => Instructions::Val(arr[1].as_str().unwrap().to_string()),
+      "set" => {
+        let s = arr[1].as_str().expect("Need string");
+        let leaked: &'static str = Box::leak(s.to_owned().into_boxed_str());
+        Instructions::Set(Cow::Borrowed(leaked))
+      }
+      "get" => {
+        let s = arr[1].as_str().expect("Need string");
+        let leaked: &'static str = Box::leak(s.to_owned().into_boxed_str());
+        Instructions::Get(Cow::Borrowed(leaked))
+      }
+      "val" => {
+        let s = arr[1].as_str().expect("Need string");
+        let leaked: &'static str = Box::leak(s.to_owned().into_boxed_str());
+        Instructions::Val(Cow::Borrowed(leaked))
+      }
       "print" => Instructions::Print,
       "println" => Instructions::Println,
       "if_false" => {
@@ -204,10 +223,8 @@ impl Instructions {
         Instructions::Jump(target)
       }
       "inc" => {
-        let var_name = arr[1]
-          .as_str()
-          .expect("Inc var name must be string")
-          .to_string();
+        let s = arr[1].as_str().expect("Expected string");
+        let leaked = Box::leak(s.to_owned().into_boxed_str());
         let num_type_str = arr.get(2).and_then(|v| v.as_str()).unwrap_or("int");
         let num_type = match num_type_str {
           "int" => PrimitiveTypes::Int,
@@ -216,13 +233,11 @@ impl Instructions {
           "dbl" => PrimitiveTypes::Dbl,
           _ => PrimitiveTypes::Dbl,
         };
-        Instructions::Inc(var_name, num_type)
+        Instructions::Inc(Cow::Borrowed(leaked), num_type)
       }
       "dec" => {
-        let var_name = arr[1]
-          .as_str()
-          .expect("Dec var name must be string")
-          .to_string();
+        let s = arr[1].as_str().expect("Expected string");
+        let leaked = Box::leak(s.to_owned().into_boxed_str());
         let num_type_str = arr.get(2).and_then(|v| v.as_str()).unwrap_or("int");
         let num_type = match num_type_str {
           "int" => PrimitiveTypes::Int,
@@ -231,28 +246,37 @@ impl Instructions {
           "dbl" => PrimitiveTypes::Dbl,
           _ => PrimitiveTypes::Int,
         };
-        Instructions::Dec(var_name, num_type)
+        Instructions::Inc(Cow::Borrowed(leaked), num_type)
       }
       "func" => {
-        let name = arr[1].as_str().unwrap().to_string();
+        let name_str = arr[1].as_str().unwrap();
+        let name = Cow::Borrowed(Box::leak(name_str.to_owned().into_boxed_str()));
         let params = arr[2].as_u64().unwrap() as u32;
         let start = arr[3].as_u64().unwrap() as usize;
         let end = arr[4].as_u64().unwrap() as usize;
-        let mut names = Vec::new();
-        for i in 5..arr.len() {
-          names.push(arr[i].as_str().unwrap().to_string());
+        let mut names: Vec<Cow<'static, str>> = arr[5]
+          .as_array()
+          .unwrap()
+          .iter()
+          .map(|n| {
+            let s = n.as_str().unwrap();
+            Cow::Borrowed(Box::leak(s.to_owned().into_boxed_str()))
+          })
+          .collect();
+        for i in 6..arr.len() {
+          names.push(Cow::Owned(
+            arr[i].as_str().expect("Expected string").to_owned(),
+          ));
         }
         Instructions::Func(name, params, start, end, names)
       }
-      "export" => Instructions::Export(arr[1].as_str().unwrap().to_string()),
+      "export" => Instructions::Export(arr[1].as_str().unwrap().to_owned().into()),
       "return" => Instructions::Return,
       "call" => {
-        let name = arr[1]
-          .as_str()
-          .expect("Function name must be a string")
-          .to_string();
+        let s = arr[1].as_str().unwrap();
+        let leaked = Box::leak(s.to_owned().into_boxed_str());
         let argc = arr[2].as_u64().expect("Argc must be a number") as u32;
-        Instructions::Call(name, argc)
+        Instructions::Call(Cow::Borrowed(leaked), argc)
       }
       "concat" => Instructions::Concat,
       "stop" => Instructions::Stop,

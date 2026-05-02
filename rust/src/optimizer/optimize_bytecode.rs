@@ -15,47 +15,65 @@ use crate::instructions::math::{
 use crate::optimizer::analyze_usage::analyze_usage;
 use crate::optimizer::eliminate_dead_loops::eliminate_dead_loops;
 use crate::optimizer::eliminate_dead_stores::eliminate_dead_stores;
-use crate::types::instructions::Instructions;
+use crate::types::{instructions::Instructions, value::Value};
 pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
   let mut i = 0;
   while i < bytecode.len().saturating_sub(2) {
-    match (&bytecode[i], &bytecode[i + 1], &bytecode[i + 2]) {
+    let mut instr1 = std::mem::replace(&mut bytecode[i], Instructions::Nop);
+    let mut instr2 = std::mem::replace(&mut bytecode[i + 1], Instructions::Nop);
+    let mut instr3 = std::mem::replace(&mut bytecode[i + 2], Instructions::Nop);
+    match (&mut instr1, &mut instr2, &mut instr3) {
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Add(t)) => {
-        let result = add_func(v1.clone(), v2.clone(), *t);
+        let val1 = std::mem::replace(v1, Value::Null);
+        let val2 = std::mem::replace(v2, Value::Null);
+        let result = add_func(val1, val2, *t);
         bytecode[i] = Instructions::Push(result);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
-        i += 1;
+        i += 3;
       }
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Sub(t)) => {
-        let result = sub_func(v1.clone(), v2.clone(), *t);
+        let val1 = std::mem::replace(v1, Value::Null);
+        let val2 = std::mem::replace(v2, Value::Null);
+        let result = sub_func(val1, val2, *t);
         bytecode[i] = Instructions::Push(result);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
-        i += 1;
+        i += 3;
       }
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Div(t)) => {
-        let result = div_func(v1.clone(), v2.clone(), *t);
+        let val1 = std::mem::replace(v1, Value::Null);
+        let val2 = std::mem::replace(v2, Value::Null);
+        let result = div_func(val1, val2, *t);
         bytecode[i] = Instructions::Push(result);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
-        i += 1;
+        i += 3;
       }
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Mul(t)) => {
-        let result = mul_func(v1.clone(), v2.clone(), *t);
+        let val1 = std::mem::replace(v1, Value::Null);
+        let val2 = std::mem::replace(v2, Value::Null);
+        let result = mul_func(val1, val2, *t);
         bytecode[i] = Instructions::Push(result);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
-        i += 1;
+        i += 3;
       }
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Mod(t)) => {
-        let result = mod_func(v1.clone(), v2.clone(), *t);
+        let val1 = std::mem::replace(v1, Value::Null);
+        let val2 = std::mem::replace(v2, Value::Null);
+        let result = mod_func(val1, val2, *t);
         bytecode[i] = Instructions::Push(result);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
+        i += 3;
+      }
+      _ => {
+        bytecode[i] = instr1;
+        bytecode[i + 1] = instr2;
+        bytecode[i + 2] = instr3;
         i += 1;
       }
-      _ => i += 1,
     }
   }
   bytecode.retain(|instr| !matches!(instr, Instructions::Nop));

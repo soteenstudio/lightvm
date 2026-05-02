@@ -8,23 +8,25 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::utils::fast_format::{float_to_cow, int_to_cow};
 use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Value {
   Int32(i32),
   Int64(i64),
   Float32(f32),
   Float64(f64),
-  String(String),
+  String(Cow<'static, str>),
   Bool(bool),
   Null,
   Undefined,
-  Marker(String),
+  Marker(Cow<'static, str>),
 }
 #[derive(Clone)]
 pub struct FuncMetadata {
   pub params_count: u32,
-  pub param_names: Vec<String>,
+  pub param_names: Vec<Cow<'static, str>>,
   pub start: usize,
   pub end: usize,
 }
@@ -90,16 +92,16 @@ impl Value {
       _ => panic!("Expected Float64 compatible value, found {:?}", self),
     }
   }
-  pub fn as_string(&self) -> String {
+  pub fn as_string(&self) -> Cow<'static, str> {
     match self {
       Value::String(v) => v.clone(),
-      Value::Int32(v) => v.to_string(),
-      Value::Int64(v) => v.to_string(),
-      Value::Float32(v) => v.to_string(),
-      Value::Float64(v) => v.to_string(),
-      Value::Bool(v) => v.to_string(),
-      Value::Null => "null".to_string(),
-      Value::Undefined => "undefined".to_string(),
+      Value::Int32(v) => int_to_cow(*v as i64),
+      Value::Int64(v) => int_to_cow(*v),
+      Value::Float32(v) => float_to_cow(*v as f64),
+      Value::Float64(v) => float_to_cow(*v),
+      Value::Bool(v) => Cow::Borrowed(if *v { "true" } else { "false" }),
+      Value::Null => Cow::Borrowed("null"),
+      Value::Undefined => Cow::Borrowed("undefined"),
       Value::Marker(v) => v.clone(),
     }
   }
