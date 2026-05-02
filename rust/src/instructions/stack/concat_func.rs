@@ -15,11 +15,11 @@ use std::fmt::Write;
 pub fn concat_func(a: &Value, b: &Value) -> Value {
   let mut f_writer = FilteredWriter {
     buffer: String::with_capacity(64),
-    pending: String::with_capacity(8),
+    state: 0,
   };
   let _ = write!(f_writer, "{}{}", a, b);
-  if !f_writer.pending.is_empty() {
-    f_writer.buffer.push_str(&f_writer.pending);
+  if f_writer.state > 0 {
+    f_writer.flush_failed_match();
   }
   Value::String(f_writer.buffer)
 }
