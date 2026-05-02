@@ -20,6 +20,6 @@ for (const config of builds) {
     sourcemap: true,
     platform: 'node',
     ...config,
-    external: ["chalk"],
+    external: ["chalk", "@lightvm/core-*"],
   }).catch(() => process.exit(1))
 }

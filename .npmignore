@@ -1,6 +1,7 @@
 /node_modules/
 /src/
 /tests/
+/rust/
 esbuild.config.js
 package-lock.json
 *.tgz

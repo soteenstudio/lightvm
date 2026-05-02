@@ -139,11 +139,30 @@ jobs:
             cd ../..
           done
 
-          # Update & Publish main package
+          # 1. Install jq (kalo belum ada di runner)
           sudo apt-get install -y jq
-          jq ".version = \"$VERSION\"" package.json > temp.json && mv temp.json package.json
-          
-          # Publish package utama pake $TAG yang sama
+
+          # 2. Update Versi & Suntik optionalDependencies ke package.json utama
+          # Kita bikin object opDeps dari daftar platform yang baru aja di-publish
+          OP_DEPS=$(cat <<EOF
+          {
+            "@lightvm/core-linux-x64": "$VERSION",
+            "@lightvm/core-win32-x64": "$VERSION",
+            "@lightvm/core-darwin-x64": "$VERSION",
+            "@lightvm/core-android-arm64": "$VERSION"
+          }
+          EOF
+          )
+
+          # Pake jq buat update version DAN gabungin optionalDependencies
+          jq --arg ver "$VERSION" --argjson deps "$OP_DEPS" \
+            '.version = $ver | .optionalDependencies = $deps' \
+            package.json > temp.json && mv temp.json package.json
+
+          # 3. Publish package utama pake $TAG yang sama
+          # Ini bakal upload package.json yang udah "kotor" tadi ke NPM
+          echo "Publishing main package with injected optionalDependencies..."
           npm publish --access public --tag $TAG
+
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

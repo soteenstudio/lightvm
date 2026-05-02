@@ -9,13 +9,11 @@
       "import": "./dist/index.min.mjs",
       "require": "./dist/index.min.cjs"
     },
-    "./assembly/dist/*": "./assembly/dist/*",
     "./package.json": "./package.json"
   },
   "files": [
     "dist/index.min.cjs",
     "dist/index.min.mjs",
-    "rust/target/release/liblightvm_rust.so",
     "typings"
   ],
   "scripts": {
@@ -30,6 +28,12 @@
   "license": "Apache-2.0",
   "dependencies": {
     "chalk": "^5.6.2"
+  },
+  "optionalDependencies": {
+    "@lightvm/core-linux-x64": "0.1.0-proto.16",
+    "@lightvm/core-win32-x64": "0.1.0-proto.16",
+    "@lightvm/core-darwin-x64": "0.1.0-proto.16",
+    "@lightvm/core-android-arm64": "0.1.0-proto.16"
   },
   "devDependencies": {
     "@types/node": "^24.8.0",
