@@ -32,12 +32,12 @@ use crate::instructions::{
 };
 use crate::types::{
   instructions::Instructions,
-  value::{FuncMetadata, RunOptions, Value},
+  value::{RunOptions, Value},
 };
 use crate::utils::{
   compute_hot_threshold::compute_hot_threshold, resolve_symbols::resolve_symbols,
 };
-use std::collections::{HashMap, HashSet};
+use crate::vm::{inject_args::inject_args, prepare_vm::prepare_vm};
 pub fn execute(
   mut bytecode: Vec<Instructions>,
   options: Option<RunOptions>,
@@ -48,38 +48,8 @@ pub fn execute(
   let mut vars: Vec<Value> = vec![Value::Undefined; var_count];
   let mut _call_stack: Vec<usize> = Vec::new();
   let mut hit_counter = vec![0u32; bytecode.len()];
-  let mut ip: usize = options.as_ref().and_then(|o| o.entry).unwrap_or(0);
-  let mut functions: HashMap<String, FuncMetadata> = HashMap::new();
-  let mut exported: HashSet<String> = HashSet::new();
-  for instr in bytecode.iter() {
-    if let Instructions::Func(name, params, start, end, names) = instr {
-      functions.insert(
-        name.clone(),
-        FuncMetadata {
-          params_count: *params,
-          param_names: names.clone(),
-          start: *start,
-          end: *end,
-        },
-      );
-    }
-    if let Instructions::Export(name) = instr {
-      exported.insert(name.clone());
-    }
-  }
-  if let Some(opts) = &options {
-    if let Some(entry_ip) = opts.entry {
-      let entry_fn = functions.values().find(|f| f.start == entry_ip);
-      if let Some(fn_meta) = entry_fn {
-        for i in 0..fn_meta.params_count as usize {
-          let val = opts.args.get(i).cloned().unwrap_or(Value::Undefined);
-          if i < vars.len() {
-            vars[i] = val;
-          }
-        }
-      }
-    }
-  }
+  let (functions, _exported, mut ip) = prepare_vm(&bytecode, &options);
+  inject_args(&mut vars, &functions, &options, ip);
   while ip < bytecode.len() {
     let instr = &bytecode[ip];
     hit_counter[ip] += 1;
