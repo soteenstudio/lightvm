@@ -1,25 +1,18 @@
-// index.d.ts
 import { Instruction } from './Instruction.js';
 import { runBytecode } from './runBytecode.js';
 import { optimizeBytecode } from './optimizeBytecode.js';
 import * as loader from './loader.js';
-
-export type VMEvent = 'Tick' | 'Halt' | 'Panic';
+export type VMEvent = 'Tick' | 'Halt' | 'Panic'
 export type Listener = (payload?: any) => void;
 export type Capability = 'Control' | 'Observe' | 'Debug' | 'Unsafe';
-
 export interface VMResult {
   value: any;
   outputs: string[];
   halted: boolean;
 }
-
 export class LightVM {
   private bytecode: Instruction[];
-  // ... rest of your class properties ...
-
   constructor(caps?: Capability[]);
-
   load(bytecode: Instruction[] | string): this;
   run(): void;
   embedded(): VMResult;
@@ -35,5 +28,4 @@ export class LightVM {
     loader: typeof loader;
   };
 }
-
 export { Instruction };
