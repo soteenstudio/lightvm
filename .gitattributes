@@ -1,2 +1,3 @@
 *.config.js          linguist-detectable=false
 build-script.js      linguist-detectable=false
+*.d.ts               linguist-documentation=true
