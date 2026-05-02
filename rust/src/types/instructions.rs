@@ -187,6 +187,7 @@ impl Instructions {
       "ge" => Instructions::Ge(map_primitive(arr.get(1))),
       "le" => Instructions::Le(map_primitive(arr.get(1))),
       "eq" => Instructions::Eq(map_primitive(arr.get(1))),
+      "neq" => Instructions::Neq(map_primitive(arr.get(1))),
       "set" => Instructions::Set(arr[1].as_str().unwrap().to_string()),
       "get" => Instructions::Get(arr[1].as_str().unwrap().to_string()),
       "val" => Instructions::Val(arr[1].as_str().unwrap().to_string()),

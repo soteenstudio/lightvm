@@ -18,3 +18,4 @@ pub mod le;
 pub mod le_func;
 pub mod lt;
 pub mod lt_func;
+pub mod neq_func;

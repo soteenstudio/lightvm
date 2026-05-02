@@ -11,12 +11,14 @@
 use crate::instructions::{
   comparison::{
     eq_func::eq_func, ge_func::ge_func, gt_func::gt_func, le_func::le_func, lt_func::lt_func,
+    neq_func::neq_func,
   },
   control_flow::{
     call_func::call_func, if_false_func::if_false_func, jump_func::jump_func,
     return_func::return_func, stop_func::stop_func,
   },
   io::{print::print_func, println::println_func},
+  logic::{and_func::and_func, or_func::or_func},
   math::{
     add_func::add_func,
     div_func::div_func,
@@ -132,6 +134,24 @@ pub fn execute(
         let b = stack.pop().ok_or("Stack underflow on EQ (b)")?;
         let a = stack.pop().ok_or("Stack underflow on EQ (a)")?;
         let result = eq_func(a, b, *num_type);
+        stack.push(result);
+      }
+      Instructions::Neq(num_type) => {
+        let b = stack.pop().ok_or("Stack underflow on NEQ (b)")?;
+        let a = stack.pop().ok_or("Stack underflow on NEQ (a)")?;
+        let result = neq_func(a, b, *num_type);
+        stack.push(result);
+      }
+      Instructions::And => {
+        let b = stack.pop().ok_or("Stack underflow on AND (b)")?;
+        let a = stack.pop().ok_or("Stack underflow on AND (a)")?;
+        let result = and_func(a, b);
+        stack.push(result);
+      }
+      Instructions::Or => {
+        let b = stack.pop().ok_or("Stack underflow on OR (b)")?;
+        let a = stack.pop().ok_or("Stack underflow on OR (a)")?;
+        let result = or_func(a, b);
         stack.push(result);
       }
       Instructions::Print => {

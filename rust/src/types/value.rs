@@ -35,6 +35,21 @@ pub struct RunOptions {
   pub capture_return: bool,
 }
 impl Value {
+  pub fn is_truthy(&self) -> bool {
+    match self {
+      Value::Bool(v) => *v,
+      Value::Int32(v) => *v != 0,
+      Value::Int64(v) => *v != 0,
+      Value::Float32(v) => *v != 0.0 && !v.is_nan(),
+      Value::Float64(v) => *v != 0.0 && !v.is_nan(),
+      Value::String(v) => !v.is_empty(),
+      Value::Null | Value::Undefined => false,
+      Value::Marker(_) => true,
+    }
+  }
+  pub fn as_bool_refined(&self) -> bool {
+    self.is_truthy()
+  }
   pub fn is_number(&self) -> bool {
     match self {
       Value::Int32(_) | Value::Int64(_) | Value::Float32(_) | Value::Float64(_) => true,
@@ -89,17 +104,7 @@ impl Value {
     }
   }
   pub fn as_bool(&self) -> bool {
-    match self {
-      Value::Bool(v) => *v,
-      Value::Int32(v) => *v != 0,
-      Value::Int64(v) => *v != 0,
-      Value::Float32(v) => *v != 0.0,
-      Value::Float64(v) => *v != 0.0,
-      Value::String(v) => !v.is_empty(),
-      Value::Null => false,
-      Value::Undefined => false,
-      Value::Marker(_) => true,
-    }
+    self.is_truthy()
   }
   pub fn type_of(&self) -> &'static str {
     match self {
