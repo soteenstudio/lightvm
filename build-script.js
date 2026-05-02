@@ -1,10 +1,6 @@
 import fs from 'fs';
-import {
-  execSync
-} from 'child_process';
-import {
-  join
-} from 'path';
+import { execSync } from 'child_process';
+import { join } from 'path';
 const args = process.argv.slice(2);
 const isLocal = args.includes('--local');
 const isDebug = args.includes('--debug');
