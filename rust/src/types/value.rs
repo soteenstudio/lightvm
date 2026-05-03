@@ -9,24 +9,27 @@
  */
 
 use crate::utils::fast_format::{float_to_cow, int_to_cow};
+use ahash::AHashMap;
 use serde::{Deserialize, Serialize};
-use std::borrow::Cow;
+use smol_str::SmolStr;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Value {
   Int32(i32),
   Int64(i64),
   Float32(f32),
   Float64(f64),
-  String(Cow<'static, str>),
+  String(SmolStr),
+  Array(Vec<Value>),
+  Object(AHashMap<SmolStr, Value>),
   Bool(bool),
   Null,
   Undefined,
-  Marker(Cow<'static, str>),
+  Marker(SmolStr),
 }
 #[derive(Clone)]
 pub struct FuncMetadata {
   pub params_count: u32,
-  pub param_names: Vec<Cow<'static, str>>,
+  pub param_names: Vec<SmolStr>,
   pub start: usize,
   pub end: usize,
 }
@@ -47,6 +50,7 @@ impl Value {
       Value::String(v) => !v.is_empty(),
       Value::Null | Value::Undefined => false,
       Value::Marker(_) => true,
+      Value::Array(_) | Value::Object(_) => true,
     }
   }
   pub fn as_bool_refined(&self) -> bool {
@@ -92,17 +96,19 @@ impl Value {
       _ => panic!("Expected Float64 compatible value, found {:?}", self),
     }
   }
-  pub fn as_string(&self) -> Cow<'static, str> {
+  pub fn as_string(&self) -> SmolStr {
     match self {
       Value::String(v) => v.clone(),
-      Value::Int32(v) => int_to_cow(*v as i64),
-      Value::Int64(v) => int_to_cow(*v),
-      Value::Float32(v) => float_to_cow(*v as f64),
-      Value::Float64(v) => float_to_cow(*v),
-      Value::Bool(v) => Cow::Borrowed(if *v { "true" } else { "false" }),
-      Value::Null => Cow::Borrowed("null"),
-      Value::Undefined => Cow::Borrowed("undefined"),
+      Value::Int32(v) => int_to_cow(*v as i64).into(),
+      Value::Int64(v) => int_to_cow(*v).into(),
+      Value::Float32(v) => float_to_cow(*v as f64).into(),
+      Value::Float64(v) => float_to_cow(*v).into(),
+      Value::Bool(v) => SmolStr::new(if *v { "true" } else { "false" }),
+      Value::Null => SmolStr::new("null"),
+      Value::Undefined => SmolStr::new("undefined"),
       Value::Marker(v) => v.clone(),
+      Value::Array(_) => SmolStr::new_static("[array]"),
+      Value::Object(_) => SmolStr::new_static("[object]"),
     }
   }
   pub fn as_bool(&self) -> bool {
@@ -115,6 +121,8 @@ impl Value {
       Value::Float32(_) => "float32",
       Value::Float64(_) => "float64",
       Value::String(_) => "string",
+      Value::Array(_) => "array",
+      Value::Object(_) => "object",
       Value::Bool(_) => "bool",
       Value::Null => "null",
       Value::Undefined => "undefined",
@@ -135,6 +143,8 @@ impl fmt::Display for Value {
       Value::Null => write!(f, "null"),
       Value::Undefined => write!(f, "undefined"),
       Value::Marker(v) => write!(f, "<Marker: {}>", v),
+      Value::Array(v) => write!(f, "[Array({})]", v.len()),
+      Value::Object(o) => write!(f, "[Object({})]", o.len()),
     }
   }
 }

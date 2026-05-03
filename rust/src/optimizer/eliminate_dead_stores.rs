@@ -10,6 +10,7 @@
 
 use crate::types::instructions::Instructions;
 use crate::types::usage::Usage;
+#[inline]
 pub fn eliminate_dead_stores(bytecode: &[Instructions], usage: &Usage) -> Vec<Instructions> {
   let mut result = Vec::new();
   let mut needed_by_next = 0;

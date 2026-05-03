@@ -21,22 +21,23 @@ use crate::types::{
   vmstate::VmState,
 };
 use crate::vm::run::run;
+use ahash::AHashMap;
 use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode};
 use napi_derive::napi;
-use std::borrow::Cow;
-use std::collections::{HashMap, HashSet};
+use smol_str::SmolStr;
+use std::collections::HashSet;
 use std::fs;
 #[napi(js_name = "LightVM")]
 pub struct LightVM {
   bytecode: Vec<Instructions>,
-  listeners: HashMap<VmEvent, Vec<ThreadsafeFunction<String>>>,
+  listeners: AHashMap<VmEvent, Vec<ThreadsafeFunction<String>>>,
   caps: HashSet<Capability>,
   state: VmState,
   _outputs: Vec<String>,
   last_value: Value,
-  functions: HashMap<Cow<'static, str>, FuncMetadata>,
-  exported: HashSet<Cow<'static, str>>,
-  _imports: HashMap<String, Value>,
+  functions: AHashMap<SmolStr, FuncMetadata>,
+  exported: HashSet<SmolStr>,
+  _imports: AHashMap<String, Value>,
 }
 #[napi]
 impl LightVM {
@@ -52,22 +53,22 @@ impl LightVM {
     }
     Self {
       bytecode: Vec::new(),
-      listeners: HashMap::new(),
+      listeners: AHashMap::new(),
       caps: caps_set,
       state: VmState::Idle,
       _outputs: Vec::new(),
       last_value: Value::Undefined,
-      functions: HashMap::new(),
+      functions: AHashMap::new(),
       exported: HashSet::new(),
-      _imports: HashMap::new(),
+      _imports: AHashMap::new(),
     }
   }
   fn require(&self, cap: Capability) -> Result<(), napi::Error> {
     if !self.caps.contains(&cap) {
-      return Err(napi::Error::from_reason(format!(
-        "Capability '{:?}' not granted",
-        cap
-      )));
+      let mut msg = String::from("Capability '");
+      msg.push_str(&format!("{:?}", cap));
+      msg.push_str("' not granted");
+      return Err(napi::Error::from_reason(msg));
     }
     Ok(())
   }
@@ -113,23 +114,22 @@ impl LightVM {
   fn index_metadata(&mut self) {
     self.functions.clear();
     self.exported.clear();
-    for instr in &self.bytecode {
-      match instr {
-        Instructions::Func(name, params, start, end, names) => {
-          self.functions.insert(
-            name.clone(),
-            FuncMetadata {
-              params_count: *params,
-              param_names: names.clone(),
-              start: *start,
-              end: *end,
-            },
-          );
-        }
-        Instructions::Export(name) => {
-          self.exported.insert(name.clone());
-        }
-        _ => {}
+    let mut itoa_buf = itoa::Buffer::new();
+    for i in 0..self.bytecode.len() {
+      if let Instructions::Func(_name, params, start, end, _names) = &self.bytecode[i] {
+        let idx_str = itoa_buf.format(i);
+        let mut key = String::with_capacity(6 + idx_str.len());
+        key.push_str("__idx_");
+        key.push_str(idx_str);
+        self.functions.insert(
+          SmolStr::from(key),
+          FuncMetadata {
+            params_count: *params,
+            param_names: Vec::new(),
+            start: *start,
+            end: *end,
+          },
+        );
       }
     }
   }
@@ -176,8 +176,8 @@ impl LightVM {
     if let Some(list) = self.listeners.get(&event) {
       let json_payload = payload.to_string();
       for tsfn in list {
-        tsfn.call(
-          Ok(json_payload.clone()),
+        let _ = tsfn.call(
+          Ok(json_payload.to_string()),
           ThreadsafeFunctionCallMode::Blocking,
         );
       }
@@ -237,9 +237,9 @@ impl LightVM {
     Ok(bytecode_str)
   }
   #[napi]
-  pub fn get_outputs(&self) -> Result<Vec<String>, napi::Error> {
+  pub fn get_outputs(&mut self) -> Result<Vec<String>, napi::Error> {
     self.require(Capability::Observe)?;
-    Ok(self._outputs.clone())
+    Ok(std::mem::take(&mut self._outputs))
   }
   #[napi]
   pub fn clear_outputs(&mut self) -> Result<(), napi::Error> {

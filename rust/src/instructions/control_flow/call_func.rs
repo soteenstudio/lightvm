@@ -9,17 +9,18 @@
  */
 
 use crate::types::value::{FuncMetadata, Value};
-use std::borrow::Cow;
+use ahash::AHashMap;
+use smol_str::SmolStr;
 #[inline]
 pub fn call_func(
-  name: &str,
+  name: &SmolStr,
   argc: u32,
   ip: &mut usize,
   stack: &mut Vec<Value>,
   call_stack: &mut Vec<usize>,
   vars: &mut Vec<Value>,
-  functions: &std::collections::HashMap<Cow<'static, str>, FuncMetadata>,
-) -> Result<(), Cow<'static, str>> {
+  functions: &AHashMap<SmolStr, FuncMetadata>,
+) -> Result<(), SmolStr> {
   let fn_meta = functions
     .get(name)
     .ok_or_else(|| format!("Function {} not found", name))?;

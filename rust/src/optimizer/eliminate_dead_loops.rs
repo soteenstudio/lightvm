@@ -10,10 +10,11 @@
 
 use crate::optimizer::is_pure_loop::is_pure_loop;
 use crate::types::instructions::Instructions;
-use std::collections::HashMap;
+use ahash::AHashMap;
+#[inline]
 pub fn eliminate_dead_loops(bytecode: Vec<Instructions>) -> Vec<Instructions> {
   let mut out: Vec<Instructions> = Vec::new();
-  let mut index_map: HashMap<usize, usize> = HashMap::new();
+  let mut index_map: AHashMap<usize, usize> = AHashMap::new();
   for (i, inst) in bytecode.iter().enumerate() {
     let mut is_eliminated = false;
     match inst {

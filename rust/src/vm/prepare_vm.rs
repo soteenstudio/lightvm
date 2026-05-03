@@ -12,18 +12,14 @@ use crate::types::{
   instructions::Instructions,
   value::{FuncMetadata, RunOptions},
 };
-use std::borrow::Cow;
-use std::collections::HashMap;
+use ahash::AHashMap;
+use smol_str::SmolStr;
 use std::collections::HashSet;
 pub fn prepare_vm(
   bytecode: &[Instructions],
   options: &Option<RunOptions>,
-) -> (
-  HashMap<Cow<'static, str>, FuncMetadata>,
-  HashSet<Cow<'static, str>>,
-  usize,
-) {
-  let mut functions = HashMap::new();
+) -> (AHashMap<SmolStr, FuncMetadata>, HashSet<SmolStr>, usize) {
+  let mut functions = AHashMap::new();
   let mut exported = HashSet::new();
   for instr in bytecode {
     if let Instructions::Func(name, params, start, end, names) = instr {

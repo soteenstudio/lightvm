@@ -9,10 +9,10 @@
  */
 
 use crate::types::instructions::Instructions;
-use std::borrow::Cow;
-use std::collections::HashMap;
+use ahash::AHashMap;
+use smol_str::SmolStr;
 pub fn resolve_symbols(bytecode: &mut Vec<Instructions>) -> usize {
-  let mut symbol_table: HashMap<Cow<'static, str>, usize> = HashMap::new();
+  let mut symbol_table: AHashMap<SmolStr, usize> = AHashMap::new();
   let mut next_idx = 0;
   for instr in bytecode.iter_mut() {
     match instr {

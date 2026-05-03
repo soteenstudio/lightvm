@@ -10,6 +10,7 @@
 
 use crate::types::{instructions::Instructions, usage::Usage};
 use std::collections::HashSet;
+#[inline]
 pub fn analyze_usage(bytecode: &[Instructions]) -> Usage<'_> {
   let mut read = HashSet::new();
   let mut written = HashSet::new();

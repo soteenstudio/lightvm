@@ -9,11 +9,11 @@
  */
 
 use crate::types::value::{FuncMetadata, RunOptions, Value};
-use std::borrow::Cow;
-use std::collections::HashMap;
+use ahash::AHashMap;
+use smol_str::SmolStr;
 pub fn inject_args(
   vars: &mut Vec<Value>,
-  functions: &HashMap<Cow<'static, str>, FuncMetadata>,
+  functions: &AHashMap<SmolStr, FuncMetadata>,
   options: &Option<RunOptions>,
   _current_ip: usize,
 ) {

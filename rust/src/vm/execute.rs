@@ -9,6 +9,7 @@
  */
 
 use crate::instructions::{
+  collections::{make_array_func::make_array_func, make_obj_func::make_obj_func},
   comparison::{
     eq_func::eq_func, ge_func::ge_func, gt_func::gt_func, le_func::le_func, lt_func::lt_func,
     neq_func::neq_func,
@@ -40,10 +41,11 @@ use crate::utils::{
   compute_hot_threshold::compute_hot_threshold, resolve_symbols::resolve_symbols,
 };
 use crate::vm::{inject_args::inject_args, prepare_vm::prepare_vm};
+use smol_str::SmolStr;
 pub fn execute(
   mut bytecode: Vec<Instructions>,
   options: Option<RunOptions>,
-) -> Result<Value, String> {
+) -> Result<Value, SmolStr> {
   let mut last_return = Value::Undefined;
   let mut stack: Vec<Value> = Vec::with_capacity(100);
   let var_count = resolve_symbols(&mut bytecode);
@@ -71,86 +73,142 @@ pub fn execute(
         get_func(&mut stack, &mut vars, *idx);
       }
       Instructions::Concat => {
-        let b = stack.pop().ok_or("Stack underflow on CONCAT (b)")?;
-        let a = stack.pop().ok_or("Stack underflow on CONCAT (a)")?;
+        let b = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on CONCAT (b)"))?;
+        let a = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on CONCAT (a)"))?;
         let result = concat_func(&a, &b);
         stack.push(result);
       }
       Instructions::Add(num_type) => {
-        let b = stack.pop().ok_or("Stack underflow on ADD (b)")?;
-        let a = stack.pop().ok_or("Stack underflow on ADD (a)")?;
+        let b = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on ADD (b)"))?;
+        let a = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on ADD (a)"))?;
         let result = add_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Sub(num_type) => {
-        let b = stack.pop().ok_or("Stack underflow on SUB (b)")?;
-        let a = stack.pop().ok_or("Stack underflow on SUB (a)")?;
+        let b = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on SUB (b)"))?;
+        let a = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on SUB (a)"))?;
         let result = sub_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Mul(num_type) => {
-        let b = stack.pop().ok_or("Stack underflow on MUL (b)")?;
-        let a = stack.pop().ok_or("Stack underflow on MUL (a)")?;
+        let b = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on MUL (b)"))?;
+        let a = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on MUL (a)"))?;
         let result = mul_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Div(num_type) => {
-        let b = stack.pop().ok_or("Stack underflow on DIV (b)")?;
-        let a = stack.pop().ok_or("Stack underflow on DIV (a)")?;
+        let b = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on DIV (b)"))?;
+        let a = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on DIV (a)"))?;
         let result = div_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Mod(num_type) => {
-        let b = stack.pop().ok_or("Stack underflow on MOD (b)")?;
-        let a = stack.pop().ok_or("Stack underflow on MOD (a)")?;
+        let b = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on MOD (b)"))?;
+        let a = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on MOD (a)"))?;
         let result = mod_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Gt(num_type) => {
-        let b = stack.pop().ok_or("Stack underflow on GT (b)")?;
-        let a = stack.pop().ok_or("Stack underflow on GT (a)")?;
+        let b = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on GT (b)"))?;
+        let a = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on GT (a)"))?;
         let result = gt_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Lt(num_type) => {
-        let b = stack.pop().ok_or("Stack underflow on LT (b)")?;
-        let a = stack.pop().ok_or("Stack underflow on LT (a)")?;
+        let b = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on LT (b)"))?;
+        let a = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on LT (a)"))?;
         let result = lt_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Ge(num_type) => {
-        let b = stack.pop().ok_or("Stack underflow on GE (b)")?;
-        let a = stack.pop().ok_or("Stack underflow on GE (a)")?;
+        let b = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on GE (b)"))?;
+        let a = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on GE (a)"))?;
         let result = ge_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Le(num_type) => {
-        let b = stack.pop().ok_or("Stack underflow on LE (b)")?;
-        let a = stack.pop().ok_or("Stack underflow on LE (a)")?;
+        let b = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on LE (b)"))?;
+        let a = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on LE (a)"))?;
         let result = le_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Eq(num_type) => {
-        let b = stack.pop().ok_or("Stack underflow on EQ (b)")?;
-        let a = stack.pop().ok_or("Stack underflow on EQ (a)")?;
+        let b = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on EQ (b)"))?;
+        let a = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on EQ (a)"))?;
         let result = eq_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Neq(num_type) => {
-        let b = stack.pop().ok_or("Stack underflow on NEQ (b)")?;
-        let a = stack.pop().ok_or("Stack underflow on NEQ (a)")?;
+        let b = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on NEQ (b)"))?;
+        let a = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on NEQ (a)"))?;
         let result = neq_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::And => {
-        let b = stack.pop().ok_or("Stack underflow on AND (b)")?;
-        let a = stack.pop().ok_or("Stack underflow on AND (a)")?;
+        let b = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on AND (b)"))?;
+        let a = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on AND (a)"))?;
         let result = and_func(a, b);
         stack.push(result);
       }
       Instructions::Or => {
-        let b = stack.pop().ok_or("Stack underflow on OR (b)")?;
-        let a = stack.pop().ok_or("Stack underflow on OR (a)")?;
+        let b = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on OR (b)"))?;
+        let a = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on OR (a)"))?;
         let result = or_func(a, b);
         stack.push(result);
       }
@@ -169,7 +227,9 @@ pub fn execute(
         }
       }
       Instructions::IfFalse(target_ip) => {
-        let cond = stack.pop().ok_or("Stack underflow on IF_FALSE")?;
+        let cond = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on IF_FALSE"))?;
         if if_false_func(cond) {
           ip = *target_ip;
           continue;
@@ -210,6 +270,12 @@ pub fn execute(
       }
       Instructions::DecIdx(idx, num_type) => {
         dec_func(&mut vars, *idx, *num_type)?;
+      }
+      Instructions::MakeObj(count) => {
+        make_obj_func(&mut stack, *count)?;
+      }
+      Instructions::MakeArray(count) => {
+        make_array_func(&mut stack, *count)?;
       }
       _ => {}
     }

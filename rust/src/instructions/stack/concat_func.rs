@@ -10,7 +10,7 @@
 
 use crate::types::value::Value;
 use crate::utils::filtered_writer::FilteredWriter;
-use std::borrow::Cow;
+use smol_str::SmolStr;
 use std::fmt::Write;
 #[inline]
 pub fn concat_func(a: &Value, b: &Value) -> Value {
@@ -22,6 +22,5 @@ pub fn concat_func(a: &Value, b: &Value) -> Value {
   if f_writer.state > 0 {
     f_writer.flush_failed_match();
   }
-  let leaked_str = Box::leak(f_writer.buffer.into_boxed_str());
-  Value::String(Cow::Borrowed(leaked_str))
+  Value::String(SmolStr::new(f_writer.buffer))
 }

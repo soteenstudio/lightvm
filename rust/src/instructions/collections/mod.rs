@@ -8,10 +8,5 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod collections;
-pub mod comparison;
-pub mod control_flow;
-pub mod io;
-pub mod logic;
-pub mod math;
-pub mod stack;
+pub mod make_array_func;
+pub mod make_obj_func;

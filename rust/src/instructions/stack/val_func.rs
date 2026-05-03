@@ -9,13 +9,13 @@
  */
 
 use crate::types::value::Value;
-use std::borrow::Cow;
+use smol_str::SmolStr;
 #[inline]
 pub fn val_func(vars: &mut Vec<Value>, index: usize) {
   if index >= vars.len() {
     vars.resize(index + 1, Value::Undefined);
   }
   if vars[index] == Value::Undefined {
-    vars[index] = Value::Marker(Cow::Borrowed("NoInitExpression"));
+    vars[index] = Value::Marker(SmolStr::new("NoInitExpression"));
   }
 }
