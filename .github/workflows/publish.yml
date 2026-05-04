@@ -85,16 +85,11 @@ jobs:
           # 2. Setup QEMU
           docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
           
-          # 3. BUAT CROSS.TOML DINAMIS (Ini kuncinya!)
-          # Kita paksa pake image yang lebih kompatibel buat N-API
-          echo '[target.i686-unknown-linux-musl]' > rust/Cross.toml
-          echo 'image = "ghcr.io/cross-rs/i686-unknown-linux-musl:main"' >> rust/Cross.toml
-          echo '[target.x86_64-unknown-linux-musl]' >> rust/Cross.toml
-          echo 'image = "ghcr.io/cross-rs/x86_64-unknown-linux-musl:main"' >> rust/Cross.toml
-          
-          # 4. Build
+          # 3. Build dengan RUSTFLAGS sakti
+          # Kita tambahin '-C target-feature=-crt-static' biar dia gak maksa static linking
+          # dan tetep bisa bikin .so / .node
           cd rust
-          ../cross build --release --target ${{ matrix.target }}
+          RUSTFLAGS="-C target-feature=-crt-static" ../cross build --release --target ${{ matrix.target }}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
