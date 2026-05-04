@@ -9,7 +9,10 @@
  */
 
 use crate::instructions::{
-  collections::{make_array_func::make_array_func, make_obj_func::make_obj_func},
+  collections::{
+    access_func::access_func, access_index_func::access_index_func,
+    make_array_func::make_array_func, make_obj_func::make_obj_func,
+  },
   comparison::{
     eq_func::eq_func, ge_func::ge_func, gt_func::gt_func, le_func::le_func, lt_func::lt_func,
     neq_func::neq_func,
@@ -276,6 +279,12 @@ pub fn execute(
       }
       Instructions::MakeArray(count) => {
         make_array_func(&mut stack, *count)?;
+      }
+      Instructions::AccessIndex => {
+        access_index_func(&mut stack)?;
+      }
+      Instructions::Access(prop) => {
+        access_func(&mut stack, prop)?;
       }
       _ => {}
     }

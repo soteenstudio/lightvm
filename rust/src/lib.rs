@@ -279,8 +279,10 @@ impl LightVM {
       .into_utf8()?
       .as_str()?
       .to_string();
-    let instructions: Vec<Instructions> = serde_json::from_str(&json_str)
-      .map_err(|e| napi::Error::from_reason(format!("Invalid bytecode for stringify: {}", e)))?;
+    let raw_list: Vec<serde_json::Value> = serde_json::from_str(&json_str)
+      .map_err(|e| napi::Error::from_reason(format!("Invalid JSON format: {}", e)))?;
+    let instructions: Vec<Instructions> =
+      raw_list.iter().map(Instructions::from_json_array).collect();
     Ok(crate::utils::loader::stringify_ltc(instructions))
   }
 }

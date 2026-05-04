@@ -8,5 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
+pub mod access_func;
+pub mod access_index_func;
 pub mod make_array_func;
 pub mod make_obj_func;

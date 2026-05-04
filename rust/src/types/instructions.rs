@@ -197,6 +197,10 @@ impl Instructions {
       "set" => Instructions::Set(SmolStr::new(arr[1].as_str().expect("Need string"))),
       "get" => Instructions::Get(SmolStr::new(arr[1].as_str().expect("Need string"))),
       "val" => Instructions::Val(SmolStr::new(arr[1].as_str().expect("Need string"))),
+      "access" => {
+        let prop = arr[1].as_str().expect("Access property must be a string");
+        Instructions::Access(SmolStr::new(prop))
+      }
       "print" => Instructions::Print,
       "println" => Instructions::Println,
       "if_false" => {
@@ -249,7 +253,6 @@ impl Instructions {
         }
         Instructions::Func(name, params, start, end, names)
       }
-      // ... opcode lainnya ...
       "make_obj" => {
         let count = arr[1].as_u64().expect("MakeObj count harus angka") as u32;
         Instructions::MakeObj(count)
@@ -263,8 +266,7 @@ impl Instructions {
         let argc = arr[2].as_u64().unwrap_or(0) as u32;
         Instructions::Instantiate(SmolStr::new(class_name), argc)
       }
-      // ...
-
+      "access_index" => Instructions::AccessIndex,
       "export" => Instructions::Export(arr[1].as_str().unwrap().to_owned().into()),
       "return" => Instructions::Return,
       "call" => {
