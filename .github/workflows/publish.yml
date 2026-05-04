@@ -53,6 +53,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
+          override: true
 
       # Handle Android NDK buat arm64 dan armv7
       - name: Setup Android NDK
