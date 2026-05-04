@@ -71,7 +71,7 @@ jobs:
           echo "linker = \"$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/$LINKER\"" >> .cargo/config.toml
 
       - name: Build Release (Standard & Android)
-        if: matrix.platform != 'linux-ia32'
+        if: matrix.platform != 'linux-ia32' && !contains(matrix.platform, 'musl')
         run: cargo build --release --target ${{ matrix.target }}
         working-directory: rust
 
