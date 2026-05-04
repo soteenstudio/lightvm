@@ -71,6 +71,13 @@ jobs:
           echo "ar = \"$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar\"" >> .cargo/config.toml
           echo "linker = \"$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/$LINKER\"" >> .cargo/config.toml
 
+      - name: Setup Windows x86
+        if: matrix.platform == 'win32-ia32'
+        run: |
+          rustup target add i686-pc-windows-msvc
+          # Kadang butuh kepastian vcvarsall buat manggil linker 32-bit
+          
+
       - name: Build Release (Standard & Android)
         if: matrix.platform != 'linux-ia32' && !contains(matrix.platform, 'musl')
         run: cargo build --release --target ${{ matrix.target }}
