@@ -78,18 +78,12 @@ jobs:
       - name: Build Release (Docker - Linux 32-bit & Musl)
         if: matrix.platform == 'linux-ia32' || contains(matrix.platform, 'musl')
         run: |
-          # Pakai image rustembedded/cross
-          # Kita pakai 'cross' secara langsung atau manggil via docker run
-          IMAGE="rustembedded/cross:${{ matrix.target }}"
+          # Install cross-rs secara global di runner biar dia yang urus Docker imagenya
+          cargo install cross --git https://github.com/cross-rs/cross
           
-          # Pastiin folder target ada biar gak error pas mounting
-          mkdir -p rust/target
-          
-          docker run --rm \
-            -v "$(pwd)":/root/src \
-            -w /root/src/rust \
-            $IMAGE \
-            bash -c "rustup target add ${{ matrix.target }} && cargo build --release --target ${{ matrix.target }}"
+          # Jalanin build pake cross, dia otomatis narik image yang bener
+          cd rust
+          cross build --release --target ${{ matrix.target }}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
