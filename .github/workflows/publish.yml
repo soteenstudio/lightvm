@@ -9,8 +9,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # Tambahin target triplet buat mapping yang jelas
         include:
+          # --- 64-BIT VARIANTS ---
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             platform: linux-x64
@@ -24,28 +24,65 @@ jobs:
             target: aarch64-linux-android
             platform: android-arm64
 
+          # --- 32-BIT VARIANTS ---
+          - os: ubuntu-latest
+            target: i686-unknown-linux-gnu
+            platform: linux-ia32
+          - os: windows-latest
+            target: i686-pc-windows-msvc
+            platform: win32-ia32
+          - os: ubuntu-latest
+            target: armv7-linux-androideabi
+            platform: android-arm
+            
+          # --- LINUX MUSL (ALPINE) ---
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            platform: linux-musl-x64
+          - os: ubuntu-latest
+            target: i686-unknown-linux-musl
+            platform: linux-musl-ia32
+
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Rust
+        # Tambahin pengecekan musl biar gak diinstall di runner host
+        if: matrix.platform != 'linux-ia32' && !contains(matrix.platform, 'musl')
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
 
-      # Khusus Android, kita butuh NDK linker
+      # Handle Android NDK buat arm64 dan armv7
       - name: Setup Android NDK
-        if: matrix.platform == 'android-arm64'
+        if: contains(matrix.platform, 'android')
         run: |
           echo "ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME" >> $GITHUB_ENV
-          # Setup linker buat rust biar tau pake clang punya NDK
           mkdir -p .cargo
-          echo '[target.aarch64-linux-android]' > .cargo/config.toml
-          echo 'ar = "'$ANDROID_NDK_LATEST_HOME'/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"' >> .cargo/config.toml
-          echo 'linker = "'$ANDROID_NDK_LATEST_HOME'/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android33-clang"' >> .cargo/config.toml
+          # Dinamis tentukan linker berdasarkan platform
+          if [ "${{ matrix.platform }}" == "android-arm64" ]; then
+            LINKER="aarch64-linux-android33-clang"
+          else
+            LINKER="armv7a-linux-androideabi33-clang"
+          fi
+          echo "[target.${{ matrix.target }}]" > .cargo/config.toml
+          echo "ar = \"$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar\"" >> .cargo/config.toml
+          echo "linker = \"$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/$LINKER\"" >> .cargo/config.toml
 
-      - name: Build Release
+      - name: Build Release (Standard & Android)
+        if: matrix.platform != 'linux-ia32'
         run: cargo build --release --target ${{ matrix.target }}
         working-directory: rust
+
+      - name: Build Release (Docker - Linux 32-bit & Musl)
+        if: matrix.platform == 'linux-ia32' || contains(matrix.platform, 'musl')
+        run: |
+          # Pakai image sesuai target matrix
+          IMAGE="rustembedded/cross:${{ matrix.target }}"
+          docker run --rm -v "$(pwd)":/root/src -w /root/src/rust \
+          $IMAGE \
+          bash -c "rustup target add ${{ matrix.target }} && cargo build --release --target ${{ matrix.target }}"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
@@ -105,9 +142,14 @@ jobs:
 
           PLATFORMS=(
             "binary-linux-x64|linux-x64|index.linux.node|x64"
+            "binary-linux-ia32|linux-ia32|index.linux32.node|ia32"
             "binary-win32-x64|win32-x64|index.win.node|x64"
+            "binary-win32-ia32|win32-ia32|index.win32.node|ia32"
             "binary-darwin-x64|darwin-x64|index.darwin.node|x64"
             "binary-android-arm64|android-arm64|index.android.node|arm64"
+            "binary-android-arm|android-arm|index.android32.node|arm"
+            "binary-linux-musl-x64|linux-musl-x64|index.musl-x64.node|x64"
+            "binary-linux-musl-ia32|linux-musl-ia32|index.musl-ia32.node|ia32"
           )
 
           for item in "${PLATFORMS[@]}"; do
@@ -152,9 +194,14 @@ jobs:
           OP_DEPS=$(cat <<EOF
           {
             "@lightvm/core-linux-x64": "$VERSION",
+            "@lightvm/core-linux-ia32": "$VERSION",
             "@lightvm/core-win32-x64": "$VERSION",
+            "@lightvm/core-win32-ia32": "$VERSION",
             "@lightvm/core-darwin-x64": "$VERSION",
-            "@lightvm/core-android-arm64": "$VERSION"
+            "@lightvm/core-android-arm64": "$VERSION",
+            "@lightvm/core-android-arm": "$VERSION",
+            "@lightvm/core-linux-musl-x64": "$VERSION",
+            "@lightvm/core-linux-musl-ia32": "$VERSION"
           }
           EOF
           )
