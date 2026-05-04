@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LightVM Engine Stats</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --bg: #05070a;
+      --card: #0d1117;
+      --text: #e6edf3;
+      --accent: #2f81f7;
+      --accent-glow: rgba(47, 129, 247, 0.3);
+      --border: #30363d;
+      --secondary: #8b949e;
+      --success: #3fb950;
+    }
+
+    body {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background-image: radial-gradient(circle at 50% 50%, #111827 0%, #05070a 100%);
+    }
+
+    .container {
+      background-color: var(--card);
+      padding: 2.5rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+      width: 450px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      margin-bottom: 2rem;
+      background: #010409;
+      padding: 5px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--secondary);
+      padding: 8px 14px;
+      cursor: pointer;
+      font-size: 0.7rem;
+      font-weight: 600;
+      border-radius: 6px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      text-transform: uppercase;
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .main-stat {
+      margin-bottom: 1.5rem;
+    }
+
+    h1 { 
+      font-size: 0.85rem; 
+      color: var(--secondary); 
+      margin: 0; 
+      text-transform: uppercase; 
+      letter-spacing: 2px;
+    }
+
+    .total { 
+      font-size: 4.5rem; 
+      font-weight: 800; 
+      color: var(--text); 
+      margin: 0.5rem 0;
+      text-shadow: 0 0 20px rgba(255,255,255,0.1);
+    }
+
+    /* Additional Stats Style */
+    .sub-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+    .stat-box {
+      background: #010409;
+      border: 1px solid var(--border);
+      padding: 10px;
+      border-radius: 8px;
+    }
+    .stat-label { font-size: 0.6rem; color: var(--secondary); text-transform: uppercase; }
+    .stat-value { font-size: 1rem; color: var(--success); font-weight: bold; margin-top: 4px; }
+
+    /* Platform Distribution Style */
+    .distro-container {
+      margin-bottom: 1.5rem;
+      text-align: left;
+    }
+    .distro-bar {
+      display: flex;
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+      background: #161b22;
+      margin: 8px 0;
+    }
+    .distro-segment { height: 100%; transition: width 1s ease; }
+    .distro-legend { display: flex; flex-wrap: wrap; gap: 10px; font-size: 0.6rem; color: var(--secondary); }
+    .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+
+    .github-info {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #21262d;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      color: var(--secondary);
+      border: 1px solid var(--border);
+      margin-bottom: 1rem;
+    }
+
+    .status { 
+      font-size: 0.65rem; 
+      color: #484f58; 
+      margin-top: 5px;
+    }
+
+    #package-list { 
+      margin-top: 1.5rem;
+      max-height: 200px; 
+      overflow-y: auto; 
+      padding-right: 10px;
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+    }
+
+    .pkg-item { 
+      margin-bottom: 12px;
+    }
+
+    .pkg-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      margin-bottom: 4px;
+    }
+
+    .pkg-name { color: var(--secondary); }
+    .pkg-count { color: var(--accent); font-weight: bold; }
+
+    .progress-bg {
+      height: 4px;
+      background: #161b22;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width 1s ease-out;
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+
+    #package-list::-webkit-scrollbar { width: 3px; }
+    #package-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+    
+        .source-info {
+      margin-top: 1.5rem;
+      font-size: 0.65rem;
+      color: var(--secondary);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+    }
+    .source-info i {
+      font-size: 0.9rem;
+      transition: color 0.3s;
+    }
+    .source-info i:hover {
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="github-info">
+    <svg height="16" viewBox="0 0 16 16" width="16" fill="currentColor"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z"></path></svg>
+    <span id="gh-stars">Fetching stars...</span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn" onclick="updateRange('last-day', this)">Day</button>
+    <button class="tab-btn" onclick="updateRange('last-week', this)">Week</button>
+    <button class="tab-btn active" onclick="updateRange('last-month', this)">Month</button>
+    <button class="tab-btn" onclick="updateRange('last-year', this)">Year</button>
+    <button class="tab-btn" onclick="updateRange('td', this)">All-Time</button>
+  </div>
+
+  <div class="main-stat">
+    <h1 id="view-title">Ecosystem Reach</h1>
+    <div id="total-count" class="total">0</div>
+    <div class="status" id="status-msg">System Idle</div>
+  </div>
+
+  <div class="sub-stats">
+    <div class="stat-box">
+      <div class="stat-label">Avg. Daily</div>
+      <div id="avg-daily" class="stat-value">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Velocity</div>
+      <div id="velocity" class="stat-value">0%</div>
+    </div>
+  </div>
+
+  <div class="distro-container">
+    <div class="stat-label">OS Distribution</div>
+    <div class="distro-bar" id="distro-bar"></div>
+    <div class="distro-legend" id="distro-legend"></div>
+  </div>
+  
+  <div id="package-list"></div>
+  <div class="source-info">
+    <span>Source from:</span>
+    <i class="fa-brands fa-npm"></i>
+    <i class="fa-brands fa-github"></i>
+  </div>
+</div>
+
+<script>
+  const packages = [
+    'lightvm',
+    "@lightvm/core-linux-x64",
+    "@lightvm/core-linux-ia32",
+    "@lightvm/core-win32-x64",
+    "@lightvm/core-win32-ia32",
+    "@lightvm/core-darwin-x64",
+    "@lightvm/core-android-arm64",
+    "@lightvm/core-android-arm",
+    "@lightvm/core-linux-musl-x64",
+    "@lightvm/core-linux-musl-ia32"
+  ];
+
+  let currentRange = 'last-month';
+  let prevTotal = 0;
+
+  async function getStars() {
+    try {
+      const res = await fetch('https://api.github.com/repos/soteenstudio/lightvm');
+      const data = await res.json();
+      if(data.stargazers_count !== undefined) {
+        document.getElementById('gh-stars').innerText = `${data.stargazers_count} Stars on GitHub`;
+      }
+    } catch (e) {
+      document.getElementById('gh-stars').innerText = `Development Mode`;
+    }
+  }
+
+  function animateValue(obj, start, end, duration) {
+    let startTimestamp = null;
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const val = Math.floor(progress * (end - start) + start);
+      obj.innerHTML = val.toLocaleString();
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+    window.requestAnimationFrame(step);
+  }
+
+  function updateRange(range, btn) {
+    if (currentRange === range) return;
+    currentRange = range;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    const titles = {
+      'last-day': 'Downloads (Last 24h)',
+      'last-week': 'Downloads (Last Week)',
+      'last-month': 'Ecosystem Reach',
+      'last-year': 'Yearly Impact',
+      'td': 'Total All-Time'
+    };
+    document.getElementById('view-title').innerText = titles[range];
+    
+    getDownloads();
+  }
+
+  async function getDownloads() {
+    const totalEl = document.getElementById('total-count');
+    const statusEl = document.getElementById('status-msg');
+    const listEl = document.getElementById('package-list');
+    const avgEl = document.getElementById('avg-daily');
+
+    try {
+      statusEl.innerText = ">> EXECUTING_API_FETCH...";
+      
+      let rangePath = currentRange;
+      let days = 30; // default for last-month
+      
+      if (currentRange === 'last-day') days = 1;
+      if (currentRange === 'last-week') days = 7;
+      if (currentRange === 'last-year') days = 365;
+      if (currentRange === 'td') {
+        const start = new Date('2024-01-01');
+        const now = new Date();
+        days = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+        rangePath = `2024-01-01:${now.toISOString().split('T')[0]}`;
+      }
+
+      const requests = packages.map(pkg => 
+        fetch(`https://api.npmjs.org/downloads/point/${rangePath}/${encodeURIComponent(pkg)}`)
+          .then(res => res.json())
+          .catch(() => ({ package: pkg, downloads: 0 }))
+      );
+
+      const results = await Promise.all(requests);
+      results.sort((a, b) => (b.downloads || 0) - (a.downloads || 0));
+
+      let total = results.reduce((acc, curr) => acc + (curr.downloads || 0), 0);
+      
+      animateValue(totalEl, prevTotal, total, 800);
+      prevTotal = total;
+
+      // Update Average
+      const dailyAvg = (total / days).toFixed(1);
+      avgEl.innerText = dailyAvg;
+      document.getElementById('velocity').innerText = `+${((dailyAvg/total)*100 || 0).toFixed(2)}%`;
+
+      // Logic Platform Distribution
+      const platformData = {
+        Win: { count: 0, color: '#2f81f7' },
+        Linux: { count: 0, color: '#3fb950' },
+        Darwin: { count: 0, color: '#ffca28' },
+        Mobile: { count: 0, color: '#f85149' },
+        Other: { count: 0, color: '#8b949e' }
+      };
+
+      listEl.innerHTML = '';
+      results.forEach(data => {
+        const count = data.downloads || 0;
+        const percentage = total > 0 ? (count / total * 100) : 0;
+        const name = data.package;
+
+        // Categorize for distribution
+        if (name.includes('win32')) platformData.Win.count += count;
+        else if (name.includes('linux')) platformData.Linux.count += count;
+        else if (name.includes('darwin')) platformData.Darwin.count += count;
+        else if (name.includes('android')) platformData.Mobile.count += count;
+        else platformData.Other.count += count;
+
+        const item = document.createElement('div');
+        item.className = 'pkg-item';
+        item.innerHTML = `
+          <div class="pkg-info">
+            <span class="pkg-name">${name}</span>
+            <span class="pkg-count">${count.toLocaleString()}</span>
+          </div>
+          <div class="progress-bg">
+            <div class="progress-fill" style="width: ${percentage}%"></div>
+          </div>
+        `;
+        listEl.appendChild(item);
+      });
+
+      // Render Distribution Bar
+      const distroBar = document.getElementById('distro-bar');
+      const distroLegend = document.getElementById('distro-legend');
+      distroBar.innerHTML = '';
+      distroLegend.innerHTML = '';
+
+      Object.keys(platformData).forEach(key => {
+        const p = platformData[key];
+        const pPercent = total > 0 ? (p.count / total * 100) : 0;
+        if (pPercent > 0) {
+          distroBar.innerHTML += `<div class="distro-segment" style="width: ${pPercent}%; background: ${p.color}"></div>`;
+          distroLegend.innerHTML += `<span><span class="dot" style="background: ${p.color}"></span>${key} ${pPercent.toFixed(1)}%</span>`;
+        }
+      });
+
+      statusEl.innerText = `LAST_SYNC: ${new Date().toLocaleTimeString()}`;
+      
+    } catch (error) {
+      statusEl.innerText = "CRITICAL_ERROR: SYNC_FAILED";
+    }
+  }
+
+  getStars();
+  getDownloads();
+  setInterval(getDownloads, 300000);
+  setInterval(getStars, 600000);
+</script>
+
+</body>
+</html>
