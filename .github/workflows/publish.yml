@@ -48,12 +48,11 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Rust
-        # Tambahin pengecekan musl biar gak diinstall di runner host
         if: matrix.platform != 'linux-ia32' && !contains(matrix.platform, 'musl')
         uses: dtolnay/rust-toolchain@stable
         with:
+          toolchain: stable
           targets: ${{ matrix.target }}
-          override: true
 
       # Handle Android NDK buat arm64 dan armv7
       - name: Setup Android NDK
@@ -70,13 +69,6 @@ jobs:
           echo "[target.${{ matrix.target }}]" > .cargo/config.toml
           echo "ar = \"$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar\"" >> .cargo/config.toml
           echo "linker = \"$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/$LINKER\"" >> .cargo/config.toml
-
-      - name: Setup Windows x86
-        if: matrix.platform == 'win32-ia32'
-        run: |
-          rustup target add i686-pc-windows-msvc
-          # Kadang butuh kepastian vcvarsall buat manggil linker 32-bit
-          
 
       - name: Build Release (Standard & Android)
         if: matrix.platform != 'linux-ia32' && !contains(matrix.platform, 'musl')
