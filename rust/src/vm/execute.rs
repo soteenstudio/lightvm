@@ -21,7 +21,10 @@ use crate::instructions::{
     call_func::call_func, if_false_func::if_false_func, jump_func::jump_func,
     return_func::return_func, stop_func::stop_func,
   },
-  io::{print::print_func, println::println_func},
+  io::{
+    inspect_arr_func::inspect_arr_func, inspect_obj_func::inspect_obj_func, print_func::print_func,
+    println_func::println_func,
+  },
   logic::{and_func::and_func, or_func::or_func},
   math::{
     add_func::add_func,
@@ -31,6 +34,7 @@ use crate::instructions::{
     mul_func::mul_func,
     sub_func::sub_func,
   },
+  metadata::typeof_func::typeof_func,
   stack::{
     concat_func::concat_func, get_func::get_func, push_func::push_func, set_func::set_func,
     val_func::val_func,
@@ -285,6 +289,15 @@ pub fn execute(
       }
       Instructions::Access(prop) => {
         access_func(&mut stack, prop)?;
+      }
+      Instructions::TypeOf => {
+        typeof_func(&mut stack)?;
+      }
+      Instructions::InspectObj => {
+        inspect_obj_func(&mut stack)?;
+      }
+      Instructions::InspectArr => {
+        inspect_arr_func(&mut stack)?;
       }
       _ => {}
     }

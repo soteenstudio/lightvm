@@ -58,6 +58,8 @@ pub enum Instructions {
   MakeObj(u32),
   MakeArray(u32),
   TypeOf,
+  InspectObj,
+  InspectArr,
   Length,
   Concat,
   Dup,
@@ -145,6 +147,8 @@ impl Instructions {
         "tointeger" => Instructions::ToInteger,
         "tofloat" => Instructions::ToFloat,
         "typeof" => Instructions::TypeOf,
+        "inspect_obj" => Instructions::InspectObj,
+        "inspect_arr" => Instructions::InspectArr,
         "length" => Instructions::Length,
         "concat" => Instructions::Concat,
         "dup" => Instructions::Dup,
@@ -261,6 +265,9 @@ impl Instructions {
         let count = arr[1].as_u64().expect("MakeArray count harus angka") as u32;
         Instructions::MakeArray(count)
       }
+      "typeof" => Instructions::TypeOf,
+      "inspect_obj" => Instructions::InspectObj,
+      "inspect_arr" => Instructions::InspectArr,
       "instantiate" => {
         let class_name = arr[1].as_str().expect("ClassName must be string");
         let argc = arr[2].as_u64().unwrap_or(0) as u32;
