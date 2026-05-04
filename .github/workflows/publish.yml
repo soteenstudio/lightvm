@@ -78,10 +78,16 @@ jobs:
       - name: Build Release (Docker - Linux 32-bit & Musl)
         if: matrix.platform == 'linux-ia32' || contains(matrix.platform, 'musl')
         run: |
-          # Download cross binary biar gak usah nunggu build
+          # 1. Download binary cross
           curl -L https://github.com/cross-rs/cross/releases/latest/download/cross-x86_64-unknown-linux-musl.tar.gz | tar xz
           
-          # Jalanin build pake binary cross yang baru di-download
+          # 2. Paksa izin eksekusi biar gak "Permission Denied"
+          chmod +x cross
+          
+          # 3. Setup QEMU (PENTING buat build lintas arsitektur di Docker)
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          
+          # 4. Jalanin build
           cd rust
           ../cross build --release --target ${{ matrix.target }}
 
