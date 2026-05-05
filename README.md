@@ -35,12 +35,12 @@ const vm = new LightVM([/** Capability **/]);
   ```
 2. ``provide()`` method:
   Permission to inject data/variables into the VM.
-  ```typescript
-  vm.provide("identity", {
-    name: "John Doe", 
-    force: "2021",
-  }); // Capability: no specific capability
-  ```
+    ```typescript
+    vm.provide("identity", {
+      name: "John Doe", 
+      force: "2021",
+    }); // Capability: no specific capability
+    ```
 3. ``inspect()`` method:
   Permission to view state, number of instructions, and capability.
   ```typescript
