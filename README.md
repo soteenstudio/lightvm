@@ -25,14 +25,14 @@ const vm = new LightVM([/** Capability **/]);
 ## How to use
 1. ``run()`` method:
   Permission to start bytecode execution.
-  ```typescript
-  vm.load([
-    ["val", "x"],
-    ["push", 5],
-    ["set", "x"]
-    ]) // or path to file .ltc
-    .run(); // Capability: control
-  ```
+    ```typescript
+    vm.load([
+      ["val", "x"],
+      ["push", 5],
+      ["set", "x"]
+      ]) // or path to file .ltc
+      .run(); // Capability: control
+    ```
 2. ``provide()`` method:
   Permission to inject data/variables into the VM.
     ```typescript
@@ -43,21 +43,21 @@ const vm = new LightVM([/** Capability **/]);
     ```
 3. ``inspect()`` method:
   Permission to view state, number of instructions, and capability.
-  ```typescript
-  const report = vm.inspect(); // Capability: observe
-  console.log(report);
-  ```
+    ```typescript
+    const report = vm.inspect(); // Capability: observe
+    console.log(report);
+    ```
 4. ``halt()`` method:
   Permission to force/manually stop VM.
-  ```typescript
-  vm.halt(); // Capability: unsafe
-  console.log("The VM has been terminated.")
-  ```
-5. ``halt()`` method:
-  Permission to force/manually stop VM.
-  ```typescript
-  const add = vm.export("add"); // Capability: control
-  console.log(add(5, 6));
-  ```
+    ```typescript
+    vm.halt(); // Capability: unsafe
+    console.log("The VM has been terminated.")
+    ```
+5. ``export()`` method:
+  Permission to export functions in the VM out.
+    ```typescript
+    const add = vm.export("add"); // Capability: control
+    console.log(add(5, 6));
+    ```
 ## 📜 License
 This project is distributed using the **Apache-2.0 license**
