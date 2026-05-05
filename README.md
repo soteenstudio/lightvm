@@ -23,7 +23,7 @@ import { LightVM } from 'lightvm';
 const vm = new LightVM([/** Capability **/]);
 ```
 ## How to use
-1. ``run()`` method:
+1. ``run()`` method:  
   Permission to start bytecode execution.
     ```typescript
     vm.load([
@@ -33,7 +33,7 @@ const vm = new LightVM([/** Capability **/]);
       ]) // or path to file .ltc
       .run(); // Capability: control
     ```
-2. ``provide()`` method:
+2. ``provide()`` method:  
   Permission to inject data/variables into the VM.
     ```typescript
     vm.provide("identity", {
@@ -41,19 +41,19 @@ const vm = new LightVM([/** Capability **/]);
       force: "2021",
     }); // Capability: no specific capability
     ```
-3. ``inspect()`` method:
+3. ``inspect()`` method:  
   Permission to view state, number of instructions, and capability.
     ```typescript
     const report = vm.inspect(); // Capability: observe
     console.log(report);
     ```
-4. ``halt()`` method:
+4. ``halt()`` method:  
   Permission to force/manually stop VM.
     ```typescript
     vm.halt(); // Capability: unsafe
     console.log("The VM has been terminated.")
     ```
-5. ``export()`` method:
+5. ``export()`` method:  
   Permission to export functions in the VM out.
     ```typescript
     const add = vm.export("add"); // Capability: control
