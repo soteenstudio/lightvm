@@ -23,7 +23,7 @@ import { LightVM } from 'lightvm';
 const vm = new LightVM([/** Capability **/]);
 ```
 ## How to use
-1. ``run()`` method:  
+1. ``run()`` **method:**  
   Permission to start bytecode execution.
     ```typescript
     vm.load([
