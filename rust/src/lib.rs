@@ -23,6 +23,7 @@ use crate::types::{
 use crate::vm::run::run;
 use ahash::AHashMap;
 use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode};
+use napi::Env;
 use napi_derive::napi;
 use smol_str::SmolStr;
 use std::collections::HashSet;
@@ -73,38 +74,37 @@ impl LightVM {
     Ok(())
   }
   #[napi]
-  pub fn load(&mut self, source: napi::JsUnknown) -> Result<(), napi::Error> {
+  pub fn load(&mut self, env: Env, source: napi::JsUnknown) -> Result<(), napi::Error> {
     match source.get_type()? {
       napi::ValueType::String => {
-        let s: String = source
-          .coerce_to_string()?
-          .into_utf8()?
-          .as_str()?
-          .to_string();
-        if s.trim().starts_with('[') {
-          self.bytecode = serde_json::from_str(&s)
-            .map_err(|e| napi::Error::from_reason(format!("Gagal parse JSON string: {}", e)))?;
+        let s = source.coerce_to_string()?.into_utf8()?;
+        let trimmed = s.as_str()?.trim();
+        if trimmed.starts_with('[') {
+          self.bytecode = serde_json::from_str(trimmed)
+            .map_err(|e| napi::Error::from_reason(format!("Gagal parse JSON: {}", e)))?;
         } else {
-          let path = std::path::Path::new(&s);
+          let path = std::path::Path::new(trimmed);
           if path.exists() {
             let code =
               fs::read_to_string(path).map_err(|e| napi::Error::from_reason(e.to_string()))?;
             self.bytecode = crate::utils::loader::parse_ltc(&code);
-          } else {
-            return Err(napi::Error::from_reason(
-              "File gak ketemu dan bukan JSON valid",
-            ));
           }
         }
       }
       napi::ValueType::Object => {
-        let json_str = source
+        let json_method = env
+          .get_global()?
+          .get_named_property::<napi::JsObject>("JSON")?
+          .get_named_property::<napi::JsFunction>("stringify")?;
+        let json_str: String = json_method
+          .call(None, &[source])?
           .coerce_to_string()?
           .into_utf8()?
           .as_str()?
           .to_string();
-        self.bytecode = serde_json::from_str(&json_str)
-          .map_err(|e| napi::Error::from_reason(format!("Gagal parse bytecode. Tips: Pastikan kirim JSON.stringify(bytecode) dari JS. Error: {}", e)))?;
+        self.bytecode = serde_json::from_str(&json_str).map_err(|e| {
+          napi::Error::from_reason(format!("Gagal parse Object ke Bytecode: {}", e))
+        })?;
       }
       _ => return Err(napi::Error::from_reason("Tipe data load gak disupport")),
     }

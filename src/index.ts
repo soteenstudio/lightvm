@@ -54,6 +54,7 @@ export class LightVM {
     } else {
       payload = JSON.stringify(source);
     }
+    console.log("Payload: ", payload);
     this.instance.load(payload);
     return this;
   }
@@ -62,7 +63,7 @@ export class LightVM {
   }
   export (name: string) {
     return (...args: any[]) => {
-      const rawResult = this.instance.call_exported(name, JSON.stringify(args));
+      const rawResult = this.instance.callExported(name, JSON.stringify(args));
       const parsed = JSON.parse(rawResult);
       if (!parsed || parsed === "Undefined") return undefined;
       return typeof parsed === 'object' ? Object.values(parsed)[0] : parsed;

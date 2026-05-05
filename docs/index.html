@@ -339,10 +339,10 @@
       if (currentRange === 'last-week') days = 7;
       if (currentRange === 'last-year') days = 365;
       if (currentRange === 'td') {
-        const start = new Date('2024-01-01');
+        const start = new Date('2026-05-01T22:56:14Z');
         const now = new Date();
         days = Math.floor((now - start) / (1000 * 60 * 60 * 24));
-        rangePath = `2024-01-01:${now.toISOString().split('T')[0]}`;
+        rangePath = `2026-05-01:${now.toISOString().split('T')[0]}`;
       }
 
       const requests = packages.map(pkg => 

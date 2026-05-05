@@ -23,14 +23,15 @@ import { LightVM } from 'lightvm';
 const vm = new LightVM([/** Capability **/]);
 ```
 ## How to use
-1. ``run()`` **method:**  
+1. ``run()`` method:  
   Permission to start bytecode execution.
     ```typescript
-    vm.load([
+    const raw = [
       ["val", "x"],
       ["push", 5],
       ["set", "x"]
-      ]) // or path to file .ltc
+    ];
+    vm.load(vm.tools().optimizeBytecode(JSON.stringify(raw))) // or path to file .ltc
       .run(); // Capability: control
     ```
 2. ``provide()`` method:  

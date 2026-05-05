@@ -76,10 +76,12 @@ impl Instructions {
       return serde_json::from_value(serde_json::Value::String(op_lower))
         .unwrap_or(Instructions::Stop);
     }
-    let json_map = serde_json::json!({
-        &op_lower: args[0]
-    });
-    serde_json::from_value(json_map).unwrap_or_else(|_| {
+    let json_payload = if args.len() == 1 {
+      serde_json::json!({ &op_lower: args[0] })
+    } else {
+      serde_json::json!({ &op_lower: args })
+    };
+    serde_json::from_value(json_payload).unwrap_or_else(|_| {
       if op_lower == "push" {
         let val = &args[0];
         let value_internal = if val.is_i64() {
@@ -89,8 +91,7 @@ impl Instructions {
         } else if val.is_boolean() {
           Value::Bool(val.as_bool().unwrap())
         } else if val.is_string() {
-          let s = val.as_str().unwrap();
-          Value::String(SmolStr::new(s))
+          Value::String(SmolStr::new(val.as_str().unwrap()))
         } else {
           Value::Null
         };
@@ -102,29 +103,28 @@ impl Instructions {
   }
   pub fn to_parts(&self) -> Vec<String> {
     let json = serde_json::to_value(self).unwrap_or(serde_json::Value::Null);
-    if json.is_string() {
-      return vec![json.as_str().unwrap().into()];
-    } else if let Some(obj) = json.as_object() {
-      let (key, val) = obj.iter().next().unwrap();
-      let val_str = if key == "push" {
-        if let Some(s) = val.as_str() {
-          let clean_s = s.replace("\\\"", "\"").replace("\\\\", "\\");
-          format!("\"{}\"", clean_s)
-        } else if val.is_object() {
-          let inner_obj = val.as_object().unwrap();
-          let (_type_key, actual_val) = inner_obj.iter().next().unwrap();
-          actual_val.as_str().unwrap_or("").to_string()
-        } else {
-          val.as_str().unwrap_or("").to_string()
+    if let Some(s) = json.as_str() {
+      return vec![s.to_string()];
+    }
+    if let Some(obj) = json.as_object() {
+      if let Some((key, val)) = obj.iter().next() {
+        let mut parts = vec![key.clone()];
+        match val {
+          JsonValue::Array(arr) => {
+            for v in arr {
+              if let Some(inner_arr) = v.as_array() {
+                for inner_v in inner_arr {
+                  parts.push(inner_v.as_str().unwrap_or("").replace("\"", ""));
+                }
+              } else {
+                parts.push(v.to_string().replace("\"", ""));
+              }
+            }
+          }
+          _ => parts.push(val.to_string().replace("\"", "")),
         }
-      } else {
-        if let Some(s) = val.as_str() {
-          s.into()
-        } else {
-          val.as_str().unwrap_or("").to_string()
-        }
-      };
-      return vec![key.clone(), val_str];
+        return parts;
+      }
     }
     vec!["Unknown".into()]
   }
@@ -240,23 +240,22 @@ impl Instructions {
         Instructions::Dec(SmolStr::new(s), num_type)
       }
       "func" => {
-        // Pake .get() biar gak index out of bounds, pake .and_then() buat chain check
-        let name = SmolStr::new(arr.get(1).and_then(|v| v.as_str()).expect("Func name missing or not a string"));
+        let name = SmolStr::new(arr.get(1).and_then(|v| v.as_str()).unwrap_or(""));
         let params = arr.get(2).and_then(|v| v.as_u64()).unwrap_or(0) as u32;
         let start = arr.get(3).and_then(|v| v.as_u64()).unwrap_or(0) as usize;
         let end = arr.get(4).and_then(|v| v.as_u64()).unwrap_or(0) as usize;
-        
-        // Bagian names ini yang paling sering bikin panic kalau arr[5] bukan array
         let mut names: Vec<SmolStr> = Vec::new();
-        if let Some(names_arr) = arr.get(5).and_then(|v| v.as_array()) {
-          for n in names_arr {
-            if let Some(s) = n.as_str() {
-              names.push(SmolStr::new(s));
+        if let Some(v5) = arr.get(5) {
+          if let Some(names_arr) = v5.as_array() {
+            for n in names_arr {
+              if let Some(s) = n.as_str() {
+                names.push(SmolStr::new(s));
+              }
             }
+          } else if let Some(s) = v5.as_str() {
+            names.push(SmolStr::new(s));
           }
         }
-
-        // Handle sisa argumen kalau ada
         for i in 6..arr.len() {
           if let Some(s) = arr[i].as_str() {
             names.push(SmolStr::new(s));
@@ -264,7 +263,6 @@ impl Instructions {
         }
         Instructions::Func(name, params, start, end, names)
       }
-
       "make_obj" => {
         let count = arr[1].as_u64().expect("MakeObj count harus angka") as u32;
         Instructions::MakeObj(count)
