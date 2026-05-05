@@ -21,6 +21,10 @@ use crate::instructions::{
     call_func::call_func, if_false_func::if_false_func, jump_func::jump_func,
     return_func::return_func, stop_func::stop_func,
   },
+  conversion::{
+    to_double_func::to_double_func, to_float_func::to_float_func, to_integer_func::to_integer_func,
+    to_long_func::to_long_func, to_string_func::to_string_func,
+  },
   io::{
     inspect_arr_func::inspect_arr_func, inspect_obj_func::inspect_obj_func, print_func::print_func,
     println_func::println_func,
@@ -34,10 +38,10 @@ use crate::instructions::{
     mul_func::mul_func,
     sub_func::sub_func,
   },
-  metadata::typeof_func::typeof_func,
+  metadata::{length_func::length_func, typeof_func::typeof_func},
   stack::{
-    concat_func::concat_func, get_func::get_func, push_func::push_func, set_func::set_func,
-    val_func::val_func,
+    concat_func::concat_func, dup_func::dup_func, get_func::get_func, push_func::push_func,
+    set_func::set_func, val_func::val_func,
   },
 };
 use crate::types::{
@@ -298,6 +302,27 @@ pub fn execute(
       }
       Instructions::InspectArr => {
         inspect_arr_func(&mut stack)?;
+      }
+      Instructions::ToString => {
+        to_string_func(&mut stack);
+      }
+      Instructions::ToInteger => {
+        to_integer_func(&mut stack);
+      }
+      Instructions::ToLong => {
+        to_long_func(&mut stack);
+      }
+      Instructions::ToFloat => {
+        to_float_func(&mut stack);
+      }
+      Instructions::ToDouble => {
+        to_double_func(&mut stack);
+      }
+      Instructions::Dup => {
+        dup_func(&mut stack);
+      }
+      Instructions::Length => {
+        length_func(&mut stack);
       }
       _ => {}
     }

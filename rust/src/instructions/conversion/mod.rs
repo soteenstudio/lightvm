@@ -8,5 +8,8 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod length_func;
-pub mod typeof_func;
+pub mod to_double_func;
+pub mod to_float_func;
+pub mod to_integer_func;
+pub mod to_long_func;
+pub mod to_string_func;

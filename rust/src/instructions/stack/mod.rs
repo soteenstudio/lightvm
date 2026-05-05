@@ -9,6 +9,7 @@
  */
 
 pub mod concat_func;
+pub mod dup_func;
 pub mod get_func;
 pub mod push_func;
 pub mod set_func;

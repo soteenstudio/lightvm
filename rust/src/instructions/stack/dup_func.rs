@@ -8,5 +8,10 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod length_func;
-pub mod typeof_func;
+use crate::types::value::Value;
+pub fn dup_func(stack: &mut Vec<Value>) {
+  if let Some(top) = stack.last() {
+    let cloned = top.clone();
+    stack.push(cloned);
+  }
+}
