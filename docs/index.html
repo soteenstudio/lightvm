@@ -262,6 +262,8 @@
 
 <script>
   const packages = [
+    /*"bynixscript",
+    "jaksel-language",*/
     'lightvm',
     "@lightvm/core-linux-x64",
     "@lightvm/core-linux-ia32",
@@ -344,7 +346,7 @@
       }
 
       const requests = packages.map(pkg => 
-        fetch(`https://api.npmjs.org/downloads/point/${rangePath}/${encodeURIComponent(pkg)}`)
+        fetch(`https://api.npmjs.org/downloads/point/${rangePath}/${encodeURIComponent(pkg)}?v${Date.now()}`)
           .then(res => res.json())
           .catch(() => ({ package: pkg, downloads: 0 }))
       );

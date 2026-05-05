@@ -240,16 +240,23 @@ impl Instructions {
         Instructions::Dec(SmolStr::new(s), num_type)
       }
       "func" => {
-        let name = SmolStr::new(arr[1].as_str().unwrap());
-        let params = arr[2].as_u64().unwrap() as u32;
-        let start = arr[3].as_u64().unwrap() as usize;
-        let end = arr[4].as_u64().unwrap() as usize;
-        let mut names: Vec<SmolStr> = arr[5]
-          .as_array()
-          .unwrap()
-          .iter()
-          .map(|n| SmolStr::new(n.as_str().unwrap()))
-          .collect();
+        // Pake .get() biar gak index out of bounds, pake .and_then() buat chain check
+        let name = SmolStr::new(arr.get(1).and_then(|v| v.as_str()).expect("Func name missing or not a string"));
+        let params = arr.get(2).and_then(|v| v.as_u64()).unwrap_or(0) as u32;
+        let start = arr.get(3).and_then(|v| v.as_u64()).unwrap_or(0) as usize;
+        let end = arr.get(4).and_then(|v| v.as_u64()).unwrap_or(0) as usize;
+        
+        // Bagian names ini yang paling sering bikin panic kalau arr[5] bukan array
+        let mut names: Vec<SmolStr> = Vec::new();
+        if let Some(names_arr) = arr.get(5).and_then(|v| v.as_array()) {
+          for n in names_arr {
+            if let Some(s) = n.as_str() {
+              names.push(SmolStr::new(s));
+            }
+          }
+        }
+
+        // Handle sisa argumen kalau ada
         for i in 6..arr.len() {
           if let Some(s) = arr[i].as_str() {
             names.push(SmolStr::new(s));
@@ -257,6 +264,7 @@ impl Instructions {
         }
         Instructions::Func(name, params, start, end, names)
       }
+
       "make_obj" => {
         let count = arr[1].as_u64().expect("MakeObj count harus angka") as u32;
         Instructions::MakeObj(count)
