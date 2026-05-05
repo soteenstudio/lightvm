@@ -60,5 +60,14 @@ const vm = new LightVM([/** Capability **/]);
     const add = vm.export("add"); // Capability: control
     console.log(add(5, 6));
     ```
+## Supported Architectures
+LightVM supports a wide range of platforms and architectures to ensure maximum operational flexibility. Here's the current compatibility list:
+| OS / Runtime | Architecture | Toolchain |
+|--------------|--------------|-----------|
+| Windows      | x64, ia32    | MSVC      |
+| Linux        | x64, ia32  | GNU (glibc) |
+| Linux (musl) | x64, ia32    | musl      |
+| macOS (Darwin) | x64      | Apple Clang |
+| Android      | arm64, arm   | NDK       |
 ## 📜 License
 This project is distributed using the **Apache-2.0 license**
