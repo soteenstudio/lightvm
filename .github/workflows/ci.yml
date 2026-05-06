@@ -7,67 +7,78 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest # Pake server Linux-nya 
-
+  quality-gate:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4 # Ambil kode kamu dari repo
+        uses: actions/checkout@v4
 
+      # 1. SMART CACHING (Biar gak download ulang terus)
+      - name: Cache Node Modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      # 2. SETUP ENV
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22' # Sesuaikan sama versi Node kamu
+          node-version: '22'
 
-      - name: Install Dependencies
-        run: npm install
-      
-      - name: Type Check
-        run: npm run typecheck
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
 
-      # 1. CEK ERROR: Coba build pake esbuild
-      - name: Check Build
-        run: npm run build 
+      - name: Install dependencies
+        run: npm ci # Lebih cepet & konsisten buat CI dibanding 'npm install'
 
-      - name: Check Junk Comments
+      # 3. ADVANCED CHECK (Parallel & Integrated)
+      - name: Linting & Formatting
         run: |
-          echo "Checking for low-effort junk comments at the top of files..."
-          
-          # Cari semua file .ts
-          # Cek apakah baris pertama isinya cuma "// NamaFile.ts"
-          # Regex: ^// [A-Za-z0-9_-]+\.ts$
-          
-          JUNK_FILES=""
-          
-          while read -r file; do
-            # Ambil baris pertama, hapus whitespace
-            FIRST_LINE=$(head -n 1 "$file" | xargs)
-            
-            # Cek pake regex: starts with //, ends with .ts, gak ada teks lain
-            if [[ "$FIRST_LINE" =~ ^\/\/\ [A-Za-z0-9_-]+\.ts$ ]]; then
-              JUNK_FILES="$JUNK_FILES"$'\n'"$file"
-            fi
-          done < <(find ./src -name "*.ts")
+          echo "Running Prettier & Rustfmt check..."
+          npx prettier --check "src/**/*.ts"
+          if [ -d "./rust" ]; then cd rust && cargo fmt --check && cd ..; fi
 
-          if [ -n "$JUNK_FILES" ]; then
-            echo "❌ Clay, baris pertama file ini isinya cuma sampah nama file:"
-            echo "$JUNK_FILES"
-            echo "Hapus atau ganti dengan header Copyright yang bener!"
+      - name: Deep Code Audit (Junk & Header)
+        run: |
+          # Pake ripgrep (rg) kalo mau lebih kenceng, tapi find + grep udah oke buat repo ukuran standar
+          MISSING_COPYRIGHT=$(find ./src ./rust -type f \( -name "*.ts" -o -name "*.rs" \) | xargs grep -L "Copyright")
+          
+          if [ -n "$MISSING_COPYRIGHT" ]; then
+            echo "❌ Clay, file ini butuh Copyright header:"
+            echo "$MISSING_COPYRIGHT"
             exit 1
-          else
-            echo "✅ Baris pertama aman dari sampah. Lanjut!"
           fi
 
-      - name: Audit Copyright Header
+          # Junk comment check pake regex yang lebih clean
+          JUNK_CHECK=$(find ./src ./rust -type f \( -name "*.ts" -o -name "*.rs" \) -exec awk 'NR==1 && /^\/\/ [A-Za-z0-9_-]+\.(ts|rs)$/ {print FILENAME}' {} +)
+          
+          if [ -n "$JUNK_CHECK" ]; then
+            echo "❌ Baris pertama cuma nama file (Junk):"
+            echo "$JUNK_CHECK"
+            exit 1
+          fi
+
+      - name: Rust Security & Quality (Clippy)
         run: |
-          # Cari semua file .ts secara rekursif, lalu cek yang GAK ada kata "Copyright"
-          # -L di grep itu "files-without-match"
-          MISSING_HEADERS=$(find ./src -name "*.ts" -exec grep -L "Copyright" {} +)
-
-          if [ -z "$MISSING_HEADERS" ]; then
-            echo "✅ Semua file udah ada headernya. Mantap Clay!"
-          else
-            echo "❌ Waduh, file-file ini belum ada headernya:"
-            echo "$MISSING_HEADERS"
-            exit 1 
+          if [ -d "./rust" ]; then
+            cd rust && cargo clippy -- -D warnings
           fi
+
+      - name: Final Build Check
+        run: npm run build
