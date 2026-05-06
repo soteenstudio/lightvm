@@ -118,16 +118,20 @@ jobs:
           matrix.platform == 'wasm32'
         run: |
           if [[ "${{ matrix.platform }}" == *"android"* ]]; then
-            # Android tetep pake cargo biasa (pake NDK)
             cd rust && cargo build --release --target ${{ matrix.target }}
             
           elif [[ "${{ matrix.platform }}" == "wasm32" ]]; then
-            # Jalur khusus WASM: Gak usah pake Cross, cargo biasa aja
-            # Tapi pastiin target udah keinstall (udah ada di step Install Rust Minimal)
-            cd rust && cargo build --release --target ${{ matrix.target }}
+            # Fix buat getrandom: Enable wasm_js lewat RUSTFLAGS
+            cd rust
+            RUSTFLAGS="--cfg=getrandom_backend=\"wasm_js\"" cargo build --release --target ${{ matrix.target }}
+            
+          elif [[ "${{ matrix.platform }}" == *"openbsd"* ]]; then
+            # OpenBSD gak ada std di stable, harus build dari source (-Z)
+            # Butuh nightly atau pake build-std di stable (experimental)
+            cd rust
+            cargo build --release --target ${{ matrix.target }} -Z build-std=std,panic_abort
             
           elif [[ "${{ matrix.platform }}" == *"musl"* ]]; then
-            # Fix buat Musl cdylib (RUSTFLAGS biar gak static linking)
             if [ ! -f "./cross" ]; then
               curl -L https://github.com/cross-rs/cross/releases/latest/download/cross-x86_64-unknown-linux-musl.tar.gz | tar xz
               chmod +x cross
@@ -136,7 +140,6 @@ jobs:
             RUSTFLAGS="-C target-feature=-crt-static" ../cross build --release --target ${{ matrix.target }}
             
           else
-            # Sisanya (IA32, BSD) tetep pake Cross
             if [ ! -f "./cross" ]; then
               curl -L https://github.com/cross-rs/cross/releases/latest/download/cross-x86_64-unknown-linux-musl.tar.gz | tar xz
               chmod +x cross
