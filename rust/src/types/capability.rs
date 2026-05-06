@@ -8,9 +8,10 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
+#[cfg(feature = "node")]
 use napi_derive::napi;
 use serde::{Deserialize, Serialize};
-#[napi]
+#[cfg_attr(feature = "node", napi)]
 #[derive(Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum Capability {
   Control,

@@ -8,8 +8,9 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
+#[cfg(feature = "node")]
 use napi_derive::napi;
-#[napi(string_enum)]
+#[cfg_attr(feature = "node", napi(string_enum))]
 #[derive(Debug, Eq, PartialEq, Hash)]
 pub enum VmEvent {
   Tick,

@@ -20,18 +20,22 @@ use crate::types::{
   vmevent::VmEvent,
   vmstate::VmState,
 };
-use crate::vm::run::run;
 use ahash::AHashMap;
+#[cfg(feature = "node")]
 use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode};
+#[cfg(feature = "node")]
 use napi::Env;
+#[cfg(feature = "node")]
 use napi_derive::napi;
 use smol_str::SmolStr;
 use std::collections::HashSet;
-use std::fs;
-#[napi(js_name = "LightVM")]
+#[cfg_attr(feature = "node", napi(js_name = "LightVM"))]
 pub struct LightVM {
   bytecode: Vec<Instructions>,
+  #[cfg(feature = "node")]
   listeners: AHashMap<VmEvent, Vec<ThreadsafeFunction<String>>>,
+  #[cfg(not(feature = "node"))]
+  listeners: AHashMap<VmEvent, Vec<Box<dyn Fn(String) + Send + Sync>>>,
   caps: HashSet<Capability>,
   state: VmState,
   _outputs: Vec<String>,
@@ -40,6 +44,166 @@ pub struct LightVM {
   exported: HashSet<SmolStr>,
   _imports: AHashMap<String, Value>,
 }
+#[cfg(not(feature = "node"))]
+impl LightVM {
+  pub fn new(caps: Vec<Capability>) -> Self {
+    let mut caps_set = HashSet::new();
+    if caps.is_empty() {
+      caps_set.insert(Capability::Observe);
+    } else {
+      for c in caps {
+        caps_set.insert(c);
+      }
+    }
+    Self {
+      bytecode: Vec::new(),
+      listeners: AHashMap::new(),
+      caps: caps_set,
+      state: VmState::Idle,
+      _outputs: Vec::new(),
+      _last_value: Value::Undefined,
+      functions: AHashMap::new(),
+      exported: HashSet::new(),
+      _imports: AHashMap::new(),
+    }
+  }
+  fn require(&self, cap: Capability) -> Result<(), String> {
+    if !self.caps.contains(&cap) {
+      return Err(format!("Capability {:?} not granted", cap));
+    }
+    Ok(())
+  }
+  fn index_metadata(&mut self) {
+    self.functions.clear();
+    self.exported.clear();
+    let mut itoa_buf = itoa::Buffer::new();
+    for (i, instr) in self.bytecode.iter().enumerate() {
+      if let Instructions::Func(_name, params, start, end, _names) = instr {
+        let idx_str = itoa_buf.format(i);
+        let mut key = String::with_capacity(6 + idx_str.len());
+        key.push_str("__idx_");
+        key.push_str(idx_str);
+        self.functions.insert(
+          SmolStr::from(key),
+          FuncMetadata {
+            params_count: *params,
+            param_names: Vec::new(),
+            start: *start,
+            end: *end,
+          },
+        );
+      }
+    }
+  }
+  fn emit(&self, event: VmEvent, payload: serde_json::Value) {
+    if let Some(list) = self.listeners.get(&event) {
+      let json_payload = payload.to_string();
+      for listener in list {
+        #[cfg(feature = "node")]
+        {
+          let _ = listener.call(
+            Ok(json_payload.clone()),
+            napi::threadsafe_function::ThreadsafeFunctionCallMode::Blocking,
+          );
+        }
+        #[cfg(not(feature = "node"))]
+        {
+          listener(json_payload.clone());
+        }
+      }
+    }
+  }
+  fn load_internal(&mut self, source: String) -> Result<(), String> {
+    let trimmed = source.trim();
+    if trimmed.starts_with('[') {
+      self.bytecode =
+        serde_json::from_str(trimmed).map_err(|e| format!("Gagal parse JSON: {}", e))?;
+    } else {
+      let path = std::path::Path::new(trimmed);
+      if path.exists() {
+        let code = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
+        self.bytecode = crate::utils::loader::parse_ltc(&code);
+      } else {
+        return Err("Source bukan JSON dan file tidak ditemukan".into());
+      }
+    }
+    self.index_metadata();
+    Ok(())
+  }
+  fn run_internal(&mut self, _options: Option<RunOptions>) -> Result<(), String> {
+    self.require(Capability::Control)?;
+    if self.bytecode.is_empty() {
+      return Err("No bytecode loaded".into());
+    }
+    self.state = VmState::Running;
+    self.emit(VmEvent::Tick, serde_json::json!({ "state": "start" }));
+    let bytecode_str = serde_json::to_string(&self.bytecode)
+      .map_err(|e| format!("Gagal stringify bytecode: {}", e))?;
+    crate::vm::run::run(bytecode_str);
+    Ok(())
+  }
+  fn on_internal<F>(&mut self, event: VmEvent, callback: F) -> Result<(), String>
+  where
+    F: Fn(String) + Send + Sync + 'static,
+  {
+    self
+      .listeners
+      .entry(event)
+      .or_default()
+      .push(Box::new(callback));
+    Ok(())
+  }
+  fn provide_internal(&mut self, name: String, value: serde_json::Value) -> Result<(), String> {
+    self.require(Capability::Control)?;
+    let json_str = value.to_string();
+    let val: Value =
+      serde_json::from_str(&json_str).map_err(|e| format!("Invalid value format: {}", e))?;
+    self._imports.insert(name, val);
+    Ok(())
+  }
+  fn inspect(&self) -> Result<String, String> {
+    self.require(Capability::Observe)?;
+    let info = serde_json::json!({
+        "state": format!("{:?}", self.state),
+        "instructions": self.bytecode.len(),
+        "capabilities": self.caps.iter().collect::<Vec<_>>(),
+        "functions": self.functions.len(),
+        "exported": self.exported.iter().collect::<Vec<_>>()
+    });
+    Ok(info.to_string())
+  }
+  fn halt(&mut self) -> Result<(), String> {
+    self.require(Capability::Unsafe)?;
+    self.state = VmState::Halted;
+    self.emit(VmEvent::Halt, serde_json::Value::Null);
+    Ok(())
+  }
+  fn call_exported(&mut self, name: String, args_raw: serde_json::Value) -> Result<String, String> {
+    self.require(Capability::Control)?;
+    if !self.exported.contains(name.as_str()) {
+      return Err(format!("Function '{}' is not exported", name));
+    }
+    let fn_meta = self
+      .functions
+      .get(name.as_str())
+      .ok_or_else(|| format!("Function '{}' not found", name))?;
+    let json_args = args_raw.to_string();
+    let args: Vec<Value> =
+      serde_json::from_str(&json_args).map_err(|e| format!("Invalid args: {}", e))?;
+    self.state = VmState::Running;
+    let _options = crate::types::value::RunOptions {
+      entry: Some(fn_meta.start),
+      args,
+      capture_return: true,
+      imports: ahash::AHashMap::new(),
+    };
+    let bytecode_str = serde_json::to_string(&self.bytecode)
+      .map_err(|e| format!("Failed to stringify bytecode: {}", e))?;
+    crate::vm::run::run(bytecode_str.clone());
+    Ok(bytecode_str)
+  }
+}
+#[cfg(feature = "node")]
 #[napi]
 impl LightVM {
   #[napi(constructor)]
@@ -72,6 +236,39 @@ impl LightVM {
       return Err(napi::Error::from_reason(msg));
     }
     Ok(())
+  }
+  fn index_metadata(&mut self) {
+    self.functions.clear();
+    self.exported.clear();
+    let mut itoa_buf = itoa::Buffer::new();
+    for i in 0..self.bytecode.len() {
+      if let Instructions::Func(_name, params, start, end, _names) = &self.bytecode[i] {
+        let idx_str = itoa_buf.format(i);
+        let mut key = String::with_capacity(6 + idx_str.len());
+        key.push_str("__idx_");
+        key.push_str(idx_str);
+        self.functions.insert(
+          SmolStr::from(key),
+          FuncMetadata {
+            params_count: *params,
+            param_names: Vec::new(),
+            start: *start,
+            end: *end,
+          },
+        );
+      }
+    }
+  }
+  fn emit(&self, event: VmEvent, payload: serde_json::Value) {
+    if let Some(list) = self.listeners.get(&event) {
+      let json_payload = payload.to_string();
+      for tsfn in list {
+        let _ = tsfn.call(
+          Ok(json_payload.to_string()),
+          ThreadsafeFunctionCallMode::Blocking,
+        );
+      }
+    }
   }
   #[napi]
   pub fn load(&mut self, env: Env, source: napi::JsUnknown) -> Result<(), napi::Error> {
@@ -111,28 +308,6 @@ impl LightVM {
     self.index_metadata();
     Ok(())
   }
-  fn index_metadata(&mut self) {
-    self.functions.clear();
-    self.exported.clear();
-    let mut itoa_buf = itoa::Buffer::new();
-    for i in 0..self.bytecode.len() {
-      if let Instructions::Func(_name, params, start, end, _names) = &self.bytecode[i] {
-        let idx_str = itoa_buf.format(i);
-        let mut key = String::with_capacity(6 + idx_str.len());
-        key.push_str("__idx_");
-        key.push_str(idx_str);
-        self.functions.insert(
-          SmolStr::from(key),
-          FuncMetadata {
-            params_count: *params,
-            param_names: Vec::new(),
-            start: *start,
-            end: *end,
-          },
-        );
-      }
-    }
-  }
   #[napi]
   pub fn run(&mut self, options: napi::JsUnknown) -> Result<(), napi::Error> {
     self.require(Capability::Control)?;
@@ -171,17 +346,6 @@ impl LightVM {
       serde_json::from_str(&json_str).map_err(|e| napi::Error::from_reason(e.to_string()))?;
     self._imports.insert(name, val);
     Ok(())
-  }
-  fn emit(&self, event: VmEvent, payload: serde_json::Value) {
-    if let Some(list) = self.listeners.get(&event) {
-      let json_payload = payload.to_string();
-      for tsfn in list {
-        let _ = tsfn.call(
-          Ok(json_payload.to_string()),
-          ThreadsafeFunctionCallMode::Blocking,
-        );
-      }
-    }
   }
   #[napi]
   pub fn inspect(&self) -> Result<String, napi::Error> {
