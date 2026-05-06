@@ -64,7 +64,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Rust
-        if: matrix.platform != 'linux-ia32' && !contains(matrix.platform, 'musl')
+        # Tambahin kondisi biar dia skip FreeBSD dan RISC-V di step rustup
+        if: |
+          matrix.platform != 'linux-ia32' && 
+          !contains(matrix.platform, 'musl') && 
+          !contains(matrix.platform, 'freebsd') && 
+          !contains(matrix.platform, 'riscv')
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
