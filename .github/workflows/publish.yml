@@ -107,8 +107,15 @@ jobs:
           echo "ar = \"$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar\"" >> .cargo/config.toml
           echo "linker = \"$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/$LINKER\"" >> .cargo/config.toml
 
-      - name: Build Release (Standard & Android)
-        if: matrix.platform != 'linux-ia32' && !contains(matrix.platform, 'musl')
+      - name: Build Release (Standard)
+        # Tambahin filter biar BSD, Musl, Wasm, Android, dan IA32 GAK masuk sini
+        if: |
+          matrix.platform != 'linux-ia32' && 
+          matrix.platform != 'win32-ia32' &&
+          !contains(matrix.platform, 'musl') && 
+          !contains(matrix.platform, 'bsd') && 
+          matrix.platform != 'wasm32' &&
+          !contains(matrix.platform, 'android')
         run: cargo build --release --target ${{ matrix.target }}
         working-directory: rust
 
