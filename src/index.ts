@@ -62,7 +62,7 @@ export class LightVM {
   run(options: any = {}) {
     this.instance.run(options);
   }
-  export (name: string) {
+  export(name: string) {
     return (...args: any[]) => {
       const rawResult = this.instance.callExported(name, JSON.stringify(args));
       const parsed = JSON.parse(rawResult);

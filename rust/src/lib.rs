@@ -20,6 +20,7 @@ use crate::types::{
   vmevent::VmEvent,
   vmstate::VmState,
 };
+use crate::vm::run::run;
 use ahash::AHashMap;
 #[cfg(feature = "node")]
 use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode};
@@ -139,7 +140,7 @@ impl LightVM {
     self.emit(VmEvent::Tick, serde_json::json!({ "state": "start" }));
     let bytecode_str = serde_json::to_string(&self.bytecode)
       .map_err(|e| format!("Gagal stringify bytecode: {}", e))?;
-    crate::vm::run::run(bytecode_str);
+    run(bytecode_str);
     Ok(())
   }
   fn on_internal<F>(&mut self, event: VmEvent, callback: F) -> Result<(), String>
@@ -161,7 +162,7 @@ impl LightVM {
     self._imports.insert(name, val);
     Ok(())
   }
-  fn inspect(&self) -> Result<String, String> {
+  fn inspect_internal(&self) -> Result<String, String> {
     self.require(Capability::Observe)?;
     let info = serde_json::json!({
         "state": format!("{:?}", self.state),
@@ -172,13 +173,17 @@ impl LightVM {
     });
     Ok(info.to_string())
   }
-  fn halt(&mut self) -> Result<(), String> {
+  fn halt_internal(&mut self) -> Result<(), String> {
     self.require(Capability::Unsafe)?;
     self.state = VmState::Halted;
     self.emit(VmEvent::Halt, serde_json::Value::Null);
     Ok(())
   }
-  fn call_exported(&mut self, name: String, args_raw: serde_json::Value) -> Result<String, String> {
+  fn call_exported_internal(
+    &mut self,
+    name: String,
+    args_raw: serde_json::Value,
+  ) -> Result<String, String> {
     self.require(Capability::Control)?;
     if !self.exported.contains(name.as_str()) {
       return Err(format!("Function '{}' is not exported", name));
@@ -199,8 +204,129 @@ impl LightVM {
     };
     let bytecode_str = serde_json::to_string(&self.bytecode)
       .map_err(|e| format!("Failed to stringify bytecode: {}", e))?;
-    crate::vm::run::run(bytecode_str.clone());
+    run(bytecode_str.clone());
     Ok(bytecode_str)
+  }
+  fn get_outputs_internal(&mut self) -> Result<Vec<String>, String> {
+    self.require(Capability::Observe)?;
+    Ok(std::mem::take(&mut self._outputs))
+  }
+  fn clear_outputs_internal(&mut self) -> Result<(), String> {
+    self.require(Capability::Control)?;
+    self._outputs.clear();
+    Ok(())
+  }
+  fn optimize_bytecode_internal(bytecode_raw: serde_json::Value) -> Result<String, String> {
+    let json_str = bytecode_raw.to_string();
+    let raw_list: Vec<serde_json::Value> =
+      serde_json::from_str(&json_str).map_err(|e| format!("Invalid JSON format: {}", e))?;
+    let bytecode: Vec<Instructions> = raw_list.iter().map(Instructions::from_json_array).collect();
+    let optimized = optimizer::optimize_bytecode::optimize_bytecode(bytecode);
+    serde_json::to_string(&optimized).map_err(|e| format!("Gagal stringify: {}", e))
+  }
+  fn parse_ltc_internal(code: String) -> Result<String, String> {
+    let instructions = crate::utils::loader::parse_ltc(&code);
+    serde_json::to_string(&instructions)
+      .map_err(|e| format!("Failed to stringify parsed LTC: {}", e))
+  }
+  fn parse_ltc_array_internal(code: String) -> serde_json::Value {
+    let instructions = crate::utils::loader::parse_ltc_to_vec(&code);
+    serde_json::to_value(&instructions).unwrap_or(serde_json::Value::Array(vec![]))
+  }
+  fn stringify_ltc_internal(bytecode_raw: serde_json::Value) -> Result<String, String> {
+    let json_str = bytecode_raw.to_string();
+    let raw_list: Vec<serde_json::Value> =
+      serde_json::from_str(&json_str).map_err(|e| format!("Invalid JSON format: {}", e))?;
+    let instructions: Vec<Instructions> =
+      raw_list.iter().map(Instructions::from_json_array).collect();
+    Ok(crate::utils::loader::stringify_ltc(instructions))
+  }
+  pub fn load(&mut self, source: serde_json::Value) -> &mut Self {
+    let payload = if source.is_string() {
+      source.as_str().unwrap_or("").to_string()
+    } else {
+      source.to_string()
+    };
+    let _ = self.load_internal(payload);
+    self
+  }
+  pub fn run(&mut self, options: Option<RunOptions>) {
+    let _ = self.run_internal(options);
+  }
+  pub fn export(
+    &mut self,
+    name: String,
+  ) -> Box<dyn FnMut(Vec<serde_json::Value>) -> Option<serde_json::Value> + '_> {
+    let function_name = name.clone();
+    Box::new(move |args| {
+      let args_value = serde_json::Value::Array(args);
+      match self.call_exported_internal(function_name.clone(), args_value) {
+        Ok(raw_result) => {
+          let parsed: serde_json::Value =
+            serde_json::from_str(&raw_result).unwrap_or(serde_json::Value::Null);
+          if parsed.is_null() || parsed == "Undefined" {
+            return None;
+          }
+          if parsed.is_object() {
+            parsed
+              .as_object()
+              .and_then(|obj| obj.values().next().cloned())
+          } else {
+            Some(parsed)
+          }
+        }
+        Err(_) => None,
+      }
+    })
+  }
+  pub fn provide(&mut self, name: String, value: serde_json::Value) -> &mut Self {
+    let _ = self.provide_internal(name, value);
+    self
+  }
+  pub fn halt(&mut self) {
+    let _ = self.halt_internal();
+  }
+  pub fn on<F>(&mut self, event: VmEvent, callback: F) -> &mut Self
+  where
+    F: Fn(String) + Send + Sync + 'static,
+  {
+    let _ = self.on_internal(event, callback);
+    self
+  }
+  pub fn inspect(&self) -> serde_json::Value {
+    match self.inspect_internal() {
+      Ok(json_str) => serde_json::from_str(&json_str).unwrap_or(serde_json::Value::Null),
+      Err(_) => serde_json::Value::Null,
+    }
+  }
+  pub fn embedded(&mut self) -> serde_json::Value {
+    let _ = self.clear_outputs_internal();
+    let _ = self.run_internal(None);
+    let outputs = self.get_outputs_internal().unwrap_or_default();
+    serde_json::json!({
+      "value": serde_json::Value::Null,
+      "outputs": outputs,
+      "halted": true
+    })
+  }
+  pub fn tools() -> LightVMTools {
+    LightVMTools
+  }
+}
+pub struct LightVMTools;
+#[cfg(not(feature = "node"))]
+impl LightVMTools {
+  pub fn optimize_bytecode(&self, bytecode: serde_json::Value) -> Result<String, String> {
+    LightVM::optimize_bytecode_internal(bytecode)
+  }
+  pub fn stringify_ltc(&self, json: serde_json::Value) -> Result<String, String> {
+    LightVM::stringify_ltc_internal(json)
+  }
+  pub fn parse_ltc(&self, code: String) -> Result<String, String> {
+    LightVM::parse_ltc_internal(code)
+  }
+  pub fn parse_ltc_array(&self, code: String) -> serde_json::Value {
+    LightVM::parse_ltc_array_internal(code)
   }
 }
 #[cfg(feature = "node")]
@@ -272,6 +398,7 @@ impl LightVM {
   }
   #[napi]
   pub fn load(&mut self, env: Env, source: napi::JsUnknown) -> Result<(), napi::Error> {
+    use std::fs;
     match source.get_type()? {
       napi::ValueType::String => {
         let s = source.coerce_to_string()?.into_utf8()?;

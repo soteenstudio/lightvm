@@ -29,7 +29,7 @@ function togglePackageFiles(mode) {
 }
 try {
   console.log(`🏗️  Building Rust (${RUST_OUT_DIR})...`);
-  const buildCmd = isDebug ? 'cargo build' : 'cargo build --release';
+  const buildCmd = isDebug ? 'cargo build --features node' : 'cargo build --release';
   execSync(buildCmd, {
     cwd: join(process.cwd(), 'rust'),
     stdio: STDIO_MODE
