@@ -107,8 +107,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "lightvm_rust"
-version = "0.1.0"
+name = "lightvm"
+version = "0.1.0-proto.29"
 dependencies = [
  "ahash",
  "colored",

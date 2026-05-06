@@ -1,7 +1,12 @@
 [package]
 name = "lightvm"
-version = "0.1.0"
+version = "0.1.0-proto.29"
+authors = ["SoTeen Studio <soteenstudio@gmail.com>"]
 edition = "2021"
+description = "mx"
+license = "Apache-2.0"
+repository = "https://github.com/soteenstudio/lightvm"
+readme = "README.md"
 
 [lib]
 crate-type = ["rlib", "cdylib"]
