@@ -81,10 +81,33 @@ Instructions for calculations. Note that for optimization, these instructions re
 | mul / div | type       | Multiplication or Division |
 | mod       | type       | Modulo (Remainder) |
 | inc / dec | name, type | Directly add/remove variable contents (without going through the stack) |
-| gt / lt   | type       |
-| ge / le   | type       |
-| eq / neq  | type       |
-| and / or  | -          |
+| gt / lt   | type       | Greater Than or Less Than |
+| ge / le   | type       | Greater/Less Than or Equal |
+| eq / neq  | type       | Equal or Not Equal |
+| and / or  | -          | Boolean logic operations (&& / ||) |
+3. Control Flow & Function  
+Instructions for managing program flow, looping, and function calls.
+
+| Opcode   | Arguments | Description |
+|----------|-----------|-------------|
+| jump     | target_ip | Jump to a specific instruction line (Instruction Pointer) |
+| if_false | target_ip | Jump if the value on the stack is false |
+| func     | name, argc, start, end, [params] | Function block definition (scope) |
+| call     | name, argc | Call a function with a specified number of arguments |
+| return   | -          | Exit the function and return to the caller |
+| stop     | -          | Kill all VM processes (Halt) |
+4. Data Structures & Metadata  
+Create complex data handles like JS Objects or Arrays, plus data type matters.
+
+| Opcode     | Arguments | Description |
+|------------|-----------|-------------|
+| make_obj   | count     | Create Object from n key-value pairs in stack |
+| make_array | count     | Create an Array of n elements in a stack | Access properties of Object |
+| access     | prop_name | Access Object's properties |
+| access_index | -       |
+| length     | -         |
+| typeof     | -         |
+| concat     | -         |
 ## Supported Architectures
 LightVM supports a wide range of platforms and architectures to ensure maximum operational flexibility. Here's the current compatibility list:
 | OS / Runtime | Architecture | Toolchain |
