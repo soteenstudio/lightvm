@@ -75,13 +75,13 @@ jobs:
           toolchain: stable
           targets: ${{ matrix.target }}
 
-      - name: Install Rust (Minimal for Cross)
+      - name: Install Rust (Minimal for Cross & Tier 3)
         if: contains(matrix.platform, 'bsd') || matrix.platform == 'wasm32' || contains(matrix.platform, 'musl') || matrix.platform == 'linux-ia32'
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@nightly # Ganti ke nightly buat build-std
         with:
-          toolchain: stable
-          # Kita paksa install target di host biar Cross gak bingung nyari 'core'
+          toolchain: nightly
           targets: ${{ matrix.target }}
+          components: rust-src # Wajib ada buat build-std
 
       # Handle Android NDK buat arm64 dan armv7
       - name: Setup Android NDK
@@ -121,17 +121,20 @@ jobs:
             cd rust && cargo build --release --target ${{ matrix.target }}
             
           elif [[ "${{ matrix.platform }}" == "wasm32" ]]; then
-            # Fix buat getrandom: Enable wasm_js lewat RUSTFLAGS
+            # FIX WASM: Inject cfg flag buat getrandom & build-std
             cd rust
-            RUSTFLAGS="--cfg=getrandom_backend=\"wasm_js\"" cargo build --release --target ${{ matrix.target }}
+            RUSTFLAGS="--cfg=getrandom_backend=\"wasm_js\"" \
+            cargo +nightly build --release --target ${{ matrix.target }} \
+            -Z build-std=std,panic_abort
             
-          elif [[ "${{ matrix.platform }}" == *"openbsd"* ]]; then
-            # OpenBSD gak ada std di stable, harus build dari source (-Z)
-            # Butuh nightly atau pake build-std di stable (experimental)
+          elif [[ "${{ matrix.platform }}" == *"bsd"* ]]; then
+            # FIX BSD: Pake nightly + build-std karena gak ada pre-compiled binary
             cd rust
-            cargo build --release --target ${{ matrix.target }} -Z build-std=std,panic_abort
+            cargo +nightly build --release --target ${{ matrix.target }} \
+            -Z build-std=std,panic_abort
             
           elif [[ "${{ matrix.platform }}" == *"musl"* ]]; then
+            # FIX MUSL: Pastikan RUSTFLAGS bener biar gak error "cannot produce cdylib"
             if [ ! -f "./cross" ]; then
               curl -L https://github.com/cross-rs/cross/releases/latest/download/cross-x86_64-unknown-linux-musl.tar.gz | tar xz
               chmod +x cross
