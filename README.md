@@ -16,15 +16,32 @@ npm install lightvm
 # or
 npm install lightvm@next
 ```
+Installation with Cargo
+```bash
+cargo add lightvm
+```
 ### Quick Usage
+Using TypeScript:
 ```typescript
 import { LightVM } from 'lightvm';
 
 const vm = new LightVM([/** Capability **/]);
 ```
+Using Rust:
+```rust
+use lightvm::LightVM;
+use lightvm::types::capability::Capability;
+
+fn main() {
+    let caps = vec![Capability::Control, Capability::Observe];
+    
+    let mut vm = LightVM::new(caps);
+}
+```
 ## How to use
 1. ``run()`` method:  
-  Permission to start bytecode execution.
+  Permission to start bytecode execution.  
+  - TypeScript:
     ```typescript
     const raw = [
       ["push", 5],
@@ -33,6 +50,17 @@ const vm = new LightVM([/** Capability **/]);
     ];
     vm.load(vm.tools().optimizeBytecode(JSON.stringify(raw))) // or path to file .ltc
       .run(); // Capability: control
+    ```  
+  - Rust:
+    ```rust
+    let raw = serde_json::json!([
+      ["push", 5],
+      ["val", "x"],
+      ["set", "x"]
+    ]);
+    LightVM::tools().optimize_bytecode(raw)
+      .map(|opt| vm.load(serde_json::from_str(&opt).unwrap()).run(None))
+      .expect("Gagal optimasi");
     ```
 2. ``provide()`` method:  
   Permission to inject data/variables into the VM.
@@ -104,10 +132,20 @@ Create complex data handles like JS Objects or Arrays, plus data type matters.
 | make_obj   | count     | Create Object from n key-value pairs in stack |
 | make_array | count     | Create an Array of n elements in a stack | Access properties of Object |
 | access     | prop_name | Access Object's properties |
-| access_index | -       |
-| length     | -         |
-| typeof     | -         |
-| concat     | -         |
+| access_index | -       | Access Array elements by index on the stack |
+| length     | -         | Check the length of a string or the number of items in an array/object |
+| typeof     | -         | Get the data type from the top value of the stack |
+| concat     | -         | Combine two values (usually strings) |
+5. Type Casting (Conversion)  
+For those of you who want to force a certain data type to ensure consistent performance.
+
+| Opcode     | Description                 |
+|------------|-----------------------------|
+| to_string  | Change the value to String  |
+| to_integer | Change value to Integer (32-bit) |
+| to_long    | Change the value to Long (64-bit) |
+| to_float   | Change value to Float       |
+| to_double  | Change the value to Double  |
 ## Supported Architectures
 LightVM supports a wide range of platforms and architectures to ensure maximum operational flexibility. Here's the current compatibility list:
 | OS / Runtime | Architecture | Toolchain |
