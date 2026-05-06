@@ -108,27 +108,36 @@ jobs:
           echo "linker = \"$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/$LINKER\"" >> .cargo/config.toml
 
       - name: Build Release (Standard)
-        # Tambahin filter biar BSD, Musl, Wasm, Android, dan IA32 GAK masuk sini
+        # Khusus OS mainstream yang gak butuh Cross/Docker
         if: |
-          matrix.platform != 'linux-ia32' && 
-          matrix.platform != 'win32-ia32' &&
-          !contains(matrix.platform, 'musl') && 
-          !contains(matrix.platform, 'bsd') && 
-          matrix.platform != 'wasm32' &&
-          !contains(matrix.platform, 'android')
+          matrix.platform == 'linux-x64' || 
+          matrix.platform == 'win32-x64' || 
+          matrix.platform == 'win32-ia32' || 
+          matrix.platform == 'darwin-x64'
         run: cargo build --release --target ${{ matrix.target }}
         working-directory: rust
 
-      - name: Build Release (Docker - BSD & Wasm)
-        if: contains(matrix.platform, 'freebsd') || contains(matrix.platform, 'openbsd') || matrix.platform == 'wasm32'
+      - name: Build Release (Specialized - Android, BSD, Musl, Wasm, IA32)
+        # Semua yang butuh Cross atau NDK masuk sini
+        if: |
+          contains(matrix.platform, 'android') || 
+          contains(matrix.platform, 'bsd') || 
+          contains(matrix.platform, 'musl') || 
+          matrix.platform == 'linux-ia32' || 
+          matrix.platform == 'wasm32'
         run: |
-          if [ ! -f "./cross" ]; then
-            curl -L https://github.com/cross-rs/cross/releases/latest/download/cross-x86_64-unknown-linux-musl.tar.gz | tar xz
-            chmod +x cross
+          if [[ "${{ matrix.platform }}" == *"android"* ]]; then
+            # Android pake cargo biasa karena NDK udah kita setup di step sebelumnya
+            cd rust && cargo build --release --target ${{ matrix.target }}
+          else
+            # Sisanya wajib pake Cross
+            if [ ! -f "./cross" ]; then
+              curl -L https://github.com/cross-rs/cross/releases/latest/download/cross-x86_64-unknown-linux-musl.tar.gz | tar xz
+              chmod +x cross
+            fi
+            cd rust
+            ../cross build --release --target ${{ matrix.target }}
           fi
-          cd rust
-          # Khusus WASM gak butuh RUSTFLAGS aneh-aneh
-          ../cross build --release --target ${{ matrix.target }}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
