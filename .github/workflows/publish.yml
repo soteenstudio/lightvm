@@ -126,20 +126,20 @@ jobs:
           
           cd rust
           
-          # --- SAKTI: Bikin Cross.toml buat mapping image ---
+          # Kita pake image yang lebih umum/generic kalo RISC-V image-nya denied
           cat <<EOF > Cross.toml
           [target.riscv32gc-unknown-linux-gnu]
-          image = "ghcr.io/cross-rs/riscv32gc-unknown-linux-gnu:latest"
+          # Pake image debian-riscv64 (dia biasanya punya toolchain buat 32 juga)
+          # Atau kita paksa build-std biar dia gak nyari biner std di image
+          build-std = ["core", "std", "alloc", "proc_macro"]
 
           [target.riscv64gc-unknown-linux-gnu]
-          image = "ghcr.io/cross-rs/riscv64gc-unknown-linux-gnu:latest"
-          
-          [target.x86_64-unknown-freebsd]
-          image = "ghcr.io/cross-rs/x86_64-unknown-freebsd:latest"
+          build-std = ["core", "std", "alloc", "proc_macro"]
           EOF
-          # --------------------------------------------------
 
-          RUSTFLAGS="-C target-feature=-crt-static" ../cross build --release --target ${{ matrix.target }}
+          # Tambahin -Z build-std pas manggil cross
+          # Dan pastiin pake toolchain nightly khusus buat RISC-V biar build-std jalan
+          ../cross build --release --target ${{ matrix.target }} -Z build-std
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
