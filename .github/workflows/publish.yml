@@ -64,11 +64,23 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Rust
-        if: matrix.platform != 'linux-ia32' && !contains(matrix.platform, 'musl')
+        # Tambahin pengecekan: Jangan install target kalo itu BSD atau WASM atau Tier 3
+        if: |
+          matrix.platform != 'linux-ia32' && 
+          !contains(matrix.platform, 'musl') && 
+          !contains(matrix.platform, 'bsd') && 
+          matrix.platform != 'wasm32'
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
           targets: ${{ matrix.target }}
+
+      # Step tambahan buat install rust basic (tanpa target) buat si BSD & Wasm
+      - name: Install Rust (Minimal for Cross)
+        if: contains(matrix.platform, 'bsd') || matrix.platform == 'wasm32'
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
 
       - name: Rust Cache
         uses: swatinem/rust-cache@v2
@@ -178,7 +190,7 @@ jobs:
             "binary-android-arm64|android-arm64|index.android.node|arm64"
             "binary-android-arm|android-arm|index.android32.node|arm"
             "binary-linux-musl-x64|linux-musl-x64|index.musl-x64.node|x64"
-            "binary-linux-musl-ia32|linux-musl-ia32|index.musl-ia32.node|ia32",
+            "binary-linux-musl-ia32|linux-musl-ia32|index.musl-ia32.node|ia32"
             "binary-freebsd-x64|freebsd-x64|index.freebsd.node|x64"
             "binary-openbsd-x64|openbsd-x64|index.openbsd.node|x64"
             "binary-wasm32|wasm32|index.wasm.wasm|wasm"
