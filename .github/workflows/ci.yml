@@ -13,7 +13,18 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 1. SMART CACHING (Biar gak download ulang terus)
+      # 1. SETUP ENV DULUAN
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      # 2. CACHING
       - name: Cache Node Modules
         uses: actions/cache@v4
         with:
@@ -33,21 +44,20 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      # 2. SETUP ENV
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+      # 3. BUILD RUST DULU (Biar biner lokal ready buat TS)
+      - name: Build Rust Core
+        run: |
+          if [ -d "./rust" ]; then
+            cd rust && cargo build --release
+          fi
 
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy, rustfmt
-
+      # 4. INSTALL NODE DEPENDENCIES
+      # Pake 'npm install' aja Clay biar lebih fleksibel pas dev, 
+      # tapi kalo lockfile udah aman, bisa balik ke 'npm ci'.
       - name: Install dependencies
-        run: npm ci # Lebih cepet & konsisten buat CI dibanding 'npm install'
+        run: npm install
 
-      # 3. ADVANCED CHECK (Parallel & Integrated)
+      # 5. QUALITY CHECKS
       - name: Linting & Formatting
         run: |
           echo "Running Prettier & Rustfmt check..."
@@ -56,18 +66,14 @@ jobs:
 
       - name: Deep Code Audit (Junk & Header)
         run: |
-          # Pake ripgrep (rg) kalo mau lebih kenceng, tapi find + grep udah oke buat repo ukuran standar
           MISSING_COPYRIGHT=$(find ./src ./rust -type f \( -name "*.ts" -o -name "*.rs" \) | xargs grep -L "Copyright")
-          
           if [ -n "$MISSING_COPYRIGHT" ]; then
             echo "❌ Clay, file ini butuh Copyright header:"
             echo "$MISSING_COPYRIGHT"
             exit 1
           fi
 
-          # Junk comment check pake regex yang lebih clean
           JUNK_CHECK=$(find ./src ./rust -type f \( -name "*.ts" -o -name "*.rs" \) -exec awk 'NR==1 && /^\/\/ [A-Za-z0-9_-]+\.(ts|rs)$/ {print FILENAME}' {} +)
-          
           if [ -n "$JUNK_CHECK" ]; then
             echo "❌ Baris pertama cuma nama file (Junk):"
             echo "$JUNK_CHECK"
@@ -80,5 +86,5 @@ jobs:
             cd rust && cargo clippy -- -D warnings
           fi
 
-      - name: Final Build Check
+      - name: Final Build Check (TypeScript)
         run: npm run build
