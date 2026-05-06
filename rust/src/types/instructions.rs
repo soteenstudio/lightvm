@@ -48,7 +48,7 @@ pub enum Instructions {
   Func(SmolStr, u32, usize, usize, Vec<SmolStr>),
   Stop,
   Return,
-  Break,
+  Break(usize),
   Access(SmolStr),
   AccessIndex,
   ToString,
@@ -64,8 +64,8 @@ pub enum Instructions {
   Length,
   Concat,
   Dup,
-  SetPp(SmolStr),
-  Import(SmolStr, SmolStr),
+  SetProp(SmolStr),
+  Import(SmolStr, usize),
   Export(SmolStr),
   Instantiate(SmolStr, u32),
   Nop,
@@ -141,7 +141,7 @@ impl Instructions {
         "or" => Instructions::Or,
         "print" => Instructions::Print,
         "println" => Instructions::Println,
-        "break" => Instructions::Break,
+        "break" => Instructions::Break(0),
         "accessindex" => Instructions::AccessIndex,
         "to_string" => Instructions::ToString,
         "to_integer" => Instructions::ToInteger,
@@ -287,6 +287,21 @@ impl Instructions {
         let class_name = arr[1].as_str().expect("ClassName must be string");
         let argc = arr[2].as_u64().unwrap_or(0) as u32;
         Instructions::Instantiate(SmolStr::new(class_name), argc)
+      }
+      "set_prop" => {
+        let prop = arr[1].as_str().expect("set_prop property must be a string");
+        Instructions::SetProp(SmolStr::new(prop))
+      }
+      "import" => {
+        let module_name = arr[1].as_str().expect("Module name must be string");
+        let idx = arr[2]
+          .as_u64()
+          .expect("Import alias index must be a number") as usize;
+        Instructions::Import(SmolStr::new(module_name), idx)
+      }
+      "break" => {
+        let target = arr.get(1).and_then(|v| v.as_u64()).unwrap_or(0) as usize;
+        Instructions::Jump(target)
       }
       "access_index" => Instructions::AccessIndex,
       "export" => Instructions::Export(arr[1].as_str().unwrap().to_owned().into()),

@@ -38,6 +38,7 @@ pub struct RunOptions {
   pub entry: Option<usize>,
   pub args: Vec<Value>,
   pub capture_return: bool,
+  pub imports: AHashMap<SmolStr, Value>,
 }
 impl Value {
   pub fn is_truthy(&self) -> bool {

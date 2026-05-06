@@ -35,7 +35,7 @@ pub struct LightVM {
   caps: HashSet<Capability>,
   state: VmState,
   _outputs: Vec<String>,
-  last_value: Value,
+  _last_value: Value,
   functions: AHashMap<SmolStr, FuncMetadata>,
   exported: HashSet<SmolStr>,
   _imports: AHashMap<String, Value>,
@@ -58,7 +58,7 @@ impl LightVM {
       caps: caps_set,
       state: VmState::Idle,
       _outputs: Vec::new(),
-      last_value: Value::Undefined,
+      _last_value: Value::Undefined,
       functions: AHashMap::new(),
       exported: HashSet::new(),
       _imports: AHashMap::new(),
@@ -231,6 +231,7 @@ impl LightVM {
       entry: Some(fn_meta.start),
       args,
       capture_return: true,
+      imports: AHashMap::new(),
     };
     let bytecode_str = serde_json::to_string(&self.bytecode).unwrap();
     run(bytecode_str.clone());

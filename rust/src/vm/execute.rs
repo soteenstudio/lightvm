@@ -11,15 +11,16 @@
 use crate::instructions::{
   collections::{
     access_func::access_func, access_index_func::access_index_func,
-    make_array_func::make_array_func, make_obj_func::make_obj_func,
+    make_array_func::make_array_func, make_obj_func::make_obj_func, set_prop_func::set_prop_func,
   },
   comparison::{
     eq_func::eq_func, ge_func::ge_func, gt_func::gt_func, le_func::le_func, lt_func::lt_func,
     neq_func::neq_func,
   },
   control_flow::{
-    call_func::call_func, if_false_func::if_false_func, jump_func::jump_func,
-    return_func::return_func, stop_func::stop_func,
+    break_func::break_func, call_func::call_func, if_false_func::if_false_func,
+    instantiate_func::instantiate_func, jump_func::jump_func, return_func::return_func,
+    stop_func::stop_func,
   },
   conversion::{
     to_double_func::to_double_func, to_float_func::to_float_func, to_integer_func::to_integer_func,
@@ -40,8 +41,8 @@ use crate::instructions::{
   },
   metadata::{length_func::length_func, typeof_func::typeof_func},
   stack::{
-    concat_func::concat_func, dup_func::dup_func, get_func::get_func, push_func::push_func,
-    set_func::set_func, val_func::val_func,
+    concat_func::concat_func, dup_func::dup_func, get_func::get_func, import_func::import_func,
+    push_func::push_func, set_func::set_func, val_func::val_func,
   },
 };
 use crate::types::{
@@ -323,6 +324,20 @@ pub fn execute(
       }
       Instructions::Length => {
         length_func(&mut stack);
+      }
+      Instructions::SetProp(prop) => {
+        set_prop_func(&mut stack, prop)?;
+      }
+      Instructions::Instantiate(class_name, argc) => {
+        let instance = instantiate_func(&mut stack, &mut vars, class_name, *argc)?;
+        stack.push(instance);
+      }
+      Instructions::Import(module_name, alias_idx) => {
+        import_func(&mut vars, &options, module_name, *alias_idx)?;
+      }
+      Instructions::Break(target_ip) => {
+        break_func(&mut ip, *target_ip);
+        continue;
       }
       _ => {}
     }
