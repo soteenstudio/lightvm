@@ -45,18 +45,10 @@ jobs:
             target: i686-unknown-linux-musl
             platform: linux-musl-ia32
             
-          # --- BSD FAMILY ---
+          # --- BSD FAMILY (FreeBSD Only) ---
           - os: ubuntu-latest
             target: x86_64-unknown-freebsd
             platform: freebsd-x64
-          - os: ubuntu-latest
-            target: x86_64-unknown-openbsd
-            platform: openbsd-x64
-
-          # --- BROWSER (WASM) ---
-          - os: ubuntu-latest
-            target: wasm32-unknown-unknown
-            platform: wasm32
 
       fail-fast: false
 
@@ -64,32 +56,27 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Rust
-        # Tambahin pengecekan: Jangan install target kalo itu BSD atau WASM atau Tier 3
         if: |
           matrix.platform != 'linux-ia32' && 
           !contains(matrix.platform, 'musl') && 
-          !contains(matrix.platform, 'bsd') && 
-          matrix.platform != 'wasm32'
+          matrix.platform != 'freebsd-x64'
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
           targets: ${{ matrix.target }}
 
-      - name: Install Rust (Minimal for Cross & Tier 3)
-        if: contains(matrix.platform, 'bsd') || matrix.platform == 'wasm32' || contains(matrix.platform, 'musl') || matrix.platform == 'linux-ia32'
-        uses: dtolnay/rust-toolchain@nightly # Ganti ke nightly buat build-std
+      - name: Install Rust (Minimal for Cross/Specialized)
+        if: matrix.platform == 'freebsd-x64' || contains(matrix.platform, 'musl') || matrix.platform == 'linux-ia32'
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: nightly
+          toolchain: stable
           targets: ${{ matrix.target }}
-          components: rust-src # Wajib ada buat build-std
 
-      # Handle Android NDK buat arm64 dan armv7
       - name: Setup Android NDK
         if: contains(matrix.platform, 'android')
         run: |
           echo "ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME" >> $GITHUB_ENV
           mkdir -p .cargo
-          # Dinamis tentukan linker berdasarkan platform
           if [ "${{ matrix.platform }}" == "android-arm64" ]; then
             LINKER="aarch64-linux-android33-clang"
           else
@@ -100,7 +87,6 @@ jobs:
           echo "linker = \"$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/$LINKER\"" >> .cargo/config.toml
 
       - name: Build Release (Standard)
-        # Khusus OS mainstream yang gak butuh Cross/Docker
         if: |
           matrix.platform == 'linux-x64' || 
           matrix.platform == 'win32-x64' || 
@@ -112,36 +98,19 @@ jobs:
       - name: Build Release (Specialized)
         if: |
           contains(matrix.platform, 'android') || 
-          contains(matrix.platform, 'bsd') || 
+          matrix.platform == 'freebsd-x64' || 
           contains(matrix.platform, 'musl') || 
-          matrix.platform == 'linux-ia32' || 
-          matrix.platform == 'wasm32'
+          matrix.platform == 'linux-ia32'
         run: |
           if [[ "${{ matrix.platform }}" == *"android"* ]]; then
             cd rust && cargo build --release --target ${{ matrix.target }}
-            
-          elif [[ "${{ matrix.platform }}" == "wasm32" ]]; then
-            # FIX WASM: Inject cfg flag buat getrandom & build-std
-            cd rust
-            RUSTFLAGS="--cfg=getrandom_backend=\"wasm_js\"" \
-            cargo +nightly build --release --target ${{ matrix.target }} \
-            -Z build-std=std,panic_abort
-            
-          elif [[ "${{ matrix.platform }}" == *"bsd"* ]]; then
-            # FIX BSD: Pake nightly + build-std karena gak ada pre-compiled binary
-            cd rust
-            cargo +nightly build --release --target ${{ matrix.target }} \
-            -Z build-std=std,panic_abort
-            
           elif [[ "${{ matrix.platform }}" == *"musl"* ]]; then
-            # FIX MUSL: Pastikan RUSTFLAGS bener biar gak error "cannot produce cdylib"
             if [ ! -f "./cross" ]; then
               curl -L https://github.com/cross-rs/cross/releases/latest/download/cross-x86_64-unknown-linux-musl.tar.gz | tar xz
               chmod +x cross
             fi
             cd rust
             RUSTFLAGS="-C target-feature=-crt-static" ../cross build --release --target ${{ matrix.target }}
-            
           else
             if [ ! -f "./cross" ]; then
               curl -L https://github.com/cross-rs/cross/releases/latest/download/cross-x86_64-unknown-linux-musl.tar.gz | tar xz
@@ -187,27 +156,9 @@ jobs:
 
       - name: Publish to NPM
         run: |
-          # AMBIL VERSI DARI TAG (v1.0.0 -> 1.0.0)
           VERSION=${GITHUB_REF#refs/tags/v}
-          echo "Publishing version: $VERSION"
-
-          # --- LOGIC AUTO TAG ---
-          # Default-nya kita set ke latest
           TAG="latest"
-
-          # Cek apakah ada embel-embel prerelease
-          # Regex ini nyari kata -proto, -alpha, atau -beta
-          if [[ "$VERSION" =~ -(proto|alpha|beta) ]]; then
-            TAG="next"
-          fi
-
-          # Kalau ada kata -release, kita paksa balik ke latest (opsional)
-          if [[ "$VERSION" == *"-release"* ]]; then
-            TAG="latest"
-          fi
-
-          echo "Detected Tag: $TAG"
-          # ----------------------
+          if [[ "$VERSION" =~ -(proto|alpha|beta) ]]; then TAG="next"; fi
 
           PLATFORMS=(
             "binary-linux-x64|linux-x64|index.linux.node|x64"
@@ -220,26 +171,17 @@ jobs:
             "binary-linux-musl-x64|linux-musl-x64|index.musl-x64.node|x64"
             "binary-linux-musl-ia32|linux-musl-ia32|index.musl-ia32.node|ia32"
             "binary-freebsd-x64|freebsd-x64|index.freebsd.node|x64"
-            "binary-openbsd-x64|openbsd-x64|index.openbsd.node|x64"
-            "binary-wasm32|wasm32|index.wasm.wasm|wasm"
           )
-
 
           for item in "${PLATFORMS[@]}"; do
             IFS="|" read -r ARTIFACT PLATFORM BIN_NAME CPU <<< "$item"
             PKG_NAME="@lightvm/core-$PLATFORM"
             OS_VAL="${PLATFORM%-*}"
-            
             mkdir -p "publish/$PLATFORM"
-            
-            # Cari biner
             find "binaries/$ARTIFACT" -type f \( -name "*.node" -o -name "*.dll" -o -name "*.so" -o -name "*.dylib" \) -exec cp {} "publish/$PLATFORM/$BIN_NAME" \;
+            cp -f README.md "publish/$PLATFORM/" || true
+            cp -f LICENSE "publish/$PLATFORM/" || true
             
-            # Paksa copy README & LICENSE (pake -f biar galak)
-            cp -f README.md "publish/$PLATFORM/" || echo "Skip README"
-            cp -f LICENSE "publish/$PLATFORM/" || echo "Skip LICENSE"
-            
-            # Generate package.json sub-package
             cat <<EOF > "publish/$PLATFORM/package.json"
           {
             "name": "$PKG_NAME",
@@ -252,18 +194,12 @@ jobs:
             "license": "Apache-2.0"
           }
           EOF
-
             cd "publish/$PLATFORM"
-            # Pake variabel $TAG hasil deteksi otomatis
-            npm publish --tag $TAG --access public || echo "Skip existing version"
+            npm publish --tag $TAG --access public || echo "Skip existing"
             cd ../..
           done
 
-          # 1. Install jq (kalo belum ada di runner)
           sudo apt-get install -y jq
-
-          # 2. Update Versi & Suntik optionalDependencies ke package.json utama
-          # Kita bikin object opDeps dari daftar platform yang baru aja di-publish
           OP_DEPS=$(cat <<EOF
           {
             "@lightvm/core-linux-x64": "$VERSION",
@@ -275,23 +211,15 @@ jobs:
             "@lightvm/core-android-arm": "$VERSION",
             "@lightvm/core-linux-musl-x64": "$VERSION",
             "@lightvm/core-linux-musl-ia32": "$VERSION",
-            "@lightvm/core-freebsd-x64": "$VERSION",
-            "@lightvm/core-openbsd-x64": "$VERSION",
-            "@lightvm/core-wasm32": "$VERSION"
+            "@lightvm/core-freebsd-x64": "$VERSION"
           }
           EOF
           )
 
-
-          # Pake jq buat update version DAN gabungin optionalDependencies
           jq --arg ver "$VERSION" --argjson deps "$OP_DEPS" \
             '.version = $ver | .optionalDependencies = $deps' \
             package.json > temp.json && mv temp.json package.json
 
-          # 3. Publish package utama pake $TAG yang sama
-          # Ini bakal upload package.json yang udah "kotor" tadi ke NPM
-          echo "Publishing main package with injected optionalDependencies..."
           npm publish --access public --tag $TAG
-
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
