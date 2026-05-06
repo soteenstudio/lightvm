@@ -26,6 +26,14 @@ jobs:
             target: aarch64-linux-android
             platform: android-arm64
 
+          # --- ARM64 LINUX (NEW) ---
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            platform: linux-arm64
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+            platform: linux-musl-arm64
+
           # --- 32-BIT VARIANTS ---
           - os: ubuntu-latest
             target: i686-unknown-linux-gnu
@@ -45,7 +53,7 @@ jobs:
             target: i686-unknown-linux-musl
             platform: linux-musl-ia32
             
-          # --- BSD FAMILY (FreeBSD Only) ---
+          # --- BSD FAMILY ---
           - os: ubuntu-latest
             target: x86_64-unknown-freebsd
             platform: freebsd-x64
@@ -59,6 +67,7 @@ jobs:
         if: |
           matrix.platform != 'linux-ia32' && 
           !contains(matrix.platform, 'musl') && 
+          !contains(matrix.platform, 'arm64') &&
           matrix.platform != 'freebsd-x64'
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -66,7 +75,11 @@ jobs:
           targets: ${{ matrix.target }}
 
       - name: Install Rust (Minimal for Cross/Specialized)
-        if: matrix.platform == 'freebsd-x64' || contains(matrix.platform, 'musl') || matrix.platform == 'linux-ia32'
+        if: |
+          matrix.platform == 'freebsd-x64' || 
+          contains(matrix.platform, 'musl') || 
+          contains(matrix.platform, 'arm64') ||
+          matrix.platform == 'linux-ia32'
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
@@ -100,6 +113,7 @@ jobs:
           contains(matrix.platform, 'android') || 
           matrix.platform == 'freebsd-x64' || 
           contains(matrix.platform, 'musl') || 
+          contains(matrix.platform, 'arm64') ||
           matrix.platform == 'linux-ia32'
         run: |
           if [[ "${{ matrix.platform }}" == *"android"* ]]; then
@@ -162,6 +176,7 @@ jobs:
 
           PLATFORMS=(
             "binary-linux-x64|linux-x64|index.linux.node|x64"
+            "binary-linux-arm64|linux-arm64|index.linux-arm64.node|arm64"
             "binary-linux-ia32|linux-ia32|index.linux32.node|ia32"
             "binary-win32-x64|win32-x64|index.win.node|x64"
             "binary-win32-ia32|win32-ia32|index.win32.node|ia32"
@@ -169,6 +184,7 @@ jobs:
             "binary-android-arm64|android-arm64|index.android.node|arm64"
             "binary-android-arm|android-arm|index.android32.node|arm"
             "binary-linux-musl-x64|linux-musl-x64|index.musl-x64.node|x64"
+            "binary-linux-musl-arm64|linux-musl-arm64|index.musl-arm64.node|arm64"
             "binary-linux-musl-ia32|linux-musl-ia32|index.musl-ia32.node|ia32"
             "binary-freebsd-x64|freebsd-x64|index.freebsd.node|x64"
           )
@@ -203,6 +219,7 @@ jobs:
           OP_DEPS=$(cat <<EOF
           {
             "@lightvm/core-linux-x64": "$VERSION",
+            "@lightvm/core-linux-arm64": "$VERSION",
             "@lightvm/core-linux-ia32": "$VERSION",
             "@lightvm/core-win32-x64": "$VERSION",
             "@lightvm/core-win32-ia32": "$VERSION",
@@ -210,6 +227,7 @@ jobs:
             "@lightvm/core-android-arm64": "$VERSION",
             "@lightvm/core-android-arm": "$VERSION",
             "@lightvm/core-linux-musl-x64": "$VERSION",
+            "@lightvm/core-linux-musl-arm64": "$VERSION",
             "@lightvm/core-linux-musl-ia32": "$VERSION",
             "@lightvm/core-freebsd-x64": "$VERSION"
           }
