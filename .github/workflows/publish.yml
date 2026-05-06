@@ -56,6 +56,15 @@ jobs:
           toolchain: stable
           targets: ${{ matrix.target }}
 
+      - name: Rust Cache
+        uses: swatinem/rust-cache@v2
+        with:
+          # Karena lo pake workspace 'rust', kasih tau path-nya
+          workspaces: "rust -> target"
+          # Tambahin matrix target biar cache-nya gak bentrok antar OS
+          key: ${{ matrix.target }}
+          
+
       # Handle Android NDK buat arm64 dan armv7
       - name: Setup Android NDK
         if: contains(matrix.platform, 'android')
@@ -120,6 +129,7 @@ jobs:
         with:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
 
       - name: Build JavaScript Interface
         run: |
