@@ -75,21 +75,13 @@ jobs:
           toolchain: stable
           targets: ${{ matrix.target }}
 
-      # Step tambahan buat install rust basic (tanpa target) buat si BSD & Wasm
       - name: Install Rust (Minimal for Cross)
-        if: contains(matrix.platform, 'bsd') || matrix.platform == 'wasm32'
+        if: contains(matrix.platform, 'bsd') || matrix.platform == 'wasm32' || contains(matrix.platform, 'musl') || matrix.platform == 'linux-ia32'
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-
-      - name: Rust Cache
-        uses: swatinem/rust-cache@v2
-        with:
-          # Karena lo pake workspace 'rust', kasih tau path-nya
-          workspaces: "rust -> target"
-          # Tambahin matrix target biar cache-nya gak bentrok antar OS
-          key: ${{ matrix.target }}
-          
+          # Kita paksa install target di host biar Cross gak bingung nyari 'core'
+          targets: ${{ matrix.target }}
 
       # Handle Android NDK buat arm64 dan armv7
       - name: Setup Android NDK
@@ -117,8 +109,7 @@ jobs:
         run: cargo build --release --target ${{ matrix.target }}
         working-directory: rust
 
-      - name: Build Release (Specialized - Android, BSD, Musl, Wasm, IA32)
-        # Semua yang butuh Cross atau NDK masuk sini
+      - name: Build Release (Specialized)
         if: |
           contains(matrix.platform, 'android') || 
           contains(matrix.platform, 'bsd') || 
@@ -127,10 +118,17 @@ jobs:
           matrix.platform == 'wasm32'
         run: |
           if [[ "${{ matrix.platform }}" == *"android"* ]]; then
-            # Android pake cargo biasa karena NDK udah kita setup di step sebelumnya
             cd rust && cargo build --release --target ${{ matrix.target }}
+          elif [[ "${{ matrix.platform }}" == *"musl"* ]]; then
+            # Fix buat Musl cdylib error
+            if [ ! -f "./cross" ]; then
+              curl -L https://github.com/cross-rs/cross/releases/latest/download/cross-x86_64-unknown-linux-musl.tar.gz | tar xz
+              chmod +x cross
+            fi
+            cd rust
+            RUSTFLAGS="-C target-feature=-crt-static" ../cross build --release --target ${{ matrix.target }}
           else
-            # Sisanya wajib pake Cross
+            # Sisanya (IA32, BSD, Wasm)
             if [ ! -f "./cross" ]; then
               curl -L https://github.com/cross-rs/cross/releases/latest/download/cross-x86_64-unknown-linux-musl.tar.gz | tar xz
               chmod +x cross
