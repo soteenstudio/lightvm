@@ -45,18 +45,18 @@ jobs:
             target: i686-unknown-linux-musl
             platform: linux-musl-ia32
             
-          # --- FREEBSD (X64) ---
+          # --- BSD FAMILY ---
           - os: ubuntu-latest
             target: x86_64-unknown-freebsd
             platform: freebsd-x64
+          - os: ubuntu-latest
+            target: x86_64-unknown-openbsd
+            platform: openbsd-x64
 
-          # --- RISC-V ---
+          # --- BROWSER (WASM) ---
           - os: ubuntu-latest
-            target: riscv64gc-unknown-linux-gnu
-            platform: linux-riscv64
-          - os: ubuntu-latest
-            target: riscv32gc-unknown-linux-gnu
-            platform: linux-riscv32
+            target: wasm32-unknown-unknown
+            platform: wasm32
 
       fail-fast: false
 
@@ -64,16 +64,11 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Rust
+        if: matrix.platform != 'linux-ia32' && !contains(matrix.platform, 'musl')
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          # Kita cuma pasang target kalo itu target standard.
-          # Kalo target eksotis, biarin kosong (cuma install rustc & cargo basic).
-          targets: >-
-            ${{ (matrix.platform != 'linux-ia32' && 
-                 !contains(matrix.platform, 'musl') && 
-                 !contains(matrix.platform, 'freebsd') && 
-                 !contains(matrix.platform, 'riscv')) && matrix.target || '' }}
+          targets: ${{ matrix.target }}
 
       - name: Rust Cache
         uses: swatinem/rust-cache@v2
@@ -101,45 +96,20 @@ jobs:
           echo "linker = \"$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/$LINKER\"" >> .cargo/config.toml
 
       - name: Build Release (Standard & Android)
-        # Tambahin filter biar dia skip target Docker/Eksotis
-        if: |
-          matrix.platform != 'linux-ia32' && 
-          !contains(matrix.platform, 'musl') &&
-          !contains(matrix.platform, 'freebsd') &&
-          !contains(matrix.platform, 'riscv')
+        if: matrix.platform != 'linux-ia32' && !contains(matrix.platform, 'musl')
         run: cargo build --release --target ${{ matrix.target }}
         working-directory: rust
 
-      - name: Build Release (Docker - Multi Arch)
-        if: |
-          matrix.platform == 'linux-ia32' || 
-          contains(matrix.platform, 'musl') || 
-          contains(matrix.platform, 'freebsd') || 
-          contains(matrix.platform, 'riscv')
+      - name: Build Release (Docker - BSD & Wasm)
+        if: contains(matrix.platform, 'freebsd') || contains(matrix.platform, 'openbsd') || matrix.platform == 'wasm32'
         run: |
           if [ ! -f "./cross" ]; then
             curl -L https://github.com/cross-rs/cross/releases/latest/download/cross-x86_64-unknown-linux-musl.tar.gz | tar xz
             chmod +x cross
           fi
-          
-          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-          
           cd rust
-          
-          # Kita pake image yang lebih umum/generic kalo RISC-V image-nya denied
-          cat <<EOF > Cross.toml
-          [target.riscv32gc-unknown-linux-gnu]
-          # Pake image debian-riscv64 (dia biasanya punya toolchain buat 32 juga)
-          # Atau kita paksa build-std biar dia gak nyari biner std di image
-          build-std = ["core", "std", "alloc", "proc_macro"]
-
-          [target.riscv64gc-unknown-linux-gnu]
-          build-std = ["core", "std", "alloc", "proc_macro"]
-          EOF
-
-          # Tambahin -Z build-std pas manggil cross
-          # Dan pastiin pake toolchain nightly khusus buat RISC-V biar build-std jalan
-          ../cross build --release --target ${{ matrix.target }} -Z build-std
+          # Khusus WASM gak butuh RUSTFLAGS aneh-aneh
+          ../cross build --release --target ${{ matrix.target }}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
@@ -210,9 +180,10 @@ jobs:
             "binary-linux-musl-x64|linux-musl-x64|index.musl-x64.node|x64"
             "binary-linux-musl-ia32|linux-musl-ia32|index.musl-ia32.node|ia32",
             "binary-freebsd-x64|freebsd-x64|index.freebsd.node|x64"
-            "binary-linux-riscv64|linux-riscv64|index.riscv64.node|riscv64"
-            "binary-linux-riscv32|linux-riscv32|index.riscv32.node|riscv32"
+            "binary-openbsd-x64|openbsd-x64|index.openbsd.node|x64"
+            "binary-wasm32|wasm32|index.wasm.wasm|wasm"
           )
+
 
           for item in "${PLATFORMS[@]}"; do
             IFS="|" read -r ARTIFACT PLATFORM BIN_NAME CPU <<< "$item"
@@ -265,11 +236,12 @@ jobs:
             "@lightvm/core-linux-musl-x64": "$VERSION",
             "@lightvm/core-linux-musl-ia32": "$VERSION",
             "@lightvm/core-freebsd-x64": "$VERSION",
-            "@lightvm/core-linux-riscv64": "$VERSION",
-            "@lightvm/core-linux-riscv32": "$VERSION"
+            "@lightvm/core-openbsd-x64": "$VERSION",
+            "@lightvm/core-wasm32": "$VERSION"
           }
           EOF
           )
+
 
           # Pake jq buat update version DAN gabungin optionalDependencies
           jq --arg ver "$VERSION" --argjson deps "$OP_DEPS" \
