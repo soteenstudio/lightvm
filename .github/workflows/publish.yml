@@ -44,6 +44,20 @@ jobs:
           - os: ubuntu-latest
             target: i686-unknown-linux-musl
             platform: linux-musl-ia32
+            
+          # --- FREEBSD (X64) ---
+          - os: ubuntu-latest
+            target: x86_64-unknown-freebsd
+            platform: freebsd-x64
+
+          # --- RISC-V ---
+          - os: ubuntu-latest
+            target: riscv64gc-unknown-linux-gnu
+            platform: linux-riscv64
+          - os: ubuntu-latest
+            target: riscv32gc-unknown-linux-gnu
+            platform: linux-riscv32
+
       fail-fast: false
 
     steps:
@@ -86,20 +100,27 @@ jobs:
         run: cargo build --release --target ${{ matrix.target }}
         working-directory: rust
 
-      - name: Build Release (Docker - Linux 32-bit & Musl)
-        if: matrix.platform == 'linux-ia32' || contains(matrix.platform, 'musl')
+      - name: Build Release (Docker - Multi Arch)
+        # Tambahin FreeBSD dan RISC-V ke kondisi IF
+        if: |
+          matrix.platform == 'linux-ia32' || 
+          contains(matrix.platform, 'musl') || 
+          contains(matrix.platform, 'freebsd') || 
+          contains(matrix.platform, 'riscv')
         run: |
-          # 1. Download & setup cross
-          curl -L https://github.com/cross-rs/cross/releases/latest/download/cross-x86_64-unknown-linux-musl.tar.gz | tar xz
-          chmod +x cross
+          # 1. Download & setup cross (pake cache logic yang kita bahas tadi lebih oke)
+          if [ ! -f "./cross" ]; then
+            curl -L https://github.com/cross-rs/cross/releases/latest/download/cross-x86_64-unknown-linux-musl.tar.gz | tar xz
+            chmod +x cross
+          fi
           
-          # 2. Setup QEMU
+          # 2. Setup QEMU (Wajib buat RISC-V biar bisa emulasi)
           docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
           
-          # 3. Build dengan RUSTFLAGS sakti
-          # Kita tambahin '-C target-feature=-crt-static' biar dia gak maksa static linking
-          # dan tetep bisa bikin .so / .node
+          # 3. Build
           cd rust
+          # Khusus FreeBSD biasanya butuh custom environment atau image, 
+          # tapi cross-rs default udah cukup solid.
           RUSTFLAGS="-C target-feature=-crt-static" ../cross build --release --target ${{ matrix.target }}
 
       - name: Upload Artifacts
@@ -169,7 +190,10 @@ jobs:
             "binary-android-arm64|android-arm64|index.android.node|arm64"
             "binary-android-arm|android-arm|index.android32.node|arm"
             "binary-linux-musl-x64|linux-musl-x64|index.musl-x64.node|x64"
-            "binary-linux-musl-ia32|linux-musl-ia32|index.musl-ia32.node|ia32"
+            "binary-linux-musl-ia32|linux-musl-ia32|index.musl-ia32.node|ia32",
+            "binary-freebsd-x64|freebsd-x64|index.freebsd.node|x64"
+            "binary-linux-riscv64|linux-riscv64|index.riscv64.node|riscv64"
+            "binary-linux-riscv32|linux-riscv32|index.riscv32.node|riscv32"
           )
 
           for item in "${PLATFORMS[@]}"; do
@@ -221,7 +245,10 @@ jobs:
             "@lightvm/core-android-arm64": "$VERSION",
             "@lightvm/core-android-arm": "$VERSION",
             "@lightvm/core-linux-musl-x64": "$VERSION",
-            "@lightvm/core-linux-musl-ia32": "$VERSION"
+            "@lightvm/core-linux-musl-ia32": "$VERSION",
+            "@lightvm/core-freebsd-x64": "$VERSION",
+            "@lightvm/core-linux-riscv64": "$VERSION",
+            "@lightvm/core-linux-riscv32": "$VERSION"
           }
           EOF
           )
