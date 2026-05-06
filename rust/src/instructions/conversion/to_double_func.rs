@@ -14,6 +14,8 @@ pub fn to_double_func(stack: &mut Vec<Value>) {
     let num = match val {
       Value::Float64(f) => Value::Float64(f),
       Value::Int64(i) => Value::Float64(i as f64),
+      Value::Float32(f) => Value::Float64(f as f64),
+      Value::Int32(i) => Value::Float64(i as f64),
       Value::String(s) => s
         .parse::<f64>()
         .map(Value::Float64)

@@ -14,6 +14,8 @@ pub fn to_float_func(stack: &mut Vec<Value>) {
     let num = match val {
       Value::Float32(f) => Value::Float32(f),
       Value::Int32(i) => Value::Float32(i as f32),
+      Value::Float64(f) => Value::Float32(f as f32),
+      Value::Int64(i) => Value::Float32(i as f32),
       Value::String(s) => s
         .parse::<f32>()
         .map(Value::Float32)

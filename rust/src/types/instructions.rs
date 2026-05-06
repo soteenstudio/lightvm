@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use smol_str::SmolStr;
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
+#[serde(rename_all = "snake_case")]
 pub enum Instructions {
   Push(Value),
   Val(SmolStr),
@@ -143,11 +143,11 @@ impl Instructions {
         "println" => Instructions::Println,
         "break" => Instructions::Break,
         "accessindex" => Instructions::AccessIndex,
-        "tostring" => Instructions::ToString,
-        "tointeger" => Instructions::ToInteger,
-        "tolong" => Instructions::ToLong,
-        "tofloat" => Instructions::ToFloat,
-        "todouble" => Instructions::ToDouble,
+        "to_string" => Instructions::ToString,
+        "to_integer" => Instructions::ToInteger,
+        "to_long" => Instructions::ToLong,
+        "to_float" => Instructions::ToFloat,
+        "to_double" => Instructions::ToDouble,
         "typeof" => Instructions::TypeOf,
         "inspect_obj" => Instructions::InspectObj,
         "inspect_arr" => Instructions::InspectArr,
@@ -273,11 +273,11 @@ impl Instructions {
         let count = arr[1].as_u64().expect("MakeArray count harus angka") as u32;
         Instructions::MakeArray(count)
       }
-      "tostring" => Instructions::ToString,
-      "tointeger" => Instructions::ToInteger,
-      "tolong" => Instructions::ToLong,
-      "tofloat" => Instructions::ToFloat,
-      "todouble" => Instructions::ToDouble,
+      "to_string" => Instructions::ToString,
+      "to_integer" => Instructions::ToInteger,
+      "to_long" => Instructions::ToLong,
+      "to_float" => Instructions::ToFloat,
+      "to_double" => Instructions::ToDouble,
       "dup" => Instructions::Dup,
       "length" => Instructions::Length,
       "typeof" => Instructions::TypeOf,

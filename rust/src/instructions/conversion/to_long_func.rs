@@ -15,6 +15,7 @@ pub fn to_long_func(stack: &mut Vec<Value>) {
       Value::Int64(i) => Value::Int64(i),
       Value::Int32(i) => Value::Int64(i as i64),
       Value::Float64(f) => Value::Int64(f as i64),
+      Value::Float32(f) => Value::Int64(f as i64),
       Value::String(s) => s
         .parse::<i64>()
         .map(Value::Int64)

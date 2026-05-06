@@ -27,8 +27,8 @@ const vm = new LightVM([/** Capability **/]);
   Permission to start bytecode execution.
     ```typescript
     const raw = [
-      ["val", "x"],
       ["push", 5],
+      ["val", "x"],
       ["set", "x"]
     ];
     vm.load(vm.tools().optimizeBytecode(JSON.stringify(raw))) // or path to file .ltc
@@ -60,6 +60,31 @@ const vm = new LightVM([/** Capability **/]);
     const add = vm.export("add"); // Capability: control
     console.log(add(5, 6));
     ```
+## Bytecode Instructions
+LightVM has a total of 40+ instructions for bytecode.
+1. Stack & Variable Management  
+A group of instructions for basic data manipulation and memory (variable) allocation.
+
+| Opcode | Arguments | Description |
+|--------|-----------|-------------|
+| push   | value     | Inserting data into the stack |
+| val    | name      | Declaring a new variable |
+| set    | name      | Take the top stack and then save it to the variable ``name`` |
+| get    | name      | Take the contents of the ``name`` variable and push it onto the stack |
+| dup    | -         | Duplicate the top value in the stack |
+2. Arithmetic & Logic  
+Instructions for calculations. Note that for optimization, these instructions require a ``PrimitiveType`` (``int``, ``flt``, ``lng``, ``dbl``) to prevent the VM from guessing the data type during execution.
+
+| Opcode    | Arguments  | Description |
+|-----------|------------|-------------|
+| add / sub | type       | Addition or Subtraction |
+| mul / div | type       | Multiplication or Division |
+| mod       | type       | Modulo (Remainder) |
+| inc / dec | name, type | Directly add/remove variable contents (without going through the stack) |
+| gt / lt   | type       |
+| ge / le   | type       |
+| eq / neq  | type       |
+| and / or  | -          |
 ## Supported Architectures
 LightVM supports a wide range of platforms and architectures to ensure maximum operational flexibility. Here's the current compatibility list:
 | OS / Runtime | Architecture | Toolchain |
