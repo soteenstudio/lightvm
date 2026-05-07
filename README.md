@@ -1,14 +1,14 @@
 # ⚡ LightVM
-> **Minimalist Execution. Maximal Security.**
+> __Minimalist Execution. Maximal Security.__
 > 
 
-A capability-based virtual machine designed for **secure**, **predictable**, and **optimized bytecode execution**.
+A capability-based virtual machine designed for __secure__, __predictable__, and __optimized bytecode execution__.
 ## The Philosophy: Deterministic & Lean
 LightVM is built with a focus on execution transparency and resource efficiency:
- * **Zero Magic (Deterministic):** Instruction execution is linear and completely predictable. The VM operates explicitly, executing instructions exactly as they are defined.
- * **AOT Optimized:** Bytecode goes through an Ahead-of-Time (AOT) optimization stage to eliminate redundant operations before execution begins, ensuring maximum efficiency at runtime.
- * **Resource Conscious:** Designed with a minimal memory footprint through the use of optimized data structures such as SmolStr and ahash for fast metadata management.
- * **Explicit Security:** Security is managed through a strict Capability system. Every VM access and operation must have permissions explicitly defined by the host from the outset.
+ * __Zero Magic (Deterministic):__ Instruction execution is linear and completely predictable. The VM operates explicitly, executing instructions exactly as they are defined.
+ * __AOT Optimized:__ Bytecode goes through an Ahead-of-Time (AOT) optimization stage to eliminate redundant operations before execution begins, ensuring maximum efficiency at runtime.
+ * __Resource Conscious:__ Designed with a minimal memory footprint through the use of optimized data structures such as SmolStr and ahash for fast metadata management.
+ * __Explicit Security:__ Security is managed through a strict Capability system. Every VM access and operation must have permissions explicitly defined by the host from the outset.
 
 ## 🚀 Getting Started
 ### Installation
@@ -63,13 +63,13 @@ fn main() {
 
 ### Capability
 LightVM has 4 capabilities to grant specific permissions to virtual machines, such as: Control, Observe, Debug, and Unsafe.
-- **Control:** Grants VM permission to view or retrieve data.
-- **Observe:** Grants permission to manipulate flow or state within the VM.
-- **Debug:** Opens access to internal states that are usually hidden.
-- **Unsafe:** Opens security protection or VM limitations.
+- __Control:__ Grants VM permission to view or retrieve data.
+- __Observe:__ Grants permission to manipulate flow or state within the VM.
+- __Debug:__ Opens access to internal states that are usually hidden.
+- __Unsafe:__ Opens security protection or VM limitations.
 
 ### How to use
-1. ``run()`` **method:**  
+1. ``run()`` __method:__  
   Permission to start bytecode execution.  
 
     <details>
@@ -102,8 +102,8 @@ LightVM has 4 capabilities to grant specific permissions to virtual machines, su
     </details>
     
     > [!NOTE]
-    > **Capability Required:** control  
-    > **Info:** parameters of ``load()`` can change bytecode directly or file path to .ltc
+    > __Capability Required:__ control  
+    > __Info:__ parameters of ``load()`` can change bytecode directly or file path to .ltc
     
 2. ``provide()`` method:  
   Permission to inject data/variables into the VM.
@@ -131,7 +131,7 @@ LightVM has 4 capabilities to grant specific permissions to virtual machines, su
     </details>
     
     > [!NOTE]
-    > **Capability Required:** no spesific capability
+    > __Capability Required:__ no spesific capability
     
 3. ``inspect()`` method:  
   Permission to view state, number of instructions, and capability.
@@ -155,7 +155,7 @@ LightVM has 4 capabilities to grant specific permissions to virtual machines, su
     </details>
     
     > [!NOTE]
-    > **Capability Required:** observe
+    > __Capability Required:__ observe
     
 4. ``halt()`` method:  
   Permission to force/manually stop VM.
@@ -179,7 +179,7 @@ LightVM has 4 capabilities to grant specific permissions to virtual machines, su
     </details>
     
     > [!NOTE]
-    > **Capability Required:** unsafe
+    > __Capability Required:__ unsafe
     
 5. ``export()`` method:  
   Permission to export functions in the VM out.
@@ -206,7 +206,7 @@ LightVM has 4 capabilities to grant specific permissions to virtual machines, su
     </details>
     
     > [!NOTE]
-    > **Capability Required:** control
+    > __Capability Required:__ control
     
 ## Bytecode Instructions
 LightVM has a total of 40+ instructions for bytecode.
@@ -277,4 +277,4 @@ LightVM supports a wide range of platforms and architectures to ensure maximum o
 | Android      | arm64, arm   | NDK       | ✓ | ✓ |
 | FreeBSD      | x64          | Clang     | ✓ | ✓ |
 ## 📜 License
-This project is distributed using the **Apache-2.0 license**
+This project is distributed using the __Apache-2.0 license__
