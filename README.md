@@ -97,7 +97,7 @@ LightVM has 4 capabilities to grant specific permissions to virtual machines, su
     ]);
     LightVM::tools().optimize_bytecode(raw)
       .map(|opt| vm.load(serde_json::from_str(&opt).unwrap()).run(None))
-      .expect("Gagal optimasi");
+      .expect("Optimization failed");
     ```
     </details>
     
