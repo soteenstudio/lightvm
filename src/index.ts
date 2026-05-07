@@ -17,30 +17,27 @@ import {
 import type {
   VMEvent,
   VMResult,
-  Capability,
   Listener
 } from "../typings/index.d.ts";
+export enum Capability {
+  Observe = "OBSERVE",
+  Control = "CONTROL",
+  Debug = "DEBUG",
+  Unsafe = "UNSAFE"
+}
 const native = loadNapi();
-const CapabilityMap = {
-  "Observe": 0,
-  "Control": 1,
-  "Debug": 2,
-  "Unsafe": 3,
-  "observe": 0,
-  "control": 1,
-  "debug": 2,
-  "unsafe": 3
-};
 export class LightVM {
   private instance: any;
   private listeners = new Map < VMEvent, Listener[] > ();
-  constructor(caps: Capability[] = ["observe"]) {
+  constructor(caps: Capability[] = [Capability.Observe]) {
     const numericCaps = caps.map(cap => {
-      const val = CapabilityMap[cap];
-      if (val === undefined) {
-        throw new Error(`Capability "${cap}" gak dikenal nih, Clay!`);
+      switch(cap.toUpperCase()) {
+        case "OBSERVE": return 0;
+        case "CONTROL": return 1;
+        case "DEBUG":   return 2;
+        case "UNSAFE":  return 3;
+        default: throw new Error(`Unknown capability ${cap}`);
       }
-      return val;
     });
     this.instance = new native.LightVM(numericCaps);
   }

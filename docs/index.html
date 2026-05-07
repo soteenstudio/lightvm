@@ -380,6 +380,7 @@
       allResults.sort((a, b) => b.downloads - a.downloads);
       let total = allResults.reduce((acc, curr) => acc + curr.downloads, 0);
 
+      renderOSDistribution(allResults, total);
       // --- LOGIKA KALKULASI SUB-STATS ---
       animateValue(totalEl, prevTotal, total, 800);
       
@@ -416,6 +417,118 @@
       statusEl.innerText = "CRITICAL_ERROR: SYNC_FAILED";
     }
   }
+
+  function renderOSDistribution(results, total) {
+    const distroBar = document.getElementById('distro-bar');
+    const distroLegend = document.getElementById('distro-legend');
+    
+    if (!distroBar || !distroLegend) return;
+  
+    // 1. Mapping kriteria & warna
+    const osGroups = {
+      "Linux (glibc)": { keys: ['linux'], exclude: ['musl', 'android'], color: '#3fb950' },
+      "Linux (musl)": { keys: ['musl'], color: '#9be9a8' },
+      "Android": { keys: ['android'], color: '#a4c639' },
+      "Windows": { keys: ['win32'], color: '#2f81f7' },
+      "macOS": { keys: ['darwin'], color: '#ff7b72' },
+      "FreeBSD": { keys: ['freebsd'], color: '#d29922' }
+    };
+
+    const osCounts = { Linux: 0, Windows: 0, macOS: 0, FreeBSD: 0 };
+  
+    // 2. Kalkulasi distribusi dari package name
+    results.forEach(data => {
+      const pkgName = data.package.toLowerCase();
+      for (const [os, config] of Object.entries(osGroups)) {
+        if (config.keys.some(k => pkgName.includes(k))) {
+          osCounts[os] += data.downloads;
+        }
+      }
+    });
+  
+    // 3. Reset UI
+    distroBar.innerHTML = '';
+    distroLegend.innerHTML = '';
+  
+    // 4. Render ke DOM
+    for (const [os, count] of Object.entries(osCounts)) {
+      if (count > 0 && total > 0) {
+        const share = (count / total * 100).toFixed(1);
+        
+        // Bikin segmen bar
+        const segment = document.createElement('div');
+        segment.className = 'distro-segment';
+        segment.style.width = `${share}%`;
+        segment.style.backgroundColor = osGroups[os].color;
+        distroBar.appendChild(segment);
+  
+        // Bikin item legend
+        const legendItem = document.createElement('span');
+        legendItem.innerHTML = `<span class="dot" style="background:${osGroups[os].color}"></span>${os}: ${share}%`;
+        distroLegend.appendChild(legendItem);
+      }
+    }
+  }
+
+  function renderOSDistribution(results, total) {
+    const distroBar = document.getElementById('distro-bar');
+    const distroLegend = document.getElementById('distro-legend');
+    
+    if (!distroBar || !distroLegend) return;
+  
+    const osGroups = {
+      "Linux (glibc)": { keys: ['linux'], exclude: ['musl', 'android'], color: '#3fb950' },
+      "Linux (musl)": { keys: ['musl'], color: '#9be9a8' },
+      "Android": { keys: ['android'], color: '#a4c639' },
+      "Windows": { keys: ['win32'], color: '#2f81f7' },
+      "macOS": { keys: ['darwin'], color: '#ff7b72' },
+      "FreeBSD": { keys: ['freebsd'], color: '#d29922' },
+      "Other": { keys: ['lightvm (crate)'], color: '#ffffff' }
+    };
+  
+    // 1. Inisialisasi counts secara dinamis biar gak mismatch
+    const osCounts = {};
+    Object.keys(osGroups).forEach(name => osCounts[name] = 0);
+  
+    // 2. Kalkulasi dengan logika exclude
+    results.forEach(data => {
+      const pkgName = data.package.toLowerCase();
+      
+      for (const [os, config] of Object.entries(osGroups)) {
+        // Cek apakah ada keyword yang cocok
+        const hasKey = config.keys.some(k => pkgName.includes(k));
+        
+        // Cek apakah ada keyword yang dilarang (misal: 'linux' tapi ada 'musl'-nya)
+        const isExcluded = config.exclude && config.exclude.some(e => pkgName.includes(e));
+  
+        if (hasKey && !isExcluded) {
+          osCounts[os] += data.downloads;
+          break; // Stop loop biar satu package gak masuk ke dua grup
+        }
+      }
+    });
+  
+    distroBar.innerHTML = '';
+    distroLegend.innerHTML = '';
+  
+    // 3. Render ke DOM
+    Object.entries(osCounts).forEach(([os, count]) => {
+      if (count > 0 && total > 0) {
+        const share = (count / total * 100).toFixed(1);
+        
+        const segment = document.createElement('div');
+        segment.className = 'distro-segment';
+        segment.style.width = `${share}%`;
+        segment.style.backgroundColor = osGroups[os].color;
+        distroBar.appendChild(segment);
+  
+        const legendItem = document.createElement('span');
+        legendItem.innerHTML = `<span class="dot" style="background:${osGroups[os].color}"></span>${os}: ${share}%`;
+        distroLegend.appendChild(legendItem);
+      }
+    });
+  }
+
 
   getStars();
   getDownloads();
