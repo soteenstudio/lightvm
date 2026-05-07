@@ -172,7 +172,7 @@ jobs:
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           TAG="latest"
-          if [[ "$VERSION" =~ -(proto|alpha|beta) ]]; then TAG="next"; fi
+          if [[ "$VERSION" =~ -(proto|alphaa|beta) ]]; then TAG="next"; fi
 
           PLATFORMS=(
             "binary-linux-x64|linux-x64|index.linux.node|x64"
