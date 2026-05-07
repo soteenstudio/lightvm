@@ -61,7 +61,7 @@ fn main() {
   Permission to start bytecode execution.  
 
     <details>
-    <summary><b>TypeScript:</b></summary>
+    <summary>**TypeScript:**</summary>
   
     ```typescript
     const raw = [
