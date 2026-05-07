@@ -57,7 +57,7 @@ fn main() {
 </details>
 
 ## How to use
-1. ``run()`` method:  
+1. ``run()`` **method:**  
   Permission to start bytecode execution.  
 
     <details>
