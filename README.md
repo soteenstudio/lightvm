@@ -9,25 +9,41 @@ Most modern VMs are over-engineered. LightVM takes a shortcut:
  * **Instruction-focused:** Fokus ke eksekusi, bukan validasi yang berlebihan.
 ## 🚀 Getting Started
 ### Installation
-Installation with NPM
+
+<details>
+<summary>Installation with NPM</summary>
+
 ```bash
 npm install lightvm
 
 # or
 npm install lightvm@next
 ```
-Installation with Cargo
+</details>
+
+<details>
+<summary>Installation with Cargo</summary>
+
 ```bash
 cargo add lightvm
 ```
+</details>
+
 ### Quick Usage
-Using TypeScript:
+
+<details>
+<summary>Using TypeScript:</summary>
+
 ```typescript
 import { LightVM } from 'lightvm';
 
 const vm = new LightVM([/** Capability **/]);
 ```
-Using Rust:
+</details>
+
+<details>
+<summary>Using Rust:</summary>
+
 ```rust
 use lightvm::LightVM;
 use lightvm::types::capability::Capability;
@@ -38,10 +54,15 @@ fn main() {
     let mut vm = LightVM::new(caps);
 }
 ```
+</details>
+
 ## How to use
 1. ``run()`` method:  
   Permission to start bytecode execution.  
-  - TypeScript:
+
+    <details>
+    <summary><b>TypeScript:</b></summary>
+  
     ```typescript
     const raw = [
       ["push", 5],
@@ -50,8 +71,12 @@ fn main() {
     ];
     vm.load(vm.tools().optimizeBytecode(JSON.stringify(raw))) // or path to file .ltc
       .run(); // Capability: control
-    ```  
-  - Rust:
+    ```
+    </details>  
+    
+    <details>
+    <summary>Rust:</summary>
+    
     ```rust
     let raw = serde_json::json!([
       ["push", 5],
@@ -62,14 +87,21 @@ fn main() {
       .map(|opt| vm.load(serde_json::from_str(&opt).unwrap()).run(None))
       .expect("Gagal optimasi");
     ```
+    </details>
+    
 2. ``provide()`` method:  
   Permission to inject data/variables into the VM.
+
+    <details>
+    <summary>TypeScript:</summary>
+    
     ```typescript
     vm.provide("identity", {
       name: "John Doe", 
       force: "2021",
     }); // Capability: no specific capability
     ```
+    </details>
 3. ``inspect()`` method:  
   Permission to view state, number of instructions, and capability.
     ```typescript
