@@ -256,6 +256,7 @@
   <div class="source-info">
     <span>Source from:</span>
     <i class="fa-brands fa-npm"></i>
+    <i class="fa-brands fa-rust"></i>
     <i class="fa-brands fa-github"></i>
   </div>
 </div>
@@ -278,6 +279,7 @@
     "@lightvm/core-linux-musl-ia32",
     "@lightvm/core-freebsd-x64"
   ];
+  const rustCrates = ['lightvm'];
 
   let currentRange = 'last-month';
   let prevTotal = 0;
@@ -330,71 +332,77 @@
     const totalEl = document.getElementById('total-count');
     const statusEl = document.getElementById('status-msg');
     const listEl = document.getElementById('package-list');
-    const avgEl = document.getElementById('avg-daily');
+    const avgEl = document.getElementById('avg-daily'); // Tambahin ini
+    const velEl = document.getElementById('velocity');  // Tambahin ini
 
     try {
-      statusEl.innerText = ">> EXECUTING_API_FETCH...";
+      statusEl.innerText = ">> SYNCING_MULTIVERSE_DATA...";
       
-      let rangePath = currentRange;
-      let days = 30; // default for last-month
-      
+      // Tentukan pembagi hari buat AVG
+      let days = 30;
       if (currentRange === 'last-day') days = 1;
       if (currentRange === 'last-week') days = 7;
       if (currentRange === 'last-year') days = 365;
       if (currentRange === 'td') {
-        const start = new Date('2026-05-01T22:56:14Z');
-        const now = new Date();
-        days = Math.floor((now - start) / (1000 * 60 * 60 * 24));
-        rangePath = `2026-05-01:${now.toISOString().split('T')[0]}`;
+          const start = new Date('2026-05-01'); // Sesuaikan tgl rilis awal lo
+          days = Math.max(1, Math.floor((new Date() - start) / (1000 * 60 * 60 * 24)));
       }
 
-      const requests = packages.map(pkg => 
-        fetch(`https://api.npmjs.org/downloads/point/${rangePath}/${encodeURIComponent(pkg)}?v${Date.now()}`)
+      let rangePath = currentRange === 'td' ? `point/2026-05-01:${new Date().toISOString().split('T')[0]}` : `point/${currentRange}`;
+      
+      const npmRequests = packages.map(pkg => 
+        fetch(`https://api.npmjs.org/downloads/${rangePath}/${encodeURIComponent(pkg)}`)
           .then(res => res.json())
-          .catch(() => ({ package: pkg, downloads: 0 }))
+          .catch(() => ({ downloads: 0 }))
       );
 
-      const results = await Promise.all(requests);
-      results.sort((a, b) => (b.downloads || 0) - (a.downloads || 0));
+      const crateRequests = rustCrates.map(crate =>
+        fetch(`https://crates.io/api/v1/crates/${crate}`)
+          .then(res => res.json())
+          .then(data => ({ 
+            package: `${crate} (crate)`, 
+            downloads: data.crate.downloads,
+            isCrate: true 
+          }))
+          .catch(() => ({ downloads: 0 }))
+      );
 
-      let total = results.reduce((acc, curr) => acc + (curr.downloads || 0), 0);
+      const [npmResults, crateResults] = await Promise.all([
+        Promise.all(npmRequests),
+        Promise.all(crateRequests)
+      ]);
+
+      const allResults = [
+          ...npmResults.map((d, i) => ({ package: packages[i], downloads: d.downloads || 0 })), 
+          ...crateResults
+      ];
       
-      animateValue(totalEl, prevTotal, total, 800);
-      prevTotal = total;
+      allResults.sort((a, b) => b.downloads - a.downloads);
+      let total = allResults.reduce((acc, curr) => acc + curr.downloads, 0);
 
-      // Update Average
+      // --- LOGIKA KALKULASI SUB-STATS ---
+      animateValue(totalEl, prevTotal, total, 800);
+      
+      // Update Average Daily
       const dailyAvg = (total / days).toFixed(1);
       avgEl.innerText = dailyAvg;
-      document.getElementById('velocity').innerText = `+${((dailyAvg/total)*100 || 0).toFixed(2)}%`;
 
-      // Logic Platform Distribution
-      const platformData = {
-        Win: { count: 0, color: '#2f81f7' },
-        Linux: { count: 0, color: '#3fb950' },
-        Darwin: { count: 0, color: '#ffca28' },
-        Mobile: { count: 0, color: '#f85149' },
-        Other: { count: 0, color: '#8b949e' }
-      };
+      // Update Velocity (Persentase kontribusi rata-rata harian terhadap total)
+      const velocity = total > 0 ? ((dailyAvg / total) * 100).toFixed(2) : 0;
+      velEl.innerText = `+${velocity}%`;
+      
+      prevTotal = total;
+      // ----------------------------------
 
       listEl.innerHTML = '';
-      results.forEach(data => {
-        const count = data.downloads || 0;
-        const percentage = total > 0 ? (count / total * 100) : 0;
-        const name = data.package;
-
-        // Categorize for distribution
-        if (name.includes('win32')) platformData.Win.count += count;
-        else if (name.includes('linux')) platformData.Linux.count += count;
-        else if (name.includes('darwin')) platformData.Darwin.count += count;
-        else if (name.includes('android')) platformData.Mobile.count += count;
-        else platformData.Other.count += count;
-
+      allResults.forEach(data => {
+        const percentage = total > 0 ? (data.downloads / total * 100) : 0;
         const item = document.createElement('div');
         item.className = 'pkg-item';
         item.innerHTML = `
           <div class="pkg-info">
-            <span class="pkg-name">${name}</span>
-            <span class="pkg-count">${count.toLocaleString()}</span>
+            <span class="pkg-name">${data.package}</span>
+            <span class="pkg-count">${data.downloads.toLocaleString()}</span>
           </div>
           <div class="progress-bg">
             <div class="progress-fill" style="width: ${percentage}%"></div>
@@ -403,23 +411,7 @@
         listEl.appendChild(item);
       });
 
-      // Render Distribution Bar
-      const distroBar = document.getElementById('distro-bar');
-      const distroLegend = document.getElementById('distro-legend');
-      distroBar.innerHTML = '';
-      distroLegend.innerHTML = '';
-
-      Object.keys(platformData).forEach(key => {
-        const p = platformData[key];
-        const pPercent = total > 0 ? (p.count / total * 100) : 0;
-        if (pPercent > 0) {
-          distroBar.innerHTML += `<div class="distro-segment" style="width: ${pPercent}%; background: ${p.color}"></div>`;
-          distroLegend.innerHTML += `<span><span class="dot" style="background: ${p.color}"></span>${key} ${pPercent.toFixed(1)}%</span>`;
-        }
-      });
-
       statusEl.innerText = `LAST_SYNC: ${new Date().toLocaleTimeString()}`;
-      
     } catch (error) {
       statusEl.innerText = "CRITICAL_ERROR: SYNC_FAILED";
     }
