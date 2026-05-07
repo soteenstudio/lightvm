@@ -8,9 +8,6 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod analyze_usage;
-pub mod eliminate_dead_loops;
-pub mod eliminate_dead_stores;
-pub mod is_pure_loop;
-pub mod optimize_bytecode;
-pub mod strength_reduction;
+pub fn shl_i32in(a: i32, b: i32) -> i32 {
+  a.wrapping_shl((b & 31) as u32)
+}

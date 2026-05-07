@@ -117,8 +117,9 @@ impl LightVM {
   fn load_internal(&mut self, source: String) -> Result<(), String> {
     let trimmed = source.trim();
     if trimmed.starts_with('[') {
-      self.bytecode =
+      let raw_list: Vec<serde_json::Value> =
         serde_json::from_str(trimmed).map_err(|e| format!("Gagal parse JSON: {}", e))?;
+      self.bytecode = raw_list.iter().map(Instructions::from_json_array).collect();
     } else {
       let path = std::path::Path::new(trimmed);
       if path.exists() {

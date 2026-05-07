@@ -12,9 +12,10 @@ use crate::instructions::math::{
   add_func::add_func, div_func::div_func, mod_func::mod_func, mul_func::mul_func,
   sub_func::sub_func,
 };
-use crate::optimizer::analyze_usage::analyze_usage;
-use crate::optimizer::eliminate_dead_loops::eliminate_dead_loops;
-use crate::optimizer::eliminate_dead_stores::eliminate_dead_stores;
+use crate::optimizer::{
+  analyze_usage::analyze_usage, eliminate_dead_loops::eliminate_dead_loops,
+  eliminate_dead_stores::eliminate_dead_stores, strength_reduction::strength_reduction,
+};
 use crate::types::{instructions::Instructions, value::Value};
 pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
   let mut i = 0;
@@ -77,6 +78,7 @@ pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
     }
   }
   bytecode.retain(|instr| !matches!(instr, Instructions::Nop));
+  strength_reduction(&mut bytecode);
   let usage = analyze_usage(&bytecode);
   bytecode = eliminate_dead_stores(&bytecode, &usage);
   bytecode = eliminate_dead_loops(bytecode);

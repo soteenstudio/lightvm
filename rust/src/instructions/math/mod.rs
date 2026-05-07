@@ -18,5 +18,7 @@ pub mod r#mod;
 pub mod mod_func;
 pub mod mul;
 pub mod mul_func;
+pub mod shl;
+pub mod shl_func;
 pub mod sub;
 pub mod sub_func;
