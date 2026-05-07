@@ -1,12 +1,15 @@
 # ⚡ LightVM
-> **Fast. Dumb. Efficient.**
+> **Minimalist Execution. Maximal Security.**
 > 
-A Virtual Machine designed to achieve maximum performance by removing all the "smart" features that actually only create *overhead*.
-## 🛠 Why "Dumb"?
-Most modern VMs are over-engineered. LightVM takes a shortcut:
- * **No Over-abstraction:** Langsung ke poinnya.
- * **Low Memory Footprint:** Gak makan RAM buat fitur yang gak lu pake.
- * **Instruction-focused:** Fokus ke eksekusi, bukan validasi yang berlebihan.
+
+A capability-based virtual machine designed for **secure**, **predictable**, and **optimized bytecode execution**.
+## The Philosophy: Deterministic & Lean
+LightVM is built with a focus on execution transparency and resource efficiency:
+ * **Zero Magic (Deterministic):** Instruction execution is linear and completely predictable. The VM operates explicitly, executing instructions exactly as they are defined.
+ * **AOT Optimized:** Bytecode goes through an Ahead-of-Time (AOT) optimization stage to eliminate redundant operations before execution begins, ensuring maximum efficiency at runtime.
+ * **Resource Conscious:** Designed with a minimal memory footprint through the use of optimized data structures such as SmolStr and ahash for fast metadata management.
+ * **Explicit Security:** Security is managed through a strict Capability system. Every VM access and operation must have permissions explicitly defined by the host from the outset.
+
 ## 🚀 Getting Started
 ### Installation
 
@@ -60,10 +63,10 @@ fn main() {
 
 ### Capability
 LightVM has 4 capabilities to grant specific permissions to virtual machines, such as: Control, Observe, Debug, and Unsafe.
-- **Control:**
-- **Observe:**
-- **Debug:**
-- **Unsafe:**
+- **Control:** Grants VM permission to view or retrieve data.
+- **Observe:** Grants permission to manipulate flow or state within the VM.
+- **Debug:** Opens access to internal states that are usually hidden.
+- **Unsafe:** Opens security protection or VM limitations.
 
 ### How to use
 1. ``run()`` **method:**  
