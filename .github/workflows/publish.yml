@@ -243,7 +243,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-crates:
-    needs: build-npm
+    needs: [build-npm, publish-npm]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
@@ -252,7 +252,22 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Sync Assets and Version
+        run: |
+          # 1. Ambil versi dari tag (buang prefix 'v' kalau ada)
+          VERSION=${GITHUB_REF#refs/tags/}
+          VERSION=${VERSION#v}
+          echo "Publishing version: $VERSION"
+
+          # 2. Modif Cargo.toml pake sed (cari line yang mulai dengan 'version =')
+          # Kita pake -i buat edit file langsung
+          sed -i "s/^version = \".*\"/version = \"$VERSION\"/" rust/Cargo.toml
+
+          # 3. Copy README & LICENSE
+          cp README.md rust/
+          cp LICENSE rust/
+
       - name: Publish to Crates.io
+        # Wajib pake --allow-dirty karena Cargo.toml & README berubah statusnya
         run: cargo publish --token ${{ secrets.CRATES_IO_TOKEN }} --allow-dirty
         working-directory: rust
-        

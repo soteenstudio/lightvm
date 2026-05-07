@@ -234,6 +234,9 @@ Instructions for calculations. Note that for optimization, these instructions re
 | eq / neq  | type       | Equal or Not Equal |
 | shl       | type       | Shift Left bitwise operation based on data type |
 | and / or  | -          | Boolean logic operations (&& / ||) |
+> [!NOTE]
+> **Specific Opcode**: `shl` only accepts `int` and `lng` types from `PrimitiveTypes`.
+
 3. Control Flow & Function  
 Instructions for managing program flow, looping, and function calls.
 
