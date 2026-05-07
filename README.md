@@ -61,7 +61,7 @@ fn main() {
   Permission to start bytecode execution.  
 
     <details>
-    <summary>**TypeScript:**</summary>
+    <summary>TypeScript:</summary>
   
     ```typescript
     const raw = [
@@ -70,7 +70,7 @@ fn main() {
       ["set", "x"]
     ];
     vm.load(vm.tools().optimizeBytecode(JSON.stringify(raw))) // or path to file .ltc
-      .run(); // Capability: control
+      .run();
     ```
     </details>  
     
@@ -89,6 +89,8 @@ fn main() {
     ```
     </details>
     
+    > **Capability Required:** control
+    
 2. ``provide()`` method:  
   Permission to inject data/variables into the VM.
 
@@ -99,27 +101,95 @@ fn main() {
     vm.provide("identity", {
       name: "John Doe", 
       force: "2021",
-    }); // Capability: no specific capability
+    });
     ```
     </details>
+    
+    <details>
+    <summary>Rust:</summary>
+    
+    ```rust
+    vm.provide("identity".to_string(), serde_json::json!({
+        "name": "John Doe",
+        "force": "2021"
+    }));
+    ```
+    </details>
+    
+    > **Capability Required:** no spesific capability
+    
 3. ``inspect()`` method:  
   Permission to view state, number of instructions, and capability.
+
+    <details>
+    <summary>TypeScript:</summary>
+    
     ```typescript
-    const report = vm.inspect(); // Capability: observe
+    const report = vm.inspect();
     console.log(report);
     ```
+    </details>
+    
+    <details>
+    <summary>Rust:</summary>
+    
+    ```rust
+    let report = vm.inspect();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    ```
+    </details>
+    
+    > **Capability Required:** observe
+    
 4. ``halt()`` method:  
   Permission to force/manually stop VM.
+
+    <details>
+    <summary>TypeScript:</summary>
+    
     ```typescript
-    vm.halt(); // Capability: unsafe
+    vm.halt();
     console.log("The VM has been terminated.")
     ```
+    </details>
+    
+    <details>
+    <summary>Rust:</summary>
+    
+    ```rust
+    vm.halt();
+    println!("The VM has been terminated.");
+    ```
+    </details>
+    
+    > **Capability Required:** unsafe
+    
 5. ``export()`` method:  
   Permission to export functions in the VM out.
+
+    <details>
+    <summary>TypeScript:</summary>
+    
     ```typescript
-    const add = vm.export("add"); // Capability: control
+    const add = vm.export("add");
     console.log(add(5, 6));
     ```
+    </details>
+    
+    <details>
+    <summary>Rust:</summary>
+    
+    ```rust
+    let mut add = vm.export("add".to_string());
+    let args = vec![serde_json::json!(5), serde_json::json!(6)];
+    if let Some(hasil) = add_func(args) {
+        println!("Hasil dari VM: {}", hasil);
+    }
+    ```
+    </details>
+    
+    > **Capability Required:** control
+    
 ## Bytecode Instructions
 LightVM has a total of 40+ instructions for bytecode.
 1. Stack & Variable Management  
@@ -180,12 +250,13 @@ For those of you who want to force a certain data type to ensure consistent perf
 | to_double  | Change the value to Double  |
 ## Supported Architectures
 LightVM supports a wide range of platforms and architectures to ensure maximum operational flexibility. Here's the current compatibility list:
-| OS / Runtime | Architecture | Toolchain |
-|--------------|--------------|-----------|
-| Windows      | x64, ia32    | MSVC      |
-| Linux        | x64, ia32  | GNU (glibc) |
-| Linux (musl) | x64, ia32    | musl      |
-| macOS (Darwin) | x64      | Apple Clang |
-| Android      | arm64, arm   | NDK       |
+| OS / Runtime | Architecture | Toolchain | Rust | Node.js |
+|--------------|--------------|-----------|-------|---------|
+| Windows      | x64, ia32    | MSVC      | ✓ | ✓ |
+| Linux        | x64, ia32, arm64 | GNU (glibc) | ✓ | ✓ |
+| Linux (musl) | x64, ia32, arm64 | musl      | ✓ | ✓ |
+| macOS (Darwin) | x64      | Apple Clang | ✓ | ✓ |
+| Android      | arm64, arm   | NDK       | ✓ | ✓ |
+| FreeBSD      | x64          | Clang     | ✓ | ✓ |
 ## 📜 License
 This project is distributed using the **Apache-2.0 license**
