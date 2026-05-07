@@ -35,9 +35,11 @@ cargo add lightvm
 <summary>Using TypeScript:</summary>
 
 ```typescript
-import { LightVM } from 'lightvm';
+import { LightVM, Capability } from 'lightvm';
 
-const vm = new LightVM([/** Capability **/]);
+const caps = [Capability.Control, Capability.Observe];
+
+const vm = new LightVM(caps);
 ```
 </details>
 
@@ -56,7 +58,14 @@ fn main() {
 ```
 </details>
 
-## How to use
+### Capability
+LightVM has 4 capabilities to grant specific permissions to virtual machines, such as: Control, Observe, Debug, and Unsafe.
+- **Control:**
+- **Observe:**
+- **Debug:**
+- **Unsafe:**
+
+### How to use
 1. ``run()`` **method:**  
   Permission to start bytecode execution.  
 
@@ -69,7 +78,7 @@ fn main() {
       ["val", "x"],
       ["set", "x"]
     ];
-    vm.load(vm.tools().optimizeBytecode(JSON.stringify(raw))) // or path to file .ltc
+    vm.load(vm.tools().optimizeBytecode(JSON.stringify(raw)))
       .run();
     ```
     </details>  
@@ -89,7 +98,9 @@ fn main() {
     ```
     </details>
     
-    > **Capability Required:** control
+    > [!NOTE]
+    > **Capability Required:** control  
+    > **Info:** parameters of ``load()`` can change bytecode directly or file path to .ltc
     
 2. ``provide()`` method:  
   Permission to inject data/variables into the VM.
@@ -116,6 +127,7 @@ fn main() {
     ```
     </details>
     
+    > [!NOTE]
     > **Capability Required:** no spesific capability
     
 3. ``inspect()`` method:  
@@ -139,6 +151,7 @@ fn main() {
     ```
     </details>
     
+    > [!NOTE]
     > **Capability Required:** observe
     
 4. ``halt()`` method:  
@@ -162,6 +175,7 @@ fn main() {
     ```
     </details>
     
+    > [!NOTE]
     > **Capability Required:** unsafe
     
 5. ``export()`` method:  
@@ -188,6 +202,7 @@ fn main() {
     ```
     </details>
     
+    > [!NOTE]
     > **Capability Required:** control
     
 ## Bytecode Instructions
