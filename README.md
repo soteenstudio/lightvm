@@ -5,10 +5,10 @@
 A capability-based virtual machine designed for __secure__, __predictable__, and __optimized bytecode execution__.
 ## The Philosophy: Deterministic & Lean
 LightVM is built with a focus on execution transparency and resource efficiency:
- * __Zero Magic (Deterministic):__ Instruction execution is linear and completely predictable. The VM operates explicitly, executing instructions exactly as they are defined.
- * __AOT Optimized:__ Bytecode goes through an Ahead-of-Time (AOT) optimization stage to eliminate redundant operations before execution begins, ensuring maximum efficiency at runtime.
- * __Resource Conscious:__ Designed with a minimal memory footprint through the use of optimized data structures such as SmolStr and ahash for fast metadata management.
- * __Explicit Security:__ Security is managed through a strict Capability system. Every VM access and operation must have permissions explicitly defined by the host from the outset.
+ * __Zero Magic (Deterministic)__: Instruction execution is linear and completely predictable. The VM operates explicitly, executing instructions exactly as they are defined.
+ * __AOT Optimized__: Bytecode goes through an Ahead-of-Time (AOT) optimization stage to eliminate redundant operations before execution begins, ensuring maximum efficiency at runtime.
+ * __Resource Conscious__: Designed with a minimal memory footprint through the use of optimized data structures such as SmolStr and ahash for fast metadata management.
+ * __Explicit Security__: Security is managed through a strict Capability system. Every VM access and operation must have permissions explicitly defined by the host from the outset.
 
 ## 🚀 Getting Started
 ### Installation
@@ -63,13 +63,13 @@ fn main() {
 
 ### Capability
 LightVM has 4 capabilities to grant specific permissions to virtual machines, such as: Control, Observe, Debug, and Unsafe.
-- __Control:__ Grants VM permission to view or retrieve data.
-- __Observe:__ Grants permission to manipulate flow or state within the VM.
-- __Debug:__ Opens access to internal states that are usually hidden.
-- __Unsafe:__ Opens security protection or VM limitations.
+- __Control__: Grants VM permission to view or retrieve data.
+- __Observe__: Grants permission to manipulate flow or state within the VM.
+- __Debug__: Opens access to internal states that are usually hidden.
+- __Unsafe__: Opens security protection or VM limitations.
 
 ### How to use
-1. ``run()`` __method:__  
+1. ``run()`` __method__:  
   Permission to start bytecode execution.  
 
     <details>
@@ -102,8 +102,8 @@ LightVM has 4 capabilities to grant specific permissions to virtual machines, su
     </details>
     
     > [!NOTE]
-    > __Capability Required:__ control  
-    > __Info:__ parameters of ``load()`` can change bytecode directly or file path to .ltc
+    > __Capability Required__: control  
+    > __Info__: parameters of ``load()`` can change bytecode directly or file path to .ltc
     
 2. ``provide()`` method:  
   Permission to inject data/variables into the VM.
@@ -131,7 +131,7 @@ LightVM has 4 capabilities to grant specific permissions to virtual machines, su
     </details>
     
     > [!NOTE]
-    > __Capability Required:__ no spesific capability
+    > __Capability Required__: no spesific capability
     
 3. ``inspect()`` method:  
   Permission to view state, number of instructions, and capability.
@@ -155,7 +155,7 @@ LightVM has 4 capabilities to grant specific permissions to virtual machines, su
     </details>
     
     > [!NOTE]
-    > __Capability Required:__ observe
+    > __Capability Required__: observe
     
 4. ``halt()`` method:  
   Permission to force/manually stop VM.
@@ -179,7 +179,7 @@ LightVM has 4 capabilities to grant specific permissions to virtual machines, su
     </details>
     
     > [!NOTE]
-    > __Capability Required:__ unsafe
+    > __Capability Required__: unsafe
     
 5. ``export()`` method:  
   Permission to export functions in the VM out.
@@ -206,7 +206,7 @@ LightVM has 4 capabilities to grant specific permissions to virtual machines, su
     </details>
     
     > [!NOTE]
-    > __Capability Required:__ control
+    > __Capability Required__: control
     
 ## Bytecode Instructions
 LightVM has a total of 40+ instructions for bytecode.
@@ -232,6 +232,7 @@ Instructions for calculations. Note that for optimization, these instructions re
 | gt / lt   | type       | Greater Than or Less Than |
 | ge / le   | type       | Greater/Less Than or Equal |
 | eq / neq  | type       | Equal or Not Equal |
+| shl       | type       | Shift Left bitwise operation based on data type |
 | and / or  | -          | Boolean logic operations (&& / ||) |
 3. Control Flow & Function  
 Instructions for managing program flow, looping, and function calls.
@@ -266,6 +267,37 @@ For those of you who want to force a certain data type to ensure consistent perf
 | to_long    | Change the value to Long (64-bit) |
 | to_float   | Change value to Float       |
 | to_double  | Change the value to Double  |
+6. Objects & OOP
+Instructions for handling class instances and modifying object properties dynamically.
+
+| Opcode | Arguments | Description |
+|--------|-----------|-------------|
+| set_prop | prop_name | Set the value of an object property (retrieve ``value`` and ``target_obj`` from the stack) |
+| instantiate | class_name, argc | Creates a new instance of a class with a specified number of constructor arguments |
+| inspect_obj | - | Prints the internal structure of an Object to the console |
+| inspect_array | - | Print the internal contents of an Array to the console |
+> [!WARNING]
+> __Nightly Opcode__: The `instantiate` instruction is still experimental. The API may change without notice in the `@next` version.
+
+7. Module & Export System
+Instructions for communication between modules or with external runtimes.
+
+| Opcode | Arguments | Description |
+|--------|-----------|-------------|
+| import | module_name, alias_idx | Importing external libraries/modules into a specific variable index |
+| export | name | Mark a function or variable to be accessible from outside the VM |
+> [!WARNING]
+> __Nightly Opcode__: The `export` and `import` instructions are still experimental. The API may change without notice in the `@next` version.
+
+8. Basic I/O & Loop Control
+Instructions for standard output and more specific iteration control.
+
+| Opcode | Arguments | Description |
+|--------|-----------|-------------|
+| print | - | Prints the top value of the stack to the console without a newline |
+| println | - | Prints the top value of the stack to the console with a newline |
+| break | target_ip | Stops the loop and jumps to the specified target_ip |
+| nop | - | Empty instructions (usually for placeholders or alignment) |
 ## Supported Architectures
 LightVM supports a wide range of platforms and architectures to ensure maximum operational flexibility. Here's the current compatibility list:
 | OS / Runtime | Architecture | Toolchain | Rust | Node.js |
