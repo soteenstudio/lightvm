@@ -108,7 +108,7 @@ dependencies = [
 
 [[package]]
 name = "lightvm"
-version = "0.1.0-proto.29"
+version = "0.1.0-alpha.0"
 dependencies = [
  "ahash",
  "colored",
