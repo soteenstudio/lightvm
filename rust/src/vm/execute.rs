@@ -37,6 +37,8 @@ use crate::instructions::{
     inc_dec::{dec_func, inc_func},
     mod_func::mod_func,
     mul_func::mul_func,
+    rol_func::rol_func,
+    ror_func::ror_func,
     shl_func::shl_func,
     shr_func::shr_func,
     sub_func::sub_func,
@@ -164,6 +166,26 @@ pub fn execute(
           .pop()
           .ok_or_else(|| SmolStr::new("Stack underflow on SHL (a)"))?;
         let result = shr_func(a, b, *num_type);
+        stack.push(result);
+      }
+      Instructions::Ror(num_type) => {
+        let b = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on SHL (b)"))?;
+        let a = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on SHL (a)"))?;
+        let result = ror_func(a, b, *num_type);
+        stack.push(result);
+      }
+      Instructions::Rol(num_type) => {
+        let b = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on SHL (b)"))?;
+        let a = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on SHL (a)"))?;
+        let result = rol_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Gt(num_type) => {

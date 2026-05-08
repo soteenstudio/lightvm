@@ -8,16 +8,16 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::shl::{
-  shl_i16in::shl_i16in, shl_i32in::shl_i32in, shl_i64in::shl_i64in,
+use crate::instructions::math::ror::{
+  ror_i16in::ror_i16in, ror_i32in::ror_i32in, ror_i64in::ror_i64in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
 #[inline]
-pub fn shl_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
+pub fn ror_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
-    PrimitiveTypes::Sht => Value::Int16(shl_i16in(a.as_i16(), b.as_i16())),
-    PrimitiveTypes::Int => Value::Int32(shl_i32in(a.as_i32(), b.as_i32())),
-    PrimitiveTypes::Lng => Value::Int64(shl_i64in(a.as_i64(), b.as_i64())),
+    PrimitiveTypes::Sht => Value::Int16(ror_i16in(a.as_i16(), b.as_i16())),
+    PrimitiveTypes::Int => Value::Int32(ror_i32in(a.as_i32(), b.as_i32())),
+    PrimitiveTypes::Lng => Value::Int64(ror_i64in(a.as_i64(), b.as_i64())),
     _ => panic!("Bitwise only support type sht, int, and lng"),
   }
 }
