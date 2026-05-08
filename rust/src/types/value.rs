@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use smol_str::SmolStr;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Value {
+  Int16(i16),
   Int32(i32),
   Int64(i64),
   Float32(f32),
@@ -44,6 +45,7 @@ impl Value {
   pub fn is_truthy(&self) -> bool {
     match self {
       Value::Bool(v) => *v,
+      Value::Int16(v) => *v != 0,
       Value::Int32(v) => *v != 0,
       Value::Int64(v) => *v != 0,
       Value::Float32(v) => *v != 0.0 && !v.is_nan(),
@@ -63,10 +65,22 @@ impl Value {
       _ => false,
     }
   }
+  pub fn as_i16(&self) -> i16 {
+    match self {
+      Value::Int16(v) => *v,
+      Value::Int32(v) => *v as i16,
+      Value::Int64(v) => *v as i16,
+      Value::Float32(v) => *v as i16,
+      Value::Float64(v) => *v as i16,
+      _ => panic!("Expected Int16 compatible value, found {:?}", self),
+    }
+  }
   pub fn as_i32(&self) -> i32 {
     match self {
       Value::Int32(v) => *v,
+      Value::Int16(v) => *v as i32,
       Value::Int64(v) => *v as i32,
+      Value::Float32(v) => *v as i32,
       Value::Float64(v) => *v as i32,
       _ => panic!("Expected Int32 compatible value, found {:?}", self),
     }
@@ -74,7 +88,9 @@ impl Value {
   pub fn as_i64(&self) -> i64 {
     match self {
       Value::Int64(v) => *v,
+      Value::Int16(v) => *v as i64,
       Value::Int32(v) => *v as i64,
+      Value::Float32(v) => *v as i64,
       Value::Float64(v) => *v as i64,
       _ => panic!("Expected Int64 compatible value, found {:?}", self),
     }
@@ -83,6 +99,7 @@ impl Value {
     match self {
       Value::Float32(v) => *v,
       Value::Float64(v) => *v as f32,
+      Value::Int16(v) => *v as f32,
       Value::Int32(v) => *v as f32,
       Value::Int64(v) => *v as f32,
       _ => panic!("Expected Float32 compatible value, found {:?}", self),
@@ -92,6 +109,7 @@ impl Value {
     match self {
       Value::Float64(v) => *v,
       Value::Float32(v) => *v as f64,
+      Value::Int16(v) => *v as f64,
       Value::Int32(v) => *v as f64,
       Value::Int64(v) => *v as f64,
       _ => panic!("Expected Float64 compatible value, found {:?}", self),
@@ -100,6 +118,7 @@ impl Value {
   pub fn as_string(&self) -> SmolStr {
     match self {
       Value::String(v) => v.clone(),
+      Value::Int16(v) => int_to_cow(*v as i64).into(),
       Value::Int32(v) => int_to_cow(*v as i64).into(),
       Value::Int64(v) => int_to_cow(*v).into(),
       Value::Float32(v) => float_to_cow(*v as f64).into(),
@@ -117,6 +136,7 @@ impl Value {
   }
   pub fn type_of(&self) -> &'static str {
     match self {
+      Value::Int16(_) => "int16",
       Value::Int32(_) => "int32",
       Value::Int64(_) => "int64",
       Value::Float32(_) => "float32",
@@ -135,6 +155,7 @@ use std::fmt;
 impl fmt::Display for Value {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     match self {
+      Value::Int16(v) => write!(f, "{}", v),
       Value::Int32(v) => write!(f, "{}", v),
       Value::Int64(v) => write!(f, "{}", v),
       Value::Float32(v) => write!(f, "{}", v),

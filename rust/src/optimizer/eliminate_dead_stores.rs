@@ -53,7 +53,8 @@ pub fn eliminate_dead_stores(bytecode: &[Instructions], usage: &Usage) -> Vec<In
       | Instructions::Mul(_)
       | Instructions::Div(_)
       | Instructions::Mod(_)
-      | Instructions::Shl(_) => {
+      | Instructions::Shl(_)
+      | Instructions::Shr(_) => {
         if let Some(demand) = stack_demands.pop() {
           if demand == Demand::Keep {
             stack_demands.push(Demand::Keep);

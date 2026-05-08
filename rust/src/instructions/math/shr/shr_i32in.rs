@@ -8,8 +8,6 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod eq_f32in;
-pub mod eq_f64in;
-pub mod eq_i16in;
-pub mod eq_i32in;
-pub mod eq_i64in;
+pub fn shr_i32in(a: i32, b: i32) -> i32 {
+  a.wrapping_shr((b & 31) as u32)
+}

@@ -16,6 +16,7 @@ pub fn typeof_func(stack: &mut Vec<Value>) -> Result<(), SmolStr> {
     .pop()
     .ok_or_else(|| SmolStr::new("Stack underflow on TYPEOF"))?;
   let (class_name, is_nullable): (&str, bool) = match val {
+    Value::Int16(_) => ("Short", false),
     Value::Int32(_) => ("Integer", false),
     Value::Int64(_) => ("Long", false),
     Value::Float32(_) => ("Float", false),

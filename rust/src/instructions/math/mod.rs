@@ -20,5 +20,7 @@ pub mod mul;
 pub mod mul_func;
 pub mod shl;
 pub mod shl_func;
+pub mod shr;
+pub mod shr_func;
 pub mod sub;
 pub mod sub_func;

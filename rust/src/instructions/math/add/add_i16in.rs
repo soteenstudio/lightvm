@@ -8,8 +8,6 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod eq_f32in;
-pub mod eq_f64in;
-pub mod eq_i16in;
-pub mod eq_i32in;
-pub mod eq_i64in;
+pub fn add_i16in(a: i16, b: i16) -> i16 {
+  a + b
+}
