@@ -9,8 +9,8 @@
  */
 
 use crate::instructions::comparison::ge::{
-  ge_f32in::ge_f32in, ge_f64in::ge_f64in, ge_i16in::ge_i16in, ge_i32in::ge_i32in,
-  ge_i64in::ge_i64in,
+  ge_f16in::ge_f16in, ge_f32in::ge_f32in, ge_f64in::ge_f64in, ge_i16in::ge_i16in,
+  ge_i32in::ge_i32in, ge_i64in::ge_i64in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
 #[inline]
@@ -21,6 +21,7 @@ pub fn ge_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Lng => Value::Bool(ge_i64in(a.as_i64(), b.as_i64())),
     PrimitiveTypes::Dbl => Value::Bool(ge_f64in(a.as_f64(), b.as_f64())),
     PrimitiveTypes::Flt => Value::Bool(ge_f32in(a.as_f32(), b.as_f32())),
+    PrimitiveTypes::Hlf => Value::Bool(ge_f16in(a.as_f16(), b.as_f16())),
     _ => Value::Bool(false),
   }
 }

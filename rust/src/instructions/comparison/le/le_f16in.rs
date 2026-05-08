@@ -8,14 +8,9 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use serde::{Deserialize, Serialize};
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-pub enum PrimitiveTypes {
-  Sht,
-  Int,
-  Lng,
-  Hlf,
-  Flt,
-  Dbl,
-  Str,
+use half::f16;
+pub fn le_f16in(a: u16, b: u16) -> bool {
+  let val_a = f16::from_bits(a);
+  let val_b = f16::from_bits(b);
+  val_a <= val_b
 }

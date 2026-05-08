@@ -19,6 +19,7 @@ pub fn typeof_func(stack: &mut Vec<Value>) -> Result<(), SmolStr> {
     Value::Int16(_) => ("Short", false),
     Value::Int32(_) => ("Integer", false),
     Value::Int64(_) => ("Long", false),
+    Value::Float16(_) => ("Half", false),
     Value::Float32(_) => ("Float", false),
     Value::Float64(_) => ("Double", false),
     Value::String(_) => ("String", false),

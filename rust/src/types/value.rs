@@ -10,6 +10,7 @@
 
 use crate::utils::fast_format::{float_to_cow, int_to_cow};
 use ahash::AHashMap;
+use half::f16;
 use serde::{Deserialize, Serialize};
 use smol_str::SmolStr;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -17,6 +18,7 @@ pub enum Value {
   Int16(i16),
   Int32(i32),
   Int64(i64),
+  Float16(u16),
   Float32(f32),
   Float64(f64),
   String(SmolStr),
@@ -48,6 +50,10 @@ impl Value {
       Value::Int16(v) => *v != 0,
       Value::Int32(v) => *v != 0,
       Value::Int64(v) => *v != 0,
+      Value::Float16(v) => {
+        let f = half::f16::from_bits(*v);
+        f != half::f16::ZERO && !f.is_nan()
+      }
       Value::Float32(v) => *v != 0.0 && !v.is_nan(),
       Value::Float64(v) => *v != 0.0 && !v.is_nan(),
       Value::String(v) => !v.is_empty(),
@@ -70,6 +76,7 @@ impl Value {
       Value::Int16(v) => *v,
       Value::Int32(v) => *v as i16,
       Value::Int64(v) => *v as i16,
+      Value::Float16(v) => f16::from_bits(*v).to_f32() as i16,
       Value::Float32(v) => *v as i16,
       Value::Float64(v) => *v as i16,
       _ => panic!("Expected Int16 compatible value, found {:?}", self),
@@ -80,6 +87,7 @@ impl Value {
       Value::Int32(v) => *v,
       Value::Int16(v) => *v as i32,
       Value::Int64(v) => *v as i32,
+      Value::Float16(v) => f16::from_bits(*v).to_f32() as i32,
       Value::Float32(v) => *v as i32,
       Value::Float64(v) => *v as i32,
       _ => panic!("Expected Int32 compatible value, found {:?}", self),
@@ -90,14 +98,27 @@ impl Value {
       Value::Int64(v) => *v,
       Value::Int16(v) => *v as i64,
       Value::Int32(v) => *v as i64,
+      Value::Float16(v) => f16::from_bits(*v).to_f32() as i64,
       Value::Float32(v) => *v as i64,
       Value::Float64(v) => *v as i64,
       _ => panic!("Expected Int64 compatible value, found {:?}", self),
     }
   }
+  pub fn as_f16(&self) -> u16 {
+    match self {
+      Value::Float16(v) => *v,
+      Value::Float32(v) => f16::from_f32(*v).to_bits(),
+      Value::Float64(v) => f16::from_f64(*v).to_bits(),
+      Value::Int16(v) => f16::from_f32(*v as f32).to_bits(),
+      Value::Int32(v) => f16::from_f32(*v as f32).to_bits(),
+      Value::Int64(v) => f16::from_f32(*v as f32).to_bits(),
+      _ => panic!("Expected Float16 compatible value, found {:?}", self),
+    }
+  }
   pub fn as_f32(&self) -> f32 {
     match self {
       Value::Float32(v) => *v,
+      Value::Float16(v) => f16::from_bits(*v).to_f32(),
       Value::Float64(v) => *v as f32,
       Value::Int16(v) => *v as f32,
       Value::Int32(v) => *v as f32,
@@ -108,6 +129,7 @@ impl Value {
   pub fn as_f64(&self) -> f64 {
     match self {
       Value::Float64(v) => *v,
+      Value::Float16(v) => f16::from_bits(*v).to_f32() as f64,
       Value::Float32(v) => *v as f64,
       Value::Int16(v) => *v as f64,
       Value::Int32(v) => *v as f64,
@@ -121,6 +143,7 @@ impl Value {
       Value::Int16(v) => int_to_cow(*v as i64).into(),
       Value::Int32(v) => int_to_cow(*v as i64).into(),
       Value::Int64(v) => int_to_cow(*v).into(),
+      Value::Float16(v) => float_to_cow(half::f16::from_bits(*v).to_f64()).into(),
       Value::Float32(v) => float_to_cow(*v as f64).into(),
       Value::Float64(v) => float_to_cow(*v).into(),
       Value::Bool(v) => SmolStr::new(if *v { "true" } else { "false" }),
@@ -139,6 +162,7 @@ impl Value {
       Value::Int16(_) => "int16",
       Value::Int32(_) => "int32",
       Value::Int64(_) => "int64",
+      Value::Float16(_) => "float16",
       Value::Float32(_) => "float32",
       Value::Float64(_) => "float64",
       Value::String(_) => "string",
@@ -158,6 +182,7 @@ impl fmt::Display for Value {
       Value::Int16(v) => write!(f, "{}", v),
       Value::Int32(v) => write!(f, "{}", v),
       Value::Int64(v) => write!(f, "{}", v),
+      Value::Float16(v) => write!(f, "{}", v),
       Value::Float32(v) => write!(f, "{}", v),
       Value::Float64(v) => write!(f, "{}", v),
       Value::Bool(v) => write!(f, "{}", v),

@@ -8,14 +8,10 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use serde::{Deserialize, Serialize};
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-pub enum PrimitiveTypes {
-  Sht,
-  Int,
-  Lng,
-  Hlf,
-  Flt,
-  Dbl,
-  Str,
+use half::f16;
+pub fn div_f16in(a: u16, b: u16) -> u16 {
+  let val_a = f16::from_bits(a);
+  let val_b = f16::from_bits(b);
+  let result = val_a / val_b;
+  result.to_bits()
 }

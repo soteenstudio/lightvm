@@ -8,6 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
+pub mod ge_f16in;
 pub mod ge_f32in;
 pub mod ge_f64in;
 pub mod ge_i16in;
