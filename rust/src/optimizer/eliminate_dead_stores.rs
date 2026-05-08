@@ -10,32 +10,164 @@
 
 use crate::types::instructions::Instructions;
 use crate::types::usage::Usage;
+#[derive(PartialEq, Debug)]
+enum Demand {
+  Keep,
+  Drop,
+}
 #[inline]
 pub fn eliminate_dead_stores(bytecode: &[Instructions], usage: &Usage) -> Vec<Instructions> {
   let mut result = Vec::new();
-  let mut needed_by_next = 0;
+  let mut stack_demands: Vec<Demand> = Vec::new();
   for inst in bytecode.iter().rev() {
     match inst {
-      Instructions::Set(arg) => {
-        if !usage.read.contains(arg.as_ref()) {
-          continue;
-        }
-        needed_by_next += 1;
-        result.push(inst.clone());
-      }
-      Instructions::Add(_) | Instructions::Sub(_) | Instructions::Mul(_) | Instructions::Div(_) => {
-        if needed_by_next > 0 {
-          needed_by_next -= 1;
-          needed_by_next += 2;
-          result.push(inst.clone());
+      Instructions::Push(_)
+      | Instructions::Get(_)
+      | Instructions::GetIdx(_)
+      | Instructions::Val(_)
+      | Instructions::ValIdx(_) => {
+        if let Some(demand) = stack_demands.pop() {
+          if demand == Demand::Keep {
+            result.push(inst.clone());
+          } else {
+            continue;
+          }
         } else {
           continue;
+        }
+      }
+      Instructions::Set(arg) => {
+        if !usage.read.contains(arg.as_ref()) {
+          stack_demands.push(Demand::Drop);
+          continue;
+        }
+        stack_demands.push(Demand::Keep);
+        result.push(inst.clone());
+      }
+      Instructions::SetIdx(_) => {
+        stack_demands.push(Demand::Keep);
+        result.push(inst.clone());
+      }
+      Instructions::Println | Instructions::Print => {
+        stack_demands.push(Demand::Keep);
+        result.push(inst.clone());
+      }
+      Instructions::Add(_)
+      | Instructions::Sub(_)
+      | Instructions::Mul(_)
+      | Instructions::Div(_)
+      | Instructions::Mod(_)
+      | Instructions::Shl(_) => {
+        if let Some(demand) = stack_demands.pop() {
+          if demand == Demand::Keep {
+            stack_demands.push(Demand::Keep);
+            stack_demands.push(Demand::Keep);
+            result.push(inst.clone());
+          } else {
+            stack_demands.push(Demand::Drop);
+            stack_demands.push(Demand::Drop);
+            continue;
+          }
+        } else {
+          continue;
+        }
+      }
+      Instructions::Gt(_)
+      | Instructions::Lt(_)
+      | Instructions::Ge(_)
+      | Instructions::Le(_)
+      | Instructions::Eq(_)
+      | Instructions::Neq(_)
+      | Instructions::And
+      | Instructions::Or
+      | Instructions::Concat => {
+        if let Some(demand) = stack_demands.pop() {
+          if demand == Demand::Keep {
+            stack_demands.push(Demand::Keep);
+            stack_demands.push(Demand::Keep);
+            result.push(inst.clone());
+          } else {
+            stack_demands.push(Demand::Drop);
+            stack_demands.push(Demand::Drop);
+          }
+        }
+      }
+      Instructions::ToString
+      | Instructions::ToInteger
+      | Instructions::ToLong
+      | Instructions::ToFloat
+      | Instructions::ToDouble
+      | Instructions::TypeOf
+      | Instructions::Length
+      | Instructions::InspectObj
+      | Instructions::InspectArr => {
+        if let Some(demand) = stack_demands.pop() {
+          if demand == Demand::Keep {
+            stack_demands.push(Demand::Keep);
+            result.push(inst.clone());
+          } else {
+            stack_demands.push(Demand::Drop);
+          }
+        }
+      }
+      Instructions::MakeObj(count) | Instructions::MakeArray(count) => {
+        if let Some(demand) = stack_demands.pop() {
+          if demand == Demand::Keep {
+            for _ in 0..*count {
+              stack_demands.push(Demand::Keep);
+            }
+            result.push(inst.clone());
+          } else {
+            for _ in 0..*count {
+              stack_demands.push(Demand::Drop);
+            }
+          }
+        }
+      }
+      Instructions::Access(_) => {
+        if let Some(demand) = stack_demands.pop() {
+          if demand == Demand::Keep {
+            stack_demands.push(Demand::Keep);
+            result.push(inst.clone());
+          } else {
+            stack_demands.push(Demand::Drop);
+          }
+        }
+      }
+      Instructions::AccessIndex => {
+        if let Some(demand) = stack_demands.pop() {
+          if demand == Demand::Keep {
+            stack_demands.push(Demand::Keep);
+            stack_demands.push(Demand::Keep);
+            result.push(inst.clone());
+          } else {
+            stack_demands.push(Demand::Drop);
+            stack_demands.push(Demand::Drop);
+          }
+        }
+      }
+      Instructions::SetProp(_) => {
+        result.push(inst.clone());
+        stack_demands.push(Demand::Keep);
+        stack_demands.push(Demand::Keep);
+      }
+      Instructions::Dup => {
+        let d1 = stack_demands.pop().unwrap_or(Demand::Drop);
+        let d2 = stack_demands.pop().unwrap_or(Demand::Drop);
+        if d1 == Demand::Keep || d2 == Demand::Keep {
+          stack_demands.push(Demand::Keep);
+          result.push(inst.clone());
+        } else {
+          stack_demands.push(Demand::Drop);
         }
       }
       Instructions::Inc(arg, _) | Instructions::Dec(arg, _) => {
         if !usage.read.contains(arg.as_ref()) {
           continue;
         }
+        result.push(inst.clone());
+      }
+      Instructions::IncIdx(_, _) | Instructions::DecIdx(_, _) => {
         result.push(inst.clone());
       }
       _ => {

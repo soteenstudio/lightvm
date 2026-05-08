@@ -14,7 +14,7 @@ use crate::instructions::math::{
 };
 use crate::optimizer::{
   analyze_usage::analyze_usage, eliminate_dead_loops::eliminate_dead_loops,
-  eliminate_dead_stores::eliminate_dead_stores, strength_reduction::strength_reduction,
+  eliminate_dead_stores::eliminate_dead_stores,
 };
 use crate::types::{instructions::Instructions, value::Value};
 pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
@@ -78,7 +78,6 @@ pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
     }
   }
   bytecode.retain(|instr| !matches!(instr, Instructions::Nop));
-  strength_reduction(&mut bytecode);
   let usage = analyze_usage(&bytecode);
   bytecode = eliminate_dead_stores(&bytecode, &usage);
   bytecode = eliminate_dead_loops(bytecode);
