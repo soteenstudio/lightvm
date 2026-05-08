@@ -21,20 +21,16 @@ pub fn eliminate_dead_stores(bytecode: &[Instructions], usage: &Usage) -> Vec<In
   let mut stack_demands: Vec<Demand> = Vec::new();
   for inst in bytecode.iter().rev() {
     match inst {
-      Instructions::Push(_)
-      | Instructions::Get(_)
-      | Instructions::GetIdx(_)
-      | Instructions::Val(_)
-      | Instructions::ValIdx(_) => {
+      Instructions::Push(_) | Instructions::Get(_) | Instructions::GetIdx(_) => {
         if let Some(demand) = stack_demands.pop() {
           if demand == Demand::Keep {
             result.push(inst.clone());
-          } else {
-            continue;
           }
-        } else {
-          continue;
         }
+      }
+      Instructions::Val(_) | Instructions::ValIdx(_) => {
+        result.push(inst.clone());
+        stack_demands.push(Demand::Keep);
       }
       Instructions::Set(arg) => {
         if !usage.read.contains(arg.as_ref()) {
@@ -168,6 +164,13 @@ pub fn eliminate_dead_stores(bytecode: &[Instructions], usage: &Usage) -> Vec<In
         result.push(inst.clone());
       }
       Instructions::IncIdx(_, _) | Instructions::DecIdx(_, _) => {
+        result.push(inst.clone());
+      }
+      Instructions::IfFalse(_) => {
+        result.push(inst.clone());
+        stack_demands.push(Demand::Keep);
+      }
+      Instructions::Jump(_) | Instructions::Stop | Instructions::Return => {
         result.push(inst.clone());
       }
       _ => {
