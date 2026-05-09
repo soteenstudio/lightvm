@@ -23,8 +23,9 @@ use crate::instructions::{
     stop_func::stop_func,
   },
   conversion::{
-    to_double_func::to_double_func, to_float_func::to_float_func, to_integer_func::to_integer_func,
-    to_long_func::to_long_func, to_string_func::to_string_func,
+    to_double_func::to_double_func, to_float_func::to_float_func, to_half_func::to_half_func,
+    to_integer_func::to_integer_func, to_long_func::to_long_func, to_short_func::to_short_func,
+    to_string_func::to_string_func,
   },
   io::{
     inspect_arr_func::inspect_arr_func, inspect_obj_func::inspect_obj_func, print_func::print_func,
@@ -368,11 +369,17 @@ pub fn execute(
       Instructions::ToString => {
         to_string_func(&mut stack);
       }
+      Instructions::ToShort => {
+        to_short_func(&mut stack);
+      }
       Instructions::ToInteger => {
         to_integer_func(&mut stack);
       }
       Instructions::ToLong => {
         to_long_func(&mut stack);
+      }
+      Instructions::ToHalf => {
+        to_half_func(&mut stack);
       }
       Instructions::ToFloat => {
         to_float_func(&mut stack);

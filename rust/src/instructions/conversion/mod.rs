@@ -10,6 +10,8 @@
 
 pub mod to_double_func;
 pub mod to_float_func;
+pub mod to_half_func;
 pub mod to_integer_func;
 pub mod to_long_func;
+pub mod to_short_func;
 pub mod to_string_func;
