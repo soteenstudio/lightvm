@@ -333,10 +333,12 @@ For those of you who want to force a certain data type to ensure consistent perf
 | Opcode     | Description                 |
 |------------|-----------------------------|
 | to_string  | Change the value to String  |
+| to_short   | Change value to Short (16-bit) |
 | to_integer | Change value to Integer (32-bit) |
 | to_long    | Change the value to Long (64-bit) |
-| to_float   | Change value to Float       |
-| to_double  | Change the value to Double  |
+| to_half    | Change value to Half-precision (16-bit Float) |
+| to_float   | Change value to Float (32-bit) |
+| to_double  | Change the value to Double (64-bit) |
 6. Objects & OOP
 Instructions for handling class instances and modifying object properties dynamically.
 
