@@ -1,4 +1,4 @@
-# ⚡ LightVM
+# LightVM
 > __Minimalist Execution. Maximal Security.__
 > 
 
@@ -10,13 +10,18 @@ A capability-based virtual machine designed for __secure__, __predictable__, and
 ## The Philosophy: Deterministic & Lean
 LightVM is built with a focus on execution transparency and resource efficiency:
  * __Zero Magic (Deterministic)__: Instruction execution is linear and completely predictable. The VM operates explicitly, executing instructions exactly as they are defined.
- * __AOT Optimized__: Bytecode goes through an Ahead-of-Time (AOT) optimization stage to eliminate redundant operations before execution begins, ensuring maximum efficiency at runtime.
  * __Resource Conscious__: Designed with a minimal memory footprint through the use of optimized data structures such as SmolStr and ahash for fast metadata management.
  * __Explicit Security__: Security is managed through a strict Capability system. Every VM access and operation must have permissions explicitly defined by the host from the outset.
 
 ## AOT Optimization Process
-
-## 🚀 Getting Started
+LightVM isn't just a simple interpreter. Before execution, your bytecode undergoes a multi-pass optimization to ensure maximum performance and minimal footprint:
+ * __Constant Folding__: Pre-calculates math and logic operations (e.g., Add, Sub, Xor, Concat) if the values are known at compile-time.
+ * __Conversion & Metadata Folding__: Pre-evaluates type casting (e.g., ToInteger, ToString) and metadata checks like TypeOf to eliminate redundant runtime work.
+ * __Strength Reduction__: Replaces "heavy" operations with lighter ones, such as converting multiplication by powers of two into bitwise Shl (Shift Left).
+ * __Dead Store Elimination__: Analyzes variable usage and automatically removes Push, Set, or Inc operations that don't contribute to the final program state.
+ * __Dead Loop Elimination__: Identifies and prunes "pure" loops that have no side effects (no I/O, calls, or returns), preventing unnecessary CPU cycles.
+ * __Jump Optimization__: Detects and removes redundant Jump instructions that point to the very next line of code.
+## Getting Started
 ### Installation
 
 <details>
