@@ -11,6 +11,7 @@
 pub mod analyze_usage;
 pub mod eliminate_dead_loops;
 pub mod eliminate_dead_stores;
+pub mod fold_constants;
 pub mod is_pure_loop;
 pub mod optimize_bytecode;
 pub mod strength_reduction;

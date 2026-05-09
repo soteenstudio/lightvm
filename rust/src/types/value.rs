@@ -80,7 +80,7 @@ impl Value {
       Value::Float16(v) => f16::from_bits(*v).to_f32() as i16,
       Value::Float32(v) => *v as i16,
       Value::Float64(v) => *v as i16,
-      _ => panic!("Expected Int16 compatible value, found {:?}", self),
+      _ => 0,
     }
   }
   pub fn as_i32(&self) -> i32 {
@@ -91,7 +91,7 @@ impl Value {
       Value::Float16(v) => f16::from_bits(*v).to_f32() as i32,
       Value::Float32(v) => *v as i32,
       Value::Float64(v) => *v as i32,
-      _ => panic!("Expected Int32 compatible value, found {:?}", self),
+      _ => 0,
     }
   }
   pub fn as_i64(&self) -> i64 {
@@ -102,7 +102,7 @@ impl Value {
       Value::Float16(v) => f16::from_bits(*v).to_f32() as i64,
       Value::Float32(v) => *v as i64,
       Value::Float64(v) => *v as i64,
-      _ => panic!("Expected Int64 compatible value, found {:?}", self),
+      _ => 0,
     }
   }
   pub fn as_f16(&self) -> u16 {
@@ -113,7 +113,7 @@ impl Value {
       Value::Int16(v) => f16::from_f32(*v as f32).to_bits(),
       Value::Int32(v) => f16::from_f32(*v as f32).to_bits(),
       Value::Int64(v) => f16::from_f32(*v as f32).to_bits(),
-      _ => panic!("Expected Float16 compatible value, found {:?}", self),
+      _ => 0,
     }
   }
   pub fn as_f32(&self) -> f32 {
@@ -124,7 +124,7 @@ impl Value {
       Value::Int16(v) => *v as f32,
       Value::Int32(v) => *v as f32,
       Value::Int64(v) => *v as f32,
-      _ => panic!("Expected Float32 compatible value, found {:?}", self),
+      _ => 0.0,
     }
   }
   pub fn as_f64(&self) -> f64 {
@@ -135,7 +135,7 @@ impl Value {
       Value::Int16(v) => *v as f64,
       Value::Int32(v) => *v as f64,
       Value::Int64(v) => *v as f64,
-      _ => panic!("Expected Float64 compatible value, found {:?}", self),
+      _ => 0.0,
     }
   }
   pub fn as_string(&self) -> SmolStr {

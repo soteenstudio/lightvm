@@ -333,7 +333,7 @@ impl Instructions {
       }
       "concat" => Instructions::Concat,
       "stop" => Instructions::Stop,
-      _ => panic!("Opcode '{}' belum di-map atau sampah!", op),
+      _ => Instructions::Nop,
     }
   }
 }
