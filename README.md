@@ -2,6 +2,10 @@
 > __Minimalist Execution. Maximal Security.__
 > 
 
+[![npm version](https://img.shields.io/npm/v/lightvm?style=flat-square&color=black)](https://www.npmjs.com/package/lightvm)
+[![npm next](https://img.shields.io/npm/v/lightvm/next?style=flat-square&color=orange&label=nightly)](https://www.npmjs.com/package/lightvm)
+[![license](https://img.shields.io/badge/license-Apache--2.0-blue?style=flat-square)](LICENSE)
+
 A capability-based virtual machine designed for __secure__, __predictable__, and __optimized bytecode execution__.
 ## The Philosophy: Deterministic & Lean
 LightVM is built with a focus on execution transparency and resource efficiency:
@@ -9,6 +13,8 @@ LightVM is built with a focus on execution transparency and resource efficiency:
  * __AOT Optimized__: Bytecode goes through an Ahead-of-Time (AOT) optimization stage to eliminate redundant operations before execution begins, ensuring maximum efficiency at runtime.
  * __Resource Conscious__: Designed with a minimal memory footprint through the use of optimized data structures such as SmolStr and ahash for fast metadata management.
  * __Explicit Security__: Security is managed through a strict Capability system. Every VM access and operation must have permissions explicitly defined by the host from the outset.
+
+## AOT Optimization Process
 
 ## 🚀 Getting Started
 ### Installation
@@ -61,12 +67,14 @@ fn main() {
 ```
 </details>
 
-### Capability
-LightVM has 4 capabilities to grant specific permissions to virtual machines, such as: Control, Observe, Debug, and Unsafe.
-- __Control__: Grants VM permission to view or retrieve data.
-- __Observe__: Grants permission to manipulate flow or state within the VM.
-- __Debug__: Opens access to internal states that are usually hidden.
-- __Unsafe__: Opens security protection or VM limitations.
+### Virtual Machine Capabilities
+LightVM uses a strict capability-based security model. You must explicitly grant permissions when instantiating the VM.
+| Capability | Level | Description |
+|------------|-------|-------------|
+| Control | Low | Grants permission to start/stop execution and export functions. |
+| Observe | Medium | Allows the host to inspect internal states, variable stacks, and metrics. |
+| Debug | High | Opens access to verbose internal logs and hidden states for troubleshooting. |
+| Unsafe | Critical | Removes safety guards, allowing manual halts and raw memory/process access. |
 
 ### How to use
 1. ``run()`` __method__:  
@@ -207,8 +215,25 @@ LightVM has 4 capabilities to grant specific permissions to virtual machines, su
     
     > [!NOTE]
     > __Capability Required__: control
-    
-## Bytecode Instructions
+
+## References
+### Supported Primitive Types
+LightVM requires explicit type definitions for certain instructions to maintain deterministic execution and peak performance.
+| Type | Reference | Target Value Type |
+|------|-----------|-------------------|
+| sht | Short | 16-bit Integer (Int16) |
+| int | Integer | 32-bit Integer (Int32) |
+| lng | Long | 64-bit Integer (Int64) |
+| hlf | Half | 16-bit Floating Point (Float16) |
+| flt | Float | 32-bit Floating Point (Float32) |
+| dbl | Double | 64-bit Floating Point (Float64) |
+| str | String | String / Text data |
+
+> [!WARNING]
+> __Nightly Type__: The `hlf` (Half-precision) type is still experimental. Support across different architectures may vary and is subject to change in `@next` releases.
+
+
+### Bytecode Instructions
 LightVM has a total of 40+ instructions for bytecode.
 1. Stack & Variable Management  
 A group of instructions for basic data manipulation and memory (variable) allocation.
@@ -221,7 +246,7 @@ A group of instructions for basic data manipulation and memory (variable) alloca
 | get    | name      | Take the contents of the ``name`` variable and push it onto the stack |
 | dup    | -         | Duplicate the top value in the stack |
 2. Arithmetic & Logic  
-Instructions for calculations. Note that for optimization, these instructions require a ``PrimitiveType`` (``int``, ``flt``, ``lng``, ``dbl``) to prevent the VM from guessing the data type during execution.
+Instructions for calculations. Note that for optimization, these instructions require a ``PrimitiveTypes`` (``int``, ``flt``, ``lng``, ``dbl``) to prevent the VM from guessing the data type during execution.
 
 | Opcode    | Arguments  | Description |
 |-----------|------------|-------------|
@@ -232,10 +257,13 @@ Instructions for calculations. Note that for optimization, these instructions re
 | gt / lt   | type       | Greater Than or Less Than |
 | ge / le   | type       | Greater/Less Than or Equal |
 | eq / neq  | type       | Equal or Not Equal |
-| shl       | type       | Shift Left bitwise operation based on data type |
-| and / or  | -          | Boolean logic operations (&& / ||) |
+| shl / shr | type       | Shift Left or Shift Right bitwise operation based on data type |
+| rol / ror | type       | __Circular__ Shift Left or Right (Rotate) bitwise operation based on data type |
+| and / or  | -          | Boolean logic operations (``&&`` / ``\|\|``) |
+| xor       | -          | Bitwise __Exclusive OR__ operation between two values |
+| not       | -          | Bitwise __NOT__ (Inversion) operation on a single value |
 > [!NOTE]
-> **Specific Opcode**: `shl` only accepts `int` and `lng` types from `PrimitiveTypes`.
+> **Specific Opcode**: `shl`, `shr`, `rol`, and `ror` only accepts `sht`, `int`, and `lng` types from `PrimitiveTypes`.
 
 3. Control Flow & Function  
 Instructions for managing program flow, looping, and function calls.

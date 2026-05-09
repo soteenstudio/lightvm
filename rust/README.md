@@ -25,6 +25,17 @@ npm install lightvm@next
 </details>
 
 <details>
+<summary>Installation with Yarn</summary>
+
+```bash
+yarn add lightvm
+
+# or
+yarn add lightvm@next
+```
+</details>
+
+<details>
 <summary>Installation with Cargo</summary>
 
 ```bash

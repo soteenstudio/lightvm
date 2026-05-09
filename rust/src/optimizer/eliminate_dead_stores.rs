@@ -10,13 +10,17 @@
 
 use crate::types::instructions::Instructions;
 use crate::types::usage::Usage;
+use std::borrow::Cow;
 #[derive(PartialEq, Debug)]
 enum Demand {
   Keep,
   Drop,
 }
 #[inline]
-pub fn eliminate_dead_stores(bytecode: &[Instructions], usage: &Usage) -> Vec<Instructions> {
+pub fn eliminate_dead_stores<'a>(
+  bytecode: &'a [Instructions],
+  usage: &Usage,
+) -> Vec<Cow<'a, Instructions>> {
   let mut result = Vec::new();
   let mut stack_demands: Vec<Demand> = Vec::new();
   for inst in bytecode.iter().rev() {
@@ -24,12 +28,12 @@ pub fn eliminate_dead_stores(bytecode: &[Instructions], usage: &Usage) -> Vec<In
       Instructions::Push(_) | Instructions::Get(_) | Instructions::GetIdx(_) => {
         if let Some(demand) = stack_demands.pop() {
           if demand == Demand::Keep {
-            result.push(inst.clone());
+            result.push(Cow::Borrowed(inst));
           }
         }
       }
       Instructions::Val(_) | Instructions::ValIdx(_) => {
-        result.push(inst.clone());
+        result.push(Cow::Borrowed(inst));
         stack_demands.push(Demand::Keep);
       }
       Instructions::Set(arg) => {
@@ -38,15 +42,15 @@ pub fn eliminate_dead_stores(bytecode: &[Instructions], usage: &Usage) -> Vec<In
           continue;
         }
         stack_demands.push(Demand::Keep);
-        result.push(inst.clone());
+        result.push(Cow::Borrowed(inst));
       }
       Instructions::SetIdx(_) => {
         stack_demands.push(Demand::Keep);
-        result.push(inst.clone());
+        result.push(Cow::Borrowed(inst));
       }
       Instructions::Println | Instructions::Print => {
         stack_demands.push(Demand::Keep);
-        result.push(inst.clone());
+        result.push(Cow::Borrowed(inst));
       }
       Instructions::Add(_)
       | Instructions::Sub(_)
@@ -54,12 +58,14 @@ pub fn eliminate_dead_stores(bytecode: &[Instructions], usage: &Usage) -> Vec<In
       | Instructions::Div(_)
       | Instructions::Mod(_)
       | Instructions::Shl(_)
-      | Instructions::Shr(_) => {
+      | Instructions::Shr(_)
+      | Instructions::Ror(_)
+      | Instructions::Rol(_) => {
         if let Some(demand) = stack_demands.pop() {
           if demand == Demand::Keep {
             stack_demands.push(Demand::Keep);
             stack_demands.push(Demand::Keep);
-            result.push(inst.clone());
+            result.push(Cow::Borrowed(inst));
           } else {
             stack_demands.push(Demand::Drop);
             stack_demands.push(Demand::Drop);
@@ -77,12 +83,14 @@ pub fn eliminate_dead_stores(bytecode: &[Instructions], usage: &Usage) -> Vec<In
       | Instructions::Neq(_)
       | Instructions::And
       | Instructions::Or
+      | Instructions::Xor
+      | Instructions::Not
       | Instructions::Concat => {
         if let Some(demand) = stack_demands.pop() {
           if demand == Demand::Keep {
             stack_demands.push(Demand::Keep);
             stack_demands.push(Demand::Keep);
-            result.push(inst.clone());
+            result.push(Cow::Borrowed(inst));
           } else {
             stack_demands.push(Demand::Drop);
             stack_demands.push(Demand::Drop);
@@ -101,7 +109,7 @@ pub fn eliminate_dead_stores(bytecode: &[Instructions], usage: &Usage) -> Vec<In
         if let Some(demand) = stack_demands.pop() {
           if demand == Demand::Keep {
             stack_demands.push(Demand::Keep);
-            result.push(inst.clone());
+            result.push(Cow::Borrowed(inst));
           } else {
             stack_demands.push(Demand::Drop);
           }
@@ -113,7 +121,7 @@ pub fn eliminate_dead_stores(bytecode: &[Instructions], usage: &Usage) -> Vec<In
             for _ in 0..*count {
               stack_demands.push(Demand::Keep);
             }
-            result.push(inst.clone());
+            result.push(Cow::Borrowed(inst));
           } else {
             for _ in 0..*count {
               stack_demands.push(Demand::Drop);
@@ -125,7 +133,7 @@ pub fn eliminate_dead_stores(bytecode: &[Instructions], usage: &Usage) -> Vec<In
         if let Some(demand) = stack_demands.pop() {
           if demand == Demand::Keep {
             stack_demands.push(Demand::Keep);
-            result.push(inst.clone());
+            result.push(Cow::Borrowed(inst));
           } else {
             stack_demands.push(Demand::Drop);
           }
@@ -136,7 +144,7 @@ pub fn eliminate_dead_stores(bytecode: &[Instructions], usage: &Usage) -> Vec<In
           if demand == Demand::Keep {
             stack_demands.push(Demand::Keep);
             stack_demands.push(Demand::Keep);
-            result.push(inst.clone());
+            result.push(Cow::Borrowed(inst));
           } else {
             stack_demands.push(Demand::Drop);
             stack_demands.push(Demand::Drop);
@@ -144,7 +152,7 @@ pub fn eliminate_dead_stores(bytecode: &[Instructions], usage: &Usage) -> Vec<In
         }
       }
       Instructions::SetProp(_) => {
-        result.push(inst.clone());
+        result.push(Cow::Borrowed(inst));
         stack_demands.push(Demand::Keep);
         stack_demands.push(Demand::Keep);
       }
@@ -153,7 +161,7 @@ pub fn eliminate_dead_stores(bytecode: &[Instructions], usage: &Usage) -> Vec<In
         let d2 = stack_demands.pop().unwrap_or(Demand::Drop);
         if d1 == Demand::Keep || d2 == Demand::Keep {
           stack_demands.push(Demand::Keep);
-          result.push(inst.clone());
+          result.push(Cow::Borrowed(inst));
         } else {
           stack_demands.push(Demand::Drop);
         }
@@ -162,20 +170,20 @@ pub fn eliminate_dead_stores(bytecode: &[Instructions], usage: &Usage) -> Vec<In
         if !usage.read.contains(arg.as_ref()) {
           continue;
         }
-        result.push(inst.clone());
+        result.push(Cow::Borrowed(inst));
       }
       Instructions::IncIdx(_, _) | Instructions::DecIdx(_, _) => {
-        result.push(inst.clone());
+        result.push(Cow::Borrowed(inst));
       }
       Instructions::IfFalse(_) => {
-        result.push(inst.clone());
+        result.push(Cow::Borrowed(inst));
         stack_demands.push(Demand::Keep);
       }
       Instructions::Jump(_) | Instructions::Stop | Instructions::Return => {
-        result.push(inst.clone());
+        result.push(Cow::Borrowed(inst));
       }
       _ => {
-        result.push(inst.clone());
+        result.push(Cow::Borrowed(inst));
       }
     }
   }

@@ -8,7 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod and_func;
-pub mod not_func;
-pub mod or_func;
-pub mod xor_func;
+use crate::types::value::Value;
+pub fn not_func(a: Value) -> Value {
+  Value::Bool(!a.is_truthy())
+}

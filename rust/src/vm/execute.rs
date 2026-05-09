@@ -30,7 +30,7 @@ use crate::instructions::{
     inspect_arr_func::inspect_arr_func, inspect_obj_func::inspect_obj_func, print_func::print_func,
     println_func::println_func,
   },
-  logic::{and_func::and_func, or_func::or_func},
+  logic::{and_func::and_func, not_func::not_func, or_func::or_func, xor_func::xor_func},
   math::{
     add_func::add_func,
     div_func::div_func,
@@ -266,6 +266,23 @@ pub fn execute(
           .pop()
           .ok_or_else(|| SmolStr::new("Stack underflow on OR (a)"))?;
         let result = or_func(a, b);
+        stack.push(result);
+      }
+      Instructions::Xor => {
+        let b = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on XOR (b)"))?;
+        let a = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on XOR (a)"))?;
+        let result = xor_func(a, b);
+        stack.push(result);
+      }
+      Instructions::Not => {
+        let val = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on NOT"))?;
+        let result = not_func(val);
         stack.push(result);
       }
       Instructions::Print => {
