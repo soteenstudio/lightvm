@@ -44,7 +44,7 @@ jobs:
           - os: ubuntu-latest
             target: armv7-linux-androideabi
             platform: android-arm
-            
+
           # --- LINUX MUSL (ALPINE) ---
           - os: ubuntu-latest
             target: x86_64-unknown-linux-musl
@@ -52,7 +52,7 @@ jobs:
           - os: ubuntu-latest
             target: i686-unknown-linux-musl
             platform: linux-musl-ia32
-            
+
           # --- BSD FAMILY ---
           - os: ubuntu-latest
             target: x86_64-unknown-freebsd

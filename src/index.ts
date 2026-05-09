@@ -1,49 +1,46 @@
-/*  
- * Copyright 2026 SoTeen Studio  
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");  
- * you may not use this file except in compliance with the License.  
- * You may obtain a copy of the License at  
- *  
- *     http://www.apache.org/licenses/LICENSE-2.0  
+/*
+ * Copyright 2026 SoTeen Studio
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-import {
-  Instruction
-} from "./Instruction.js";
-import {
-  loadNapi
-} from "./utils/loadNapi.js";
-import type {
-  VMEvent,
-  VMResult,
-  Listener
-} from "../typings/index.d.ts";
+import { Instruction } from './Instruction.js';
+import { loadNapi } from './utils/loadNapi.js';
+import type { VMEvent, VMResult, Listener } from '../typings/index.d.ts';
 export enum Capability {
-  Observe = "OBSERVE",
-  Control = "CONTROL",
-  Debug = "DEBUG",
-  Unsafe = "UNSAFE"
+  Observe = 'OBSERVE',
+  Control = 'CONTROL',
+  Debug = 'DEBUG',
+  Unsafe = 'UNSAFE',
 }
 const native = loadNapi();
 export class LightVM {
   private instance: any;
-  private listeners = new Map < VMEvent, Listener[] > ();
+  private listeners = new Map<VMEvent, Listener[]>();
   constructor(caps: Capability[] = [Capability.Observe]) {
-    const numericCaps = caps.map(cap => {
-      switch(cap.toUpperCase()) {
-        case "OBSERVE": return 0;
-        case "CONTROL": return 1;
-        case "DEBUG":   return 2;
-        case "UNSAFE":  return 3;
-        default: throw new Error(`Unknown capability ${cap}`);
+    const numericCaps = caps.map((cap) => {
+      switch (cap.toUpperCase()) {
+        case 'OBSERVE':
+          return 0;
+        case 'CONTROL':
+          return 1;
+        case 'DEBUG':
+          return 2;
+        case 'UNSAFE':
+          return 3;
+        default:
+          throw new Error(`Unknown capability ${cap}`);
       }
     });
     this.instance = new native.LightVM(numericCaps);
   }
   load(source: Instruction[] | string) {
     let payload: string;
-    if (typeof source === "string") {
+    if (typeof source === 'string') {
       if (source.trim().startsWith('[')) {
         payload = source;
       } else {
@@ -52,7 +49,7 @@ export class LightVM {
     } else {
       payload = JSON.stringify(source);
     }
-    console.log("Payload: ", payload);
+    console.log('Payload: ', payload);
     this.instance.load(payload);
     return this;
   }
@@ -63,7 +60,7 @@ export class LightVM {
     return (...args: any[]) => {
       const rawResult = this.instance.callExported(name, JSON.stringify(args));
       const parsed = JSON.parse(rawResult);
-      if (!parsed || parsed === "Undefined") return undefined;
+      if (!parsed || parsed === 'Undefined') return undefined;
       return typeof parsed === 'object' ? Object.values(parsed)[0] : parsed;
     };
   }
@@ -87,10 +84,10 @@ export class LightVM {
         this.emit(event, data);
       });
     }
-    this.listeners.get(event) !.push(fn);
+    this.listeners.get(event)!.push(fn);
     return this;
   }
-  private emit(event: VMEvent, payload ? : any) {
+  private emit(event: VMEvent, payload?: any) {
     const list = this.listeners.get(event);
     if (list) {
       for (const fn of list) fn(payload);
@@ -105,7 +102,7 @@ export class LightVM {
     return {
       value: undefined,
       outputs: this.instance.get_outputs(),
-      halted: true
+      halted: true,
     };
   }
   tools() {
@@ -117,11 +114,9 @@ export class LightVM {
           return native.LightVM.stringifyLtc(input);
         },
         parseLTC: (code) => native.LightVM.parseLtc(code),
-        parseLTCArray: (code) => native.LightVM.parseLtcArray(code)
-      }
+        parseLTCArray: (code) => native.LightVM.parseLtcArray(code),
+      },
     };
   }
 }
-export {
-  Instruction
-};
+export { Instruction };

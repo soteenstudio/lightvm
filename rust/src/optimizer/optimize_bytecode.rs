@@ -221,6 +221,13 @@ pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
             bytecode[i + 1] = Instructions::Nop;
             i += 2;
           }
+          (Instructions::Push(v), Instructions::ToShort) => {
+            let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
+            crate::instructions::conversion::to_short_func::to_short_func(&mut tmp_stack);
+            bytecode[i] = Instructions::Push(tmp_stack.pop().unwrap());
+            bytecode[i + 1] = Instructions::Nop;
+            i += 2;
+          }
           (Instructions::Push(v), Instructions::ToInteger) => {
             let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
             crate::instructions::conversion::to_integer_func::to_integer_func(&mut tmp_stack);
@@ -231,6 +238,13 @@ pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
           (Instructions::Push(v), Instructions::ToLong) => {
             let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
             crate::instructions::conversion::to_long_func::to_long_func(&mut tmp_stack);
+            bytecode[i] = Instructions::Push(tmp_stack.pop().unwrap());
+            bytecode[i + 1] = Instructions::Nop;
+            i += 2;
+          }
+          (Instructions::Push(v), Instructions::ToHalf) => {
+            let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
+            crate::instructions::conversion::to_half_func::to_half_func(&mut tmp_stack);
             bytecode[i] = Instructions::Push(tmp_stack.pop().unwrap());
             bytecode[i + 1] = Instructions::Nop;
             i += 2;

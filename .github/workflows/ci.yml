@@ -2,9 +2,9 @@ name: Code Quality Check
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   quality-gate:
@@ -52,7 +52,7 @@ jobs:
           fi
 
       # 4. INSTALL NODE DEPENDENCIES
-      # Pake 'npm install' aja Clay biar lebih fleksibel pas dev, 
+      # Pake 'npm install' aja Clay biar lebih fleksibel pas dev,
       # tapi kalo lockfile udah aman, bisa balik ke 'npm ci'.
       - name: Install dependencies
         run: npm install

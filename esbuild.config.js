@@ -1,4 +1,4 @@
-import esbuild from "esbuild";
+import esbuild from 'esbuild';
 const builds = [
   {
     entryPoints: ['./src/index.ts'],
@@ -9,15 +9,17 @@ const builds = [
     entryPoints: ['./src/index.ts'],
     format: 'cjs',
     outfile: 'dist/index.min.cjs',
-  }
+  },
 ];
 for (const config of builds) {
-  esbuild.build({
-    bundle: true,
-    minify: true,
-    sourcemap: true,
-    platform: 'node',
-    ...config,
-    external: ["chalk", "@lightvm/core-*"],
-  }).catch(() => process.exit(1))
+  esbuild
+    .build({
+      bundle: true,
+      minify: true,
+      sourcemap: true,
+      platform: 'node',
+      ...config,
+      external: ['chalk', '@lightvm/core-*'],
+    })
+    .catch(() => process.exit(1));
 }

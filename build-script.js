@@ -12,7 +12,13 @@ const PKG_PATH = join(process.cwd(), 'package.json');
 const RUST_BINARY_NAME = 'liblightvm.so';
 const TARGET_NAME = 'lightvm.node';
 const RUST_OUT_DIR = isDebug ? 'debug' : 'release';
-const SOURCE_PATH = join(process.cwd(), 'rust', 'target', RUST_OUT_DIR, RUST_BINARY_NAME);
+const SOURCE_PATH = join(
+  process.cwd(),
+  'rust',
+  'target',
+  RUST_OUT_DIR,
+  RUST_BINARY_NAME,
+);
 const DEST_DIR = join(process.cwd(), 'binaries');
 const DEST_PATH = join(DEST_DIR, TARGET_NAME);
 function togglePackageFiles(mode) {
@@ -23,20 +29,22 @@ function togglePackageFiles(mode) {
       pkg.files.push('binaries');
     }
   } else {
-    pkg.files = pkg.files.filter(file => file !== 'binaries');
+    pkg.files = pkg.files.filter((file) => file !== 'binaries');
   }
   fs.writeFileSync(PKG_PATH, JSON.stringify(pkg, null, 2));
 }
 try {
   console.log(`🏗️  Building Rust (${RUST_OUT_DIR})...`);
-  const buildCmd = isDebug ? 'cargo build --features node' : 'cargo build --release';
+  const buildCmd = isDebug
+    ? 'cargo build --features node'
+    : 'cargo build --release';
   execSync(buildCmd, {
     cwd: join(process.cwd(), 'rust'),
-    stdio: STDIO_MODE
+    stdio: STDIO_MODE,
   });
   console.log('🏗️  Building JS...');
   execSync('npm run build', {
-    stdio: STDIO_MODE
+    stdio: STDIO_MODE,
   });
   if (isLocal) {
     if (!fs.existsSync(DEST_DIR)) fs.mkdirSync(DEST_DIR);
@@ -49,7 +57,7 @@ try {
     togglePackageFiles('local');
     console.log('📦 Packing local tarball (with binaries)...');
     execSync('npm pack', {
-      stdio: 'inherit'
+      stdio: 'inherit',
     });
     togglePackageFiles('prod');
   } else if (isProduction) {
@@ -61,17 +69,19 @@ try {
     if (isPublish) {
       console.log('🚀 Publishing to NPM Registry...');
       execSync('npm publish --access public', {
-        stdio: 'inherit'
+        stdio: 'inherit',
       });
     } else {
       console.log('📦 Packing production tarball (clean, no binaries)...');
       execSync('npm pack', {
-        stdio: 'inherit'
+        stdio: 'inherit',
       });
       console.log('✅ Production build complete.');
     }
   } else {
-    console.log('💡 Usage: --local, --production, --production --publish, or add --silent');
+    console.log(
+      '💡 Usage: --local, --production, --production --publish, or add --silent',
+    );
   }
 } catch (err) {
   togglePackageFiles('prod');

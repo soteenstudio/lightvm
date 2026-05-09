@@ -2,7 +2,7 @@
 /assembly/
 /node_modules/
 /tests/
-*.tgznode_modules/
+*.tgz
 /rust/target/
 lz4.js
 /.trash/
