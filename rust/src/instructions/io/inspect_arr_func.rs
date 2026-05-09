@@ -10,22 +10,25 @@
 
 use crate::types::value::Value;
 use smol_str::SmolStr;
+use std::fmt::Write;
 pub fn inspect_arr_func(stack: &mut Vec<Value>) -> Result<(), SmolStr> {
-  let val = stack
-    .pop()
-    .ok_or_else(|| SmolStr::new("Stack underflow on INSPECT_ARR"))?;
-  if let Value::Array(arr) = val {
-    let mut result = String::from("[");
-    for (i, v) in arr.iter().enumerate() {
-      if i > 0 {
-        result.push_str(", ");
+  if let Some(top) = stack.last_mut() {
+    if let Value::Array(arr) = top {
+      let mut result = String::with_capacity(arr.len() * 10 + 2);
+      result.push('[');
+      for (i, v) in arr.iter().enumerate() {
+        if i > 0 {
+          result.push_str(", ");
+        }
+        let _ = write!(result, "{:?}", v);
       }
-      result.push_str(&format!("{:?}", v));
+      result.push(']');
+      *top = Value::String(SmolStr::from(result));
+      Ok(())
+    } else {
+      Err(SmolStr::new("Value is not an array"))
     }
-    result.push(']');
-    stack.push(Value::String(SmolStr::from(result)));
-    Ok(())
   } else {
-    Err(SmolStr::new("Value is not an array"))
+    Err(SmolStr::new("Stack underflow on INSPECT_ARR"))
   }
 }

@@ -23,21 +23,26 @@ pub fn call_func(
 ) -> Result<(), SmolStr> {
   let fn_meta = functions
     .get(name)
-    .ok_or_else(|| format!("Function {} not found", name))?;
-  let mut args = Vec::new();
-  for _ in 0..argc {
-    args.push(stack.pop().ok_or("Stack underflow on CALL arguments")?);
+    .ok_or_else(|| SmolStr::from(format!("Function {} not found", name)))?;
+  let argc_usize = argc as usize;
+  if stack.len() < argc_usize {
+    return Err(SmolStr::new_static("Stack underflow on CALL arguments"));
   }
-  args.reverse();
   call_stack.push(*ip);
+  let start_idx = stack.len() - argc_usize;
+  let params_count = fn_meta.params_count as usize;
+  if vars.len() < params_count {
+    vars.resize(params_count, Value::Undefined);
+  }
+  let mut arg_idx = 0;
+  for val in stack.drain(start_idx..) {
+    if arg_idx < params_count {
+      vars[arg_idx] = val;
+      arg_idx += 1;
+    }
+  }
   if stack.len() > 50 {
     stack.truncate(50);
-  }
-  for i in 0..fn_meta.params_count as usize {
-    let val = args.get(i).cloned().unwrap_or(Value::Undefined);
-    if i < vars.len() {
-      vars[i] = val;
-    }
   }
   *ip = fn_meta.start;
   Ok(())

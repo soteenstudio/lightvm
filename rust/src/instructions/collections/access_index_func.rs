@@ -14,20 +14,21 @@ pub fn access_index_func(stack: &mut Vec<Value>) -> Result<(), SmolStr> {
   let index_val = stack
     .pop()
     .ok_or_else(|| SmolStr::new("Stack underflow: missing index"))?;
-  let obj = stack
-    .pop()
-    .ok_or_else(|| SmolStr::new("Stack underflow: missing array object"))?;
-  match (obj, index_val) {
-    (Value::Array(arr), Value::Int64(idx)) => {
-      let i = idx as usize;
-      if i < arr.len() {
-        stack.push(arr[i].clone());
-        Ok(())
-      } else {
-        Err(SmolStr::new("Array index out of bounds"))
+  if let Some(top) = stack.last_mut() {
+    match (&mut *top, index_val) {
+      (Value::Array(arr), Value::Int64(idx)) => {
+        let i = idx as usize;
+        if i < arr.len() {
+          *top = arr[i].clone();
+          Ok(())
+        } else {
+          Err(SmolStr::new("Array index out of bounds"))
+        }
       }
+      (Value::Array(_), _) => Err(SmolStr::new("Array index must be an integer")),
+      _ => Err(SmolStr::new("Cannot access index of non-array")),
     }
-    (Value::Array(_), _) => Err(SmolStr::new("Array index must be an integer")),
-    _ => Err(SmolStr::new("Cannot access index of non-array")),
+  } else {
+    Err(SmolStr::new("Stack underflow: missing array object"))
   }
 }

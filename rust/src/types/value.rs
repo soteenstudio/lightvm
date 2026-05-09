@@ -13,6 +13,7 @@ use ahash::AHashMap;
 use half::f16;
 use serde::{Deserialize, Serialize};
 use smol_str::SmolStr;
+use std::sync::Arc;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Value {
   Int16(i16),
@@ -22,8 +23,8 @@ pub enum Value {
   Float32(f32),
   Float64(f64),
   String(SmolStr),
-  Array(Vec<Value>),
-  Object(AHashMap<SmolStr, Value>),
+  Array(Arc<Vec<Value>>),
+  Object(Arc<AHashMap<SmolStr, Value>>),
   Bool(bool),
   Null,
   Undefined,

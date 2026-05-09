@@ -11,6 +11,7 @@
 use crate::types::value::Value;
 use ahash::AHashMap;
 use smol_str::SmolStr;
+use std::sync::Arc;
 pub fn make_obj_func(stack: &mut Vec<Value>, count: u32) -> Result<(), SmolStr> {
   let mut obj = AHashMap::with_capacity(count as usize);
   for _ in 0..count {
@@ -26,6 +27,6 @@ pub fn make_obj_func(stack: &mut Vec<Value>, count: u32) -> Result<(), SmolStr> 
       return Err(SmolStr::new("TypeError: Object key must be a string"));
     }
   }
-  stack.push(Value::Object(obj));
+  stack.push(Value::Object(Arc::new(obj)));
   Ok(())
 }

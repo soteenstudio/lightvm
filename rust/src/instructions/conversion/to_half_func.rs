@@ -11,24 +11,14 @@
 use crate::types::value::Value;
 use half::f16;
 pub fn to_half_func(stack: &mut Vec<Value>) {
-  if let Some(val) = stack.pop() {
-    let num = match val {
-      Value::Float16(i) => Value::Float16(i),
-      Value::Float32(f) => Value::Float16(f16::from_f32(f).to_bits()),
-      Value::Float64(f) => Value::Float16(f16::from_f64(f).to_bits()),
-      Value::Int16(i) => Value::Float16(f16::from_f32(i as f32).to_bits()),
-      Value::Int32(i) => Value::Float16(f16::from_f32(i as f32).to_bits()),
-      Value::Int64(i) => Value::Float16(f16::from_f32(i as f32).to_bits()),
+  if let Some(top) = stack.last_mut() {
+    let num = match top {
       Value::String(s) => {
         let f = s.parse::<f32>().unwrap_or(0.0);
-        Value::Float16(f16::from_f32(f).to_bits())
+        f16::from_f32(f).to_bits()
       }
-      Value::Bool(b) => {
-        let f = if b { 1.0 } else { 0.0 };
-        Value::Float16(f16::from_f32(f).to_bits())
-      }
-      _ => Value::Float16(0),
+      _ => top.as_f16(),
     };
-    stack.push(num);
+    *top = Value::Float16(num);
   }
 }

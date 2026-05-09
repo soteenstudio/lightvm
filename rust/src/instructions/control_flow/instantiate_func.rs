@@ -11,6 +11,7 @@
 use crate::types::value::Value;
 use ahash::AHashMap;
 use smol_str::SmolStr;
+use std::sync::Arc;
 pub fn instantiate_func(
   stack: &mut Vec<Value>,
   _vars: &mut Vec<Value>,
@@ -24,6 +25,6 @@ pub fn instantiate_func(
   args.reverse();
   let mut instance_map = AHashMap::new();
   instance_map.insert(SmolStr::new("__class"), Value::String(class_name.clone()));
-  let instance = Value::Object(instance_map);
+  let instance = Value::Object(Arc::new(instance_map));
   Ok(instance)
 }

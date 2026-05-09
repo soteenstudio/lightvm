@@ -18,6 +18,6 @@ pub fn ror_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Sht => Value::Int16(ror_i16in(a.as_i16(), b.as_i16())),
     PrimitiveTypes::Int => Value::Int32(ror_i32in(a.as_i32(), b.as_i32())),
     PrimitiveTypes::Lng => Value::Int64(ror_i64in(a.as_i64(), b.as_i64())),
-    _ => panic!("Bitwise only support type sht, int, and lng"),
+    _ => Value::Undefined,
   }
 }

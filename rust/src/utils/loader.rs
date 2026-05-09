@@ -9,20 +9,26 @@
  */
 
 use crate::types::instructions::Instructions;
+use regex::Regex;
 use serde_json::Value;
+use std::fmt::Write;
+use std::sync::OnceLock;
+static RE_IP: OnceLock<Regex> = OnceLock::new();
+fn get_re() -> &'static Regex {
+  RE_IP.get_or_init(|| Regex::new(r"\s;; IP=(\d+)").unwrap())
+}
 pub fn parse_ltc(code: &str) -> Vec<Instructions> {
-  let re = regex::Regex::new(r"\s;; IP=(\d+)").unwrap();
-  let cleaned_code = re.replace_all(code, "");
+  let cleaned_code = get_re().replace_all(code, "");
   cleaned_code
+    .as_ref()
     .split(';')
-    .map(|s| s.trim())
-    .filter(|s| !s.is_empty())
-    .map(|line| {
-      let parts: Vec<&str> = line.split_whitespace().collect();
-      let op = parts[0].to_string();
-      let mut args: Vec<Value> = parts[1..]
-        .iter()
-        .map(|&arg| {
+    .map(|s: &str| s.trim())
+    .filter(|s: &&str| !s.is_empty())
+    .map(|line: &str| {
+      let mut parts = line.split_whitespace();
+      let op = parts.next().unwrap_or("").to_string();
+      let mut args: Vec<Value> = parts
+        .map(|arg: &str| {
           if let Ok(num) = arg.parse::<f64>() {
             Value::from(num)
           } else {
@@ -30,27 +36,26 @@ pub fn parse_ltc(code: &str) -> Vec<Instructions> {
           }
         })
         .collect();
-      while args.len() < 4 {
-        args.push(Value::from(""));
+      if args.len() < 4 {
+        args.resize(4, Value::from(""));
       }
       Instructions::from_parts(op, args)
     })
     .collect()
 }
 pub fn parse_ltc_to_vec(code: &str) -> Vec<Instructions> {
-  let re = regex::Regex::new(r"\s;; IP=(\d+)").unwrap();
-  let cleaned_code = re.replace_all(code, "");
+  let cleaned_code = get_re().replace_all(code, "");
   cleaned_code
+    .as_ref()
     .split(';')
-    .map(|s| s.trim())
-    .filter(|s| !s.is_empty())
-    .map(|line| {
-      let parts: Vec<&str> = line.split_whitespace().collect();
-      let op = parts[0].to_string();
-      let args: Vec<serde_json::Value> = parts[1..]
-        .iter()
-        .map(|&arg| {
-          if arg.starts_with('"') && arg.ends_with('"') {
+    .map(|s: &str| s.trim())
+    .filter(|s: &&str| !s.is_empty())
+    .map(|line: &str| {
+      let mut parts = line.split_whitespace();
+      let op = parts.next().unwrap_or("").to_string();
+      let args: Vec<serde_json::Value> = parts
+        .map(|arg: &str| {
+          if arg.starts_with('"') && arg.ends_with('"') && arg.len() >= 2 {
             serde_json::Value::from(&arg[1..arg.len() - 1])
           } else if let Ok(num) = arg.parse::<f64>() {
             serde_json::Value::from(num)
@@ -64,13 +69,19 @@ pub fn parse_ltc_to_vec(code: &str) -> Vec<Instructions> {
     .collect()
 }
 pub fn stringify_ltc(instructions: Vec<Instructions>) -> String {
-  instructions
-    .iter()
-    .enumerate()
-    .map(|(i, instr)| {
-      let parts = instr.to_parts();
-      format!("{}; ;; IP={}", parts.join(" "), i)
-    })
-    .collect::<Vec<String>>()
-    .join("\n")
+  let mut result = String::with_capacity(instructions.len() * 40);
+  for (i, instr) in instructions.iter().enumerate() {
+    if i > 0 {
+      result.push('\n');
+    }
+    let parts = instr.to_parts();
+    for (p_idx, part) in parts.iter().enumerate() {
+      if p_idx > 0 {
+        result.push(' ');
+      }
+      result.push_str(part);
+    }
+    let _ = write!(result, "; ;; IP={}", i);
+  }
+  result
 }

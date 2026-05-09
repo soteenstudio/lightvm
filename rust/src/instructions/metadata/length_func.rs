@@ -10,13 +10,13 @@
 
 use crate::types::value::Value;
 pub fn length_func(stack: &mut Vec<Value>) {
-  if let Some(val) = stack.pop() {
-    let len = match val {
+  if let Some(val_ref) = stack.last_mut() {
+    let len = match val_ref {
       Value::String(s) => s.len(),
       Value::Array(a) => a.len(),
       Value::Object(obj) => obj.len(),
       _ => 0,
     };
-    stack.push(Value::Int64(len as i64));
+    *val_ref = Value::Int64(len as i64);
   }
 }

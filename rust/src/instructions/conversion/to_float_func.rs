@@ -9,25 +9,12 @@
  */
 
 use crate::types::value::Value;
-use half::f16;
 pub fn to_float_func(stack: &mut Vec<Value>) {
-  if let Some(val) = stack.pop() {
-    let num = match val {
-      Value::Float32(f) => Value::Float32(f),
-      Value::Float16(i) => {
-        let f = f16::from_bits(i);
-        Value::Float32(f.to_f32())
-      }
-      Value::Int16(i) => Value::Float32(i as f32),
-      Value::Int32(i) => Value::Float32(i as f32),
-      Value::Float64(f) => Value::Float32(f as f32),
-      Value::Int64(i) => Value::Float32(i as f32),
-      Value::String(s) => s
-        .parse::<f32>()
-        .map(Value::Float32)
-        .unwrap_or(Value::Float32(0.0)),
-      _ => Value::Float32(0.0),
+  if let Some(top) = stack.last_mut() {
+    let num = match top {
+      Value::String(s) => s.parse::<f32>().unwrap_or(0.0),
+      _ => top.as_f32(),
     };
-    stack.push(num);
+    *top = Value::Float32(num);
   }
 }

@@ -11,11 +11,9 @@
 use crate::types::value::Value;
 use smol_str::SmolStr;
 pub fn to_string_func(stack: &mut Vec<Value>) {
-  if let Some(val) = stack.pop() {
-    let s = match val {
-      Value::String(s) => s.to_string(),
-      _ => val.to_string(),
-    };
-    stack.push(Value::String(SmolStr::new(format!("{}::string", s))));
+  if let Some(top) = stack.last_mut() {
+    let mut base_string = top.as_string().to_string();
+    base_string.push_str("::string");
+    *top = Value::String(SmolStr::from(base_string));
   }
 }

@@ -11,22 +11,18 @@
 use crate::types::value::Value;
 use smol_str::SmolStr;
 pub fn access_func(stack: &mut Vec<Value>, prop: &SmolStr) -> Result<(), SmolStr> {
-  let obj = stack
-    .pop()
-    .ok_or_else(|| SmolStr::new("Stack underflow on ACCESS"))?;
-  match obj {
-    Value::Object(map) => {
-      if let Some(val) = map.get(prop) {
-        stack.push(val.clone());
-        Ok(())
-      } else {
-        stack.push(Value::Undefined);
-        Ok(())
-      }
+  if let Some(top) = stack.last_mut() {
+    if let Value::Object(map) = top {
+      let result = map.get(prop).cloned().unwrap_or(Value::Undefined);
+      *top = result;
+      Ok(())
+    } else {
+      Err(SmolStr::from(format!(
+        "Cannot access property '{}' of non-object",
+        prop
+      )))
     }
-    _ => Err(SmolStr::from(format!(
-      "Cannot access property '{}' of non-object",
-      prop
-    ))),
+  } else {
+    Err(SmolStr::new("Stack underflow on ACCESS"))
   }
 }

@@ -10,17 +10,21 @@
 
 use crate::types::value::Value;
 use smol_str::SmolStr;
+use std::sync::Arc;
 pub fn set_prop_func(stack: &mut Vec<Value>, prop: &SmolStr) -> Result<(), SmolStr> {
-  let mut obj = stack.pop().ok_or("Stack underflow on SET_PROP (object)")?;
-  let val = stack.pop().ok_or("Stack underflow on SET_PROP (value)")?;
-  if let Value::Object(ref mut map) = obj {
+  let obj_val = stack
+    .pop()
+    .ok_or_else(|| SmolStr::new("Stack underflow on SET_PROP (object)"))?;
+  let val = stack
+    .pop()
+    .ok_or_else(|| SmolStr::new("Stack underflow on SET_PROP (value)"))?;
+  let mut obj = obj_val;
+  if let Value::Object(ref mut map_arc) = obj {
+    let map = Arc::make_mut(map_arc);
     map.insert(prop.clone(), val);
     stack.push(obj);
     Ok(())
   } else {
-    Err(SmolStr::new(format!(
-      "Cannot set property '{}' of non-object",
-      prop
-    )))
+    Err(SmolStr::new("TypeError: Cannot set property of non-object"))
   }
 }

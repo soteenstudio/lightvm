@@ -9,26 +9,12 @@
  */
 
 use crate::types::value::Value;
-use half::f16;
 pub fn to_long_func(stack: &mut Vec<Value>) {
-  if let Some(val) = stack.pop() {
-    let num = match val {
-      Value::Int64(i) => Value::Int64(i),
-      Value::Int16(i) => Value::Int64(i as i64),
-      Value::Int32(i) => Value::Int64(i as i64),
-      Value::Float16(i) => {
-        let f = f16::from_bits(i);
-        Value::Int64(f.to_f32() as i64)
-      }
-      Value::Float64(f) => Value::Int64(f as i64),
-      Value::Float32(f) => Value::Int64(f as i64),
-      Value::String(s) => s
-        .parse::<i64>()
-        .map(Value::Int64)
-        .unwrap_or(Value::Int64(0)),
-      Value::Bool(b) => Value::Int64(if b { 1 } else { 0 }),
-      _ => Value::Int64(0),
+  if let Some(top) = stack.last_mut() {
+    let num = match top {
+      Value::String(s) => s.parse::<i64>().unwrap_or(0),
+      _ => top.as_i64(),
     };
-    stack.push(num);
+    *top = Value::Int64(num);
   }
 }

@@ -10,16 +10,14 @@
 
 use crate::types::value::Value;
 use smol_str::SmolStr;
+use std::sync::Arc;
 pub fn make_array_func(stack: &mut Vec<Value>, count: u32) -> Result<(), SmolStr> {
-  let mut arr = Vec::with_capacity(count as usize);
-  for _ in 0..count {
-    arr.push(
-      stack
-        .pop()
-        .ok_or_else(|| SmolStr::new("Stack underflow: array element"))?,
-    );
+  let count = count as usize;
+  if stack.len() < count {
+    return Err(SmolStr::new("Stack underflow: array element"));
   }
-  arr.reverse();
-  stack.push(Value::Array(arr));
+  let start_index = stack.len() - count;
+  let elements: Vec<Value> = stack.drain(start_index..).collect();
+  stack.push(Value::Array(Arc::new(elements)));
   Ok(())
 }
