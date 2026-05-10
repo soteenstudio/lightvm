@@ -79,6 +79,27 @@ pub fn fold_conversions(bytecode: &mut Vec<Instructions>) {
         bytecode[i + 1] = Instructions::Nop;
         i += 2;
       }
+      (Instructions::Push(v), Instructions::Sin(t)) => {
+        let res =
+          crate::instructions::math::sin_func::sin_func(std::mem::replace(v, Value::Null), *t);
+        bytecode[i] = Instructions::Push(res);
+        bytecode[i + 1] = Instructions::Nop;
+        i += 2;
+      }
+      (Instructions::Push(v), Instructions::Cos(t)) => {
+        let res =
+          crate::instructions::math::cos_func::cos_func(std::mem::replace(v, Value::Null), *t);
+        bytecode[i] = Instructions::Push(res);
+        bytecode[i + 1] = Instructions::Nop;
+        i += 2;
+      }
+      (Instructions::Push(v), Instructions::Tan(t)) => {
+        let res =
+          crate::instructions::math::tan_func::tan_func(std::mem::replace(v, Value::Null), *t);
+        bytecode[i] = Instructions::Push(res);
+        bytecode[i + 1] = Instructions::Nop;
+        i += 2;
+      }
       _ => {
         bytecode[i] = instr1;
         bytecode[i + 1] = instr2;

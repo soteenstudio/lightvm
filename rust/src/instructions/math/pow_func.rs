@@ -14,7 +14,6 @@ use crate::instructions::math::pow::{
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
 #[inline]
 pub fn pow_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
-  println!("{:?}^{:?}", a, b);
   match num_type {
     PrimitiveTypes::Sht => Value::Int16(pow_i16in(a.as_i16(), b.as_i16())),
     PrimitiveTypes::Int => Value::Int32(pow_i32in(a.as_i32(), b.as_i32())),

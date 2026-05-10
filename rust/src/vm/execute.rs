@@ -40,6 +40,7 @@ use crate::instructions::{
     inc_dec::{dec_func, inc_func},
     mod_func::mod_func,
     mul_func::mul_func,
+    pow_func::pow_func,
     rol_func::rol_func,
     ror_func::ror_func,
     shl_func::shl_func,
@@ -47,7 +48,6 @@ use crate::instructions::{
     sin_func::sin_func,
     sub_func::sub_func,
     tan_func::tan_func,
-    pow_func::pow_func,
   },
   metadata::{length_func::length_func, typeof_func::typeof_func},
   stack::{
@@ -195,6 +195,7 @@ pub fn execute(
         stack.push(result);
       }
       Instructions::Pow(num_type) => {
+        println!("Pow jalan! {:?}", num_type);
         let b = stack
           .pop()
           .ok_or_else(|| SmolStr::new("Stack underflow on POW (b)"))?;
