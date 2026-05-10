@@ -13,18 +13,16 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 1. SETUP ENV DULUAN
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
 
-      # 2. CACHING
       - name: Cache Node Modules
         uses: actions/cache@v4
         with:
@@ -44,20 +42,15 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      # 3. BUILD RUST DULU (Biar biner lokal ready buat TS)
       - name: Build Rust Core
         run: |
           if [ -d "./rust" ]; then
             cd rust && cargo build --release
           fi
 
-      # 4. INSTALL NODE DEPENDENCIES
-      # Pake 'npm install' aja Clay biar lebih fleksibel pas dev,
-      # tapi kalo lockfile udah aman, bisa balik ke 'npm ci'.
       - name: Install dependencies
         run: npm install
 
-      # 5. QUALITY CHECKS
       - name: Linting & Formatting
         run: |
           echo "Running Prettier & Rustfmt check..."
@@ -66,24 +59,23 @@ jobs:
 
       - name: Deep Code Audit (Junk & Header)
         run: |
-          # Cari file TS dan RS, tapi skip folder target, node_modules, dan dist
           FILES=$(find . -type d \( -name "target" -o -name "node_modules" -o -name "dist" \) -prune -o -type f \( -name "*.ts" -o -name "*.rs" \) -print)
 
           if [ -z "$FILES" ]; then
-            echo "✅ Gak ada file yang perlu dicek."
+            echo "There are no files to check."
             exit 0
           fi
 
           MISSING_COPYRIGHT=$(echo "$FILES" | xargs grep -L "Copyright")
           if [ -n "$MISSING_COPYRIGHT" ]; then
-            echo "❌ Clay, file ini butuh Copyright header:"
+            echo "This file needs a Copyright header:"
             echo "$MISSING_COPYRIGHT"
             exit 1
           fi
 
           JUNK_CHECK=$(echo "$FILES" | xargs awk 'NR==1 && /^\/\/ [A-Za-z0-9_-]+\.(ts|rs)$/ {print FILENAME}')
           if [ -n "$JUNK_CHECK" ]; then
-            echo "❌ Baris pertama cuma nama file (Junk):"
+            echo "The first line is just the file name (Junk):"
             echo "$JUNK_CHECK"
             exit 1
           fi
