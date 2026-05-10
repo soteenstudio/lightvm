@@ -148,9 +148,9 @@ LightVM uses a strict capability-based security model. You must explicitly grant
     ```
     </details>
     
-    > [!NOTE]  
-    > __Capability Required__: control  
-    > __Info__: parameters of ``load()`` can change bytecode directly or file path to .ltc
+> [!NOTE]
+> __Capability Required__: control  
+> __Info__: parameters of ``load()`` can change bytecode directly or file path to .ltc
     
 2. ``provide()`` method:  
   Permission to inject data/variables into the VM.
