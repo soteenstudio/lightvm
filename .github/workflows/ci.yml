@@ -66,14 +66,22 @@ jobs:
 
       - name: Deep Code Audit (Junk & Header)
         run: |
-          MISSING_COPYRIGHT=$(find ./src ./rust -type f \( -name "*.ts" -o -name "*.rs" \) | xargs grep -L "Copyright")
+          # Cari file TS dan RS, tapi skip folder target, node_modules, dan dist
+          FILES=$(find . -type d \( -name "target" -o -name "node_modules" -o -name "dist" \) -prune -o -type f \( -name "*.ts" -o -name "*.rs" \) -print)
+
+          if [ -z "$FILES" ]; then
+            echo "✅ Gak ada file yang perlu dicek."
+            exit 0
+          fi
+
+          MISSING_COPYRIGHT=$(echo "$FILES" | xargs grep -L "Copyright")
           if [ -n "$MISSING_COPYRIGHT" ]; then
             echo "❌ Clay, file ini butuh Copyright header:"
             echo "$MISSING_COPYRIGHT"
             exit 1
           fi
 
-          JUNK_CHECK=$(find ./src ./rust -type f \( -name "*.ts" -o -name "*.rs" \) -exec awk 'NR==1 && /^\/\/ [A-Za-z0-9_-]+\.(ts|rs)$/ {print FILENAME}' {} +)
+          JUNK_CHECK=$(echo "$FILES" | xargs awk 'NR==1 && /^\/\/ [A-Za-z0-9_-]+\.(ts|rs)$/ {print FILENAME}')
           if [ -n "$JUNK_CHECK" ]; then
             echo "❌ Baris pertama cuma nama file (Junk):"
             echo "$JUNK_CHECK"
