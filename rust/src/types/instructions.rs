@@ -77,6 +77,8 @@ pub enum Instructions {
   Export(SmolStr),
   Instantiate(SmolStr, u32),
   Nop,
+  Truncate,
+  Shrink,
 }
 impl Instructions {
   pub fn from_parts(op: String, args: Vec<serde_json::Value>) -> Self {
@@ -168,6 +170,8 @@ impl Instructions {
         "length" => Instructions::Length,
         "concat" => Instructions::Concat,
         "dup" => Instructions::Dup,
+        "truncate" => Instructions::Truncate,
+        "shrink" => Instructions::Shrink,
         "make_obj" => Instructions::MakeObj(0),
         "make_array" => Instructions::MakeArray(0),
         _ => Instructions::Stop,
@@ -187,7 +191,7 @@ impl Instructions {
       "push" => {
         let val = &arr[1];
         let value_internal = if val.is_i64() {
-          Value::Int64(val.as_i64().unwrap())
+          Value::Int64(val.as_i64().unwrap_or(0))
         } else if val.is_f64() {
           Value::Float64(val.as_f64().unwrap())
         } else if val.is_boolean() {
@@ -301,6 +305,8 @@ impl Instructions {
       "to_float" => Instructions::ToFloat,
       "to_double" => Instructions::ToDouble,
       "dup" => Instructions::Dup,
+      "truncate" => Instructions::Truncate,
+      "shrink" => Instructions::Shrink,
       "length" => Instructions::Length,
       "typeof" => Instructions::TypeOf,
       "inspect_obj" => Instructions::InspectObj,
@@ -326,10 +332,16 @@ impl Instructions {
         Instructions::Jump(target)
       }
       "access_index" => Instructions::AccessIndex,
-      "export" => Instructions::Export(arr[1].as_str().unwrap().to_owned().into()),
+      "export" => Instructions::Export(
+        arr[1]
+          .as_str()
+          .unwrap_or("stop")
+          .to_owned()
+          .into(),
+      ),
       "return" => Instructions::Return,
       "call" => {
-        let s = arr[1].as_str().unwrap();
+        let s = arr[1].as_str().unwrap_or("stop");
         let argc = arr[2].as_u64().expect("Argc must be a number") as u32;
         Instructions::Call(SmolStr::new(s), argc)
       }

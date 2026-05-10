@@ -13,3 +13,4 @@ pub mod access_index_func;
 pub mod make_array_func;
 pub mod make_obj_func;
 pub mod set_prop_func;
+pub mod shrink_func;

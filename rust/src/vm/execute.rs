@@ -12,6 +12,7 @@ use crate::instructions::{
   collections::{
     access_func::access_func, access_index_func::access_index_func,
     make_array_func::make_array_func, make_obj_func::make_obj_func, set_prop_func::set_prop_func,
+    shrink_func::shrink_func,
   },
   comparison::{
     eq_func::eq_func, ge_func::ge_func, gt_func::gt_func, le_func::le_func, lt_func::lt_func,
@@ -47,7 +48,7 @@ use crate::instructions::{
   metadata::{length_func::length_func, typeof_func::typeof_func},
   stack::{
     concat_func::concat_func, dup_func::dup_func, get_func::get_func, import_func::import_func,
-    push_func::push_func, set_func::set_func, val_func::val_func,
+    push_func::push_func, set_func::set_func, truncate_func::truncate_func, val_func::val_func,
   },
 };
 use crate::types::{
@@ -310,7 +311,7 @@ pub fn execute(
         }
       }
       Instructions::Jump(target_ip) => {
-        jump_func(&mut ip, *target_ip, &mut stack);
+        jump_func(&mut ip, *target_ip);
         continue;
       }
       Instructions::Return => {
@@ -333,7 +334,7 @@ pub fn execute(
         continue;
       }
       Instructions::Stop => {
-        if stop_func(&mut stack, &mut _call_stack, &mut ip) {
+        if stop_func(&mut _call_stack, &mut ip) {
           continue;
         } else {
           break;
@@ -406,6 +407,12 @@ pub fn execute(
       Instructions::Break(target_ip) => {
         break_func(&mut ip, *target_ip);
         continue;
+      }
+      Instructions::Shrink => {
+        let _ = shrink_func(&mut stack);
+      }
+      Instructions::Truncate => {
+        let _ = truncate_func(&mut stack);
       }
       _ => {}
     }

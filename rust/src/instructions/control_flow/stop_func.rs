@@ -8,12 +8,8 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::types::value::Value;
 #[inline(always)]
-pub fn stop_func(stack: &mut Vec<Value>, call_stack: &mut Vec<usize>, ip: &mut usize) -> bool {
-  if stack.len() > 50 {
-    stack.truncate(50);
-  }
+pub fn stop_func(call_stack: &mut Vec<usize>, ip: &mut usize) -> bool {
   if let Some(return_addr) = call_stack.pop() {
     *ip = return_addr + 1;
     return true;

@@ -8,11 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::types::value::Value;
 #[inline(always)]
-pub fn jump_func(ip: &mut usize, target_ip: usize, stack: &mut Vec<Value>) {
-  if stack.len() > 50 {
-    stack.truncate(50);
-  }
+pub fn jump_func(ip: &mut usize, target_ip: usize) {
   *ip = target_ip;
 }

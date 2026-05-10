@@ -64,9 +64,6 @@ impl Value {
       Value::Array(_) | Value::Object(_) => true,
     }
   }
-  pub fn as_bool_refined(&self) -> bool {
-    self.is_truthy()
-  }
   #[inline(always)]
   pub fn is_number(&self) -> bool {
     match self {
@@ -168,9 +165,6 @@ impl Value {
       Value::Array(_) => SmolStr::new_static("[array]"),
       Value::Object(_) => SmolStr::new_static("[object]"),
     }
-  }
-  pub fn as_bool(&self) -> bool {
-    self.is_truthy()
   }
   pub fn type_of(&self) -> &'static str {
     match self {

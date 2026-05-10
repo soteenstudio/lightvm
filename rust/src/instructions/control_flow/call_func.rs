@@ -41,9 +41,6 @@ pub fn call_func(
       arg_idx += 1;
     }
   }
-  if stack.len() > 50 {
-    stack.truncate(50);
-  }
   *ip = fn_meta.start;
   Ok(())
 }
