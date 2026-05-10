@@ -35,6 +35,7 @@ use crate::instructions::{
   logic::{and_func::and_func, not_func::not_func, or_func::or_func, xor_func::xor_func},
   math::{
     add_func::add_func,
+    cos_func::cos_func,
     div_func::div_func,
     inc_dec::{dec_func, inc_func},
     mod_func::mod_func,
@@ -43,7 +44,9 @@ use crate::instructions::{
     ror_func::ror_func,
     shl_func::shl_func,
     shr_func::shr_func,
+    sin_func::sin_func,
     sub_func::sub_func,
+    tan_func::tan_func,
   },
   metadata::{length_func::length_func, typeof_func::typeof_func},
   stack::{
@@ -188,6 +191,27 @@ pub fn execute(
           .pop()
           .ok_or_else(|| SmolStr::new("Stack underflow on SHL (a)"))?;
         let result = rol_func(a, b, *num_type);
+        stack.push(result);
+      }
+      Instructions::Sin(num_type) => {
+        let val = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on SIN"))?;
+        let result = sin_func(val, *num_type);
+        stack.push(result);
+      }
+      Instructions::Cos(num_type) => {
+        let val = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on COS"))?;
+        let result = cos_func(val, *num_type);
+        stack.push(result);
+      }
+      Instructions::Tan(num_type) => {
+        let val = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on TAN"))?;
+        let result = tan_func(val, *num_type);
         stack.push(result);
       }
       Instructions::Gt(num_type) => {

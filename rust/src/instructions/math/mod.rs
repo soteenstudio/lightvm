@@ -10,6 +10,8 @@
 
 pub mod add;
 pub mod add_func;
+pub mod cos;
+pub mod cos_func;
 pub mod div;
 pub mod div_func;
 pub mod inc_dec;
@@ -26,5 +28,9 @@ pub mod shl;
 pub mod shl_func;
 pub mod shr;
 pub mod shr_func;
+pub mod sin;
+pub mod sin_func;
 pub mod sub;
 pub mod sub_func;
+pub mod tan;
+pub mod tan_func;
