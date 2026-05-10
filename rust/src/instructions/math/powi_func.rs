@@ -15,9 +15,9 @@ use crate::types::{primitive_types::PrimitiveTypes, value::Value};
 #[inline]
 pub fn powi_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
-    PrimitiveTypes::Sht => Value::Float16(powi_f16in(a.as_f16(), b.as_i16())),
-    PrimitiveTypes::Int => Value::Float32(powi_f32in(a.as_f32(), b.as_i32())),
-    PrimitiveTypes::Lng => Value::Float64(powi_f64in(a.as_f64(), b.as_i32())),
+    PrimitiveTypes::Hlf => Value::Float16(powi_f16in(a.as_f16(), b.as_i16())),
+    PrimitiveTypes::Flt => Value::Float32(powi_f32in(a.as_f32(), b.as_i32())),
+    PrimitiveTypes::Dbl => Value::Float64(powi_f64in(a.as_f64(), b.as_i32())),
     _ => Value::Undefined,
   }
 }
