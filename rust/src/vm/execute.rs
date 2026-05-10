@@ -47,6 +47,7 @@ use crate::instructions::{
     sin_func::sin_func,
     sub_func::sub_func,
     tan_func::tan_func,
+    pow_func::pow_func,
   },
   metadata::{length_func::length_func, typeof_func::typeof_func},
   stack::{
@@ -166,31 +167,42 @@ pub fn execute(
       Instructions::Shr(num_type) => {
         let b = stack
           .pop()
-          .ok_or_else(|| SmolStr::new("Stack underflow on SHL (b)"))?;
+          .ok_or_else(|| SmolStr::new("Stack underflow on SHR (b)"))?;
         let a = stack
           .pop()
-          .ok_or_else(|| SmolStr::new("Stack underflow on SHL (a)"))?;
+          .ok_or_else(|| SmolStr::new("Stack underflow on SHR (a)"))?;
         let result = shr_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Ror(num_type) => {
         let b = stack
           .pop()
-          .ok_or_else(|| SmolStr::new("Stack underflow on SHL (b)"))?;
+          .ok_or_else(|| SmolStr::new("Stack underflow on ROR (b)"))?;
         let a = stack
           .pop()
-          .ok_or_else(|| SmolStr::new("Stack underflow on SHL (a)"))?;
+          .ok_or_else(|| SmolStr::new("Stack underflow on ROR (a)"))?;
         let result = ror_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Rol(num_type) => {
         let b = stack
           .pop()
-          .ok_or_else(|| SmolStr::new("Stack underflow on SHL (b)"))?;
+          .ok_or_else(|| SmolStr::new("Stack underflow on ROL (b)"))?;
         let a = stack
           .pop()
-          .ok_or_else(|| SmolStr::new("Stack underflow on SHL (a)"))?;
+          .ok_or_else(|| SmolStr::new("Stack underflow on ROL (a)"))?;
         let result = rol_func(a, b, *num_type);
+        stack.push(result);
+      }
+      Instructions::Pow(num_type) => {
+        let b = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on POW (b)"))?;
+        let a = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on POW (a)"))?;
+        println!("Pow jalan!");
+        let result = pow_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Sin(num_type) => {

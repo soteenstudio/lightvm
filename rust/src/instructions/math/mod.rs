@@ -20,6 +20,8 @@ pub mod r#mod;
 pub mod mod_func;
 pub mod mul;
 pub mod mul_func;
+pub mod pow;
+pub mod pow_func;
 pub mod rol;
 pub mod rol_func;
 pub mod ror;
