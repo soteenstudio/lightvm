@@ -10,8 +10,8 @@
 
 use half::f16;
 #[inline(always)]
-pub fn lt_f16in(a: u16, b: u16) -> bool {
-  let val_a = f16::from_bits(a);
-  let val_b = f16::from_bits(b);
+pub fn lt_f16in(a: f32, b: f32) -> bool {
+  let val_a = f16::from_f32(a);
+  let val_b = f16::from_f32(b);
   val_a < val_b
 }

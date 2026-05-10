@@ -14,10 +14,7 @@ use half::f16;
 pub fn to_half_func(stack: &mut Vec<Value>) {
   if let Some(top) = stack.last_mut() {
     let num = match top {
-      Value::String(s) => {
-        let f = s.parse::<f16>().unwrap_or(f16::ZERO);
-        f.to_bits()
-      }
+      Value::String(s) => s.parse::<f16>().unwrap_or(f16::ZERO),
       _ => top.as_f16(),
     };
     *top = Value::Float16(num);

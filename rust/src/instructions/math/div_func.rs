@@ -19,7 +19,7 @@ pub fn div_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Sht => Value::Int16(div_i16in(a.as_i16(), b.as_i16())),
     PrimitiveTypes::Int => Value::Int32(div_i32in(a.as_i32(), b.as_i32())),
     PrimitiveTypes::Lng => Value::Int64(div_i64in(a.as_i64(), b.as_i64())),
-    PrimitiveTypes::Hlf => Value::Float16(div_f16in(a.as_f16(), b.as_f16())),
+    PrimitiveTypes::Hlf => Value::Float16(div_f16in(a.as_f32(), b.as_f32())),
     PrimitiveTypes::Flt => Value::Float32(div_f32in(a.as_f32(), b.as_f32())),
     PrimitiveTypes::Dbl => Value::Float64(div_f64in(a.as_f64(), b.as_f64())),
     _ => Value::Bool(false),

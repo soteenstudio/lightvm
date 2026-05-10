@@ -19,7 +19,7 @@ pub enum Value {
   Int16(i16),
   Int32(i32),
   Int64(i64),
-  Float16(u16),
+  Float16(f16),
   Float32(f32),
   Float64(f64),
   String(SmolStr),
@@ -52,10 +52,7 @@ impl Value {
       Value::Int16(v) => *v != 0,
       Value::Int32(v) => *v != 0,
       Value::Int64(v) => *v != 0,
-      Value::Float16(v) => {
-        let f = half::f16::from_bits(*v);
-        f != half::f16::ZERO && !f.is_nan()
-      }
+      Value::Float16(v) => *v != half::f16::ZERO && !v.is_nan(),
       Value::Float32(v) => *v != 0.0 && !v.is_nan(),
       Value::Float64(v) => *v != 0.0 && !v.is_nan(),
       Value::String(v) => !v.is_empty(),
@@ -82,7 +79,7 @@ impl Value {
       Value::Int16(v) => *v,
       Value::Int32(v) => *v as i16,
       Value::Int64(v) => *v as i16,
-      Value::Float16(v) => f16::from_bits(*v).to_f32() as i16,
+      Value::Float16(v) => v.to_f32() as i16,
       Value::Float32(v) => *v as i16,
       Value::Float64(v) => *v as i16,
       _ => 0,
@@ -94,7 +91,7 @@ impl Value {
       Value::Int32(v) => *v,
       Value::Int16(v) => *v as i32,
       Value::Int64(v) => *v as i32,
-      Value::Float16(v) => f16::from_bits(*v).to_f32() as i32,
+      Value::Float16(v) => v.to_f32() as i32,
       Value::Float32(v) => *v as i32,
       Value::Float64(v) => *v as i32,
       _ => 0,
@@ -106,29 +103,29 @@ impl Value {
       Value::Int64(v) => *v,
       Value::Int16(v) => *v as i64,
       Value::Int32(v) => *v as i64,
-      Value::Float16(v) => f16::from_bits(*v).to_f32() as i64,
+      Value::Float16(v) => v.to_f64() as i64,
       Value::Float32(v) => *v as i64,
       Value::Float64(v) => *v as i64,
       _ => 0,
     }
   }
   #[inline(always)]
-  pub fn as_f16(&self) -> u16 {
+  pub fn as_f16(&self) -> f16 {
     match self {
       Value::Float16(v) => *v,
-      Value::Float32(v) => f16::from_f32(*v).to_bits(),
-      Value::Float64(v) => f16::from_f64(*v).to_bits(),
-      Value::Int16(v) => f16::from_f32(*v as f32).to_bits(),
-      Value::Int32(v) => f16::from_f32(*v as f32).to_bits(),
-      Value::Int64(v) => f16::from_f32(*v as f32).to_bits(),
-      _ => 0,
+      Value::Float32(v) => f16::from_f32(*v),
+      Value::Float64(v) => f16::from_f64(*v),
+      Value::Int16(v) => f16::from_f32(*v as f32),
+      Value::Int32(v) => f16::from_f32(*v as f32),
+      Value::Int64(v) => f16::from_f32(*v as f32),
+      _ => f16::ZERO,
     }
   }
   #[inline(always)]
   pub fn as_f32(&self) -> f32 {
     match self {
       Value::Float32(v) => *v,
-      Value::Float16(v) => f16::from_bits(*v).to_f32(),
+      Value::Float16(v) => v.to_f32(),
       Value::Float64(v) => *v as f32,
       Value::Int16(v) => *v as f32,
       Value::Int32(v) => *v as f32,
@@ -140,7 +137,7 @@ impl Value {
   pub fn as_f64(&self) -> f64 {
     match self {
       Value::Float64(v) => *v,
-      Value::Float16(v) => f16::from_bits(*v).to_f32() as f64,
+      Value::Float16(v) => v.to_f64(),
       Value::Float32(v) => *v as f64,
       Value::Int16(v) => *v as f64,
       Value::Int32(v) => *v as f64,
@@ -155,7 +152,7 @@ impl Value {
       Value::Int16(v) => int_to_smol(*v as i64),
       Value::Int32(v) => int_to_smol(*v as i64),
       Value::Int64(v) => int_to_smol(*v),
-      Value::Float16(v) => float_to_smol(half::f16::from_bits(*v).to_f64()),
+      Value::Float16(v) => float_to_smol(v.to_f64()),
       Value::Float32(v) => float_to_smol(*v as f64),
       Value::Float64(v) => float_to_smol(*v),
       Value::Bool(v) => SmolStr::new(if *v { "true" } else { "false" }),

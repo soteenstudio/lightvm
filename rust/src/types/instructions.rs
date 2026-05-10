@@ -332,13 +332,7 @@ impl Instructions {
         Instructions::Jump(target)
       }
       "access_index" => Instructions::AccessIndex,
-      "export" => Instructions::Export(
-        arr[1]
-          .as_str()
-          .unwrap_or("stop")
-          .to_owned()
-          .into(),
-      ),
+      "export" => Instructions::Export(arr[1].as_str().unwrap_or("stop").to_owned().into()),
       "return" => Instructions::Return,
       "call" => {
         let s = arr[1].as_str().unwrap_or("stop");

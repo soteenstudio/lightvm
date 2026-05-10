@@ -21,7 +21,7 @@ pub fn le_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Lng => Value::Bool(le_i64in(a.as_i64(), b.as_i64())),
     PrimitiveTypes::Dbl => Value::Bool(le_f64in(a.as_f64(), b.as_f64())),
     PrimitiveTypes::Flt => Value::Bool(le_f32in(a.as_f32(), b.as_f32())),
-    PrimitiveTypes::Hlf => Value::Bool(le_f16in(a.as_f16(), b.as_f16())),
+    PrimitiveTypes::Hlf => Value::Bool(le_f16in(a.as_f32(), b.as_f32())),
     _ => Value::Bool(false),
   }
 }

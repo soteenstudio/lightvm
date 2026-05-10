@@ -21,7 +21,7 @@ pub fn gt_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Lng => Value::Bool(gt_i64in(a.as_i64(), b.as_i64())),
     PrimitiveTypes::Dbl => Value::Bool(gt_f64in(a.as_f64(), b.as_f64())),
     PrimitiveTypes::Flt => Value::Bool(gt_f32in(a.as_f32(), b.as_f32())),
-    PrimitiveTypes::Hlf => Value::Bool(gt_f16in(a.as_f16(), b.as_f16())),
+    PrimitiveTypes::Hlf => Value::Bool(gt_f16in(a.as_f32(), b.as_f32())),
     _ => Value::Bool(false),
   }
 }
