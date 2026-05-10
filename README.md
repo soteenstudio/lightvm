@@ -177,8 +177,8 @@ LightVM uses a strict capability-based security model. You must explicitly grant
     ```
     </details>
     
-    > [!NOTE]
-    > __Capability Required__: no spesific capability
+> [!NOTE]
+> __Capability Required__: no spesific capability
     
 3. ``inspect()`` method:  
   Permission to view state, number of instructions, and capability.
@@ -201,8 +201,8 @@ LightVM uses a strict capability-based security model. You must explicitly grant
     ```
     </details>
     
-    > [!NOTE]
-    > __Capability Required__: observe
+> [!NOTE]
+> __Capability Required__: observe
     
 4. ``halt()`` method:  
   Permission to force/manually stop VM.
@@ -225,8 +225,8 @@ LightVM uses a strict capability-based security model. You must explicitly grant
     ```
     </details>
     
-    > [!NOTE]
-    > __Capability Required__: unsafe
+> [!NOTE]
+> __Capability Required__: unsafe
     
 5. ``export()`` method:  
   Permission to export functions in the VM out.
@@ -252,8 +252,8 @@ LightVM uses a strict capability-based security model. You must explicitly grant
     ```
     </details>
     
-    > [!NOTE]
-    > __Capability Required__: control
+> [!NOTE]
+> __Capability Required__: control
 
 ## References
 ### Supported Primitive Types
