@@ -10,6 +10,5 @@
 
 #[inline(always)]
 pub fn powi_f32in(a: f32, b: i32) -> f32 {
-  // Langsung panggil method bawaan Rust f32
   a.powi(b)
 }

@@ -10,6 +10,5 @@
 
 #[inline(always)]
 pub fn powi_f64in(a: f64, b: i32) -> f64 {
-  // b tetap di-cast ke i32 karena signature .powi() di f64 tetap butuh i32
   a.powi(b)
 }

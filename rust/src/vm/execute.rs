@@ -41,6 +41,7 @@ use crate::instructions::{
     mod_func::mod_func,
     mul_func::mul_func,
     pow_func::pow_func,
+    powi_func::powi_func,
     rol_func::rol_func,
     ror_func::ror_func,
     shl_func::shl_func,
@@ -48,7 +49,6 @@ use crate::instructions::{
     sin_func::sin_func,
     sub_func::sub_func,
     tan_func::tan_func,
-    powi_func::powi_func,
   },
   metadata::{length_func::length_func, typeof_func::typeof_func},
   stack::{
