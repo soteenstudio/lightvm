@@ -269,15 +269,15 @@ LightVM uses a strict capability-based security model. You must explicitly grant
 ## References
 ### Supported Primitive Types
 LightVM requires explicit type definitions for certain instructions to maintain deterministic execution and peak performance.
-| Type | Reference | Target Value Type |
-|------|-----------|-------------------|
-| sht | Short | 16-bit Integer (Int16) |
-| int | Integer | 32-bit Integer (Int32) |
-| lng | Long | 64-bit Integer (Int64) |
-| hlf | Half | 16-bit Floating Point (Float16) |
-| flt | Float | 32-bit Floating Point (Float32) |
-| dbl | Double | 64-bit Floating Point (Float64) |
-| str | String | String / Text data |
+| Type | Aliases | Reference | Target Value Type |
+|------|---------|-----------|-------------------|
+| sht | i16 | Short | 16-bit Integer (Int16) |
+| int | i32 | Integer | 32-bit Integer (Int32) |
+| lng | i64 | Long | 64-bit Integer (Int64) |
+| hlf | f16 | Half | 16-bit Floating Point (Float16) |
+| flt | f32 | Float | 32-bit Floating Point (Float32) |
+| dbl | f64 | Double | 64-bit Floating Point (Float64) |
+| str | - | String | String / Text data |
 
 > [!WARNING]
 > __Nightly Type__: The `hlf` (Half-precision) type is still experimental. Support across different architectures may vary and is subject to change in `@next` releases.

@@ -13,6 +13,5 @@ use half::f16;
 pub fn add_f16in(a: f32, b: f32) -> f16 {
   let val_a = f16::from_f32(a);
   let val_b = f16::from_f32(b);
-  
   val_a + val_b
 }

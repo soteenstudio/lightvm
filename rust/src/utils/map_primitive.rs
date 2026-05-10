@@ -12,12 +12,12 @@ use crate::types::primitive_types::PrimitiveTypes;
 use serde_json::Value as JsonValue;
 pub fn map_primitive(val: Option<&JsonValue>) -> PrimitiveTypes {
   match val.and_then(|v| v.as_str()) {
-    Some("sht") => PrimitiveTypes::Sht,
-    Some("int") => PrimitiveTypes::Int,
-    Some("lng") => PrimitiveTypes::Lng,
-    Some("hlf") => PrimitiveTypes::Hlf,
-    Some("flt") => PrimitiveTypes::Flt,
-    Some("dbl") => PrimitiveTypes::Dbl,
+    Some("sht") | Some("i16") => PrimitiveTypes::Sht,
+    Some("int") | Some("i32") => PrimitiveTypes::Int,
+    Some("lng") | Some("i64") => PrimitiveTypes::Lng,
+    Some("hlf") | Some("f16") => PrimitiveTypes::Hlf,
+    Some("flt") | Some("f32") => PrimitiveTypes::Flt,
+    Some("dbl") | Some("f64") => PrimitiveTypes::Dbl,
     Some("str") => PrimitiveTypes::Str,
     _ => PrimitiveTypes::Int,
   }
