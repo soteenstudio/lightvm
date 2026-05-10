@@ -36,3 +36,5 @@ pub mod sub;
 pub mod sub_func;
 pub mod tan;
 pub mod tan_func;
+pub mod powi;
+pub mod powi_func;

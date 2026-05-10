@@ -10,7 +10,7 @@
 
 use crate::instructions::math::{
   add_func::add_func, div_func::div_func, mod_func::mod_func, mul_func::mul_func,
-  pow_func::pow_func, sub_func::sub_func,
+  pow_func::pow_func, sub_func::sub_func, powi_func::powi_func,
 };
 use crate::types::{instructions::Instructions, value::Value};
 #[inline]
@@ -220,6 +220,15 @@ pub fn fold_constants(bytecode: &mut Vec<Instructions>) {
         let val1 = std::mem::replace(v1, Value::Null);
         let val2 = std::mem::replace(v2, Value::Null);
         let result = pow_func(val1, val2, *t);
+        bytecode[i] = Instructions::Push(result);
+        bytecode[i + 1] = Instructions::Nop;
+        bytecode[i + 2] = Instructions::Nop;
+        i += 3;
+      }
+      (Instructions::Push(v1), Instructions::Push(v2), Instructions::Powi(t)) => {
+        let val1 = std::mem::replace(v1, Value::Null);
+        let val2 = std::mem::replace(v2, Value::Null);
+        let result = powi_func(val1, val2, *t);
         bytecode[i] = Instructions::Push(result);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;

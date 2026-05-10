@@ -48,6 +48,7 @@ use crate::instructions::{
     sin_func::sin_func,
     sub_func::sub_func,
     tan_func::tan_func,
+    powi_func::powi_func,
   },
   metadata::{length_func::length_func, typeof_func::typeof_func},
   stack::{
@@ -195,7 +196,6 @@ pub fn execute(
         stack.push(result);
       }
       Instructions::Pow(num_type) => {
-        println!("Pow jalan! {:?}", num_type);
         let b = stack
           .pop()
           .ok_or_else(|| SmolStr::new("Stack underflow on POW (b)"))?;
@@ -204,6 +204,17 @@ pub fn execute(
           .ok_or_else(|| SmolStr::new("Stack underflow on POW (a)"))?;
         println!("Pow jalan!");
         let result = pow_func(a, b, *num_type);
+        stack.push(result);
+      }
+      Instructions::Powi(num_type) => {
+        let b = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on POW (b)"))?;
+        let a = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on POW (a)"))?;
+        println!("Pow jalan!");
+        let result = powi_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Sin(num_type) => {
