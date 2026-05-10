@@ -148,7 +148,7 @@ LightVM uses a strict capability-based security model. You must explicitly grant
     ```
     </details>
     
-    > [!NOTE]
+    > [!NOTE]  
     > __Capability Required__: control  
     > __Info__: parameters of ``load()`` can change bytecode directly or file path to .ltc
     
