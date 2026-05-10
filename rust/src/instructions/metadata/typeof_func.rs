@@ -12,6 +12,7 @@ use crate::types::value::Value;
 use ahash::AHashMap;
 use smol_str::SmolStr;
 use std::sync::Arc;
+#[inline]
 pub fn typeof_func(stack: &mut Vec<Value>) -> Result<(), SmolStr> {
   if let Some(top) = stack.last_mut() {
     let (class_name, is_nullable) = match top {

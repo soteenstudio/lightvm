@@ -9,7 +9,7 @@
  */
 
 use crate::types::instructions::Instructions;
-#[inline]
+#[inline(always)]
 pub fn is_pure_loop(bytecode: &[Instructions], start: usize, end: usize) -> bool {
   for i in start..=end {
     if let Some(inst) = bytecode.get(i) {

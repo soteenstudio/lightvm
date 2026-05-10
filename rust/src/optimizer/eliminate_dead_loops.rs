@@ -12,6 +12,7 @@ use crate::optimizer::is_pure_loop::is_pure_loop;
 use crate::types::instructions::Instructions;
 use ahash::AHashMap;
 #[inline]
+#[cold]
 pub fn eliminate_dead_loops(bytecode: Vec<Instructions>) -> Vec<Instructions> {
   let mut out: Vec<Instructions> = Vec::new();
   let mut index_map: AHashMap<usize, usize> = AHashMap::new();

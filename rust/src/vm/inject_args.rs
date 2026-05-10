@@ -11,6 +11,7 @@
 use crate::types::value::{FuncMetadata, RunOptions, Value};
 use ahash::AHashMap;
 use smol_str::SmolStr;
+#[inline]
 pub fn inject_args(
   vars: &mut Vec<Value>,
   functions: &AHashMap<SmolStr, FuncMetadata>,

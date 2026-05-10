@@ -10,12 +10,14 @@
 
 use itoa;
 use ryu;
-use std::borrow::Cow;
-pub fn int_to_cow<T: Into<i64>>(n: T) -> Cow<'static, str> {
+use smol_str::SmolStr;
+#[inline]
+pub fn int_to_smol<T: Into<i64>>(n: T) -> SmolStr {
   let mut buffer = itoa::Buffer::new();
-  Cow::Owned(buffer.format(n.into()).to_owned())
+  SmolStr::new(buffer.format(n.into()))
 }
-pub fn float_to_cow<T: Into<f64>>(f: T) -> Cow<'static, str> {
+#[inline]
+pub fn float_to_smol<T: Into<f64>>(f: T) -> SmolStr {
   let mut buffer = ryu::Buffer::new();
-  Cow::Owned(buffer.format(f.into()).to_owned())
+  SmolStr::new(buffer.format(f.into()))
 }

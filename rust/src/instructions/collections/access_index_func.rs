@@ -10,6 +10,7 @@
 
 use crate::types::value::Value;
 use smol_str::SmolStr;
+#[inline(always)]
 pub fn access_index_func(stack: &mut Vec<Value>) -> Result<(), SmolStr> {
   let index_val = stack
     .pop()

@@ -8,6 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
+#[inline(always)]
 pub fn eq_i64in(a: i64, b: i64) -> bool {
   a == b
 }

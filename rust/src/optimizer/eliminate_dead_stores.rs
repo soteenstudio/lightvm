@@ -17,6 +17,7 @@ enum Demand {
   Drop,
 }
 #[inline]
+#[cold]
 pub fn eliminate_dead_stores<'a>(
   bytecode: &'a [Instructions],
   usage: &Usage,

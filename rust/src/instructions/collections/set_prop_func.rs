@@ -11,6 +11,7 @@
 use crate::types::value::Value;
 use smol_str::SmolStr;
 use std::sync::Arc;
+#[inline]
 pub fn set_prop_func(stack: &mut Vec<Value>, prop: &SmolStr) -> Result<(), SmolStr> {
   let obj_val = stack
     .pop()

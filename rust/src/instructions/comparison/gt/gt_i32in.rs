@@ -8,6 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
+#[inline(always)]
 pub fn gt_i32in(a: i32, b: i32) -> bool {
   a > b
 }

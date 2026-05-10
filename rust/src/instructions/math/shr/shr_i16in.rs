@@ -8,6 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
+#[inline(always)]
 pub fn shr_i16in(a: i16, b: i16) -> i16 {
   a.wrapping_shr((b & 31) as u32)
 }

@@ -8,6 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
+#[inline(always)]
 pub fn break_func(ip: &mut usize, target_ip: usize) {
   *ip = target_ip;
 }

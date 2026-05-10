@@ -110,6 +110,7 @@ impl Instructions {
       }
     })
   }
+  #[inline]
   pub fn to_parts(&self) -> Vec<String> {
     let json = serde_json::to_value(self).unwrap_or(serde_json::Value::Null);
     if let Some(s) = json.as_str() {
@@ -137,6 +138,7 @@ impl Instructions {
     }
     vec!["Unknown".into()]
   }
+  #[inline]
   pub fn from_json_array(item: &JsonValue) -> Self {
     if item.is_null() {
       return Instructions::Stop;

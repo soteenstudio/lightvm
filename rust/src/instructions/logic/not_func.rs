@@ -9,6 +9,7 @@
  */
 
 use crate::types::value::Value;
+#[inline(always)]
 pub fn not_func(a: Value) -> Value {
   Value::Bool(!a.is_truthy())
 }

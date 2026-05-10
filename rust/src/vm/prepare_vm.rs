@@ -15,6 +15,8 @@ use crate::types::{
 use ahash::AHashMap;
 use smol_str::SmolStr;
 use std::collections::HashSet;
+#[inline]
+#[cold]
 pub fn prepare_vm(
   bytecode: &[Instructions],
   options: &Option<RunOptions>,

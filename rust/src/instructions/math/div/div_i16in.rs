@@ -8,6 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
+#[inline(always)]
 pub fn div_i16in(a: i16, b: i16) -> i16 {
   a / b
 }

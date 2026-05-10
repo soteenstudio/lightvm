@@ -15,8 +15,10 @@ pub struct FilteredWriter {
   pub state: usize,
 }
 impl fmt::Write for FilteredWriter {
+  #[inline]
   fn write_str(&mut self, s: &str) -> fmt::Result {
-    for c in s.chars() {
+    for &b in s.as_bytes() {
+      let c = b as char;
       match (self.state, c) {
         (_, '\'' | '\"') => continue,
         (0, ':') => self.state = 1,
@@ -36,8 +38,8 @@ impl fmt::Write for FilteredWriter {
         (13, 'g') => {
           self.state = 0;
         }
-        (s, char_input) => {
-          if s > 0 {
+        (s_val, char_input) => {
+          if s_val > 0 {
             self.flush_failed_match();
           }
           self.buffer.push(char_input);
@@ -49,6 +51,7 @@ impl fmt::Write for FilteredWriter {
   }
 }
 impl FilteredWriter {
+  #[inline(always)]
   pub fn flush_failed_match(&mut self) {
     match self.state {
       1 => self.buffer.push(':'),

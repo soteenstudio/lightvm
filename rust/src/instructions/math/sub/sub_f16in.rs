@@ -9,6 +9,7 @@
  */
 
 use half::f16;
+#[inline(always)]
 pub fn sub_f16in(a: u16, b: u16) -> u16 {
   let val_a = f16::from_bits(a);
   let val_b = f16::from_bits(b);

@@ -10,6 +10,8 @@
 
 use crate::types::instructions::Instructions;
 use serde_json::Value as JsonValue;
+#[inline]
+#[cold]
 pub fn run(bytecode_json: String) -> String {
   let raw_bytecode: Vec<JsonValue> = serde_json::from_str(&bytecode_json).expect("Invalid JSON");
   let bytecode: Vec<Instructions> = raw_bytecode

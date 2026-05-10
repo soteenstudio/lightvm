@@ -9,6 +9,7 @@
  */
 
 use crate::types::value::Value;
+#[inline(always)]
 pub fn xor_func(a: Value, b: Value) -> Value {
   Value::Bool(a.is_truthy() ^ b.is_truthy())
 }

@@ -11,6 +11,7 @@
 use crate::types::value::Value;
 use smol_str::SmolStr;
 use std::fmt::Write;
+#[inline]
 pub fn inspect_arr_func(stack: &mut Vec<Value>) -> Result<(), SmolStr> {
   if let Some(top) = stack.last_mut() {
     if let Value::Array(arr) = top {

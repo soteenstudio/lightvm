@@ -8,6 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
+#[inline(always)]
 pub fn ror_i32in(a: i32, b: i32) -> i32 {
   a.rotate_right((b & 31) as u32)
 }

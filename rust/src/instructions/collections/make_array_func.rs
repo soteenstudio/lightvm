@@ -11,6 +11,7 @@
 use crate::types::value::Value;
 use smol_str::SmolStr;
 use std::sync::Arc;
+#[inline]
 pub fn make_array_func(stack: &mut Vec<Value>, count: u32) -> Result<(), SmolStr> {
   let count = count as usize;
   if stack.len() < count {

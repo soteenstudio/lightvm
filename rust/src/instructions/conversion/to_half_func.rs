@@ -10,12 +10,13 @@
 
 use crate::types::value::Value;
 use half::f16;
+#[inline(always)]
 pub fn to_half_func(stack: &mut Vec<Value>) {
   if let Some(top) = stack.last_mut() {
     let num = match top {
       Value::String(s) => {
-        let f = s.parse::<f32>().unwrap_or(0.0);
-        f16::from_f32(f).to_bits()
+        let f = s.parse::<f16>().unwrap_or(f16::ZERO);
+        f.to_bits()
       }
       _ => top.as_f16(),
     };

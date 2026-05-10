@@ -10,22 +10,25 @@
 
 use crate::types::value::Value;
 use smol_str::SmolStr;
+use std::fmt::Write;
+#[inline]
 pub fn inspect_obj_func(stack: &mut Vec<Value>) -> Result<(), SmolStr> {
-  let val = stack
-    .pop()
-    .ok_or_else(|| SmolStr::new("Stack underflow on INSPECT_OBJ"))?;
-  if let Value::Object(obj) = val {
-    let mut result = String::from("{ ");
-    for (i, (k, v)) in obj.iter().enumerate() {
-      if i > 0 {
-        result.push_str(", ");
+  if let Some(top) = stack.last_mut() {
+    if let Value::Object(obj) = top {
+      let mut result = String::from("{ ");
+      for (i, (k, v)) in obj.iter().enumerate() {
+        if i > 0 {
+          result.push_str(", ");
+        }
+        let _ = write!(result, "\"{}\": {:?}", k, v);
       }
-      result.push_str(&format!("\"{}\": {:?}", k, v));
+      result.push_str(" }");
+      *top = Value::String(SmolStr::from(result));
+      Ok(())
+    } else {
+      Err(SmolStr::new("Value is not an object"))
     }
-    result.push_str(" }");
-    stack.push(Value::String(SmolStr::from(result)));
-    Ok(())
   } else {
-    Err(SmolStr::new("Value is not an object"))
+    Err(SmolStr::new("Stack underflow on INSPECT_OBJ"))
   }
 }

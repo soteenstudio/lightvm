@@ -9,6 +9,7 @@
  */
 
 use crate::types::value::Value;
+#[inline(always)]
 pub fn to_short_func(stack: &mut Vec<Value>) {
   if let Some(top) = stack.last_mut() {
     let num = match top {

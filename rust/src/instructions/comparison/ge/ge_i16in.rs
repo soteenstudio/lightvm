@@ -8,6 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
+#[inline(always)]
 pub fn ge_i16in(a: i16, b: i16) -> bool {
   a >= b
 }

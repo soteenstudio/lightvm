@@ -8,7 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::utils::fast_format::{float_to_cow, int_to_cow};
+use crate::utils::fast_format::{float_to_smol, int_to_smol};
 use ahash::AHashMap;
 use half::f16;
 use serde::{Deserialize, Serialize};
@@ -45,6 +45,7 @@ pub struct RunOptions {
   pub imports: AHashMap<SmolStr, Value>,
 }
 impl Value {
+  #[inline(always)]
   pub fn is_truthy(&self) -> bool {
     match self {
       Value::Bool(v) => *v,
@@ -66,12 +67,19 @@ impl Value {
   pub fn as_bool_refined(&self) -> bool {
     self.is_truthy()
   }
+  #[inline(always)]
   pub fn is_number(&self) -> bool {
     match self {
-      Value::Int32(_) | Value::Int64(_) | Value::Float32(_) | Value::Float64(_) => true,
+      Value::Int16(_)
+      | Value::Int32(_)
+      | Value::Int64(_)
+      | Value::Float16(_)
+      | Value::Float32(_)
+      | Value::Float64(_) => true,
       _ => false,
     }
   }
+  #[inline(always)]
   pub fn as_i16(&self) -> i16 {
     match self {
       Value::Int16(v) => *v,
@@ -83,6 +91,7 @@ impl Value {
       _ => 0,
     }
   }
+  #[inline(always)]
   pub fn as_i32(&self) -> i32 {
     match self {
       Value::Int32(v) => *v,
@@ -94,6 +103,7 @@ impl Value {
       _ => 0,
     }
   }
+  #[inline(always)]
   pub fn as_i64(&self) -> i64 {
     match self {
       Value::Int64(v) => *v,
@@ -105,6 +115,7 @@ impl Value {
       _ => 0,
     }
   }
+  #[inline(always)]
   pub fn as_f16(&self) -> u16 {
     match self {
       Value::Float16(v) => *v,
@@ -116,6 +127,7 @@ impl Value {
       _ => 0,
     }
   }
+  #[inline(always)]
   pub fn as_f32(&self) -> f32 {
     match self {
       Value::Float32(v) => *v,
@@ -127,6 +139,7 @@ impl Value {
       _ => 0.0,
     }
   }
+  #[inline(always)]
   pub fn as_f64(&self) -> f64 {
     match self {
       Value::Float64(v) => *v,
@@ -138,15 +151,16 @@ impl Value {
       _ => 0.0,
     }
   }
+  #[inline]
   pub fn as_string(&self) -> SmolStr {
     match self {
       Value::String(v) => v.clone(),
-      Value::Int16(v) => int_to_cow(*v as i64).into(),
-      Value::Int32(v) => int_to_cow(*v as i64).into(),
-      Value::Int64(v) => int_to_cow(*v).into(),
-      Value::Float16(v) => float_to_cow(half::f16::from_bits(*v).to_f64()).into(),
-      Value::Float32(v) => float_to_cow(*v as f64).into(),
-      Value::Float64(v) => float_to_cow(*v).into(),
+      Value::Int16(v) => int_to_smol(*v as i64),
+      Value::Int32(v) => int_to_smol(*v as i64),
+      Value::Int64(v) => int_to_smol(*v),
+      Value::Float16(v) => float_to_smol(half::f16::from_bits(*v).to_f64()),
+      Value::Float32(v) => float_to_smol(*v as f64),
+      Value::Float64(v) => float_to_smol(*v),
       Value::Bool(v) => SmolStr::new(if *v { "true" } else { "false" }),
       Value::Null => SmolStr::new("null"),
       Value::Undefined => SmolStr::new("undefined"),

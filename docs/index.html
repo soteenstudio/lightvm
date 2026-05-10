@@ -310,9 +310,14 @@
     window.requestAnimationFrame(step);
   }
 
-  function updateRange(range, btn) {
+// 1. Tambahkan state cache di bagian atas script
+let statsCache = {};
+
+// 2. Modifikasi updateRange biar gak asal manggil fetch
+function updateRange(range, btn) {
     if (currentRange === range) return;
     currentRange = range;
+    
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     
@@ -325,29 +330,22 @@
     };
     document.getElementById('view-title').innerText = titles[range];
     
-    getDownloads();
-  }
+    // Cek apakah data range ini udah ada di cache?
+    if (statsCache[range]) {
+        console.log(`[LVM] Using Cached Data for: ${range}`);
+        renderData(statsCache[range]); // Langsung render, gak pake fetch
+    } else {
+        getDownloads(); // Kalo gak ada baru fetch
+    }
+}
 
-  async function getDownloads() {
-    const totalEl = document.getElementById('total-count');
+// 3. Modifikasi getDownloads buat nyimpen hasil ke cache
+async function getDownloads() {
     const statusEl = document.getElementById('status-msg');
-    const listEl = document.getElementById('package-list');
-    const avgEl = document.getElementById('avg-daily'); // Tambahin ini
-    const velEl = document.getElementById('velocity');  // Tambahin ini
-
+    
     try {
       statusEl.innerText = ">> SYNCING_MULTIVERSE_DATA...";
       
-      // Tentukan pembagi hari buat AVG
-      let days = 30;
-      if (currentRange === 'last-day') days = 1;
-      if (currentRange === 'last-week') days = 7;
-      if (currentRange === 'last-year') days = 365;
-      if (currentRange === 'td') {
-          const start = new Date('2026-05-01'); // Sesuaikan tgl rilis awal lo
-          days = Math.max(1, Math.floor((new Date() - start) / (1000 * 60 * 60 * 24)));
-      }
-
       let rangePath = currentRange === 'td' ? `point/2026-05-01:${new Date().toISOString().split('T')[0]}` : `point/${currentRange}`;
       
       const npmRequests = packages.map(pkg => 
@@ -378,25 +376,48 @@
       ];
       
       allResults.sort((a, b) => b.downloads - a.downloads);
-      let total = allResults.reduce((acc, curr) => acc + curr.downloads, 0);
-
-      renderOSDistribution(allResults, total);
-      // --- LOGIKA KALKULASI SUB-STATS ---
-      animateValue(totalEl, prevTotal, total, 800);
       
-      // Update Average Daily
-      const dailyAvg = (total / days).toFixed(1);
-      avgEl.innerText = dailyAvg;
-
-      // Update Velocity (Persentase kontribusi rata-rata harian terhadap total)
-      const velocity = total > 0 ? ((dailyAvg / total) * 100).toFixed(2) : 0;
-      velEl.innerText = `+${velocity}%`;
+      // SIMPEN KE CACHE
+      statsCache[currentRange] = allResults;
       
-      prevTotal = total;
-      // ----------------------------------
+      renderData(allResults);
 
-      listEl.innerHTML = '';
-      allResults.forEach(data => {
+    } catch (error) {
+      statusEl.innerText = "CRITICAL_ERROR: SYNC_FAILED";
+    }
+}
+
+// 4. Pisahin fungsi Render biar bisa dipanggil Cache maupun Fetch
+function renderData(allResults) {
+    const totalEl = document.getElementById('total-count');
+    const statusEl = document.getElementById('status-msg');
+    const listEl = document.getElementById('package-list');
+    const avgEl = document.getElementById('avg-daily');
+    const velEl = document.getElementById('velocity');
+
+    let days = 30;
+    if (currentRange === 'last-day') days = 1;
+    if (currentRange === 'last-week') days = 7;
+    if (currentRange === 'last-year') days = 365;
+    if (currentRange === 'td') {
+        const start = new Date('2026-05-01');
+        days = Math.max(1, Math.floor((new Date() - start) / (1000 * 60 * 60 * 24)));
+    }
+
+    let total = allResults.reduce((acc, curr) => acc + curr.downloads, 0);
+
+    renderOSDistribution(allResults, total);
+    animateValue(totalEl, prevTotal, total, 800);
+    
+    const dailyAvg = (total / days).toFixed(1);
+    avgEl.innerText = dailyAvg;
+    const velocity = total > 0 ? ((dailyAvg / total) * 100).toFixed(2) : 0;
+    velEl.innerText = `+${velocity}%`;
+    
+    prevTotal = total;
+
+    listEl.innerHTML = '';
+    allResults.forEach(data => {
         const percentage = total > 0 ? (data.downloads / total * 100) : 0;
         const item = document.createElement('div');
         item.className = 'pkg-item';
@@ -410,13 +431,11 @@
           </div>
         `;
         listEl.appendChild(item);
-      });
+    });
 
-      statusEl.innerText = `LAST_SYNC: ${new Date().toLocaleTimeString()}`;
-    } catch (error) {
-      statusEl.innerText = "CRITICAL_ERROR: SYNC_FAILED";
-    }
-  }
+    statusEl.innerText = `LAST_SYNC: ${new Date().toLocaleTimeString()}`;
+}
+
 
   function renderOSDistribution(results, total) {
     const distroBar = document.getElementById('distro-bar');

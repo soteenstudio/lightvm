@@ -9,6 +9,7 @@
  */
 
 use crate::types::value::Value;
+#[inline(always)]
 pub fn length_func(stack: &mut Vec<Value>) {
   if let Some(val_ref) = stack.last_mut() {
     let len = match val_ref {

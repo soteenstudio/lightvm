@@ -9,6 +9,8 @@
  */
 
 use crate::types::{instructions::Instructions, value::Value};
+#[inline]
+#[cold]
 pub fn fold_conversions(bytecode: &mut Vec<Instructions>) {
   let mut i = 0;
   while i < bytecode.len().saturating_sub(1) {

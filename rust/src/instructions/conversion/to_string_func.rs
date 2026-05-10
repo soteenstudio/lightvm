@@ -10,10 +10,10 @@
 
 use crate::types::value::Value;
 use smol_str::SmolStr;
+#[inline(always)]
 pub fn to_string_func(stack: &mut Vec<Value>) {
   if let Some(top) = stack.last_mut() {
-    let mut base_string = top.as_string().to_string();
-    base_string.push_str("::string");
-    *top = Value::String(SmolStr::from(base_string));
+    let formatted = format!("{}::string", top.as_string());
+    *top = Value::String(SmolStr::from(formatted));
   }
 }
