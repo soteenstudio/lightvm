@@ -348,18 +348,16 @@ pub fn execute(
         stack.push(result);
       }
       Instructions::Print => {
-        if let Some(val) = stack.pop() {
-          print_func(val);
-        } else {
-          panic!("Stack underflow on PRINT");
-        }
+        let val = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on PRINT"))?;
+        print_func(val);
       }
       Instructions::Println => {
-        if let Some(val) = stack.pop() {
-          println_func(val);
-        } else {
-          panic!("Stack underflow on PRINTLN");
-        }
+        let val = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on PRINTLN"))?;
+        println_func(val);
       }
       Instructions::IfFalse(target_ip) => {
         let cond = stack
