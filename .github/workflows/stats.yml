@@ -18,13 +18,16 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/traffic/clones" \
             | jq '.count // 0')
 
-          # 2. Ambil data views (visitor unik)
-          VIEWS=$(curl -s -H "Authorization: token ${{ secrets.LIGHTVM_PAT }}" \
-            "https://api.github.com/repos/${{ github.repository }}/traffic/views" \
-            | jq '.uniques // 0')
+          # 2. Ambil full JSON dari traffic views biar gak kerja dua kali
+          TRAFFIC_DATA=$(curl -s -H "Authorization: token ${{ secrets.LIGHTVM_PAT }}" \
+            "https://api.github.com/repos/${{ github.repository }}/traffic/views")
 
-          # 3. Update file di Gist dengan JSON yang lebih lengkap
+          # 3. Ekstrak total views dan visitor unik
+          TOTAL_VIEWS=$(echo $TRAFFIC_DATA | jq '.count // 0')
+          UNIQUE_VISITORS=$(echo $TRAFFIC_DATA | jq '.uniques // 0')
+
+          # 4. Update file di Gist dengan JSON yang super lengkap
           curl -s -X PATCH -H "Authorization: token ${{ secrets.LIGHTVM_PAT }}" \
             -H "Content-Type: application/json" \
-            -d "{\"files\":{\"stats.json\":{\"content\":\"{\\\"clones\\\": $CLONES, \\\"views\\\": $VIEWS}\"}}}" \
+            -d "{\"files\":{\"stats.json\":{\"content\":\"{\\\"clones\\\": $CLONES, \\\"total_views\\\": $TOTAL_VIEWS, \\\"unique_visitors\\\": $UNIQUE_VISITORS}\"}}}" \
             "https://api.github.com/gists/${{ secrets.GIST_ID }}"
