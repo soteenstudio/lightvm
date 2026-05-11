@@ -61,7 +61,10 @@ pub fn eliminate_dead_stores<'a>(
       | Instructions::Shl(_)
       | Instructions::Shr(_)
       | Instructions::Ror(_)
-      | Instructions::Rol(_) => {
+      | Instructions::Rol(_)
+      | Instructions::Pow(_)
+      | Instructions::Powi(_)
+      | Instructions::Powf(_) => {
         if let Some(demand) = stack_demands.pop() {
           if demand == Demand::Keep {
             stack_demands.push(Demand::Keep);
@@ -85,7 +88,6 @@ pub fn eliminate_dead_stores<'a>(
       | Instructions::And
       | Instructions::Or
       | Instructions::Xor
-      | Instructions::Not
       | Instructions::Concat => {
         if let Some(demand) = stack_demands.pop() {
           if demand == Demand::Keep {
@@ -98,15 +100,21 @@ pub fn eliminate_dead_stores<'a>(
           }
         }
       }
-      Instructions::ToString
+      Instructions::Not
+      | Instructions::ToString
+      | Instructions::ToShort
       | Instructions::ToInteger
       | Instructions::ToLong
+      | Instructions::ToHalf
       | Instructions::ToFloat
       | Instructions::ToDouble
       | Instructions::TypeOf
       | Instructions::Length
       | Instructions::InspectObj
-      | Instructions::InspectArr => {
+      | Instructions::InspectArr
+      | Instructions::Sin(_)
+      | Instructions::Cos(_)
+      | Instructions::Tan(_) => {
         if let Some(demand) = stack_demands.pop() {
           if demand == Demand::Keep {
             stack_demands.push(Demand::Keep);
@@ -161,8 +169,8 @@ pub fn eliminate_dead_stores<'a>(
         let d1 = stack_demands.pop().unwrap_or(Demand::Drop);
         let d2 = stack_demands.pop().unwrap_or(Demand::Drop);
         if d1 == Demand::Keep || d2 == Demand::Keep {
-          stack_demands.push(Demand::Keep);
           result.push(Cow::Borrowed(inst));
+          stack_demands.push(Demand::Keep);
         } else {
           stack_demands.push(Demand::Drop);
         }
