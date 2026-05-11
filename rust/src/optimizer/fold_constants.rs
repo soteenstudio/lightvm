@@ -15,7 +15,7 @@ use crate::instructions::math::{
 use crate::types::{instructions::Instructions, value::Value};
 #[inline]
 #[cold]
-pub fn fold_constants(bytecode: &mut Vec<Instructions>) {
+pub fn fold_constants(bytecode: &mut [Instructions]) {
   let mut i = 0;
   while i < bytecode.len().saturating_sub(2) {
     let mut instr1 = std::mem::replace(&mut bytecode[i], Instructions::Nop);

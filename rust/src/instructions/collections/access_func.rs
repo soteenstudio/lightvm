@@ -11,7 +11,7 @@
 use crate::types::value::Value;
 use smol_str::SmolStr;
 #[inline(always)]
-pub fn access_func(stack: &mut Vec<Value>, prop: &SmolStr) -> Result<(), SmolStr> {
+pub fn access_func(stack: &mut [Value], prop: &SmolStr) -> Result<(), SmolStr> {
   if let Some(top) = stack.last_mut() {
     if let Value::Object(map) = top {
       let result = map.get(prop).cloned().unwrap_or(Value::Undefined);

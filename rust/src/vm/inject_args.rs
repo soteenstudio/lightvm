@@ -13,7 +13,7 @@ use ahash::AHashMap;
 use smol_str::SmolStr;
 #[inline]
 pub fn inject_args(
-  vars: &mut Vec<Value>,
+  vars: &mut [Value],
   functions: &AHashMap<SmolStr, FuncMetadata>,
   options: &Option<RunOptions>,
   _current_ip: usize,

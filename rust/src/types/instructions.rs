@@ -294,8 +294,8 @@ impl Instructions {
             names.push(SmolStr::new(s));
           }
         }
-        for i in 6..arr.len() {
-          if let Some(s) = arr[i].as_str() {
+        for item in arr.iter().skip(6) {
+          if let Some(s) = item.as_str() {
             names.push(SmolStr::new(s));
           }
         }

@@ -11,7 +11,7 @@
 use crate::types::value::{RunOptions, Value};
 use smol_str::SmolStr;
 pub fn import_func(
-  vars: &mut Vec<Value>,
+  vars: &mut [Value],
   options: &Option<RunOptions>,
   module_name: &SmolStr,
   idx: usize,

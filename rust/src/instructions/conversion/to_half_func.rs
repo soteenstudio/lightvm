@@ -11,7 +11,7 @@
 use crate::types::value::Value;
 use half::f16;
 #[inline(always)]
-pub fn to_half_func(stack: &mut Vec<Value>) {
+pub fn to_half_func(stack: &mut [Value]) {
   if let Some(top) = stack.last_mut() {
     let num = match top {
       Value::String(s) => s.parse::<f16>().unwrap_or(f16::ZERO),

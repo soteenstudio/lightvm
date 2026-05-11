@@ -11,7 +11,7 @@
 use crate::types::{instructions::Instructions, value::Value};
 #[inline]
 #[cold]
-pub fn fold_conversions(bytecode: &mut Vec<Instructions>) {
+pub fn fold_conversions(bytecode: &mut [Instructions]) {
   let mut i = 0;
   while i < bytecode.len().saturating_sub(1) {
     let mut instr1 = std::mem::replace(&mut bytecode[i], Instructions::Nop);

@@ -64,15 +64,15 @@ impl Value {
   }
   #[inline(always)]
   pub fn is_number(&self) -> bool {
-    match self {
+    matches!(
+      self,
       Value::Int16(_)
-      | Value::Int32(_)
-      | Value::Int64(_)
-      | Value::Float16(_)
-      | Value::Float32(_)
-      | Value::Float64(_) => true,
-      _ => false,
-    }
+        | Value::Int32(_)
+        | Value::Int64(_)
+        | Value::Float16(_)
+        | Value::Float32(_)
+        | Value::Float64(_)
+    )
   }
   #[inline(always)]
   pub fn as_i16(&self) -> i16 {

@@ -13,7 +13,7 @@ use ahash::AHashMap;
 use smol_str::SmolStr;
 #[inline]
 #[cold]
-pub fn resolve_symbols(bytecode: &mut Vec<Instructions>) -> usize {
+pub fn resolve_symbols(bytecode: &mut [Instructions]) -> usize {
   let mut symbol_table: AHashMap<SmolStr, usize> = AHashMap::new();
   let mut next_idx = 0;
   for instr in bytecode.iter_mut() {

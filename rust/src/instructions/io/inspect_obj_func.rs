@@ -12,7 +12,7 @@ use crate::types::value::Value;
 use smol_str::SmolStr;
 use std::fmt::Write;
 #[inline]
-pub fn inspect_obj_func(stack: &mut Vec<Value>) -> Result<(), SmolStr> {
+pub fn inspect_obj_func(stack: &mut [Value]) -> Result<(), SmolStr> {
   if let Some(top) = stack.last_mut() {
     if let Value::Object(obj) = top {
       let mut result = String::from("{ ");

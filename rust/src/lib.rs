@@ -32,12 +32,14 @@ use napi_derive::napi;
 use smol_str::SmolStr;
 use std::collections::HashSet;
 #[cfg_attr(feature = "node", napi(js_name = "LightVM"))]
+type VmCallback = Box<dyn Fn(String) + Send + Sync>;
+type VmEventMap = AHashMap<VmEvent, Vec<VmCallback>>;
 pub struct LightVM {
   bytecode: Vec<Instructions>,
   #[cfg(feature = "node")]
-  listeners: AHashMap<VmEvent, Vec<ThreadsafeFunction<String>>>,
+  listeners: VmEventMap,
   #[cfg(not(feature = "node"))]
-  listeners: AHashMap<VmEvent, Vec<Box<dyn Fn(String) + Send + Sync>>>,
+  listeners: VmEventMap,
   caps: HashSet<Capability>,
   state: VmState,
   _outputs: Vec<String>,

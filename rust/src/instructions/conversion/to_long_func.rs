@@ -10,7 +10,7 @@
 
 use crate::types::value::Value;
 #[inline(always)]
-pub fn to_long_func(stack: &mut Vec<Value>) {
+pub fn to_long_func(stack: &mut [Value]) {
   if let Some(top) = stack.last_mut() {
     let num = match top {
       Value::String(s) => s.parse::<i64>().unwrap_or(0),
