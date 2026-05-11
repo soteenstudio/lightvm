@@ -551,25 +551,30 @@ function renderData(allResults) {
       }
     });
   }
-async function getGitClones() {
-    const clonesEl = document.getElementById('git-clones');
-    const GIST_ID = 'ffdac0710a7582523156d8e2638724fe'; // Ganti pake ID Gist asli
-    
-    try {
-        // Pake raw URL dari gist
-        const res = await fetch(`https://gist.githubusercontent.com/raw/${GIST_ID}/stats.json`);
-        const data = await res.json();
-        
-        const totalClones = data.clones || 0; 
-        
-        animateValue(clonesEl, 0, totalClones, 800);
-        return totalClones;
-    } catch (e) {
-        console.error("Gist fetch failed", e);
-        clonesEl.innerText = "N/A";
-        return 0;
-    }
-}
+  async function getGitClones() {
+      const clonesEl = document.getElementById('git-clones');
+      const GIST_ID = 'ffdac0710a7582523156d8e2638724fe'; 
+      
+      try {
+          // Tambahin ?t=[timestamp] biar gak kena cache browser
+          const res = await fetch(`https://gist.githubusercontent.com/raw/${GIST_ID}/stats.json?t=${new Date().getTime()}`);
+          
+          // Cek apakah response-nya oke
+          if (!res.ok) throw new Error('Network response was not ok');
+          
+          const data = await res.json();
+          
+          // Pastikan nama key di JSON Gist lo beneran "clones"
+          const totalClones = data.clones || 0; 
+          
+          animateValue(clonesEl, 0, totalClones, 800);
+          return totalClones;
+      } catch (e) {
+          console.error("Gist fetch failed:", e);
+          clonesEl.innerText = "N/A";
+          return 0;
+      }
+  }
 
   getStars();
   getDownloads();
