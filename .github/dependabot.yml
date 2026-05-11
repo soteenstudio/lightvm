@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "/src"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     labels:
       - "dependencies"
       - "javascript"
@@ -12,7 +12,7 @@ updates:
   - package-ecosystem: "cargo"
     directory: "/rust"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     labels:
       - "dependencies"
       - "rust"
