@@ -14,7 +14,7 @@ jobs:
       - name: Fetch and Update Gist
         run: |
           # 1. Ambil data clones dari GitHub API
-          CLONES=$(curl -s -H "Authorization: token ${{ secrets.CLAY_PAT }}" \
+          CLONES=$(curl -s -H "Authorization: token ${{ secrets.LIGHTVM_PAT }}" \
             "https://api.github.com/repos/${{ github.repository }}/traffic/clones" \
             | jq '.count // 0')
 
