@@ -1,8 +1,11 @@
 name: Sync Git Clones to Gist
 on:
+  push:
+    branches:
+      - main  # Jalan tiap kali ada push atau merge ke branch main
   schedule:
-    - cron: '0 */6 * * *' # Jalan tiap 6 jam
-  workflow_dispatch: # Bisa jalanin manual juga
+    - cron: '0 * * * *' # Tetep jalan tiap jam buat jaga-jaga kalo gak ada push
+  workflow_dispatch: # Masih bisa dipicu manual dari tab Actions
 
 jobs:
   update-stats:
