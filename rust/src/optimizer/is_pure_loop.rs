@@ -17,9 +17,16 @@ pub fn is_pure_loop(bytecode: &[Instructions], start: usize, end: usize) -> bool
         inst,
         Instructions::Print
           | Instructions::Println
+          | Instructions::InspectObj
+          | Instructions::InspectArr
           | Instructions::Call(..)
           | Instructions::Return
           | Instructions::Stop
+          | Instructions::Break(..)
+          | Instructions::Jump(..)
+          | Instructions::IfFalse(..)
+          | Instructions::Import(..)
+          | Instructions::Instantiate(..)
       ) {
         return false;
       }

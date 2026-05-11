@@ -10,7 +10,7 @@
 
 use crate::instructions::math::{
   add_func::add_func, div_func::div_func, mod_func::mod_func, mul_func::mul_func,
-  pow_func::pow_func, sub_func::sub_func, powi_func::powi_func, powf_func::powf_func
+  pow_func::pow_func, powf_func::powf_func, powi_func::powi_func, sub_func::sub_func,
 };
 use crate::types::{instructions::Instructions, value::Value};
 #[inline]
