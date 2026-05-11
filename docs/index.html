@@ -98,10 +98,9 @@
       text-shadow: 0 0 20px rgba(255,255,255,0.1);
     }
 
-    /* Additional Stats Style */
     .sub-stats {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr; /* Ubah jadi 3 kolom */
       gap: 10px;
       margin-bottom: 1.5rem;
     }
@@ -239,6 +238,11 @@
     <div class="stat-box">
       <div class="stat-label">Avg. Daily</div>
       <div id="avg-daily" class="stat-value">0</div>
+    </div>
+    <!-- Slot Baru: Git Clones -->
+    <div class="stat-box">
+      <div class="stat-label">Git Clones</div>
+      <div id="git-clones" class="stat-value">0</div>
     </div>
     <div class="stat-box">
       <div class="stat-label">Velocity</div>
@@ -548,9 +552,35 @@ function renderData(allResults) {
     });
   }
 
+async function getGitClones() {
+    const clonesEl = document.getElementById('git-clones');
+    try {
+        // Ganti URL ini dengan endpoint API atau proxy-mu
+        // Contoh: https://api.github.com/repos/soteenstudio/lightvm/traffic/clones
+        const res = await fetch('https://api.github.com/repos/soteenstudio/lightvm/traffic/clones', {
+            headers: {
+                // 'Authorization': 'token ghp_your_secret_token' // JANGAN taruh token asli di sini secara publik!
+                'Accept': 'application/vnd.github+json'
+            }
+        });
+        const data = await res.json();
+        
+        // GitHub ngasih total clones (termasuk double dari orang yang sama) 
+        // atau 'uniques' (orang yang beda-beda).
+        const totalClones = data.count || 0; 
+        
+        animateValue(clonesEl, 0, totalClones, 800);
+        return totalClones;
+    } catch (e) {
+        clonesEl.innerText = "N/A";
+        return 0;
+    }
+}
+
 
   getStars();
   getDownloads();
+  getGitClones();
   setInterval(getDownloads, 300000);
   setInterval(getStars, 600000);
 </script>
