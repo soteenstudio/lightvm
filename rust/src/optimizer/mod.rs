@@ -15,5 +15,6 @@ pub mod eliminate_redundant_loads;
 pub mod fold_constants;
 pub mod fold_conversions;
 pub mod is_pure_loop;
+pub mod jump_threading;
 pub mod optimize_bytecode;
 pub mod strength_reduction;

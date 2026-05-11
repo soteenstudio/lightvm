@@ -11,13 +11,14 @@
 use crate::optimizer::{
   analyze_usage::analyze_usage, eliminate_dead_loops::eliminate_dead_loops,
   eliminate_dead_stores::eliminate_dead_stores, fold_constants::fold_constants,
-  fold_conversions::fold_conversions,
+  fold_conversions::fold_conversions, jump_threading::jump_threading,
 };
 use crate::types::instructions::Instructions;
 use std::borrow::Cow;
 pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
   fold_constants(&mut bytecode);
   fold_conversions(&mut bytecode);
+  jump_threading(&mut bytecode);
   bytecode.retain(|instr| !matches!(instr, Instructions::Nop));
   let usage = analyze_usage(&bytecode);
   bytecode = eliminate_dead_stores(&bytecode, &usage)
