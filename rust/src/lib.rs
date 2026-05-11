@@ -8,6 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
+#[allow(clippy::type_complexity)]
 pub mod instructions;
 pub mod optimizer;
 pub mod types;
