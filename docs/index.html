@@ -269,6 +269,11 @@
       <div class="stat-label">Git Views</div>
       <div id="git-views" class="stat-value">0</div>
     </div>
+    <!-- Slot Baru: Git Clones -->
+    <div class="stat-box">
+      <div class="stat-label">Git Visitors</div>
+      <div id="git-unique-visitors" class="stat-value">0</div>
+    </div>
   </div>
 
   <div class="distro-container">
@@ -575,6 +580,7 @@ function renderData(allResults) {
   async function getGitClones() {
       const clonesEl = document.getElementById('git-clones');
       const viewsEl = document.getElementById('git-views');
+      const uniqueVisitorsEl = document.getElementById('git-unique-visitors');
       const GIST_ID = 'ffdac0710a7582523156d8e2638724fe'; 
       
       try {
@@ -588,10 +594,12 @@ function renderData(allResults) {
           
           // Pastikan nama key di JSON Gist lo beneran "clones"
           const totalClones = data.clones || 0;
-          const totalViews = data.views || 0;
+          const totalViews = data.total_views || 0;
+          const totalUniqueVisitors = data.unique_visitors || 0;
           
           animateValue(clonesEl, 0, totalClones, 800);
           animateValue(viewsEl, 0, totalViews, 800);
+          animateValue(uniqueVisitorsEl, 0, totalUniqueVisitors, 800);
           return totalClones;
       } catch (e) {
           console.error("Gist fetch failed:", e);
