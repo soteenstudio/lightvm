@@ -1,0 +1,30 @@
+name: Sync Git Stats to Gist
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  update-stats:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch and Update Gist
+        run: |
+          # 1. Ambil data clones (unduhan repo)
+          CLONES=$(curl -s -H "Authorization: token ${{ secrets.LIGHTVM_PAT }}" \
+            "https://api.github.com/repos/${{ github.repository }}/traffic/clones" \
+            | jq '.count // 0')
+
+          # 2. Ambil data views (visitor unik)
+          VIEWS=$(curl -s -H "Authorization: token ${{ secrets.LIGHTVM_PAT }}" \
+            "https://api.github.com/repos/${{ github.repository }}/traffic/views" \
+            | jq '.uniques // 0')
+
+          # 3. Update file di Gist dengan JSON yang lebih lengkap
+          curl -s -X PATCH -H "Authorization: token ${{ secrets.LIGHTVM_PAT }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"files\":{\"stats.json\":{\"content\":\"{\\\"clones\\\": $CLONES, \\\"views\\\": $VIEWS}\"}}}" \
+            "https://api.github.com/gists/${{ secrets.GIST_ID }}"

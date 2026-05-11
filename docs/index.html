@@ -98,12 +98,28 @@
       text-shadow: 0 0 20px rgba(255,255,255,0.1);
     }
 
-    .sub-stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr; /* Ubah jadi 3 kolom */
-      gap: 10px;
-      margin-bottom: 1.5rem;
-    }
+.sub-stats {
+  display: grid;
+  /* Pakai grid-auto-columns biar lebarnya konsisten tiap item */
+  grid-auto-columns: minmax(120px, 1fr); 
+  /* Pakai column biar dia nambah terus ke kanan, bukan ke bawah */
+  grid-auto-flow: column; 
+  gap: 10px;
+  margin-bottom: 1.5rem;
+  
+  /* Magic touch: aktifin scroll horizontal */
+  overflow-x: auto;
+  padding-bottom: 10px; /* Biar scrollbar-nya nggak nutupin konten */
+  
+  /* Opsional: Biar scroll-nya makin smooth ala-ala aplikasi modern */
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch; 
+}
+
+.sub-stats > div {
+  scroll-snap-align: start;
+}
+
     .stat-box {
       background: #010409;
       border: 1px solid var(--border);
@@ -239,14 +255,19 @@
       <div class="stat-label">Avg. Daily</div>
       <div id="avg-daily" class="stat-value">0</div>
     </div>
+    <div class="stat-box">
+      <div class="stat-label">Velocity</div>
+      <div id="velocity" class="stat-value">0%</div>
+    </div>
     <!-- Slot Baru: Git Clones -->
     <div class="stat-box">
       <div class="stat-label">Git Clones</div>
       <div id="git-clones" class="stat-value">0</div>
     </div>
+    <!-- Slot Baru: Git Clones -->
     <div class="stat-box">
-      <div class="stat-label">Velocity</div>
-      <div id="velocity" class="stat-value">0%</div>
+      <div class="stat-label">Git Viewers</div>
+      <div id="git-viewers" class="stat-value">0</div>
     </div>
   </div>
 
