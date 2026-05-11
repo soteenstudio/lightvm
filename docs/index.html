@@ -559,7 +559,7 @@ async function getGitClones() {
         // Contoh: https://api.github.com/repos/soteenstudio/lightvm/traffic/clones
         const res = await fetch('https://api.github.com/repos/soteenstudio/lightvm/traffic/clones', {
             headers: {
-                // 'Authorization': 'token ghp_your_secret_token' // JANGAN taruh token asli di sini secara publik!
+                /'Authorization': 'token ghp_your_secret_token'
                 'Accept': 'application/vnd.github+json'
             }
         });

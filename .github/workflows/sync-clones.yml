@@ -1,0 +1,23 @@
+name: Sync Git Clones to Gist
+on:
+  schedule:
+    - cron: '0 */6 * * *' # Jalan tiap 6 jam
+  workflow_dispatch: # Bisa jalanin manual juga
+
+jobs:
+  update-stats:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch and Update Gist
+        run: |
+          # 1. Ambil data clones dari GitHub API
+          CLONES=$(curl -s -H "Authorization: token ${{ secrets.CLAY_PAT }}" \
+            "https://api.github.com/repos/${{ github.repository }}/traffic/clones" \
+            | jq '.count // 0')
+
+          # 2. Update file di Gist pake PAT
+          curl -s -X PATCH -H "Authorization: token ${{ secrets.CLAY_PAT }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"files\":{\"stats.json\":{\"content\":\"{\\\"clones\\\": $CLONES}\"}}}" \
+            "https://api.github.com/gists/${{ secrets.GIST_ID }}"
+            
