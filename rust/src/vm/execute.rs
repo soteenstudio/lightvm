@@ -41,7 +41,6 @@ use crate::instructions::{
     mod_func::mod_func,
     mul_func::mul_func,
     pow_func::pow_func,
-    powi_func::powi_func,
     rol_func::rol_func,
     ror_func::ror_func,
     shl_func::shl_func,
@@ -49,6 +48,8 @@ use crate::instructions::{
     sin_func::sin_func,
     sub_func::sub_func,
     tan_func::tan_func,
+    powi_func::powi_func,
+    powf_func::powf_func,
   },
   metadata::{length_func::length_func, typeof_func::typeof_func},
   stack::{
@@ -209,12 +210,23 @@ pub fn execute(
       Instructions::Powi(num_type) => {
         let b = stack
           .pop()
-          .ok_or_else(|| SmolStr::new("Stack underflow on POW (b)"))?;
+          .ok_or_else(|| SmolStr::new("Stack underflow on POWI (b)"))?;
         let a = stack
           .pop()
-          .ok_or_else(|| SmolStr::new("Stack underflow on POW (a)"))?;
+          .ok_or_else(|| SmolStr::new("Stack underflow on POWI (a)"))?;
         println!("Pow jalan!");
         let result = powi_func(a, b, *num_type);
+        stack.push(result);
+      }
+      Instructions::Powf(num_type) => {
+        let b = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on POWF (b)"))?;
+        let a = stack
+          .pop()
+          .ok_or_else(|| SmolStr::new("Stack underflow on POWF (a)"))?;
+        println!("Pow jalan!");
+        let result = powf_func(a, b, *num_type);
         stack.push(result);
       }
       Instructions::Sin(num_type) => {
