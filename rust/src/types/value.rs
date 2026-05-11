@@ -14,7 +14,7 @@ use half::f16;
 use serde::{Deserialize, Serialize};
 use smol_str::SmolStr;
 use std::sync::Arc;
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub enum Value {
   Int16(i16),
   Int32(i32),
@@ -27,6 +27,7 @@ pub enum Value {
   Object(Arc<AHashMap<SmolStr, Value>>),
   Bool(bool),
   Null,
+  #[default]
   Undefined,
   Marker(SmolStr),
 }

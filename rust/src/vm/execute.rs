@@ -38,7 +38,6 @@ use crate::instructions::{
     cos_func::cos_func,
     div_func::div_func,
     inc_dec::{dec_func, inc_func},
-    mod_func::mod_func,
     mul_func::mul_func,
     pow_func::pow_func,
     powf_func::powf_func,
@@ -100,134 +99,131 @@ pub fn execute(
         let b = stack
           .pop()
           .ok_or_else(|| SmolStr::new("Stack underflow on CONCAT (b)"))?;
-        let a = stack
-          .pop()
+        let a_ref = stack
+          .last_mut()
           .ok_or_else(|| SmolStr::new("Stack underflow on CONCAT (a)"))?;
-        let result = concat_func(&a, &b);
-        stack.push(result);
+        *a_ref = concat_func(a_ref, &b);
       }
       Instructions::Add(num_type) => {
         let b = stack
           .pop()
           .ok_or_else(|| SmolStr::new("Stack underflow on ADD (b)"))?;
-        let a = stack
-          .pop()
+        let a_ref = stack
+          .last_mut()
           .ok_or_else(|| SmolStr::new("Stack underflow on ADD (a)"))?;
-        let result = add_func(a, b, *num_type);
-        stack.push(result);
+        let a = std::mem::take(a_ref);
+        *a_ref = add_func(a, b, *num_type);
       }
       Instructions::Sub(num_type) => {
         let b = stack
           .pop()
           .ok_or_else(|| SmolStr::new("Stack underflow on SUB (b)"))?;
-        let a = stack
-          .pop()
+        let a_ref = stack
+          .last_mut()
           .ok_or_else(|| SmolStr::new("Stack underflow on SUB (a)"))?;
-        let result = sub_func(a, b, *num_type);
-        stack.push(result);
+        let a = std::mem::take(a_ref);
+        *a_ref = sub_func(a, b, *num_type);
       }
       Instructions::Mul(num_type) => {
         let b = stack
           .pop()
           .ok_or_else(|| SmolStr::new("Stack underflow on MUL (b)"))?;
-        let a = stack
-          .pop()
+        let a_ref = stack
+          .last_mut()
           .ok_or_else(|| SmolStr::new("Stack underflow on MUL (a)"))?;
-        let result = mul_func(a, b, *num_type);
-        stack.push(result);
+        let a = std::mem::take(a_ref);
+        *a_ref = mul_func(a, b, *num_type);
       }
       Instructions::Div(num_type) => {
         let b = stack
           .pop()
           .ok_or_else(|| SmolStr::new("Stack underflow on DIV (b)"))?;
-        let a = stack
-          .pop()
+        let a_ref = stack
+          .last_mut()
           .ok_or_else(|| SmolStr::new("Stack underflow on DIV (a)"))?;
-        let result = div_func(a, b, *num_type);
-        stack.push(result);
+        let a = std::mem::take(a_ref);
+        *a_ref = div_func(a, b, *num_type);
       }
       Instructions::Mod(num_type) => {
         let b = stack
           .pop()
           .ok_or_else(|| SmolStr::new("Stack underflow on MOD (b)"))?;
-        let a = stack
-          .pop()
+        let a_ref = stack
+          .last_mut()
           .ok_or_else(|| SmolStr::new("Stack underflow on MOD (a)"))?;
-        let result = mod_func(a, b, *num_type);
-        stack.push(result);
+        let a = std::mem::take(a_ref);
+        *a_ref = div_func(a, b, *num_type);
       }
       Instructions::Shl(num_type) => {
         let b = stack
           .pop()
           .ok_or_else(|| SmolStr::new("Stack underflow on SHL (b)"))?;
-        let a = stack
-          .pop()
+        let a_ref = stack
+          .last_mut()
           .ok_or_else(|| SmolStr::new("Stack underflow on SHL (a)"))?;
-        let result = shl_func(a, b, *num_type);
-        stack.push(result);
+        let a = std::mem::take(a_ref);
+        *a_ref = shl_func(a, b, *num_type);
       }
       Instructions::Shr(num_type) => {
         let b = stack
           .pop()
           .ok_or_else(|| SmolStr::new("Stack underflow on SHR (b)"))?;
-        let a = stack
-          .pop()
+        let a_ref = stack
+          .last_mut()
           .ok_or_else(|| SmolStr::new("Stack underflow on SHR (a)"))?;
-        let result = shr_func(a, b, *num_type);
-        stack.push(result);
+        let a = std::mem::take(a_ref);
+        *a_ref = shr_func(a, b, *num_type);
       }
       Instructions::Ror(num_type) => {
         let b = stack
           .pop()
           .ok_or_else(|| SmolStr::new("Stack underflow on ROR (b)"))?;
-        let a = stack
-          .pop()
+        let a_ref = stack
+          .last_mut()
           .ok_or_else(|| SmolStr::new("Stack underflow on ROR (a)"))?;
-        let result = ror_func(a, b, *num_type);
-        stack.push(result);
+        let a = std::mem::take(a_ref);
+        *a_ref = ror_func(a, b, *num_type);
       }
       Instructions::Rol(num_type) => {
         let b = stack
           .pop()
           .ok_or_else(|| SmolStr::new("Stack underflow on ROL (b)"))?;
-        let a = stack
-          .pop()
+        let a_ref = stack
+          .last_mut()
           .ok_or_else(|| SmolStr::new("Stack underflow on ROL (a)"))?;
-        let result = rol_func(a, b, *num_type);
-        stack.push(result);
+        let a = std::mem::take(a_ref);
+        *a_ref = rol_func(a, b, *num_type);
       }
       Instructions::Pow(num_type) => {
         let b = stack
           .pop()
           .ok_or_else(|| SmolStr::new("Stack underflow on POW (b)"))?;
-        let a = stack
-          .pop()
+        let a_ref = stack
+          .last_mut()
           .ok_or_else(|| SmolStr::new("Stack underflow on POW (a)"))?;
         println!("Pow jalan!");
-        let result = pow_func(a, b, *num_type);
-        stack.push(result);
+        let a = std::mem::take(a_ref);
+        *a_ref = pow_func(a, b, *num_type);
       }
       Instructions::Powi(num_type) => {
         let b = stack
           .pop()
           .ok_or_else(|| SmolStr::new("Stack underflow on POWI (b)"))?;
-        let a = stack
-          .pop()
+        let a_ref = stack
+          .last_mut()
           .ok_or_else(|| SmolStr::new("Stack underflow on POWI (a)"))?;
-        println!("Pow jalan!");
-        let result = powi_func(a, b, *num_type);
-        stack.push(result);
+        let a = std::mem::take(a_ref);
+        *a_ref = powi_func(a, b, *num_type);
       }
       Instructions::Powf(num_type) => {
         let b = stack
           .pop()
           .ok_or_else(|| SmolStr::new("Stack underflow on POWF (b)"))?;
-        let a = stack
-          .pop()
+        let a_ref = stack
+          .last_mut()
           .ok_or_else(|| SmolStr::new("Stack underflow on POWF (a)"))?;
-        println!("Pow jalan!");
-        let result = powf_func(a, b, *num_type);
-        stack.push(result);
+        let a = std::mem::take(a_ref);
+        *a_ref = powf_func(a, b, *num_type);
       }
       Instructions::Sin(num_type) => {
         let val = stack
