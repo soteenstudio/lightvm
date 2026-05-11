@@ -16,7 +16,7 @@ jobs:
             | jq '.count // 0')
 
           # 2. Update file di Gist pake PAT
-          curl -s -X PATCH -H "Authorization: token ${{ secrets.CLAY_PAT }}" \
+          curl -s -X PATCH -H "Authorization: token ${{ secrets.LIGHTVM_PAT }}" \
             -H "Content-Type: application/json" \
             -d "{\"files\":{\"stats.json\":{\"content\":\"{\\\"clones\\\": $CLONES}\"}}}" \
             "https://api.github.com/gists/${{ secrets.GIST_ID }}"

@@ -551,32 +551,25 @@ function renderData(allResults) {
       }
     });
   }
-
 async function getGitClones() {
     const clonesEl = document.getElementById('git-clones');
+    const GIST_ID = 'ffdac0710a7582523156d8e2638724fe'; // Ganti pake ID Gist asli
+    
     try {
-        // Ganti URL ini dengan endpoint API atau proxy-mu
-        // Contoh: https://api.github.com/repos/soteenstudio/lightvm/traffic/clones
-        const res = await fetch('https://api.github.com/repos/soteenstudio/lightvm/traffic/clones', {
-            headers: {
-                /'Authorization': 'token ghp_your_secret_token'
-                'Accept': 'application/vnd.github+json'
-            }
-        });
+        // Pake raw URL dari gist
+        const res = await fetch(`https://gist.githubusercontent.com/raw/${GIST_ID}/stats.json`);
         const data = await res.json();
         
-        // GitHub ngasih total clones (termasuk double dari orang yang sama) 
-        // atau 'uniques' (orang yang beda-beda).
-        const totalClones = data.count || 0; 
+        const totalClones = data.clones || 0; 
         
         animateValue(clonesEl, 0, totalClones, 800);
         return totalClones;
     } catch (e) {
+        console.error("Gist fetch failed", e);
         clonesEl.innerText = "N/A";
         return 0;
     }
 }
-
 
   getStars();
   getDownloads();
