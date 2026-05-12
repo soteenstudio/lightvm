@@ -16,14 +16,20 @@ pub fn eliminate_redundant_loads(bytecode: Vec<Instructions>) -> Vec<Instruction
     return bytecode;
   }
   let mut optimized = Vec::with_capacity(bytecode.len());
+  let mut last_origin: Option<Instructions> = None;
   for instr in bytecode {
     let is_redundant = if let Some(last) = optimized.last() {
-      match (last, &instr) {
-        (Instructions::Get(a), Instructions::Get(b)) if a == b => true,
+      let effective_last = if matches!(last, Instructions::Dup) {
+        last_origin.as_ref().unwrap_or(last)
+      } else {
+        last
+      };
+      match (effective_last, &instr) {
         (Instructions::GetIdx(a), Instructions::GetIdx(b)) if a == b => true,
-        (Instructions::Val(a), Instructions::Val(b)) if a == b => true,
-        (Instructions::ValIdx(a), Instructions::ValIdx(b)) if a == b => true,
+        (Instructions::Get(a), Instructions::Get(b)) if a == b => true,
         (Instructions::Push(v1), Instructions::Push(v2)) if v1 == v2 => true,
+        (Instructions::ValIdx(a), Instructions::GetIdx(b)) if a == b => true,
+        (Instructions::Val(a), Instructions::Get(b)) if a == b => true,
         _ => false,
       }
     } else {
@@ -32,6 +38,7 @@ pub fn eliminate_redundant_loads(bytecode: Vec<Instructions>) -> Vec<Instruction
     if is_redundant {
       optimized.push(Instructions::Dup);
     } else {
+      last_origin = Some(instr.clone());
       optimized.push(instr);
     }
   }
