@@ -54,7 +54,10 @@ LightVM isn't just a simple interpreter. Before execution, your bytecode undergo
  * __Strength Reduction__: Replaces "heavy" operations with lighter ones, such as converting multiplication by powers of two into bitwise Shl (Shift Left).
  * __Dead Store Elimination__: Analyzes variable usage and automatically removes Push, Set, or Inc operations that don't contribute to the final program state.
  * __Dead Loop Elimination__: Identifies and prunes "pure" loops that have no side effects (no I/O, calls, or returns), preventing unnecessary CPU cycles.
+ * __Redundant Load Elimination__: Detects consecutive attempts to load identical values or variables onto the stack and replaces redundant operations with a high-performance Dup instruction to minimize memory access overhead.
  * __Jump Optimization__: Detects and removes redundant Jump instructions that point to the very next line of code.
+ * __Jump Threading__: Optimizes control flow by collapsing chains of redirection, where a jump leads directly to another jump, ensuring the instruction pointer bypasses intermediate hops to reach the final destination immediately.
+
 ## Getting Started
 ### Installation
 

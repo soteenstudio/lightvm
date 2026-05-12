@@ -13,10 +13,12 @@ use crate::optimizer::{
   eliminate_dead_stores::eliminate_dead_stores,
   eliminate_redundant_loads::eliminate_redundant_loads, fold_constants::fold_constants,
   fold_conversions::fold_conversions, jump_threading::jump_threading,
+  strength_reduction::strength_reduction,
 };
 use crate::types::instructions::Instructions;
 use std::borrow::Cow;
 pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
+  strength_reduction(&mut bytecode);
   fold_constants(&mut bytecode);
   fold_conversions(&mut bytecode);
   jump_threading(&mut bytecode);
