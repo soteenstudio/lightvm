@@ -29,6 +29,7 @@ pub fn typeof_func(stack: &mut [Value]) -> Result<(), SmolStr> {
       Value::Array(_) => ("Array", false),
       Value::Null => ("Null", true),
       Value::Undefined => ("Undefined", true),
+      Value::NaN => ("NaN", true),
       Value::Marker(_) => ("Marker", false),
     };
     let mut metadata = AHashMap::with_capacity(2);

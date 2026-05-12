@@ -23,6 +23,6 @@ pub fn add_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Hlf => Value::Float16(add_f16in(a.as_f32(), b.as_f32())),
     PrimitiveTypes::Flt => Value::Float32(add_f32in(a.as_f32(), b.as_f32())),
     PrimitiveTypes::Dbl => Value::Float64(add_f64in(a.as_f64(), b.as_f64())),
-    _ => Value::Bool(false),
+    _ => Value::NaN,
   }
 }

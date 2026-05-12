@@ -18,6 +18,6 @@ pub fn sin_func(a: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Hlf => Value::Float16(sin_f16in(a.as_f16())),
     PrimitiveTypes::Flt => Value::Float32(sin_f32in(a.as_f32())),
     PrimitiveTypes::Dbl => Value::Float64(sin_f64in(a.as_f64())),
-    _ => Value::Undefined,
+    _ => Value::NaN,
   }
 }

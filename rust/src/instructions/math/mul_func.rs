@@ -23,6 +23,6 @@ pub fn mul_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Hlf => Value::Float16(mul_f16in(a.as_f32(), b.as_f32())),
     PrimitiveTypes::Flt => Value::Float32(mul_f32in(a.as_f32(), b.as_f32())),
     PrimitiveTypes::Dbl => Value::Float64(mul_f64in(a.as_f64(), b.as_f64())),
-    _ => Value::Bool(false),
+    _ => Value::NaN,
   }
 }

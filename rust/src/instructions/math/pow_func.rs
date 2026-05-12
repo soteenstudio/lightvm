@@ -19,6 +19,6 @@ pub fn pow_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Int => Value::Int32(pow_i32in(a.as_i32(), b.as_i32())),
     PrimitiveTypes::Lng => Value::Int64(pow_i64in(a.as_i64(), b.as_i64())),
     PrimitiveTypes::Oct => Value::Int128(pow_i128in(a.as_i128(), b.as_i128())),
-    _ => Value::Undefined,
+    _ => Value::NaN,
   }
 }

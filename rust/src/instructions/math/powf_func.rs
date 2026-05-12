@@ -18,6 +18,6 @@ pub fn powf_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Hlf => Value::Float16(powf_f16in(a.as_f16(), b.as_f16())),
     PrimitiveTypes::Flt => Value::Float32(powf_f32in(a.as_f32(), b.as_f32())),
     PrimitiveTypes::Dbl => Value::Float64(powf_f64in(a.as_f64(), b.as_f64())),
-    _ => Value::Undefined,
+    _ => Value::NaN,
   }
 }

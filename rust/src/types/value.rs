@@ -30,6 +30,7 @@ pub enum Value {
   Null,
   #[default]
   Undefined,
+  NaN,
   Marker(SmolStr),
 }
 #[derive(Clone)]
@@ -59,7 +60,7 @@ impl Value {
       Value::Float32(v) => *v != 0.0 && !v.is_nan(),
       Value::Float64(v) => *v != 0.0 && !v.is_nan(),
       Value::String(v) => !v.is_empty(),
-      Value::Null | Value::Undefined => false,
+      Value::Null | Value::Undefined | Value::NaN => false,
       Value::Marker(_) => true,
       Value::Array(_) | Value::Object(_) => true,
     }
@@ -183,6 +184,7 @@ impl Value {
       Value::Undefined => SmolStr::new("undefined"),
       Value::Marker(v) => v.clone(),
       Value::Array(_) => SmolStr::new_static("[array]"),
+      Value::NaN => SmolStr::new_static("NaN"),
       Value::Object(_) => SmolStr::new_static("[object]"),
     }
   }
@@ -201,6 +203,7 @@ impl Value {
       Value::Bool(_) => "bool",
       Value::Null => "null",
       Value::Undefined => "undefined",
+      Value::NaN => "nan",
       Value::Marker(_) => "marker",
     }
   }
@@ -220,6 +223,7 @@ impl fmt::Display for Value {
       Value::String(v) => write!(f, "{}", v),
       Value::Null => write!(f, "null"),
       Value::Undefined => write!(f, "undefined"),
+      Value::NaN => write!(f, "NaN"),
       Value::Marker(v) => write!(f, "<Marker: {}>", v),
       Value::Array(v) => write!(f, "[Array({})]", v.len()),
       Value::Object(o) => write!(f, "[Object({})]", o.len()),
