@@ -59,6 +59,18 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
           i += 1;
         }
       }
+      (Instructions::Push(v), Instructions::ToOcta) => {
+        let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
+        crate::instructions::conversion::to_octa_func::to_octa_func(&mut tmp_stack);
+        if let Some(converted_val) = tmp_stack.pop() {
+          bytecode[i] = Instructions::Push(converted_val);
+          bytecode[i + 1] = Instructions::Nop;
+          i += 2;
+        } else {
+          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
+          i += 1;
+        }
+      }
       (Instructions::Push(v), Instructions::ToHalf) => {
         let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
         crate::instructions::conversion::to_half_func::to_half_func(&mut tmp_stack);

@@ -105,6 +105,7 @@ pub fn eliminate_dead_stores<'a>(
       | Instructions::ToShort
       | Instructions::ToInteger
       | Instructions::ToLong
+      | Instructions::ToOcta
       | Instructions::ToHalf
       | Instructions::ToFloat
       | Instructions::ToDouble
