@@ -315,8 +315,11 @@ Instructions for calculations. Note that for optimization, these instructions re
 | and / or  | -          | Boolean logic operations (``&&`` / ``\|\|``) |
 | xor       | -          | Bitwise __Exclusive OR__ operation between two values |
 | not       | -          | Bitwise __NOT__ (Inversion) operation on a single value |
-> [!NOTE]
-> **Specific Opcode**: `shl`, `shr`, `rol`, and `ror` only accepts `sht`, `int`, and `lng` types from `PrimitiveTypes`.
+| pow | type | General power operation (x^y) |
+| powi | type | Power with integer exponent |
+| powf | type | Power with floating point exponent |
+| sin / cos | type | Sine or Cosine trigonometric operation |
+| tan | type | Tangent trigonometric operation |
 
 3. Control Flow & Function  
 Instructions for managing program flow, looping, and function calls.
@@ -350,6 +353,7 @@ For those of you who want to force a certain data type to ensure consistent perf
 | to_short   | Change value to Short (16-bit) |
 | to_integer | Change value to Integer (32-bit) |
 | to_long    | Change the value to Long (64-bit) |
+| to_octa | Change value to Octa (128-bit Integer) |
 | to_half    | Change value to Half-precision (16-bit Float) |
 | to_float   | Change value to Float (32-bit) |
 | to_double  | Change the value to Double (64-bit) |
@@ -384,6 +388,15 @@ Instructions for standard output and more specific iteration control.
 | println | - | Prints the top value of the stack to the console with a newline |
 | break | target_ip | Stops the loop and jumps to the specified target_ip |
 | nop | - | Empty instructions (usually for placeholders or alignment) |
+
+9. Advanced Stack & Memory Management
+Special instructions for low-level control of the VM memory footprint in real-time.
+
+| Opcode | Arguments | Description |
+|--------|-----------|-------------|
+| shrink | - | Reduces the capacity of the stack to fit its current length |
+| truncate | - | Clear/reset the stack elements efficiently |
+
 ## Supported Architectures
 LightVM supports a wide range of platforms and architectures to ensure maximum operational flexibility. Here's the current compatibility list:
 | OS / Runtime | Architecture | Toolchain | Rust | Node.js |
