@@ -9,10 +9,10 @@
  */
 
 use crate::optimizer::{
-  analyze_usage::analyze_usage, eliminate_redundant_loads::eliminate_redundant_loads,
-  eliminate_dead_loops::eliminate_dead_loops, eliminate_dead_stores::eliminate_dead_stores,
-  fold_constants::fold_constants, fold_conversions::fold_conversions,
-  jump_threading::jump_threading,
+  analyze_usage::analyze_usage, eliminate_dead_loops::eliminate_dead_loops,
+  eliminate_dead_stores::eliminate_dead_stores,
+  eliminate_redundant_loads::eliminate_redundant_loads, fold_constants::fold_constants,
+  fold_conversions::fold_conversions, jump_threading::jump_threading,
 };
 use crate::types::instructions::Instructions;
 use std::borrow::Cow;

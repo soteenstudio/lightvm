@@ -296,7 +296,7 @@ A group of instructions for basic data manipulation and memory (variable) alloca
 | get    | name      | Take the contents of the ``name`` variable and push it onto the stack |
 | dup    | -         | Duplicate the top value in the stack |
 2. Arithmetic & Logic  
-Instructions for calculations. Note that for optimization, these instructions require a ``PrimitiveTypes`` (``int``, ``flt``, ``lng``, ``dbl``) to prevent the VM from guessing the data type during execution.
+Instructions for calculations. Note that for optimization, these instructions require a ``PrimitiveTypes`` (``sht``, ``hlf``, ``int``, ``flt``, ``lng``, ``dbl``) to prevent the VM from guessing the data type during execution.
 
 | Opcode    | Arguments  | Description |
 |-----------|------------|-------------|
