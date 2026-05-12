@@ -24,8 +24,6 @@ pub fn eliminate_redundant_loads(bytecode: Vec<Instructions>) -> Vec<Instruction
         (Instructions::Val(a), Instructions::Val(b)) if a == b => true,
         (Instructions::ValIdx(a), Instructions::ValIdx(b)) if a == b => true,
         (Instructions::Push(v1), Instructions::Push(v2)) if v1 == v2 => true,
-        (Instructions::Set(a), Instructions::Get(b)) if a == b => true,
-        (Instructions::SetIdx(a), Instructions::GetIdx(b)) if a == b => true,
         _ => false,
       }
     } else {

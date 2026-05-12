@@ -9,9 +9,10 @@
  */
 
 use crate::optimizer::{
-  analyze_usage::analyze_usage, eliminate_dead_loops::eliminate_dead_loops,
-  eliminate_dead_stores::eliminate_dead_stores, fold_constants::fold_constants,
-  fold_conversions::fold_conversions, jump_threading::jump_threading,
+  analyze_usage::analyze_usage, eliminate_redundant_loads::eliminate_redundant_loads,
+  eliminate_dead_loops::eliminate_dead_loops, eliminate_dead_stores::eliminate_dead_stores,
+  fold_constants::fold_constants, fold_conversions::fold_conversions,
+  jump_threading::jump_threading,
 };
 use crate::types::instructions::Instructions;
 use std::borrow::Cow;
@@ -26,6 +27,7 @@ pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
     .map(Cow::into_owned)
     .collect();
   bytecode = eliminate_dead_loops(bytecode);
+  bytecode = eliminate_redundant_loads(bytecode);
   let mut j = 0;
   while j < bytecode.len() {
     if let Instructions::Jump(target) = bytecode[j] {
