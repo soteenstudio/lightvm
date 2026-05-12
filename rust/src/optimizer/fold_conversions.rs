@@ -26,79 +26,134 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
       (Instructions::Push(v), Instructions::ToShort) => {
         let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
         crate::instructions::conversion::to_short_func::to_short_func(&mut tmp_stack);
-        bytecode[i] = Instructions::Push(tmp_stack.pop().unwrap());
-        bytecode[i + 1] = Instructions::Nop;
-        i += 2;
+        if let Some(converted_val) = tmp_stack.pop() {
+          bytecode[i] = Instructions::Push(converted_val);
+          bytecode[i + 1] = Instructions::Nop;
+          i += 2;
+        } else {
+          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
+          i += 1;
+        }
       }
       (Instructions::Push(v), Instructions::ToInteger) => {
         let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
         crate::instructions::conversion::to_integer_func::to_integer_func(&mut tmp_stack);
-        bytecode[i] = Instructions::Push(tmp_stack.pop().unwrap());
-        bytecode[i + 1] = Instructions::Nop;
-        i += 2;
+        if let Some(converted_val) = tmp_stack.pop() {
+          bytecode[i] = Instructions::Push(converted_val);
+          bytecode[i + 1] = Instructions::Nop;
+          i += 2;
+        } else {
+          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
+          i += 1;
+        }
       }
       (Instructions::Push(v), Instructions::ToLong) => {
         let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
         crate::instructions::conversion::to_long_func::to_long_func(&mut tmp_stack);
-        bytecode[i] = Instructions::Push(tmp_stack.pop().unwrap());
-        bytecode[i + 1] = Instructions::Nop;
-        i += 2;
+        if let Some(converted_val) = tmp_stack.pop() {
+          bytecode[i] = Instructions::Push(converted_val);
+          bytecode[i + 1] = Instructions::Nop;
+          i += 2;
+        } else {
+          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
+          i += 1;
+        }
       }
       (Instructions::Push(v), Instructions::ToHalf) => {
         let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
         crate::instructions::conversion::to_half_func::to_half_func(&mut tmp_stack);
-        bytecode[i] = Instructions::Push(tmp_stack.pop().unwrap());
-        bytecode[i + 1] = Instructions::Nop;
-        i += 2;
+        if let Some(converted_val) = tmp_stack.pop() {
+          bytecode[i] = Instructions::Push(converted_val);
+          bytecode[i + 1] = Instructions::Nop;
+          i += 2;
+        } else {
+          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
+          i += 1;
+        }
       }
       (Instructions::Push(v), Instructions::ToFloat) => {
         let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
         crate::instructions::conversion::to_float_func::to_float_func(&mut tmp_stack);
-        bytecode[i] = Instructions::Push(tmp_stack.pop().unwrap());
-        bytecode[i + 1] = Instructions::Nop;
-        i += 2;
+        if let Some(converted_val) = tmp_stack.pop() {
+          bytecode[i] = Instructions::Push(converted_val);
+          bytecode[i + 1] = Instructions::Nop;
+          i += 2;
+        } else {
+          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
+          i += 1;
+        }
       }
       (Instructions::Push(v), Instructions::ToDouble) => {
         let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
         crate::instructions::conversion::to_double_func::to_double_func(&mut tmp_stack);
-        bytecode[i] = Instructions::Push(tmp_stack.pop().unwrap());
-        bytecode[i + 1] = Instructions::Nop;
-        i += 2;
+        if let Some(converted_val) = tmp_stack.pop() {
+          bytecode[i] = Instructions::Push(converted_val);
+          bytecode[i + 1] = Instructions::Nop;
+          i += 2;
+        } else {
+          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
+          i += 1;
+        }
       }
       (Instructions::Push(v), Instructions::ToString) => {
         let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
         crate::instructions::conversion::to_string_func::to_string_func(&mut tmp_stack);
-        bytecode[i] = Instructions::Push(tmp_stack.pop().unwrap());
-        bytecode[i + 1] = Instructions::Nop;
-        i += 2;
+        if let Some(converted_val) = tmp_stack.pop() {
+          bytecode[i] = Instructions::Push(converted_val);
+          bytecode[i + 1] = Instructions::Nop;
+          i += 2;
+        } else {
+          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
+          i += 1;
+        }
       }
       (Instructions::Push(v), Instructions::TypeOf) => {
-        let mut tmp = vec![std::mem::replace(v, Value::Null)];
-        let _ = crate::instructions::metadata::typeof_func::typeof_func(&mut tmp);
-        bytecode[i] = Instructions::Push(tmp.pop().unwrap());
-        bytecode[i + 1] = Instructions::Nop;
-        i += 2;
+        let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
+        crate::instructions::metadata::typeof_func(&mut tmp_stack);
+        if let Some(converted_val) = tmp_stack.pop() {
+          bytecode[i] = Instructions::Push(converted_val);
+          bytecode[i + 1] = Instructions::Nop;
+          i += 2;
+        } else {
+          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
+          i += 1;
+        }
       }
-      (Instructions::Push(v), Instructions::Sin(t)) => {
-        let res =
-          crate::instructions::math::sin_func::sin_func(std::mem::replace(v, Value::Null), *t);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        i += 2;
+      (Instructions::Push(v), Instructions::Sin) => {
+        let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
+        crate::instructions::math::sin_func::sin_func(&mut tmp_stack);
+        if let Some(converted_val) = tmp_stack.pop() {
+          bytecode[i] = Instructions::Push(converted_val);
+          bytecode[i + 1] = Instructions::Nop;
+          i += 2;
+        } else {
+          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
+          i += 1;
+        }
       }
-      (Instructions::Push(v), Instructions::Cos(t)) => {
-        let res =
-          crate::instructions::math::cos_func::cos_func(std::mem::replace(v, Value::Null), *t);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        i += 2;
+      (Instructions::Push(v), Instructions::Cos) => {
+        let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
+        crate::instructions::math::cos_func::cos_func(&mut tmp_stack);
+        if let Some(converted_val) = tmp_stack.pop() {
+          bytecode[i] = Instructions::Push(converted_val);
+          bytecode[i + 1] = Instructions::Nop;
+          i += 2;
+        } else {
+          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
+          i += 1;
+        }
       }
-      (Instructions::Push(v), Instructions::Tan(t)) => {
-        let res =
-          crate::instructions::math::tan_func::tan_func(std::mem::replace(v, Value::Null), *t);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        i += 2;
+      (Instructions::Push(v), Instructions::Tan) => {
+        let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
+        crate::instructions::math::tan_func::tan_func(&mut tmp_stack);
+        if let Some(converted_val) = tmp_stack.pop() {
+          bytecode[i] = Instructions::Push(converted_val);
+          bytecode[i + 1] = Instructions::Nop;
+          i += 2;
+        } else {
+          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
+          i += 1;
+        }
       }
       _ => {
         bytecode[i] = instr1;
