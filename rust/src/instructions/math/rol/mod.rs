@@ -8,6 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
+pub mod rol_i128in;
 pub mod rol_i16in;
 pub mod rol_i32in;
 pub mod rol_i64in;

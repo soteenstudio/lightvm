@@ -23,5 +23,6 @@ pub fn eq_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Flt => Value::Bool(eq_f32in(a.as_f32(), b.as_f32())),
     PrimitiveTypes::Hlf => Value::Bool(eq_f16in(a.as_f32(), b.as_f32())),
     PrimitiveTypes::Str => Value::Bool(a.as_string() == b.as_string()),
+    _ => Value::Bool(false),
   }
 }

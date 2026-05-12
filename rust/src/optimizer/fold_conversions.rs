@@ -109,7 +109,7 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
       }
       (Instructions::Push(v), Instructions::TypeOf) => {
         let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
-        crate::instructions::metadata::typeof_func(&mut tmp_stack);
+        crate::instructions::metadata::typeof_func::typeof_func(&mut tmp_stack);
         if let Some(converted_val) = tmp_stack.pop() {
           bytecode[i] = Instructions::Push(converted_val);
           bytecode[i + 1] = Instructions::Nop;
@@ -119,9 +119,10 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
           i += 1;
         }
       }
-      (Instructions::Push(v), Instructions::Sin) => {
+      (Instructions::Push(v), Instructions::Sin(t)) => {
         let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
-        crate::instructions::math::sin_func::sin_func(&mut tmp_stack);
+        let res = crate::instructions::math::sin_func::sin_func(tmp_stack.pop().unwrap(), *t);
+        tmp_stack.push(res);
         if let Some(converted_val) = tmp_stack.pop() {
           bytecode[i] = Instructions::Push(converted_val);
           bytecode[i + 1] = Instructions::Nop;
@@ -131,9 +132,10 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
           i += 1;
         }
       }
-      (Instructions::Push(v), Instructions::Cos) => {
+      (Instructions::Push(v), Instructions::Cos(t)) => {
         let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
-        crate::instructions::math::cos_func::cos_func(&mut tmp_stack);
+        let res = crate::instructions::math::cos_func::cos_func(tmp_stack.pop().unwrap(), *t);
+        tmp_stack.push(res);
         if let Some(converted_val) = tmp_stack.pop() {
           bytecode[i] = Instructions::Push(converted_val);
           bytecode[i + 1] = Instructions::Nop;
@@ -143,9 +145,10 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
           i += 1;
         }
       }
-      (Instructions::Push(v), Instructions::Tan) => {
+      (Instructions::Push(v), Instructions::Tan(t)) => {
         let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
-        crate::instructions::math::tan_func::tan_func(&mut tmp_stack);
+        let res = crate::instructions::math::tan_func::tan_func(tmp_stack.pop().unwrap(), *t);
+        tmp_stack.push(res);
         if let Some(converted_val) = tmp_stack.pop() {
           bytecode[i] = Instructions::Push(converted_val);
           bytecode[i + 1] = Instructions::Nop;

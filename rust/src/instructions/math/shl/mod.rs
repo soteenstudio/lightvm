@@ -8,6 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
+pub mod shl_i128in;
 pub mod shl_i16in;
 pub mod shl_i32in;
 pub mod shl_i64in;

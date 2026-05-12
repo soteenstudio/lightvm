@@ -11,6 +11,7 @@
 pub mod div_f16in;
 pub mod div_f32in;
 pub mod div_f64in;
+pub mod div_i128in;
 pub mod div_i16in;
 pub mod div_i32in;
 pub mod div_i64in;

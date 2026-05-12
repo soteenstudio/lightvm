@@ -8,15 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use serde::{Deserialize, Serialize};
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-pub enum PrimitiveTypes {
-  Sht,
-  Int,
-  Lng,
-  Oct,
-  Hlf,
-  Flt,
-  Dbl,
-  Str,
+#[inline(always)]
+pub fn mod_i128in(a: i128, b: i128) -> i128 {
+  a % b
 }

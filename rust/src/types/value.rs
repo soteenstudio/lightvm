@@ -19,6 +19,7 @@ pub enum Value {
   Int16(i16),
   Int32(i32),
   Int64(i64),
+  Int128(i128),
   Float16(f16),
   Float32(f32),
   Float64(f64),
@@ -53,6 +54,7 @@ impl Value {
       Value::Int16(v) => *v != 0,
       Value::Int32(v) => *v != 0,
       Value::Int64(v) => *v != 0,
+      Value::Int128(v) => *v != 0,
       Value::Float16(v) => *v != half::f16::ZERO && !v.is_nan(),
       Value::Float32(v) => *v != 0.0 && !v.is_nan(),
       Value::Float64(v) => *v != 0.0 && !v.is_nan(),
@@ -80,6 +82,7 @@ impl Value {
       Value::Int16(v) => *v,
       Value::Int32(v) => *v as i16,
       Value::Int64(v) => *v as i16,
+      Value::Int128(v) => *v as i16,
       Value::Float16(v) => v.to_f32() as i16,
       Value::Float32(v) => *v as i16,
       Value::Float64(v) => *v as i16,
@@ -92,6 +95,7 @@ impl Value {
       Value::Int32(v) => *v,
       Value::Int16(v) => *v as i32,
       Value::Int64(v) => *v as i32,
+      Value::Int128(v) => *v as i32,
       Value::Float16(v) => v.to_f32() as i32,
       Value::Float32(v) => *v as i32,
       Value::Float64(v) => *v as i32,
@@ -104,9 +108,23 @@ impl Value {
       Value::Int64(v) => *v,
       Value::Int16(v) => *v as i64,
       Value::Int32(v) => *v as i64,
+      Value::Int128(v) => *v as i64,
       Value::Float16(v) => v.to_f64() as i64,
       Value::Float32(v) => *v as i64,
       Value::Float64(v) => *v as i64,
+      _ => 0,
+    }
+  }
+  #[inline(always)]
+  pub fn as_i128(&self) -> i128 {
+    match self {
+      Value::Int128(v) => *v,
+      Value::Int16(v) => *v as i128,
+      Value::Int32(v) => *v as i128,
+      Value::Int64(v) => *v as i128,
+      Value::Float16(v) => v.to_f64() as i128,
+      Value::Float32(v) => *v as i128,
+      Value::Float64(v) => *v as i128,
       _ => 0,
     }
   }
@@ -119,6 +137,7 @@ impl Value {
       Value::Int16(v) => f16::from_f32(*v as f32),
       Value::Int32(v) => f16::from_f32(*v as f32),
       Value::Int64(v) => f16::from_f32(*v as f32),
+      Value::Int128(v) => f16::from_f32(*v as f32),
       _ => f16::ZERO,
     }
   }
@@ -131,6 +150,7 @@ impl Value {
       Value::Int16(v) => *v as f32,
       Value::Int32(v) => *v as f32,
       Value::Int64(v) => *v as f32,
+      Value::Int128(v) => *v as f32,
       _ => 0.0,
     }
   }
@@ -143,6 +163,7 @@ impl Value {
       Value::Int16(v) => *v as f64,
       Value::Int32(v) => *v as f64,
       Value::Int64(v) => *v as f64,
+      Value::Int128(v) => *v as f64,
       _ => 0.0,
     }
   }
@@ -153,6 +174,7 @@ impl Value {
       Value::Int16(v) => int_to_smol(*v as i64),
       Value::Int32(v) => int_to_smol(*v as i64),
       Value::Int64(v) => int_to_smol(*v),
+      Value::Int128(v) => int_to_smol(*v as i64),
       Value::Float16(v) => float_to_smol(v.to_f64()),
       Value::Float32(v) => float_to_smol(*v as f64),
       Value::Float64(v) => float_to_smol(*v),
@@ -169,6 +191,7 @@ impl Value {
       Value::Int16(_) => "int16",
       Value::Int32(_) => "int32",
       Value::Int64(_) => "int64",
+      Value::Int128(_) => "int128",
       Value::Float16(_) => "float16",
       Value::Float32(_) => "float32",
       Value::Float64(_) => "float64",
@@ -189,6 +212,7 @@ impl fmt::Display for Value {
       Value::Int16(v) => write!(f, "{}", v),
       Value::Int32(v) => write!(f, "{}", v),
       Value::Int64(v) => write!(f, "{}", v),
+      Value::Int128(v) => write!(f, "{}", v),
       Value::Float16(v) => write!(f, "{}", v),
       Value::Float32(v) => write!(f, "{}", v),
       Value::Float64(v) => write!(f, "{}", v),

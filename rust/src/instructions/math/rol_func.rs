@@ -9,7 +9,7 @@
  */
 
 use crate::instructions::math::rol::{
-  rol_i16in::rol_i16in, rol_i32in::rol_i32in, rol_i64in::rol_i64in,
+  rol_i128in::rol_i128in, rol_i16in::rol_i16in, rol_i32in::rol_i32in, rol_i64in::rol_i64in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
 #[inline]
@@ -18,6 +18,7 @@ pub fn rol_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Sht => Value::Int16(rol_i16in(a.as_i16(), b.as_i16())),
     PrimitiveTypes::Int => Value::Int32(rol_i32in(a.as_i32(), b.as_i32())),
     PrimitiveTypes::Lng => Value::Int64(rol_i64in(a.as_i64(), b.as_i64())),
+    PrimitiveTypes::Oct => Value::Int128(rol_i128in(a.as_i128(), b.as_i128())),
     _ => Value::Undefined,
   }
 }

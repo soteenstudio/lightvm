@@ -15,6 +15,7 @@ pub fn map_primitive(val: Option<&JsonValue>) -> PrimitiveTypes {
     Some("sht") | Some("i16") => PrimitiveTypes::Sht,
     Some("int") | Some("i32") => PrimitiveTypes::Int,
     Some("lng") | Some("i64") => PrimitiveTypes::Lng,
+    Some("oct") | Some("i128") => PrimitiveTypes::Oct,
     Some("hlf") | Some("f16") => PrimitiveTypes::Hlf,
     Some("flt") | Some("f32") => PrimitiveTypes::Flt,
     Some("dbl") | Some("f64") => PrimitiveTypes::Dbl,

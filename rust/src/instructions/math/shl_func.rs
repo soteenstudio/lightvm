@@ -9,7 +9,7 @@
  */
 
 use crate::instructions::math::shl::{
-  shl_i16in::shl_i16in, shl_i32in::shl_i32in, shl_i64in::shl_i64in,
+  shl_i128in::shl_i128in, shl_i16in::shl_i16in, shl_i32in::shl_i32in, shl_i64in::shl_i64in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
 #[inline]
@@ -18,6 +18,7 @@ pub fn shl_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Sht => Value::Int16(shl_i16in(a.as_i16(), b.as_i16())),
     PrimitiveTypes::Int => Value::Int32(shl_i32in(a.as_i32(), b.as_i32())),
     PrimitiveTypes::Lng => Value::Int64(shl_i64in(a.as_i64(), b.as_i64())),
+    PrimitiveTypes::Oct => Value::Int128(shl_i128in(a.as_i128(), b.as_i128())),
     _ => Value::Undefined,
   }
 }
