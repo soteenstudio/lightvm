@@ -20,8 +20,10 @@ pub fn shrink_func(stack: &mut Vec<Value>) -> Result<(), SmolStr> {
     .pop()
     .ok_or_else(|| SmolStr::new("Stack underflow on SHRINK (target)"))?;
   let length = match len_val {
+    Value::Int16(i) => i as usize,
     Value::Int32(i) => i as usize,
     Value::Int64(i) => i as usize,
+    Value::Int128(i) => i as usize,
     _ => return Err(SmolStr::new("SHRINK length must be an integer")),
   };
   let result = match target {
