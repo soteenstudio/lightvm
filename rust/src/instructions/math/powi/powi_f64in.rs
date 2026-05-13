@@ -9,6 +9,24 @@
  */
 
 #[inline(always)]
-pub fn powi_f64in(a: f64, b: i32) -> f64 {
-  a.powi(b)
+pub fn powi_f64in(base: f64, exp: i64) -> f64 {
+  let mut b = base;
+  let mut e = exp;
+  let mut res = 1.0f64;
+  let is_negative = e < 0;
+  if is_negative {
+    e = e.wrapping_abs();
+  }
+  while e > 0 {
+    if e & 1 == 1 {
+      res *= b;
+    }
+    b *= b;
+    e >>= 1;
+  }
+  if is_negative {
+    1.0 / res
+  } else {
+    res
+  }
 }

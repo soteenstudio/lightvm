@@ -10,5 +10,5 @@
 
 #[inline(always)]
 pub fn shl_i16in(a: i16, b: i16) -> i16 {
-  a.wrapping_shl((b & 15) as u32)
+  a << (b & 15)
 }

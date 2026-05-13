@@ -10,5 +10,6 @@
 
 #[inline(always)]
 pub fn rol_i128in(a: i128, b: i128) -> i128 {
-  a.rotate_right((b & 127) as u32)
+  let s = b & 127;
+  (a << s) | ((a >> 1) & 0x7FFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF) >> (127 - s)
 }

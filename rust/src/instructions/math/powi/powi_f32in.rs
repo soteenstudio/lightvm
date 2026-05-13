@@ -9,6 +9,24 @@
  */
 
 #[inline(always)]
-pub fn powi_f32in(a: f32, b: i32) -> f32 {
-  a.powi(b)
+pub fn powi_f32in(base: f32, exp: i32) -> f32 {
+  let mut b = base;
+  let mut e = exp;
+  let mut res = 1.0f32;
+  let is_negative = e < 0;
+  if is_negative {
+    e = e.wrapping_abs();
+  }
+  while e > 0 {
+    if e & 1 == 1 {
+      res *= b;
+    }
+    b *= b;
+    e >>= 1;
+  }
+  if is_negative {
+    1.0 / res
+  } else {
+    res
+  }
 }

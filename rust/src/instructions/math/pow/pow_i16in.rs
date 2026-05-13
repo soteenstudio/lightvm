@@ -9,6 +9,19 @@
  */
 
 #[inline(always)]
-pub fn pow_i16in(a: i16, b: i16) -> i16 {
-  a.wrapping_pow(b as u32)
+pub fn pow_i16in(base: i16, exp: i16) -> i16 {
+  let mut b = base;
+  let mut e = exp;
+  let mut res = 1i16;
+  if e < 0 {
+    return 0;
+  }
+  while e > 0 {
+    if e & 1 == 1 {
+      res = res.wrapping_mul(b);
+    }
+    b = b.wrapping_mul(b);
+    e >>= 1;
+  }
+  res
 }

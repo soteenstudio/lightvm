@@ -10,5 +10,5 @@
 
 #[inline(always)]
 pub fn shr_i64in(a: i64, b: i64) -> i64 {
-  a.wrapping_shr((b & 63) as u32)
+  a >> (b & 63)
 }

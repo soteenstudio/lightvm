@@ -10,8 +10,6 @@
 
 use half::f16;
 #[inline(always)]
-pub fn div_f16in(a: f32, b: f32) -> f16 {
-  let val_a = f16::from_f32(a);
-  let val_b = f16::from_f32(b);
-  val_a / val_b
+pub fn div_f16in(a: f16, b: f16) -> f16 {
+  a / b
 }

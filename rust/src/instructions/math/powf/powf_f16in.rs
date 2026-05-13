@@ -9,10 +9,8 @@
  */
 
 use half::f16;
+use num_traits::float::Float;
 #[inline(always)]
 pub fn powf_f16in(a: f16, b: f16) -> f16 {
-  let val_a = a.to_f32();
-  let val_b = b.to_f32();
-  let res = val_a.powf(val_b);
-  f16::from_f32(res)
+  a.powf(b)
 }

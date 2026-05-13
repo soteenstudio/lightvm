@@ -10,8 +10,24 @@
 
 use half::f16;
 #[inline(always)]
-pub fn powi_f16in(a: f16, b: i16) -> f16 {
-  let val_f32 = a.to_f32();
-  let res_f32 = val_f32.powi(b as i32);
-  f16::from_f32(res_f32)
+pub fn powi_f16in(base: f16, exp: i16) -> f16 {
+  let mut b = base;
+  let mut e = exp;
+  let mut res = f16::ONE;
+  let is_negative = e < 0;
+  if is_negative {
+    e = -e;
+  }
+  while e > 0 {
+    if e & 1 == 1 {
+      res *= b;
+    }
+    b *= b;
+    e >>= 1;
+  }
+  if is_negative {
+    f16::ONE / res
+  } else {
+    res
+  }
 }

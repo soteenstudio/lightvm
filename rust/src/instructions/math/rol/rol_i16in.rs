@@ -10,5 +10,6 @@
 
 #[inline(always)]
 pub fn rol_i16in(a: i16, b: i16) -> i16 {
-  a.rotate_left((b & 15) as u32)
+  let s = b & 15;
+  (a << s) | ((a >> 1) & 0x7FFF) >> (15 - s)
 }

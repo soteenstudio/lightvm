@@ -9,7 +9,8 @@
  */
 
 use half::f16;
+use num_traits::float::Float;
 #[inline(always)]
 pub fn cos_f16in(a: f16) -> f16 {
-  f16::from_f32(a.to_f32().cos())
+  a.cos()
 }

@@ -10,5 +10,5 @@
 
 #[inline(always)]
 pub fn shr_i128in(a: i128, b: i128) -> i128 {
-  a.wrapping_shr((b & 127) as u32)
+  a >> (b & 127)
 }

@@ -10,5 +10,6 @@
 
 #[inline(always)]
 pub fn rol_i32in(a: i32, b: i32) -> i32 {
-  a.rotate_left((b & 31) as u32)
+  let s = b & 31;
+  (a << s) | ((a >> 1) & 0x7FFF_FFFF) >> (31 - s)
 }
