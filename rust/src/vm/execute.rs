@@ -25,9 +25,8 @@ use crate::instructions::{
   },
   conversion::{
     to_double_func::to_double_func, to_float_func::to_float_func, to_half_func::to_half_func,
-    to_integer_func::to_integer_func, to_long_func::to_long_func, to_short_func::to_short_func,
-    to_string_func::to_string_func,
-    to_octa_func::to_octa_func,
+    to_integer_func::to_integer_func, to_long_func::to_long_func, to_octa_func::to_octa_func,
+    to_short_func::to_short_func, to_string_func::to_string_func,
   },
   io::{
     inspect_arr_func::inspect_arr_func, inspect_obj_func::inspect_obj_func, print_func::print_func,

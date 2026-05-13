@@ -350,7 +350,6 @@ For those of you who want to force a certain data type to ensure consistent perf
 
 | Opcode     | Operands (stack) | Description                 |
 |------------|------------------|-----------------------------|
-| to_string  | val | Change the value to String  |
 | to_short   | val | Change value to Short (16-bit) |
 | to_integer | val | Change value to Integer (32-bit) |
 | to_long    | val | Change the value to Long (64-bit) |
@@ -358,6 +357,7 @@ For those of you who want to force a certain data type to ensure consistent perf
 | to_half    | val | Change value to Half-precision (16-bit Float) |
 | to_float   | val | Change value to Float (32-bit) |
 | to_double  | val | Change the value to Double (64-bit) |
+| to_string  | val | Change the value to String  |
 6. Objects & OOP
 Instructions for handling class instances and modifying object properties dynamically.
 
@@ -373,30 +373,30 @@ Instructions for handling class instances and modifying object properties dynami
 7. Module & Export System
 Instructions for communication between modules or with external runtimes.
 
-| Opcode | Arguments | Description |
-|--------|-----------|-------------|
-| import | module_name, alias_idx | Importing external libraries/modules into a specific variable index |
-| export | name | Mark a function or variable to be accessible from outside the VM |
+| Opcode | Arguments | Operands (stack) | Description |
+|--------|-----------|------------------|-------------|
+| import | module_name, alias_idx | target, length | Importing external libraries/modules into a specific variable index |
+| export | name | - | Mark a function or variable to be accessible from outside the VM |
 > [!WARNING]
 > __Nightly Opcode__: The `export` and `import` instructions are still experimental. The API may change without notice in the `@next` version.
 
 8. Basic I/O & Loop Control
 Instructions for standard output and more specific iteration control.
 
-| Opcode | Arguments | Description |
-|--------|-----------|-------------|
-| print | - | Prints the top value of the stack to the console without a newline |
-| println | - | Prints the top value of the stack to the console with a newline |
-| break | target_ip | Stops the loop and jumps to the specified target_ip |
-| nop | - | Empty instructions (usually for placeholders or alignment) |
+| Opcode | Arguments | Operands (stack) | Description |
+|--------|-----------|------------------|-------------|
+| print | - | val | Prints the top value of the stack to the console without a newline |
+| println | - | val | Prints the top value of the stack to the console with a newline |
+| break | - | target_ip | Stops the loop and jumps to the specified target_ip |
+| nop | - | - | Empty instructions (usually for placeholders or alignment) |
 
 9. Advanced Stack & Memory Management
 Special instructions for low-level control of the VM memory footprint in real-time.
 
-| Opcode | Arguments | Description |
-|--------|-----------|-------------|
-| shrink | - | Reduces the capacity of the stack to fit its current length |
-| truncate | - | Clear/reset the stack elements efficiently |
+| Opcode | Arguments | Operands (stack) | Description |
+|--------|-----------|------------------|-------------|
+| shrink | - | target, length | Reduces the capacity of the stack to fit its current length |
+| truncate | - | target_size | Clear/reset the stack elements efficiently |
 
 ## Supported Architectures
 LightVM supports a wide range of platforms and architectures to ensure maximum operational flexibility. Here's the current compatibility list:

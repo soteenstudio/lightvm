@@ -1,7 +1,13 @@
 target_dir = "src"
 entry_file = "lib.rs"
-auto_update = false
-auto_upgrade = false
+
+[scripts.format]
+desc = "Perform formatting on the code"
+commands = ["clean", "header", "cargo fmt --all"]
+[scripts.check]
+desc = "Perform a check on the code"
+commands = ["cargo clippy -- -D warnings"]
+
 [copyright]
 license = "apache"
 year = "2026"
