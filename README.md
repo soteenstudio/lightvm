@@ -291,81 +291,82 @@ LightVM has a total of 40+ instructions for bytecode.
 1. Stack & Variable Management  
 A group of instructions for basic data manipulation and memory (variable) allocation.
 
-| Opcode | Arguments | Description |
-|--------|-----------|-------------|
-| push   | value     | Inserting data into the stack |
-| val    | name      | Declaring a new variable |
-| set    | name      | Take the top stack and then save it to the variable ``name`` |
-| get    | name      | Take the contents of the ``name`` variable and push it onto the stack |
-| dup    | -         | Duplicate the top value in the stack |
+| Opcode | Arguments | Operands (stack) | Description |
+|--------|-----------|------------------|-------------|
+| push   | value     | - |Inserting data into the stack |
+| val    | name      | - | Declaring a new variable |
+| set    | name      | val | Take the top stack and then save it to the variable ``name`` |
+| get    | name      | - | Take the contents of the ``name`` variable and push it onto the stack |
+| dup    | -         | val | Duplicate the top value in the stack |
 2. Arithmetic & Logic  
-Instructions for calculations. Note that for optimization, these instructions require a ``PrimitiveTypes`` (``sht``, ``hlf``, ``int``, ``flt``, ``lng``, ``dbl``) to prevent the VM from guessing the data type during execution.
+Instructions for calculations. Note that for optimization, these instructions require a ``PrimitiveTypes`` (``sht``, ``hlf``, ``int``, ``flt``, ``lng``, ``dbl``, ``oct``) to prevent the VM from guessing the data type during execution.
 
-| Opcode    | Arguments  | Description |
-|-----------|------------|-------------|
-| add / sub | type       | Addition or Subtraction |
-| mul / div | type       | Multiplication or Division |
-| mod       | type       | Modulo (Remainder) |
-| inc / dec | name, type | Directly add/remove variable contents (without going through the stack) |
-| gt / lt   | type       | Greater Than or Less Than |
-| ge / le   | type       | Greater/Less Than or Equal |
-| eq / neq  | type       | Equal or Not Equal |
-| shl / shr | type       | Shift Left or Shift Right bitwise operation based on data type |
-| rol / ror | type       | __Circular__ Shift Left or Right (Rotate) bitwise operation based on data type |
-| and / or  | -          | Boolean logic operations (``&&`` / ``\|\|``) |
-| xor       | -          | Bitwise __Exclusive OR__ operation between two values |
-| not       | -          | Bitwise __NOT__ (Inversion) operation on a single value |
-| pow | type | General power operation (x^y) |
-| powi | type | Power with integer exponent |
-| powf | type | Power with floating point exponent |
-| sin / cos | type | Sine or Cosine trigonometric operation |
-| tan | type | Tangent trigonometric operation |
+| Opcode    | Arguments  | Operands (stack) | Description |
+|-----------|------------|------------------|-------------|
+| add / sub | type       | val1, val2 | Addition or Subtraction |
+| mul / div | type       | val1, val2 | Multiplication or Division |
+| mod       | type       | val1, val2 | Modulo (Remainder) |
+| inc / dec | name, type | - | Directly add/remove variable contents (without going through the stack) |
+| gt / lt   | type       | val1, val2 |Greater Than or Less Than |
+| ge / le   | type       | val1, val2 | Greater/Less Than or Equal |
+| eq / neq  | type       | val1, val2 | Equal or Not Equal |
+| shl / shr | type       | val1, val2 | Shift Left or Shift Right bitwise operation based on data type |
+| rol / ror | type       | val1, val2 | __Circular__ Shift Left or Right (Rotate) bitwise operation based on data type |
+| and / or  | -          | val1, val2 | Boolean logic operations (``&&`` / ``\|\|``) |
+| xor       | -          | val1, val2 | Bitwise __Exclusive OR__ operation between two values |
+| not       | -          | val1, val2 | Bitwise __NOT__ (Inversion) operation on a single value |
+| pow | type | val1, val2 | General power operation (x^y) |
+| powi | type | val1, val2 | Power with integer exponent |
+| powf | type | val1, val2 | Power with floating point exponent |
+| sin / cos | type | val1, val2 | Sine or Cosine trigonometric operation |
+| tan | type | val1, val2 | Tangent trigonometric operation |
 
 3. Control Flow & Function  
 Instructions for managing program flow, looping, and function calls.
 
-| Opcode   | Arguments | Description |
-|----------|-----------|-------------|
-| jump     | target_ip | Jump to a specific instruction line (Instruction Pointer) |
-| if_false | target_ip | Jump if the value on the stack is false |
-| func     | name, argc, start, end, [params] | Function block definition (scope) |
-| call     | name, argc | Call a function with a specified number of arguments |
-| return   | -          | Exit the function and return to the caller |
-| stop     | -          | Kill all VM processes (Halt) |
+| Opcode   | Arguments | Operands (stack) | Description |
+|----------|-----------|------------------|-------------|
+| jump     | target_ip | - | Jump to a specific instruction line (Instruction Pointer) |
+| if_false | target_ip | cond | Jump if the value on the stack is false |
+| func     | name, argc, start, end, [params] | - | Function block definition (scope) |
+| call     | name, argc | - | Call a function with a specified number of arguments |
+| return   | -          | val | Exit the function and return to the caller |
+| stop     | -          | - | Kill all VM processes (Halt) |
 4. Data Structures & Metadata  
 Create complex data handles like JS Objects or Arrays, plus data type matters.
 
-| Opcode     | Arguments | Description |
-|------------|-----------|-------------|
-| make_obj   | count     | Create Object from n key-value pairs in stack |
-| make_array | count     | Create an Array of n elements in a stack | Access properties of Object |
-| access     | prop_name | Access Object's properties |
-| access_index | -       | Access Array elements by index on the stack |
-| length     | -         | Check the length of a string or the number of items in an array/object |
-| typeof     | -         | Get the data type from the top value of the stack |
-| concat     | -         | Combine two values (usually strings) |
+| Opcode     | Arguments | Operands (stack) | Description |
+|------------|-----------|------------------|-------------|
+| make_obj   | count     | k1, v1, ... kn, vn | Create Object from n key-value pairs in stack |
+| make_array | count     | v1, v2, ... vn | Create an Array of n elements in a stack |
+| access     | prop_name | target_obj | Access Object's properties |
+| access_index | -       | target_arr, index | Access Array elements by index on the stack |
+| length     | -         | val | Check the length of a string or the number of items in an array/object |
+| typeof     | -         | val | Get the data type from the top value of the stack |
+| concat     | -         | val1, val2 | Combine two values (usually strings) |
+
 5. Type Casting (Conversion)  
 For those of you who want to force a certain data type to ensure consistent performance.
 
-| Opcode     | Description                 |
-|------------|-----------------------------|
-| to_string  | Change the value to String  |
-| to_short   | Change value to Short (16-bit) |
-| to_integer | Change value to Integer (32-bit) |
-| to_long    | Change the value to Long (64-bit) |
-| to_octa | Change value to Octa (128-bit Integer) |
-| to_half    | Change value to Half-precision (16-bit Float) |
-| to_float   | Change value to Float (32-bit) |
-| to_double  | Change the value to Double (64-bit) |
+| Opcode     | Operands (stack) | Description                 |
+|------------|------------------|-----------------------------|
+| to_string  | val | Change the value to String  |
+| to_short   | val | Change value to Short (16-bit) |
+| to_integer | val | Change value to Integer (32-bit) |
+| to_long    | val | Change the value to Long (64-bit) |
+| to_octa | val | Change value to Octa (128-bit Integer) |
+| to_half    | val | Change value to Half-precision (16-bit Float) |
+| to_float   | val | Change value to Float (32-bit) |
+| to_double  | val | Change the value to Double (64-bit) |
 6. Objects & OOP
 Instructions for handling class instances and modifying object properties dynamically.
 
-| Opcode | Arguments | Description |
-|--------|-----------|-------------|
-| set_prop | prop_name | Set the value of an object property (retrieve ``value`` and ``target_obj`` from the stack) |
-| instantiate | class_name, argc | Creates a new instance of a class with a specified number of constructor arguments |
-| inspect_obj | - | Prints the internal structure of an Object to the console |
-| inspect_array | - | Print the internal contents of an Array to the console |
+| Opcode | Arguments | Operands (stack) | Description |
+|--------|-----------|------------------|-------------|
+| set_prop | prop_name | val, obj | Set the value of an object property (retrieve ``value`` and ``target_obj`` from the stack) |
+| instantiate | class_name, argc | arg1, ... argN | Creates a new instance of a class with a specified number of constructor arguments |
+| inspect_obj | - | obj | Prints the internal structure of an Object to the console |
+| inspect_array | - | arr | Print the internal contents of an Array to the console |
 > [!WARNING]
 > __Nightly Opcode__: The `instantiate` instruction is still experimental. The API may change without notice in the `@next` version.
 
