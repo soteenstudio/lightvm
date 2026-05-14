@@ -1,21 +1,31 @@
-/*  
+/*
  * Copyright 2026 SoTeen Studio
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");  
- * you may not use this file except in compliance with the License.  
- * You may obtain a copy of the License at  
- *  
- *     http://www.apache.org/licenses/LICENSE-2.0  
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
 use crate::utils::map_primitive::map_primitive;
+use half::f16;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use smol_str::SmolStr;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Instructions {
+  PushInt16(i16),
+  PushInt32(i32),
+  PushInt64(i64),
+  PushInt128(i128),
+  PushFloat16(f16),
+  PushFloat32(f32),
+  PushFloat64(f64),
+  PushBool(bool),
+  PushUndefined,
   Push(Value),
   Val(SmolStr),
   ValIdx(usize),

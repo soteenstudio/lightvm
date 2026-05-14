@@ -1,11 +1,11 @@
-/*  
+/*
  * Copyright 2026 SoTeen Studio
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");  
- * you may not use this file except in compliance with the License.  
- * You may obtain a copy of the License at  
- *  
- *     http://www.apache.org/licenses/LICENSE-2.0  
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
 use crate::instructions::{
@@ -65,6 +65,7 @@ use crate::utils::{
 };
 use crate::vm::{inject_args::inject_args, prepare_vm::prepare_vm};
 use smol_str::SmolStr;
+#[inline(never)]
 pub fn execute(
   mut bytecode: Vec<Instructions>,
   options: Option<RunOptions>,
@@ -83,6 +84,30 @@ pub fn execute(
     let is_hot = hit_counter[ip] >= 1000;
     let _hot_threshold = compute_hot_threshold(stack.len());
     match instr {
+      Instructions::PushInt16(v) => {
+        stack.push(Value::Int16(*v));
+      }
+      Instructions::PushInt32(v) => {
+        stack.push(Value::Int32(*v));
+      }
+      Instructions::PushInt64(v) => {
+        stack.push(Value::Int64(*v));
+      }
+      Instructions::PushInt128(v) => {
+        stack.push(Value::Int128(*v));
+      }
+      Instructions::PushFloat16(v) => {
+        stack.push(Value::Float16(*v));
+      }
+      Instructions::PushFloat32(v) => {
+        stack.push(Value::Float32(*v));
+      }
+      Instructions::PushFloat64(v) => {
+        stack.push(Value::Float64(*v));
+      }
+      Instructions::PushUndefined => {
+        stack.push(Value::Undefined);
+      }
       Instructions::Push(val) => {
         push_func(&mut stack, val.clone());
       }
