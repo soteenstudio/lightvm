@@ -1,11 +1,11 @@
-/*
+/*  
  * Copyright 2026 SoTeen Studio
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *  
+ * Licensed under the Apache License, Version 2.0 (the "License");  
+ * you may not use this file except in compliance with the License.  
+ * You may obtain a copy of the License at  
+ *  
+ *     http://www.apache.org/licenses/LICENSE-2.0  
  */
 
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
@@ -208,14 +208,37 @@ impl Instructions {
     match op {
       "push" => {
         let val = &arr[1];
-        let value_internal = if val.is_i64() {
-          Value::Int64(val.as_i64().unwrap_or(0))
-        } else if val.is_f64() {
-          Value::Float64(val.as_f64().unwrap())
+        let value_internal = if let Some(n) = val.as_i64() {
+          if n >= i16::MIN as i64 && n <= i16::MAX as i64 {
+            Value::Int16(n as i16)
+          } else if n >= i32::MIN as i64 && n <= i32::MAX as i64 {
+            Value::Int32(n as i32)
+          } else {
+            Value::Int64(n)
+          }
+        } else if val.is_number() {
+          let f = val.as_f64().unwrap_or(0.0);
+          if f == (f as f32) as f64 {
+            if f == half::f16::from_f64(f).to_f64() {
+              Value::Float16(half::f16::from_f64(f))
+            } else {
+              Value::Float32(f as f32)
+            }
+          } else {
+            Value::Float64(f)
+          }
+        } else if let Some(s) = val.as_str() {
+          if let Ok(big_n) = s.parse::<i128>() {
+            if big_n >= i64::MIN as i128 && big_n <= i64::MAX as i128 {
+              Value::Int64(big_n as i64)
+            } else {
+              Value::Int128(big_n)
+            }
+          } else {
+            Value::String(SmolStr::new(s))
+          }
         } else if val.is_boolean() {
           Value::Bool(val.as_bool().unwrap())
-        } else if val.is_string() {
-          Value::String(SmolStr::new(val.as_str().unwrap()))
         } else if val.is_null() {
           Value::Null
         } else {
