@@ -17,6 +17,7 @@ use smol_str::SmolStr;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Instructions {
+  InitStack(u32),
   PushInt16(i16),
   PushInt32(i32),
   PushInt64(i64),
@@ -164,6 +165,7 @@ impl Instructions {
     }
     if let Some(s) = item.as_str() {
       return match s {
+        "init_stack" => Instructions::InitStack(16),
         "stop" => Instructions::Stop,
         "return" => Instructions::Return,
         "and" => Instructions::And,
@@ -206,6 +208,10 @@ impl Instructions {
     };
     let op = arr[0].as_str().expect("Opcode must be a string");
     match op {
+      "init_stack" => {
+        let size = arr.get(1).and_then(|v| v.as_u64()).unwrap_or(16) as u32;
+        Instructions::InitStack(size)
+      }
       "push" => {
         let val = &arr[1];
         let value_internal = if let Some(n) = val.as_i64() {

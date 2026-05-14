@@ -56,7 +56,6 @@ pub fn resolve_symbols(bytecode: &mut [Instructions]) -> usize {
       }
       _ => {}
     }
-    println!("{:?}", instr);
   }
   next_idx
 }

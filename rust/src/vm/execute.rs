@@ -71,7 +71,7 @@ pub fn execute(
   options: Option<RunOptions>,
 ) -> Result<Value, SmolStr> {
   let mut last_return = Value::Undefined;
-  let mut stack: Vec<Value> = Vec::with_capacity(100);
+  let mut stack: Vec<Value> = Vec::with_capacity(16);
   let var_count = resolve_symbols(&mut bytecode);
   let mut vars: Vec<Value> = vec![Value::Undefined; var_count];
   let mut _call_stack: Vec<usize> = Vec::new();
@@ -84,6 +84,11 @@ pub fn execute(
     let is_hot = hit_counter[ip] >= 1000;
     let _hot_threshold = compute_hot_threshold(stack.len());
     match instr {
+      Instructions::InitStack(size) => {
+        if ip == 0 {
+          stack = Vec::with_capacity(*size as usize);
+        }
+      }
       Instructions::PushInt16(v) => {
         stack.push(Value::Int16(*v));
       }
