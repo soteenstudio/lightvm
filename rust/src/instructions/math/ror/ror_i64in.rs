@@ -11,11 +11,10 @@
 #[inline(always)]
 pub fn ror_i64in(a: i64, b: i64) -> i64 {
   let s = b & 63;
-  let right = ((a >> 1) & 0x7FFF_FFFF_FFFF_FFFF) >> (s.wrapping_sub(1) & 63);
-  let left = a << (64_i64.wrapping_sub(s) & 63);
   if s == 0 {
-    a
-  } else {
-    right | left
+    return a;
   }
+  let right = ((a >> 1) & 0x7FFFFFFFFFFFFFFF) >> (s - 1);
+  let left = a << (64 - s);
+  right | left
 }

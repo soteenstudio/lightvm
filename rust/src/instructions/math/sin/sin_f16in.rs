@@ -9,8 +9,12 @@
  */
 
 use half::f16;
-use num_traits::float::Float;
+use num_traits::Float;
 #[inline(always)]
 pub fn sin_f16in(a: f16) -> f16 {
-  a.sin()
+  let res = a.sin();
+  if res.is_infinite() || res.is_nan() {
+    return f16::NAN;
+  }
+  res
 }

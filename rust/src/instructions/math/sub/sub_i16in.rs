@@ -10,5 +10,5 @@
 
 #[inline(always)]
 pub fn sub_i16in(a: i16, b: i16) -> i16 {
-  a - b
+  a.wrapping_sub(b)
 }

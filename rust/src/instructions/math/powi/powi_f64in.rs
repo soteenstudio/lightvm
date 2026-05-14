@@ -11,12 +11,8 @@
 #[inline(always)]
 pub fn powi_f64in(base: f64, exp: i64) -> f64 {
   let mut b = base;
-  let mut e = exp;
+  let mut e = exp.unsigned_abs();
   let mut res = 1.0f64;
-  let is_negative = e < 0;
-  if is_negative {
-    e = e.wrapping_abs();
-  }
   while e > 0 {
     if e & 1 == 1 {
       res *= b;
@@ -24,9 +20,9 @@ pub fn powi_f64in(base: f64, exp: i64) -> f64 {
     b *= b;
     e >>= 1;
   }
-  if is_negative {
-    1.0 / res
-  } else {
-    res
+  let final_res = if exp < 0 { 1.0 / res } else { res };
+  if final_res.is_infinite() || final_res.is_nan() {
+    return f64::NAN;
   }
+  final_res
 }

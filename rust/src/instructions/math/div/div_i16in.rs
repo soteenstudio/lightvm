@@ -10,5 +10,8 @@
 
 #[inline(always)]
 pub fn div_i16in(a: i16, b: i16) -> i16 {
-  a / b
+  if b == 0 {
+    return 0;
+  }
+  a.wrapping_div(b)
 }

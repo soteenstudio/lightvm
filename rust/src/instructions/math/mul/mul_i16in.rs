@@ -10,5 +10,5 @@
 
 #[inline(always)]
 pub fn mul_i16in(a: i16, b: i16) -> i16 {
-  a * b
+  a.wrapping_mul(b)
 }

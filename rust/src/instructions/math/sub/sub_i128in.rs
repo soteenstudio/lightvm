@@ -10,5 +10,5 @@
 
 #[inline(always)]
 pub fn sub_i128in(a: i128, b: i128) -> i128 {
-  a - b
+  a.wrapping_sub(b)
 }

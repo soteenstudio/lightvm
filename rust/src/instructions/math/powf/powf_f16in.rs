@@ -9,8 +9,12 @@
  */
 
 use half::f16;
-use num_traits::float::Float;
+use num_traits::Float;
 #[inline(always)]
 pub fn powf_f16in(a: f16, b: f16) -> f16 {
-  a.powf(b)
+  let res = a.powf(b);
+  if res.is_infinite() || res.is_nan() {
+    return f16::NAN;
+  }
+  res
 }

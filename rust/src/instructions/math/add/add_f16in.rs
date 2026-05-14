@@ -11,5 +11,9 @@
 use half::f16;
 #[inline(always)]
 pub fn add_f16in(a: f16, b: f16) -> f16 {
-  a + b
+  let res = a + b;
+  if res.is_infinite() || res.is_nan() {
+    return f16::NAN;
+  }
+  res
 }

@@ -11,5 +11,10 @@
 #[inline(always)]
 pub fn rol_i16in(a: i16, b: i16) -> i16 {
   let s = b & 15;
-  (a << s) | ((a >> 1) & 0x7FFF) >> (15 - s)
+  if s == 0 {
+    return a;
+  }
+  let left = a << s;
+  let right = ((a >> 1) & 0x7FFF) >> (15 - s);
+  left | right
 }

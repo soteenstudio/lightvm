@@ -10,5 +10,9 @@
 
 #[inline(always)]
 pub fn cos_f64in(a: f64) -> f64 {
-  a.cos()
+  let res = a.cos();
+  if res.is_infinite() || res.is_nan() {
+    return f64::NAN;
+  }
+  res
 }

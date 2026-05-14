@@ -10,5 +10,9 @@
 
 #[inline(always)]
 pub fn div_f64in(a: f64, b: f64) -> f64 {
-  a / b
+  let res = a / b;
+  if res.is_infinite() || res.is_nan() {
+    return f64::NAN;
+  }
+  res
 }

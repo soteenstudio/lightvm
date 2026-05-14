@@ -9,8 +9,12 @@
  */
 
 use half::f16;
-use num_traits::float::Float;
+use num_traits::Float;
 #[inline(always)]
 pub fn tan_f16in(a: f16) -> f16 {
-  a.tan()
+  let res = a.tan();
+  if res.is_infinite() || res.is_nan() {
+    return f16::NAN;
+  }
+  res
 }

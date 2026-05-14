@@ -10,5 +10,9 @@
 
 #[inline(always)]
 pub fn powf_f64in(a: f64, b: f64) -> f64 {
-  a.powf(b)
+  let res = a.powf(b);
+  if res.is_infinite() || res.is_nan() {
+    return f64::NAN;
+  }
+  res
 }

@@ -11,11 +11,10 @@
 #[inline(always)]
 pub fn ror_i32in(a: i32, b: i32) -> i32 {
   let s = b & 31;
-  let right = ((a >> 1) & 0x7FFF_FFFF) >> (s.wrapping_sub(1) & 31);
-  let left = a << (32_i32.wrapping_sub(s) & 31);
   if s == 0 {
-    a
-  } else {
-    right | left
+    return a;
   }
+  let right = ((a >> 1) & 0x7FFFFFFF) >> (s - 1);
+  let left = a << (32 - s);
+  right | left
 }

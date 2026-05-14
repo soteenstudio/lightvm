@@ -11,5 +11,10 @@
 #[inline(always)]
 pub fn rol_i128in(a: i128, b: i128) -> i128 {
   let s = b & 127;
-  (a << s) | ((a >> 1) & 0x7FFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF) >> (127 - s)
+  if s == 0 {
+    return a;
+  }
+  let left = a << s;
+  let right = ((a >> 1) & 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) >> (127 - s);
+  left | right
 }

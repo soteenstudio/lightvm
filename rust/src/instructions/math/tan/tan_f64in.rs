@@ -10,5 +10,9 @@
 
 #[inline(always)]
 pub fn tan_f64in(a: f64) -> f64 {
-  a.tan()
+  let res = a.tan();
+  if res.is_infinite() || res.is_nan() {
+    return f64::NAN;
+  }
+  res
 }

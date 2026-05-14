@@ -12,12 +12,8 @@ use half::f16;
 #[inline(always)]
 pub fn powi_f16in(base: f16, exp: i16) -> f16 {
   let mut b = base;
-  let mut e = exp;
+  let mut e = exp.unsigned_abs();
   let mut res = f16::ONE;
-  let is_negative = e < 0;
-  if is_negative {
-    e = -e;
-  }
   while e > 0 {
     if e & 1 == 1 {
       res *= b;
@@ -25,9 +21,9 @@ pub fn powi_f16in(base: f16, exp: i16) -> f16 {
     b *= b;
     e >>= 1;
   }
-  if is_negative {
-    f16::ONE / res
-  } else {
-    res
+  let final_res = if exp < 0 { f16::ONE / res } else { res };
+  if final_res.is_infinite() || final_res.is_nan() {
+    return f16::NAN;
   }
+  final_res
 }

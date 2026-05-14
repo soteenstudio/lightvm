@@ -11,5 +11,10 @@
 #[inline(always)]
 pub fn rol_i64in(a: i64, b: i64) -> i64 {
   let s = b & 63;
-  (a << s) | ((a >> 1) & 0x7FFF_FFFF_FFFF_FFFF) >> (63 - s)
+  if s == 0 {
+    return a;
+  }
+  let left = a << s;
+  let right = ((a >> 1) & 0x7FFFFFFFFFFFFFFF) >> (63 - s);
+  left | right
 }

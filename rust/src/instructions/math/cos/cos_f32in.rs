@@ -10,5 +10,9 @@
 
 #[inline(always)]
 pub fn cos_f32in(a: f32) -> f32 {
-  a.cos()
+  let res = a.cos();
+  if res.is_infinite() || res.is_nan() {
+    return f32::NAN;
+  }
+  res
 }

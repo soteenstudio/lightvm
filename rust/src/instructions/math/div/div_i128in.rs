@@ -10,5 +10,8 @@
 
 #[inline(always)]
 pub fn div_i128in(a: i128, b: i128) -> i128 {
-  a / b
+  if b == 0 {
+    return 0;
+  }
+  a.wrapping_div(b)
 }

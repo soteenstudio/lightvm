@@ -10,5 +10,9 @@
 
 #[inline(always)]
 pub fn mod_f32in(a: f32, b: f32) -> f32 {
-  a % b
+  let res = a % b;
+  if res.is_infinite() || res.is_nan() {
+    return f32::NAN;
+  }
+  res
 }

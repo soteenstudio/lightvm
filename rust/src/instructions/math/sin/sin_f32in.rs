@@ -10,5 +10,9 @@
 
 #[inline(always)]
 pub fn sin_f32in(a: f32) -> f32 {
-  a.sin()
+  let res = a.sin();
+  if res.is_infinite() || res.is_nan() {
+    return f32::NAN;
+  }
+  res
 }

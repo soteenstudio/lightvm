@@ -12,5 +12,9 @@ use half::f16;
 use num_traits::float::Float;
 #[inline(always)]
 pub fn cos_f16in(a: f16) -> f16 {
-  a.cos()
+  let res = a.cos();
+  if res.is_infinite() || res.is_nan() {
+    return f16::NAN;
+  }
+  res
 }

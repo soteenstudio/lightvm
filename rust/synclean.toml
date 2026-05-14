@@ -7,6 +7,9 @@ commands = ["clean", "header", "cargo fmt --all"]
 [scripts.check]
 desc = "Perform a check on the code"
 commands = ["cargo clippy -- -D warnings"]
+[scripts.perf]
+desc = "Checking code performance"
+commands = ["clean", "header", "track"]
 
 [copyright]
 license = "apache"

@@ -10,5 +10,8 @@
 
 #[inline(always)]
 pub fn div_i64in(a: i64, b: i64) -> i64 {
-  a / b
+  if b == 0 {
+    return 0;
+  }
+  a.wrapping_div(b)
 }

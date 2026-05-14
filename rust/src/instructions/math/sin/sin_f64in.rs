@@ -10,5 +10,9 @@
 
 #[inline(always)]
 pub fn sin_f64in(a: f64) -> f64 {
-  a.sin()
+  let res = a.sin();
+  if res.is_infinite() || res.is_nan() {
+    return f64::NAN;
+  }
+  res
 }

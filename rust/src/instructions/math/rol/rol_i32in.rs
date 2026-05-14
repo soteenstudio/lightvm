@@ -11,5 +11,10 @@
 #[inline(always)]
 pub fn rol_i32in(a: i32, b: i32) -> i32 {
   let s = b & 31;
-  (a << s) | ((a >> 1) & 0x7FFF_FFFF) >> (31 - s)
+  if s == 0 {
+    return a;
+  }
+  let left = a << s;
+  let right = ((a >> 1) & 0x7FFFFFFF) >> (31 - s);
+  left | right
 }
