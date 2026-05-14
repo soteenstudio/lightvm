@@ -1,7 +1,13 @@
 {
   "name": "lightvm",
   "version": "0.1.0-proto.0",
-  "description": "m",
+  "description": "A capability-based virtual machine designed for secure, predictable, and optimized bytecode execution.",
+  "author": "SoTeen Studio",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/soteenstudio/lightvm.git"
+  },
   "type": "module",
   "typings": "./typings/index.d.ts",
   "exports": {
@@ -17,15 +23,14 @@
     "typings"
   ],
   "scripts": {
-    "test": "vitest",
     "build": "node ./esbuild.config.js",
+    "build:release": "node ./build-script.js --local --silent",
+    "build:debug": "node ./build-script.js --local --debug --silent",
     "typecheck": "tsc"
   },
   "keywords": [
-    "lightvm"
+    "lightvm", "virtual machine", "rust", "typescript"
   ],
-  "author": "SoTeen Studio",
-  "license": "Apache-2.0",
   "dependencies": {
     "chalk": "^5.6.2"
   },
