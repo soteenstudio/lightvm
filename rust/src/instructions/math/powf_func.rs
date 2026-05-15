@@ -23,7 +23,11 @@ pub fn powf_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   }
 }
 #[inline]
-pub fn powf_func(stack: &mut Vec<Value>, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
+pub fn powf_func(
+  stack: &mut Vec<Value>,
+  num_type: PrimitiveTypes,
+  ip: usize,
+) -> Result<(), VMError> {
   let b = stack
     .pop()
     .ok_or(VMError::StackUnderflow { ip, opcode: "POWF" })?;

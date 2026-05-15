@@ -23,7 +23,11 @@ pub fn sin_values(a: Value, num_type: PrimitiveTypes) -> Value {
   }
 }
 #[inline]
-pub fn sin_func(stack: &mut Vec<Value>, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
+pub fn sin_func(
+  stack: &mut Vec<Value>,
+  num_type: PrimitiveTypes,
+  ip: usize,
+) -> Result<(), VMError> {
   let val_ref = stack
     .last_mut()
     .ok_or(VMError::StackUnderflow { ip, opcode: "SIN" })?;

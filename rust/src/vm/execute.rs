@@ -178,64 +178,22 @@ pub fn execute(
         tan_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
       }
       Instructions::Gt(num_type) => {
-        let b = stack
-          .pop()
-          .ok_or_else(|| SmolStr::new("Stack underflow on GT (b)"))?;
-        let a_ref = stack
-          .last_mut()
-          .ok_or_else(|| SmolStr::new("Stack underflow on GT (a)"))?;
-        let a = std::mem::take(a_ref);
-        *a_ref = gt_func(a, b, *num_type);
+        gt_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
       }
       Instructions::Lt(num_type) => {
-        let b = stack
-          .pop()
-          .ok_or_else(|| SmolStr::new("Stack underflow on LT (b)"))?;
-        let a_ref = stack
-          .last_mut()
-          .ok_or_else(|| SmolStr::new("Stack underflow on LT (a)"))?;
-        let a = std::mem::take(a_ref);
-        *a_ref = lt_func(a, b, *num_type);
+        lt_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
       }
       Instructions::Ge(num_type) => {
-        let b = stack
-          .pop()
-          .ok_or_else(|| SmolStr::new("Stack underflow on GE (b)"))?;
-        let a_ref = stack
-          .last_mut()
-          .ok_or_else(|| SmolStr::new("Stack underflow on GE (a)"))?;
-        let a = std::mem::take(a_ref);
-        *a_ref = ge_func(a, b, *num_type);
+        ge_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
       }
       Instructions::Le(num_type) => {
-        let b = stack
-          .pop()
-          .ok_or_else(|| SmolStr::new("Stack underflow on LE (b)"))?;
-        let a_ref = stack
-          .last_mut()
-          .ok_or_else(|| SmolStr::new("Stack underflow on LE (a)"))?;
-        let a = std::mem::take(a_ref);
-        *a_ref = le_func(a, b, *num_type);
+        le_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
       }
       Instructions::Eq(num_type) => {
-        let b = stack
-          .pop()
-          .ok_or_else(|| SmolStr::new("Stack underflow on EQ (b)"))?;
-        let a_ref = stack
-          .last_mut()
-          .ok_or_else(|| SmolStr::new("Stack underflow on EQ (a)"))?;
-        let a = std::mem::take(a_ref);
-        *a_ref = eq_func(a, b, *num_type);
+        eq_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
       }
       Instructions::Neq(num_type) => {
-        let b = stack
-          .pop()
-          .ok_or_else(|| SmolStr::new("Stack underflow on NEQ (b)"))?;
-        let a_ref = stack
-          .last_mut()
-          .ok_or_else(|| SmolStr::new("Stack underflow on NEQ (a)"))?;
-        let a = std::mem::take(a_ref);
-        *a_ref = neq_func(a, b, *num_type);
+        neq_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
       }
       Instructions::And => {
         let b = stack

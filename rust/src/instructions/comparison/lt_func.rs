@@ -13,8 +13,9 @@ use crate::instructions::comparison::lt::{
   lt_i32in::lt_i32in, lt_i64in::lt_i64in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
-#[inline]
-pub fn lt_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
+use crate::utils::vmerror::VMError;
+#[inline(always)]
+pub fn lt_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
     PrimitiveTypes::Sht => Value::Bool(lt_i16in(a.as_i16(), b.as_i16())),
     PrimitiveTypes::Int => Value::Bool(lt_i32in(a.as_i32(), b.as_i32())),
@@ -24,4 +25,16 @@ pub fn lt_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Hlf => Value::Bool(lt_f16in(a.as_f32(), b.as_f32())),
     _ => Value::Bool(false),
   }
+}
+#[inline]
+pub fn lt_func(stack: &mut Vec<Value>, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
+  let b = stack
+    .pop()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "LT" })?;
+  let a_ref = stack
+    .last_mut()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "LT" })?;
+  let a = std::mem::take(a_ref);
+  *a_ref = lt_values(a, b, num_type);
+  Ok(())
 }

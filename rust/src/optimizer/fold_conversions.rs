@@ -8,12 +8,8 @@
  *     http://www.apache.org/licenses/LICENSE-2.0  
  */
 
+use crate::instructions::math::{cos_func::cos_values, sin_func::sin_values, tan_func::tan_values};
 use crate::types::{instructions::Instructions, value::Value};
-use crate::instructions::math::{
-  sin_func::sin_values,
-  cos_func::cos_values,
-  tan_func::tan_values,
-};
 #[inline]
 #[cold]
 pub fn fold_conversions(bytecode: &mut [Instructions]) {

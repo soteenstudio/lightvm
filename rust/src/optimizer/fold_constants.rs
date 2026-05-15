@@ -9,13 +9,16 @@
  */
 
 use crate::instructions::{
+  comparison::{
+    eq_func::eq_values, ge_func::ge_values, gt_func::gt_values, le_func::le_values,
+    lt_func::lt_values, neq_func::neq_values,
+  },
   math::{
     add_func::add_values, div_func::div_values, mod_func::mod_values, mul_func::mul_values,
-    pow_func::pow_values, powf_func::powf_values, powi_func::powi_values, shl_func::shl_values,
-    shr_func::shr_values, sub_func::sub_values,
-    rol_func::rol_values, ror_func::ror_values,
+    pow_func::pow_values, powf_func::powf_values, powi_func::powi_values, rol_func::rol_values,
+    ror_func::ror_values, shl_func::shl_values, shr_func::shr_values, sub_func::sub_values,
   },
-  stack::{concat_func::concat_values},
+  stack::concat_func::concat_values,
 };
 use crate::types::{instructions::Instructions, value::Value};
 #[inline]
@@ -73,67 +76,55 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         i += 3;
       }
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Gt(t)) => {
-        let res = crate::instructions::comparison::gt_func::gt_func(
-          std::mem::replace(v1, Value::Null),
-          std::mem::replace(v2, Value::Null),
-          *t,
-        );
-        bytecode[i] = Instructions::Push(res);
+        let val1 = std::mem::replace(v1, Value::Null);
+        let val2 = std::mem::replace(v2, Value::Null);
+        let result = gt_values(val1, val2, *t);
+        bytecode[i] = Instructions::Push(result);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
         i += 3;
       }
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Lt(t)) => {
-        let res = crate::instructions::comparison::lt_func::lt_func(
-          std::mem::replace(v1, Value::Null),
-          std::mem::replace(v2, Value::Null),
-          *t,
-        );
-        bytecode[i] = Instructions::Push(res);
+        let val1 = std::mem::replace(v1, Value::Null);
+        let val2 = std::mem::replace(v2, Value::Null);
+        let result = lt_values(val1, val2, *t);
+        bytecode[i] = Instructions::Push(result);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
         i += 3;
       }
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Ge(t)) => {
-        let res = crate::instructions::comparison::ge_func::ge_func(
-          std::mem::replace(v1, Value::Null),
-          std::mem::replace(v2, Value::Null),
-          *t,
-        );
-        bytecode[i] = Instructions::Push(res);
+        let val1 = std::mem::replace(v1, Value::Null);
+        let val2 = std::mem::replace(v2, Value::Null);
+        let result = ge_values(val1, val2, *t);
+        bytecode[i] = Instructions::Push(result);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
         i += 3;
       }
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Le(t)) => {
-        let res = crate::instructions::comparison::le_func::le_func(
-          std::mem::replace(v1, Value::Null),
-          std::mem::replace(v2, Value::Null),
-          *t,
-        );
-        bytecode[i] = Instructions::Push(res);
+        let val1 = std::mem::replace(v1, Value::Null);
+        let val2 = std::mem::replace(v2, Value::Null);
+        let result = le_values(val1, val2, *t);
+        bytecode[i] = Instructions::Push(result);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
         i += 3;
       }
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Eq(t)) => {
-        let res = crate::instructions::comparison::eq_func::eq_func(
-          std::mem::replace(v1, Value::Null),
-          std::mem::replace(v2, Value::Null),
-          *t,
-        );
-        bytecode[i] = Instructions::Push(res);
+        let val1 = std::mem::replace(v1, Value::Null);
+        let val2 = std::mem::replace(v2, Value::Null);
+        let result = eq_values(val1, val2, *t);
+        bytecode[i] = Instructions::Push(result);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
         i += 3;
       }
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Neq(t)) => {
-        let res = crate::instructions::comparison::neq_func::neq_func(
-          std::mem::replace(v1, Value::Null),
-          std::mem::replace(v2, Value::Null),
-          *t,
-        );
-        bytecode[i] = Instructions::Push(res);
+        let val1 = std::mem::replace(v1, Value::Null);
+        let val2 = std::mem::replace(v2, Value::Null);
+        let result = neq_values(val1, val2, *t);
+        bytecode[i] = Instructions::Push(result);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
         i += 3;
