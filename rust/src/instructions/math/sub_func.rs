@@ -13,8 +13,9 @@ use crate::instructions::math::sub::{
   sub_i32in::sub_i32in, sub_i64in::sub_i64in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
-#[inline]
-pub fn sub_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
+use crate::utils::vmerror::VMError;
+#[inline(always)]
+pub fn sub_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
     PrimitiveTypes::Sht => Value::Int16(sub_i16in(a.as_i16(), b.as_i16())),
     PrimitiveTypes::Int => Value::Int32(sub_i32in(a.as_i32(), b.as_i32())),
@@ -24,4 +25,20 @@ pub fn sub_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Dbl => Value::Float64(sub_f64in(a.as_f64(), b.as_f64())),
     _ => Value::NaN,
   }
+}
+#[inline]
+pub fn sub_func(
+  stack: &mut Vec<Value>,
+  num_type: PrimitiveTypes,
+  ip: usize,
+) -> Result<(), VMError> {
+  let b = stack
+    .pop()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "SUB" })?;
+  let a_ref = stack
+    .last_mut()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "SUB" })?;
+  let a = std::mem::take(a_ref);
+  *a_ref = sub_values(a, b, num_type);
+  Ok(())
 }

@@ -10,7 +10,6 @@
 
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
-use smol_str::SmolStr;
 #[inline(always)]
 pub fn truncate_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
   let val = stack.pop().ok_or(VMError::StackUnderflow {

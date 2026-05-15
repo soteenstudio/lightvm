@@ -9,10 +9,10 @@
  */
 
 use crate::types::value::Value;
+use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
 use smol_str::SmolStr;
 use std::sync::Arc;
-use crate::utils::vmerror::VMError;
 #[inline]
 pub fn typeof_func(stack: &mut [Value], ip: usize) -> Result<(), VMError> {
   if let Some(top) = stack.last_mut() {
@@ -42,6 +42,9 @@ pub fn typeof_func(stack: &mut [Value], ip: usize) -> Result<(), VMError> {
     *top = Value::Object(Arc::new(metadata));
     Ok(())
   } else {
-    Err(VMError::StackUnderflow { ip, opcode: "TYPEOF" })
+    Err(VMError::StackUnderflow {
+      ip,
+      opcode: "TYPEOF",
+    })
   }
 }

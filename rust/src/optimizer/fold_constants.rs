@@ -8,9 +8,14 @@
  *     http://www.apache.org/licenses/LICENSE-2.0  
  */
 
-use crate::instructions::math::{
-  add_func::add_func, div_func::div_func, mod_func::mod_func, mul_func::mul_func,
-  pow_func::pow_func, powf_func::powf_func, powi_func::powi_func, sub_func::sub_func,
+use crate::instructions::{
+  math::{
+    add_func::add_values, div_func::div_values, mod_func::mod_values, mul_func::mul_values,
+    pow_func::pow_values, powf_func::powf_values, powi_func::powi_values, shl_func::shl_values,
+    shr_func::shr_values, sub_func::sub_values,
+    rol_func::rol_values, ror_func::ror_values,
+  },
+  stack::{concat_func::concat_values},
 };
 use crate::types::{instructions::Instructions, value::Value};
 #[inline]
@@ -25,7 +30,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Add(t)) => {
         let val1 = std::mem::replace(v1, Value::Null);
         let val2 = std::mem::replace(v2, Value::Null);
-        let result = add_func(val1, val2, *t);
+        let result = add_values(val1, val2, *t);
         bytecode[i] = Instructions::Push(result);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
@@ -34,7 +39,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Sub(t)) => {
         let val1 = std::mem::replace(v1, Value::Null);
         let val2 = std::mem::replace(v2, Value::Null);
-        let result = sub_func(val1, val2, *t);
+        let result = sub_values(val1, val2, *t);
         bytecode[i] = Instructions::Push(result);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
@@ -43,7 +48,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Div(t)) => {
         let val1 = std::mem::replace(v1, Value::Null);
         let val2 = std::mem::replace(v2, Value::Null);
-        let result = div_func(val1, val2, *t);
+        let result = div_values(val1, val2, *t);
         bytecode[i] = Instructions::Push(result);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
@@ -52,7 +57,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Mul(t)) => {
         let val1 = std::mem::replace(v1, Value::Null);
         let val2 = std::mem::replace(v2, Value::Null);
-        let result = mul_func(val1, val2, *t);
+        let result = mul_values(val1, val2, *t);
         bytecode[i] = Instructions::Push(result);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
@@ -61,7 +66,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Mod(t)) => {
         let val1 = std::mem::replace(v1, Value::Null);
         let val2 = std::mem::replace(v2, Value::Null);
-        let result = mod_func(val1, val2, *t);
+        let result = mod_values(val1, val2, *t);
         bytecode[i] = Instructions::Push(result);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
@@ -134,44 +139,36 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         i += 3;
       }
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Shl(t)) => {
-        let res = crate::instructions::math::shl_func::shl_func(
-          std::mem::replace(v1, Value::Null),
-          std::mem::replace(v2, Value::Null),
-          *t,
-        );
+        let val1 = std::mem::replace(v1, Value::Null);
+        let val2 = std::mem::replace(v2, Value::Null);
+        let res = shl_values(val1, val2, *t);
         bytecode[i] = Instructions::Push(res);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
         i += 3;
       }
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Shr(t)) => {
-        let res = crate::instructions::math::shr_func::shr_func(
-          std::mem::replace(v1, Value::Null),
-          std::mem::replace(v2, Value::Null),
-          *t,
-        );
+        let val1 = std::mem::replace(v1, Value::Null);
+        let val2 = std::mem::replace(v2, Value::Null);
+        let res = shr_values(val1, val2, *t);
         bytecode[i] = Instructions::Push(res);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
         i += 3;
       }
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Rol(t)) => {
-        let res = crate::instructions::math::rol_func::rol_func(
-          std::mem::replace(v1, Value::Null),
-          std::mem::replace(v2, Value::Null),
-          *t,
-        );
+        let val1 = std::mem::replace(v1, Value::Null);
+        let val2 = std::mem::replace(v2, Value::Null);
+        let res = rol_values(val1, val2, *t);
         bytecode[i] = Instructions::Push(res);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
         i += 3;
       }
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Ror(t)) => {
-        let res = crate::instructions::math::ror_func::ror_func(
-          std::mem::replace(v1, Value::Null),
-          std::mem::replace(v2, Value::Null),
-          *t,
-        );
+        let val1 = std::mem::replace(v1, Value::Null);
+        let val2 = std::mem::replace(v2, Value::Null);
+        let res = ror_values(val1, val2, *t);
         bytecode[i] = Instructions::Push(res);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
@@ -210,7 +207,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Concat) => {
         let val1 = std::mem::replace(v1, Value::Null);
         let val2 = std::mem::replace(v2, Value::Null);
-        let res = crate::instructions::stack::concat_func::concat_func(&val1, &val2);
+        let res = concat_values(&val1, &val2);
         bytecode[i] = Instructions::Push(res);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
@@ -219,7 +216,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Pow(t)) => {
         let val1 = std::mem::replace(v1, Value::Null);
         let val2 = std::mem::replace(v2, Value::Null);
-        let result = pow_func(val1, val2, *t);
+        let result = pow_values(val1, val2, *t);
         bytecode[i] = Instructions::Push(result);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
@@ -228,7 +225,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Powi(t)) => {
         let val1 = std::mem::replace(v1, Value::Null);
         let val2 = std::mem::replace(v2, Value::Null);
-        let result = powi_func(val1, val2, *t);
+        let result = powi_values(val1, val2, *t);
         bytecode[i] = Instructions::Push(result);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
@@ -237,7 +234,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
       (Instructions::Push(v1), Instructions::Push(v2), Instructions::Powf(t)) => {
         let val1 = std::mem::replace(v1, Value::Null);
         let val2 = std::mem::replace(v2, Value::Null);
-        let result = powf_func(val1, val2, *t);
+        let result = powf_values(val1, val2, *t);
         bytecode[i] = Instructions::Push(result);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;

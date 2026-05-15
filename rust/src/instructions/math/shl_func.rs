@@ -12,8 +12,9 @@ use crate::instructions::math::shl::{
   shl_i128in::shl_i128in, shl_i16in::shl_i16in, shl_i32in::shl_i32in, shl_i64in::shl_i64in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
-#[inline]
-pub fn shl_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
+use crate::utils::vmerror::VMError;
+#[inline(always)]
+pub fn shl_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
     PrimitiveTypes::Sht => Value::Int16(shl_i16in(a.as_i16(), b.as_i16())),
     PrimitiveTypes::Int => Value::Int32(shl_i32in(a.as_i32(), b.as_i32())),
@@ -21,4 +22,20 @@ pub fn shl_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Oct => Value::Int128(shl_i128in(a.as_i128(), b.as_i128())),
     _ => Value::NaN,
   }
+}
+#[inline]
+pub fn shl_func(
+  stack: &mut Vec<Value>,
+  num_type: PrimitiveTypes,
+  ip: usize,
+) -> Result<(), VMError> {
+  let b = stack
+    .pop()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "SHL" })?;
+  let a_ref = stack
+    .last_mut()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "SHL" })?;
+  let a = std::mem::take(a_ref);
+  *a_ref = shl_values(a, b, num_type);
+  Ok(())
 }

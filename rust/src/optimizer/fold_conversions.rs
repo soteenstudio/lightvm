@@ -9,6 +9,11 @@
  */
 
 use crate::types::{instructions::Instructions, value::Value};
+use crate::instructions::math::{
+  sin_func::sin_values,
+  cos_func::cos_values,
+  tan_func::tan_values,
+};
 #[inline]
 #[cold]
 pub fn fold_conversions(bytecode: &mut [Instructions]) {
@@ -133,7 +138,7 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
       }
       (Instructions::Push(v), Instructions::Sin(t)) => {
         let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
-        let res = crate::instructions::math::sin_func::sin_func(tmp_stack.pop().unwrap(), *t);
+        let res = sin_values(tmp_stack.pop().unwrap(), *t);
         tmp_stack.push(res);
         if let Some(converted_val) = tmp_stack.pop() {
           bytecode[i] = Instructions::Push(converted_val);
@@ -146,7 +151,7 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
       }
       (Instructions::Push(v), Instructions::Cos(t)) => {
         let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
-        let res = crate::instructions::math::cos_func::cos_func(tmp_stack.pop().unwrap(), *t);
+        let res = cos_values(tmp_stack.pop().unwrap(), *t);
         tmp_stack.push(res);
         if let Some(converted_val) = tmp_stack.pop() {
           bytecode[i] = Instructions::Push(converted_val);
@@ -159,7 +164,7 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
       }
       (Instructions::Push(v), Instructions::Tan(t)) => {
         let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
-        let res = crate::instructions::math::tan_func::tan_func(tmp_stack.pop().unwrap(), *t);
+        let res = tan_values(tmp_stack.pop().unwrap(), *t);
         tmp_stack.push(res);
         if let Some(converted_val) = tmp_stack.pop() {
           bytecode[i] = Instructions::Push(converted_val);
