@@ -121,7 +121,7 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
       }
       (Instructions::Push(v), Instructions::TypeOf) => {
         let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
-        let _ = crate::instructions::metadata::typeof_func::typeof_func(&mut tmp_stack);
+        let _ = crate::instructions::metadata::typeof_func::typeof_func(&mut tmp_stack, 0);
         if let Some(converted_val) = tmp_stack.pop() {
           bytecode[i] = Instructions::Push(converted_val);
           bytecode[i + 1] = Instructions::Nop;

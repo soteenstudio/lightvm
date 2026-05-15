@@ -12,8 +12,9 @@ use crate::types::value::Value;
 use ahash::AHashMap;
 use smol_str::SmolStr;
 use std::sync::Arc;
+use crate::utils::vmerror::VMError;
 #[inline]
-pub fn typeof_func(stack: &mut [Value]) -> Result<(), SmolStr> {
+pub fn typeof_func(stack: &mut [Value], ip: usize) -> Result<(), VMError> {
   if let Some(top) = stack.last_mut() {
     let (class_name, is_nullable) = match top {
       Value::Int16(_) => ("Short", false),
@@ -41,6 +42,6 @@ pub fn typeof_func(stack: &mut [Value]) -> Result<(), SmolStr> {
     *top = Value::Object(Arc::new(metadata));
     Ok(())
   } else {
-    Err(SmolStr::new_static("Stack underflow on TYPEOF"))
+    Err(VMError::StackUnderflow { ip, opcode: "TYPEOF" })
   }
 }

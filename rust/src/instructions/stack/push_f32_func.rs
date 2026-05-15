@@ -10,19 +10,14 @@
 
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
-#[inline]
-pub fn set_func(
-  stack: &mut Vec<Value>,
-  vars: &mut Vec<Value>,
-  index: usize,
-  ip: usize,
-) -> Result<(), VMError> {
-  let val = stack
-    .pop()
-    .ok_or(VMError::StackUnderflow { ip, opcode: "SET" })?;
-  if index >= vars.len() {
-    vars.resize(index + 1, Value::Undefined);
+#[inline(always)]
+pub fn push_f32_func(stack: &mut Vec<Value>, val: &f32, ip: usize) -> Result<(), VMError> {
+  if stack.len() == stack.capacity() {
+    return Err(VMError::StackOverflow {
+      ip,
+      limit: stack.capacity(),
+    });
   }
-  vars[index] = val;
+  stack.push(Value::Float32(*val));
   Ok(())
 }

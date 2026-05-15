@@ -9,9 +9,18 @@
  */
 
 use crate::types::value::Value;
-pub fn dup_func(stack: &mut Vec<Value>) {
-  if let Some(top) = stack.last() {
-    let cloned = top.clone();
-    stack.push(cloned);
+use crate::utils::vmerror::VMError;
+pub fn dup_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
+  let top = stack
+    .last()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "DUP" })?;
+  if stack.len() == stack.capacity() {
+    return Err(VMError::StackOverflow {
+      ip,
+      limit: stack.capacity(),
+    });
   }
+  let cloned = top.clone();
+  stack.push(cloned);
+  Ok(())
 }

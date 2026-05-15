@@ -9,9 +9,26 @@
  */
 
 use crate::types::value::Value;
+use crate::utils::vmerror::VMError;
 #[allow(clippy::ptr_arg)]
 #[inline]
-pub fn get_func(stack: &mut Vec<Value>, vars: &mut Vec<Value>, index: usize) {
-  let val = vars.get(index).cloned().unwrap_or(Value::Undefined);
+pub fn get_func(
+  stack: &mut Vec<Value>,
+  vars: &mut Vec<Value>,
+  index: usize,
+  ip: usize,
+) -> Result<(), VMError> {
+  let val = vars.get(index).cloned().ok_or(VMError::OutOfBounds {
+    ip,
+    index,
+    len: vars.len(),
+  })?;
+  if stack.len() == stack.capacity() {
+    return Err(VMError::StackOverflow {
+      ip,
+      limit: stack.capacity(),
+    });
+  }
   stack.push(val);
+  Ok(())
 }

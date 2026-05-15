@@ -17,3 +17,4 @@ pub mod map_primitive;
 pub mod marker_formatter;
 pub mod resolve_symbols;
 pub mod type_binding;
+pub mod vmerror;

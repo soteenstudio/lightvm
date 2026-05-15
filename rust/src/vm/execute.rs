@@ -53,7 +53,10 @@ use crate::instructions::{
   metadata::{length_func::length_func, typeof_func::typeof_func},
   stack::{
     concat_func::concat_func, dup_func::dup_func, get_func::get_func, import_func::import_func,
-    push_func::push_func, set_func::set_func, truncate_func::truncate_func, val_func::val_func,
+    push_f16_func::push_f16_func, push_f32_func::push_f32_func, push_f64_func::push_f64_func,
+    push_func::push_func, push_i128_func::push_i128_func, push_i16_func::push_i16_func,
+    push_i32_func::push_i32_func, push_i64_func::push_i64_func, set_func::set_func,
+    truncate_func::truncate_func, val_func::val_func,
   },
 };
 use crate::types::{
@@ -90,25 +93,25 @@ pub fn execute(
         }
       }
       Instructions::PushInt16(v) => {
-        stack.push(Value::Int16(*v));
+        push_i16_func(&mut stack, v, ip).map_err(|e| e.format())?;
       }
       Instructions::PushInt32(v) => {
-        stack.push(Value::Int32(*v));
+        push_i32_func(&mut stack, v, ip).map_err(|e| e.format())?;
       }
       Instructions::PushInt64(v) => {
-        stack.push(Value::Int64(*v));
+        push_i64_func(&mut stack, v, ip).map_err(|e| e.format())?;
       }
       Instructions::PushInt128(v) => {
-        stack.push(Value::Int128(*v));
+        push_i128_func(&mut stack, v, ip).map_err(|e| e.format())?;
       }
       Instructions::PushFloat16(v) => {
-        stack.push(Value::Float16(*v));
+        push_f16_func(&mut stack, v, ip).map_err(|e| e.format())?;
       }
       Instructions::PushFloat32(v) => {
-        stack.push(Value::Float32(*v));
+        push_f32_func(&mut stack, v, ip).map_err(|e| e.format())?;
       }
       Instructions::PushFloat64(v) => {
-        stack.push(Value::Float64(*v));
+        push_f64_func(&mut stack, v, ip).map_err(|e| e.format())?;
       }
       Instructions::PushUndefined => {
         stack.push(Value::Undefined);
@@ -120,10 +123,10 @@ pub fn execute(
         val_func(&mut vars, *idx);
       }
       Instructions::SetIdx(idx) => {
-        set_func(&mut stack, &mut vars, *idx);
+        set_func(&mut stack, &mut vars, *idx, ip).map_err(|e| e.format())?;
       }
       Instructions::GetIdx(idx) => {
-        get_func(&mut stack, &mut vars, *idx);
+        get_func(&mut stack, &mut vars, *idx, ip).map_err(|e| e.format())?;
       }
       Instructions::Concat => {
         let b = stack
@@ -446,7 +449,7 @@ pub fn execute(
         access_func(&mut stack, prop)?;
       }
       Instructions::TypeOf => {
-        typeof_func(&mut stack)?;
+        typeof_func(&mut stack, ip).map_err(|e| e.format())?;
       }
       Instructions::InspectObj => {
         inspect_obj_func(&mut stack)?;
@@ -479,7 +482,7 @@ pub fn execute(
         to_double_func(&mut stack);
       }
       Instructions::Dup => {
-        dup_func(&mut stack);
+        dup_func(&mut stack, ip).map_err(|e| e.format())?;
       }
       Instructions::Length => {
         length_func(&mut stack);
@@ -502,7 +505,7 @@ pub fn execute(
         let _ = shrink_func(&mut stack);
       }
       Instructions::Truncate => {
-        let _ = truncate_func(&mut stack);
+        let _ = truncate_func(&mut stack, ip).map_err(|e| e.format())?;
       }
       _ => {}
     }

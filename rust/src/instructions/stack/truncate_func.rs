@@ -9,24 +9,34 @@
  */
 
 use crate::types::value::Value;
+use crate::utils::vmerror::VMError;
 use smol_str::SmolStr;
 #[inline(always)]
-pub fn truncate_func(stack: &mut Vec<Value>) -> Result<(), SmolStr> {
-  let val = stack
-    .pop()
-    .ok_or_else(|| SmolStr::new("Stack underflow on TRUNCATE"))?;
+pub fn truncate_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
+  let val = stack.pop().ok_or(VMError::StackUnderflow {
+    ip,
+    opcode: "TRUNCATE",
+  })?;
   let target_size = match val {
     Value::Int16(i) => i as usize,
     Value::Int32(i) => i as usize,
     Value::Int64(i) => i as usize,
-    _ => return Err(SmolStr::new("TRUNCATE target size must be an integer")),
+    _ => {
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: "Integer",
+        found: "Unknown",
+      })
+    }
   };
   if target_size <= stack.len() {
     stack.truncate(target_size);
+    Ok(())
   } else {
-    return Err(SmolStr::new(
-      "TRUNCATE target size exceeds current stack height",
-    ));
+    Err(VMError::OutOfBounds {
+      ip,
+      index: target_size,
+      len: stack.len(),
+    })
   }
-  Ok(())
 }
