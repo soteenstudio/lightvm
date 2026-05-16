@@ -196,41 +196,16 @@ pub fn execute(
         neq_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
       }
       Instructions::And => {
-        let b = stack
-          .pop()
-          .ok_or_else(|| SmolStr::new("Stack underflow on AND (b)"))?;
-        let a_ref = stack
-          .last_mut()
-          .ok_or_else(|| SmolStr::new("Stack underflow on AND (a)"))?;
-        let a = std::mem::take(a_ref);
-        *a_ref = and_func(a, b);
+        and_func(&mut stack, ip).map_err(|e| e.format())?;
       }
       Instructions::Or => {
-        let b = stack
-          .pop()
-          .ok_or_else(|| SmolStr::new("Stack underflow on OR (b)"))?;
-        let a_ref = stack
-          .last_mut()
-          .ok_or_else(|| SmolStr::new("Stack underflow on OR (a)"))?;
-        let a = std::mem::take(a_ref);
-        *a_ref = or_func(a, b);
+        or_func(&mut stack, ip).map_err(|e| e.format())?;
       }
       Instructions::Xor => {
-        let b = stack
-          .pop()
-          .ok_or_else(|| SmolStr::new("Stack underflow on XOR (b)"))?;
-        let a_ref = stack
-          .last_mut()
-          .ok_or_else(|| SmolStr::new("Stack underflow on XOR (a)"))?;
-        let a = std::mem::take(a_ref);
-        *a_ref = xor_func(a, b);
+        xor_func(&mut stack, ip).map_err(|e| e.format())?;
       }
       Instructions::Not => {
-        let val_ref = stack
-          .last_mut()
-          .ok_or_else(|| SmolStr::new("Stack underflow on NOT"))?;
-        let val = std::mem::take(val_ref);
-        *val_ref = not_func(val);
+        not_func(&mut stack, ip).map_err(|e| e.format())?;
       }
       Instructions::Print => {
         let val_ref = stack

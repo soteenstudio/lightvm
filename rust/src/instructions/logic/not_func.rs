@@ -9,7 +9,17 @@
  */
 
 use crate::types::value::Value;
+use crate::utils::vmerror::VMError;
 #[inline(always)]
-pub fn not_func(a: Value) -> Value {
+pub fn not_values(a: Value) -> Value {
   Value::Bool(!a.is_truthy())
+}
+#[inline]
+pub fn not_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
+  let a_ref = stack
+    .last_mut()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "AND" })?;
+  let a = std::mem::take(a_ref);
+  *a_ref = not_values(a);
+  Ok(())
 }

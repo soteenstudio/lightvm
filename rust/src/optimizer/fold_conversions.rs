@@ -8,7 +8,10 @@
  *     http://www.apache.org/licenses/LICENSE-2.0  
  */
 
-use crate::instructions::math::{cos_func::cos_values, sin_func::sin_values, tan_func::tan_values};
+use crate::instructions::{
+  math::{cos_func::cos_values, sin_func::sin_values, tan_func::tan_values},
+  logic::not_func::not_values,
+};
 use crate::types::{instructions::Instructions, value::Value};
 #[inline]
 #[cold]
@@ -19,7 +22,8 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
     let mut instr2 = std::mem::replace(&mut bytecode[i + 1], Instructions::Nop);
     match (&mut instr1, &mut instr2) {
       (Instructions::Push(v), Instructions::Not) => {
-        let res = crate::instructions::logic::not_func::not_func(std::mem::replace(v, Value::Null));
+        let val = std::mem::replace(v, Value::Null);
+        let res = not_values(val);
         bytecode[i] = Instructions::Push(res);
         bytecode[i + 1] = Instructions::Nop;
         i += 2;

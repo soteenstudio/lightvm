@@ -9,7 +9,20 @@
  */
 
 use crate::types::value::Value;
+use crate::utils::vmerror::VMError;
 #[inline(always)]
-pub fn xor_func(a: Value, b: Value) -> Value {
+pub fn xor_values(a: Value, b: Value) -> Value {
   Value::Bool(a.is_truthy() ^ b.is_truthy())
+}
+#[inline]
+pub fn xor_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
+  let b = stack
+    .pop()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "XOR" })?;
+  let a_ref = stack
+    .last_mut()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "XOR" })?;
+  let a = std::mem::take(a_ref);
+  *a_ref = xor_values(a, b);
+  Ok(())
 }
