@@ -13,8 +13,9 @@ use crate::instructions::comparison::ge::{
   ge_i32in::ge_i32in, ge_i64in::ge_i64in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
-#[inline]
-pub fn ge_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
+use crate::utils::vmerror::VMError;
+#[inline(always)]
+pub fn ge_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
     PrimitiveTypes::Sht => Value::Bool(ge_i16in(a.as_i16(), b.as_i16())),
     PrimitiveTypes::Int => Value::Bool(ge_i32in(a.as_i32(), b.as_i32())),
@@ -24,4 +25,16 @@ pub fn ge_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Hlf => Value::Bool(ge_f16in(a.as_f32(), b.as_f32())),
     _ => Value::Bool(false),
   }
+}
+#[inline]
+pub fn ge_func(stack: &mut Vec<Value>, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
+  let b = stack
+    .pop()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "GE" })?;
+  let a_ref = stack
+    .last_mut()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "GE" })?;
+  let a = std::mem::take(a_ref);
+  *a_ref = ge_values(a, b, num_type);
+  Ok(())
 }

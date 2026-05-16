@@ -19,5 +19,12 @@ pub fn run(bytecode_json: String) -> String {
     .map(|item| Instructions::from_json_array(&item))
     .collect();
   let result = crate::vm::execute::execute(bytecode, None);
-  serde_json::to_string(&result).unwrap()
+  match result {
+    Ok(val) => serde_json::to_string(&val)
+      .unwrap_or_else(|_| r#"{"error": "Failed to serialize result"}"#.to_string()),
+    Err(err_msg) => {
+      eprintln!("\n{}", err_msg);
+      format!(r#"{{"status": "error", "message": {:?}}}"#, err_msg)
+    }
+  }
 }

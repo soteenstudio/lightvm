@@ -9,8 +9,15 @@
  */
 
 use crate::types::value::Value;
-#[inline]
-pub fn push_func(stack: &mut Vec<Value>, val: Value) {
-  if stack.len() == stack.capacity() {}
-  stack.push(val);
+use crate::utils::vmerror::VMError;
+#[inline(always)]
+pub fn push_i64_func(stack: &mut Vec<Value>, val: &i64, ip: usize) -> Result<(), VMError> {
+  if stack.len() == stack.capacity() {
+    return Err(VMError::StackOverflow {
+      ip,
+      limit: stack.capacity(),
+    });
+  }
+  stack.push(Value::Int64(*val));
+  Ok(())
 }

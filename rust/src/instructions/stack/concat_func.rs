@@ -10,10 +10,11 @@
 
 use crate::types::value::Value;
 use crate::utils::filtered_writer::FilteredWriter;
+use crate::utils::vmerror::VMError;
 use smol_str::SmolStr;
 use std::fmt::Write;
-#[inline]
-pub fn concat_func(a: &Value, b: &Value) -> Value {
+#[inline(always)]
+pub fn concat_values(a: &Value, b: &Value) -> Value {
   let mut f_writer = FilteredWriter {
     buffer: String::with_capacity(64),
     state: 0,
@@ -23,4 +24,17 @@ pub fn concat_func(a: &Value, b: &Value) -> Value {
     f_writer.flush_failed_match();
   }
   Value::String(SmolStr::new(f_writer.buffer))
+}
+#[inline]
+pub fn concat_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
+  let b = stack.pop().ok_or(VMError::StackUnderflow {
+    ip,
+    opcode: "CONCAT",
+  })?;
+  let a_ref = stack.last_mut().ok_or(VMError::StackUnderflow {
+    ip,
+    opcode: "CONCAT",
+  })?;
+  *a_ref = concat_values(a_ref, &b);
+  Ok(())
 }

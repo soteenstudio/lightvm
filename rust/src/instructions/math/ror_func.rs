@@ -12,8 +12,9 @@ use crate::instructions::math::ror::{
   ror_i128in::ror_i128in, ror_i16in::ror_i16in, ror_i32in::ror_i32in, ror_i64in::ror_i64in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
-#[inline]
-pub fn ror_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
+use crate::utils::vmerror::VMError;
+#[inline(always)]
+pub fn ror_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
     PrimitiveTypes::Sht => Value::Int16(ror_i16in(a.as_i16(), b.as_i16())),
     PrimitiveTypes::Int => Value::Int32(ror_i32in(a.as_i32(), b.as_i32())),
@@ -21,4 +22,20 @@ pub fn ror_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Oct => Value::Int128(ror_i128in(a.as_i128(), b.as_i128())),
     _ => Value::NaN,
   }
+}
+#[inline]
+pub fn ror_func(
+  stack: &mut Vec<Value>,
+  num_type: PrimitiveTypes,
+  ip: usize,
+) -> Result<(), VMError> {
+  let b = stack
+    .pop()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "ROR" })?;
+  let a_ref = stack
+    .last_mut()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "ROR" })?;
+  let a = std::mem::take(a_ref);
+  *a_ref = ror_values(a, b, num_type);
+  Ok(())
 }

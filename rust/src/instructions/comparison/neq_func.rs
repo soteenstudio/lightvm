@@ -8,15 +8,32 @@
  *     http://www.apache.org/licenses/LICENSE-2.0  
  */
 
-use super::eq_func::eq_func;
+use super::eq_func::eq_values;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::value::Value;
-#[inline]
-pub fn neq_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
-  let is_equal = eq_func(a, b, num_type);
+use crate::utils::vmerror::VMError;
+#[inline(always)]
+pub fn neq_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
+  let is_equal = eq_values(a, b, num_type);
   if let Value::Bool(val) = is_equal {
     Value::Bool(!val)
   } else {
     Value::Bool(true)
   }
+}
+#[inline]
+pub fn neq_func(
+  stack: &mut Vec<Value>,
+  num_type: PrimitiveTypes,
+  ip: usize,
+) -> Result<(), VMError> {
+  let b = stack
+    .pop()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "NEQ" })?;
+  let a_ref = stack
+    .last_mut()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "NEQ" })?;
+  let a = std::mem::take(a_ref);
+  *a_ref = neq_values(a, b, num_type);
+  Ok(())
 }

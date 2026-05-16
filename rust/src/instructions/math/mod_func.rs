@@ -13,8 +13,9 @@ use crate::instructions::math::r#mod::{
   mod_i16in::mod_i16in, mod_i32in::mod_i32in, mod_i64in::mod_i64in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
-#[inline]
-pub fn mod_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
+use crate::utils::vmerror::VMError;
+#[inline(always)]
+pub fn mod_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
     PrimitiveTypes::Sht => Value::Int16(mod_i16in(a.as_i16(), b.as_i16())),
     PrimitiveTypes::Int => Value::Int32(mod_i32in(a.as_i32(), b.as_i32())),
@@ -25,4 +26,20 @@ pub fn mod_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Dbl => Value::Float64(mod_f64in(a.as_f64(), b.as_f64())),
     _ => Value::NaN,
   }
+}
+#[inline]
+pub fn mod_func(
+  stack: &mut Vec<Value>,
+  num_type: PrimitiveTypes,
+  ip: usize,
+) -> Result<(), VMError> {
+  let b = stack
+    .pop()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "MOD" })?;
+  let a_ref = stack
+    .last_mut()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "MOD" })?;
+  let a = std::mem::take(a_ref);
+  *a_ref = mod_values(a, b, num_type);
+  Ok(())
 }

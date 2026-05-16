@@ -13,8 +13,9 @@ use crate::instructions::comparison::eq::{
   eq_i32in::eq_i32in, eq_i64in::eq_i64in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
-#[inline]
-pub fn eq_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
+use crate::utils::vmerror::VMError;
+#[inline(always)]
+pub fn eq_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
     PrimitiveTypes::Sht => Value::Bool(eq_i16in(a.as_i16(), b.as_i16())),
     PrimitiveTypes::Int => Value::Bool(eq_i32in(a.as_i32(), b.as_i32())),
@@ -25,4 +26,16 @@ pub fn eq_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Str => Value::Bool(a.as_string() == b.as_string()),
     _ => Value::Bool(false),
   }
+}
+#[inline]
+pub fn eq_func(stack: &mut Vec<Value>, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
+  let b = stack
+    .pop()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "EQ" })?;
+  let a_ref = stack
+    .last_mut()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "EQ" })?;
+  let a = std::mem::take(a_ref);
+  *a_ref = eq_values(a, b, num_type);
+  Ok(())
 }

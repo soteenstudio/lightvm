@@ -13,8 +13,9 @@ use crate::instructions::math::div::{
   div_i16in::div_i16in, div_i32in::div_i32in, div_i64in::div_i64in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
-#[inline]
-pub fn div_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
+use crate::utils::vmerror::VMError;
+#[inline(always)]
+pub fn div_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
     PrimitiveTypes::Sht => Value::Int16(div_i16in(a.as_i16(), b.as_i16())),
     PrimitiveTypes::Int => Value::Int32(div_i32in(a.as_i32(), b.as_i32())),
@@ -25,4 +26,20 @@ pub fn div_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Dbl => Value::Float64(div_f64in(a.as_f64(), b.as_f64())),
     _ => Value::NaN,
   }
+}
+#[inline]
+pub fn div_func(
+  stack: &mut Vec<Value>,
+  num_type: PrimitiveTypes,
+  ip: usize,
+) -> Result<(), VMError> {
+  let b = stack
+    .pop()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "DIV" })?;
+  let a_ref = stack
+    .last_mut()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "DIV" })?;
+  let a = std::mem::take(a_ref);
+  *a_ref = div_values(a, b, num_type);
+  Ok(())
 }

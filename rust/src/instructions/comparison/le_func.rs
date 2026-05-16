@@ -13,8 +13,9 @@ use crate::instructions::comparison::le::{
   le_i32in::le_i32in, le_i64in::le_i64in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
-#[inline]
-pub fn le_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
+use crate::utils::vmerror::VMError;
+#[inline(always)]
+pub fn le_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
     PrimitiveTypes::Sht => Value::Bool(le_i16in(a.as_i16(), b.as_i16())),
     PrimitiveTypes::Int => Value::Bool(le_i32in(a.as_i32(), b.as_i32())),
@@ -24,4 +25,16 @@ pub fn le_func(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Hlf => Value::Bool(le_f16in(a.as_f32(), b.as_f32())),
     _ => Value::Bool(false),
   }
+}
+#[inline]
+pub fn le_func(stack: &mut Vec<Value>, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
+  let b = stack
+    .pop()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "LE" })?;
+  let a_ref = stack
+    .last_mut()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "LE" })?;
+  let a = std::mem::take(a_ref);
+  *a_ref = le_values(a, b, num_type);
+  Ok(())
 }
