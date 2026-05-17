@@ -124,6 +124,9 @@ pub fn execute(
       }
       Instructions::Print
       | Instructions::Println
+      | Instructions::Stdout
+      | Instructions::Stdoutln
+      | Instructions::Stdin
       | Instructions::InspectObj
       | Instructions::InspectArr => {
         io_dispatch(instr, &mut stack, ip).map_err(|e| e.format())?;

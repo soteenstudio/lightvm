@@ -8,9 +8,11 @@
  *     http://www.apache.org/licenses/LICENSE-2.0  
  */
 
+use std::io::{self, Write}; // <-- Tambah import ini
 use crate::types::value::Value;
 use crate::utils::format_output::format_output;
 use crate::utils::vmerror::VMError;
+
 #[inline(always)]
 pub fn print_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
   let val_ref = stack.last_mut().ok_or(VMError::StackUnderflow {
@@ -19,5 +21,8 @@ pub fn print_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
   })?;
   let val = std::mem::take(val_ref);
   format_output(&val, false);
+  
+  // Amankan output ke CLI secara instan
+  let _ = io::stdout().flush(); 
   Ok(())
 }

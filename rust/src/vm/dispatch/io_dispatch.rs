@@ -11,6 +11,8 @@
 use crate::instructions::io::{
   inspect_arr_func::inspect_arr_func, inspect_obj_func::inspect_obj_func, print_func::print_func,
   println_func::println_func,
+  stdin_func::stdin_func,
+  stdout_func::{stdout_func, stdoutln_func},
 };
 use crate::types::{instructions::Instructions, value::Value};
 use crate::utils::vmerror::VMError;
@@ -18,6 +20,9 @@ pub fn io_dispatch(instr: &Instructions, stack: &mut Vec<Value>, ip: usize) -> R
   match instr {
     Instructions::Print => print_func(stack, ip),
     Instructions::Println => println_func(stack, ip),
+    Instructions::Stdout => stdout_func(stack, ip),
+    Instructions::Stdoutln => stdoutln_func(stack, ip),
+    Instructions::Stdin => stdin_func(stack),
     Instructions::InspectObj => inspect_obj_func(stack, ip),
     Instructions::InspectArr => inspect_arr_func(stack, ip),
     _ => unsafe { std::hint::unreachable_unchecked() },
