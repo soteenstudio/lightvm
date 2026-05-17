@@ -14,58 +14,23 @@ use crate::instructions::{
     make_array_func::make_array_func, make_obj_func::make_obj_func, set_prop_func::set_prop_func,
     shrink_func::shrink_func,
   },
-  comparison::{
-    eq_func::eq_func, ge_func::ge_func, gt_func::gt_func, le_func::le_func, lt_func::lt_func,
-    neq_func::neq_func,
-  },
-  control_flow::{
-    break_func::break_func, call_func::call_func, if_false_func::if_false_func,
-    instantiate_func::instantiate_func, jump_func::jump_func, return_func::return_func,
-    stop_func::stop_func,
-  },
   conversion::{
     to_double_func::to_double_func, to_float_func::to_float_func, to_half_func::to_half_func,
     to_integer_func::to_integer_func, to_long_func::to_long_func, to_octa_func::to_octa_func,
     to_short_func::to_short_func, to_string_func::to_string_func,
   },
-  io::{
-    inspect_arr_func::inspect_arr_func, inspect_obj_func::inspect_obj_func, print_func::print_func,
-    println_func::println_func,
-  },
-  logic::{and_func::and_func, not_func::not_func, or_func::or_func, xor_func::xor_func},
-  math::{
-    add_func::add_func,
-    cos_func::cos_func,
-    div_func::div_func,
-    inc_dec::{dec_func, inc_func},
-    mod_func::mod_func,
-    mul_func::mul_func,
-    pow_func::pow_func,
-    powf_func::powf_func,
-    powi_func::powi_func,
-    rol_func::rol_func,
-    ror_func::ror_func,
-    shl_func::shl_func,
-    shr_func::shr_func,
-    sin_func::sin_func,
-    sub_func::sub_func,
-    tan_func::tan_func,
-  },
   metadata::{length_func::length_func, typeof_func::typeof_func},
-  stack::{
-    concat_func::concat_func, dup_func::dup_func, get_func::get_func, import_func::import_func,
-    push_f16_func::push_f16_func, push_f32_func::push_f32_func, push_f64_func::push_f64_func,
-    push_func::push_func, push_i128_func::push_i128_func, push_i16_func::push_i16_func,
-    push_i32_func::push_i32_func, push_i64_func::push_i64_func, set_func::set_func,
-    truncate_func::truncate_func, val_func::val_func,
-  },
 };
 use crate::types::{
+  control_flow_signal::ControlFlowSignal,
   instructions::Instructions,
   value::{RunOptions, Value},
 };
-use crate::utils::{
-  compute_hot_threshold::compute_hot_threshold, resolve_symbols::resolve_symbols,
+use crate::utils::resolve_symbols::resolve_symbols;
+use crate::vm::dispatch::{
+  comparison_dispatch::comparison_dispatch, control_flow_dispatch::control_flow_dispatch,
+  io_dispatch::io_dispatch, logic_dispatch::logic_dispatch, math_dispatch::math_dispatch,
+  stack_dispatch::stack_dispatch,
 };
 use crate::vm::{inject_args::inject_args, prepare_vm::prepare_vm};
 use smol_str::SmolStr;
@@ -79,193 +44,89 @@ pub fn execute(
   let var_count = resolve_symbols(&mut bytecode);
   let mut vars: Vec<Value> = vec![Value::Undefined; var_count];
   let mut _call_stack: Vec<usize> = Vec::new();
-  let mut hit_counter = vec![0u32; bytecode.len()];
   let (functions, _exported, mut ip) = prepare_vm(&bytecode, &options);
   inject_args(&mut vars, &functions, &options, ip);
-  while ip < bytecode.len() {
-    let instr = &bytecode[ip];
-    hit_counter[ip] += 1;
-    let is_hot = hit_counter[ip] >= 1000;
-    let _hot_threshold = compute_hot_threshold(stack.len());
+  let bytecode_ptr = bytecode.as_ptr();
+  let bytecode_len = bytecode.len();
+  while ip < bytecode_len {
+    let instr = unsafe { &*bytecode_ptr.add(ip) };
     match instr {
-      Instructions::InitStack(size) => {
-        if ip == 0 {
-          stack = Vec::with_capacity(*size as usize);
-        }
+      Instructions::InitStack(_)
+      | Instructions::PushInt16(_)
+      | Instructions::PushInt32(_)
+      | Instructions::PushInt64(_)
+      | Instructions::PushInt128(_)
+      | Instructions::PushFloat16(_)
+      | Instructions::PushFloat32(_)
+      | Instructions::PushFloat64(_)
+      | Instructions::PushUndefined
+      | Instructions::Push(_)
+      | Instructions::ValIdx(_)
+      | Instructions::SetIdx(_)
+      | Instructions::GetIdx(_)
+      | Instructions::Concat
+      | Instructions::Dup
+      | Instructions::Truncate
+      | Instructions::Import(_, _) => {
+        stack_dispatch(instr, &mut stack, &mut vars, &options, ip).map_err(|e| e.format())?;
       }
-      Instructions::PushInt16(v) => {
-        push_i16_func(&mut stack, v, ip).map_err(|e| e.format())?;
+      Instructions::Add(_)
+      | Instructions::Sub(_)
+      | Instructions::Mul(_)
+      | Instructions::Div(_)
+      | Instructions::Mod(_)
+      | Instructions::Shl(_)
+      | Instructions::Shr(_)
+      | Instructions::Ror(_)
+      | Instructions::Rol(_)
+      | Instructions::Pow(_)
+      | Instructions::Powi(_)
+      | Instructions::Powf(_)
+      | Instructions::Sin(_)
+      | Instructions::Cos(_)
+      | Instructions::Tan(_)
+      | Instructions::IncIdx(_, _)
+      | Instructions::DecIdx(_, _) => {
+        math_dispatch(instr, &mut stack, &mut vars, ip).map_err(|e| e.format())?;
       }
-      Instructions::PushInt32(v) => {
-        push_i32_func(&mut stack, v, ip).map_err(|e| e.format())?;
+      Instructions::Gt(_)
+      | Instructions::Lt(_)
+      | Instructions::Ge(_)
+      | Instructions::Le(_)
+      | Instructions::Eq(_)
+      | Instructions::Neq(_) => {
+        comparison_dispatch(instr, &mut stack, ip).map_err(|e| e.format())?;
       }
-      Instructions::PushInt64(v) => {
-        push_i64_func(&mut stack, v, ip).map_err(|e| e.format())?;
+      Instructions::And | Instructions::Or | Instructions::Xor | Instructions::Not => {
+        logic_dispatch(instr, &mut stack, ip).map_err(|e| e.format())?;
       }
-      Instructions::PushInt128(v) => {
-        push_i128_func(&mut stack, v, ip).map_err(|e| e.format())?;
-      }
-      Instructions::PushFloat16(v) => {
-        push_f16_func(&mut stack, v, ip).map_err(|e| e.format())?;
-      }
-      Instructions::PushFloat32(v) => {
-        push_f32_func(&mut stack, v, ip).map_err(|e| e.format())?;
-      }
-      Instructions::PushFloat64(v) => {
-        push_f64_func(&mut stack, v, ip).map_err(|e| e.format())?;
-      }
-      Instructions::PushUndefined => {
-        stack.push(Value::Undefined);
-      }
-      Instructions::Push(val) => {
-        push_func(&mut stack, val.clone());
-      }
-      Instructions::ValIdx(idx) => {
-        val_func(&mut vars, *idx);
-      }
-      Instructions::SetIdx(idx) => {
-        set_func(&mut stack, &mut vars, *idx, ip).map_err(|e| e.format())?;
-      }
-      Instructions::GetIdx(idx) => {
-        get_func(&mut stack, &mut vars, *idx, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Concat => {
-        concat_func(&mut stack, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Add(num_type) => {
-        add_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Sub(num_type) => {
-        sub_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Mul(num_type) => {
-        mul_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Div(num_type) => {
-        div_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Mod(num_type) => {
-        mod_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Shl(num_type) => {
-        shl_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Shr(num_type) => {
-        shr_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Ror(num_type) => {
-        ror_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Rol(num_type) => {
-        rol_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Pow(num_type) => {
-        pow_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Powi(num_type) => {
-        powi_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Powf(num_type) => {
-        powf_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Sin(num_type) => {
-        sin_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Cos(num_type) => {
-        cos_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Tan(num_type) => {
-        tan_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Gt(num_type) => {
-        gt_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Lt(num_type) => {
-        lt_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Ge(num_type) => {
-        ge_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Le(num_type) => {
-        le_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Eq(num_type) => {
-        eq_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Neq(num_type) => {
-        neq_func(&mut stack, *num_type, ip).map_err(|e| e.format())?;
-      }
-      Instructions::And => {
-        and_func(&mut stack, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Or => {
-        or_func(&mut stack, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Xor => {
-        xor_func(&mut stack, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Not => {
-        not_func(&mut stack, ip).map_err(|e| e.format())?;
-      }
-      Instructions::Print => {
-        let val_ref = stack
-          .last_mut()
-          .ok_or_else(|| SmolStr::new("Stack underflow on PRINT"))?;
-        let val = std::mem::take(val_ref);
-        print_func(val);
-      }
-      Instructions::Println => {
-        let val_ref = stack
-          .last_mut()
-          .ok_or_else(|| SmolStr::new("Stack underflow on PRINTLN"))?;
-        let val = std::mem::take(val_ref);
-        println_func(val);
-      }
-      Instructions::IfFalse(target_ip) => {
-        let cond_ref = stack
-          .last_mut()
-          .ok_or_else(|| SmolStr::new("Stack underflow on IF_FALSE"))?;
-        let cond = std::mem::take(cond_ref);
-        if if_false_func(cond) {
-          ip = *target_ip;
-          continue;
-        }
-      }
-      Instructions::Jump(target_ip) => {
-        jump_func(&mut ip, *target_ip);
-        continue;
-      }
-      Instructions::Return => {
-        if return_func(&mut stack, &mut _call_stack, &mut ip, &mut last_return) {
-          continue;
-        } else {
-          break;
-        }
-      }
-      Instructions::Call(name, argc) => {
-        call_func(
-          name,
-          *argc,
-          &mut ip,
+      Instructions::IfFalse(_)
+      | Instructions::Jump(_)
+      | Instructions::Return
+      | Instructions::Call(_, _)
+      | Instructions::Stop
+      | Instructions::Instantiate(_, _)
+      | Instructions::Break(_)
+      | Instructions::Func(_, _, _, _, _) => {
+        match control_flow_dispatch(
+          instr,
           &mut stack,
-          &mut _call_stack,
           &mut vars,
+          &mut _call_stack,
+          &mut last_return,
           &functions,
-        )?;
-        continue;
-      }
-      Instructions::Stop => {
-        if stop_func(&mut _call_stack, &mut ip) {
-          continue;
-        } else {
-          break;
+          &mut ip,
+        )? {
+          ControlFlowSignal::Continue => continue,
+          ControlFlowSignal::Break => break,
+          ControlFlowSignal::None => {}
         }
       }
-      Instructions::IncIdx(idx, num_type) => {
-        inc_func(&mut vars, &mut stack, *idx, *num_type, is_hot)?;
-      }
-      Instructions::DecIdx(idx, num_type) => {
-        dec_func(&mut vars, *idx, *num_type)?;
+      Instructions::Print
+      | Instructions::Println
+      | Instructions::InspectObj
+      | Instructions::InspectArr => {
+        io_dispatch(instr, &mut stack, ip).map_err(|e| e.format())?;
       }
       Instructions::MakeObj(count) => {
         make_obj_func(&mut stack, *count)?;
@@ -281,12 +142,6 @@ pub fn execute(
       }
       Instructions::TypeOf => {
         typeof_func(&mut stack, ip).map_err(|e| e.format())?;
-      }
-      Instructions::InspectObj => {
-        inspect_obj_func(&mut stack)?;
-      }
-      Instructions::InspectArr => {
-        inspect_arr_func(&mut stack)?;
       }
       Instructions::ToString => {
         to_string_func(&mut stack);
@@ -312,33 +167,22 @@ pub fn execute(
       Instructions::ToDouble => {
         to_double_func(&mut stack);
       }
-      Instructions::Dup => {
-        dup_func(&mut stack, ip).map_err(|e| e.format())?;
-      }
       Instructions::Length => {
         length_func(&mut stack);
       }
       Instructions::SetProp(prop) => {
         set_prop_func(&mut stack, prop)?;
       }
-      Instructions::Instantiate(class_name, argc) => {
-        let instance = instantiate_func(&mut stack, &mut vars, class_name, *argc)?;
-        stack.push(instance);
-      }
-      Instructions::Import(module_name, alias_idx) => {
-        import_func(&mut vars, &options, module_name, *alias_idx)?;
-      }
-      Instructions::Break(target_ip) => {
-        break_func(&mut ip, *target_ip);
-        continue;
-      }
       Instructions::Shrink => {
         let _ = shrink_func(&mut stack);
       }
-      Instructions::Truncate => {
-        let _ = truncate_func(&mut stack, ip).map_err(|e| e.format())?;
-      }
-      _ => {}
+      Instructions::Nop
+      | Instructions::Val(_)
+      | Instructions::Set(_)
+      | Instructions::Get(_)
+      | Instructions::Inc(_, _)
+      | Instructions::Dec(_, _) => {}
+      _ => unsafe { std::hint::unreachable_unchecked() },
     }
     ip += 1;
   }

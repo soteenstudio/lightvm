@@ -8,8 +8,9 @@
  *     http://www.apache.org/licenses/LICENSE-2.0  
  */
 
-pub mod dispatch;
-pub mod execute;
-pub mod inject_args;
-pub mod prepare_vm;
-pub mod run;
+pub mod comparison_dispatch;
+pub mod control_flow_dispatch;
+pub mod io_dispatch;
+pub mod logic_dispatch;
+pub mod math_dispatch;
+pub mod stack_dispatch;

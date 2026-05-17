@@ -9,22 +9,21 @@
  */
 
 use serde::{Deserialize, Serialize};
+use smol_str::SmolStr;
 use std::collections::HashSet;
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub struct Usage<'a> {
-  #[serde(borrow)]
-  pub read: HashSet<&'a str>,
-  #[serde(borrow)]
-  pub written: HashSet<&'a str>,
+pub struct Usage {
+  pub read: HashSet<SmolStr>,
+  pub written: HashSet<SmolStr>,
 }
-impl<'a> Usage<'a> {
+impl Usage {
   pub fn new() -> Self {
     Self::default()
   }
-  pub fn add_read(&mut self, variable: &'a str) {
-    self.read.insert(variable);
+  pub fn add_read(&mut self, variable: &str) {
+    self.read.insert(SmolStr::new(variable));
   }
-  pub fn add_written(&mut self, variable: &'a str) {
-    self.written.insert(variable);
+  pub fn add_written(&mut self, variable: &str) {
+    self.written.insert(SmolStr::new(variable));
   }
 }

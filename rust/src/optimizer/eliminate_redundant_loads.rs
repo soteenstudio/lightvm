@@ -9,8 +9,7 @@
  */
 
 use crate::types::instructions::Instructions;
-#[inline]
-#[cold]
+#[inline(always)]
 pub fn eliminate_redundant_loads(bytecode: Vec<Instructions>) -> Vec<Instructions> {
   if bytecode.is_empty() {
     return bytecode;

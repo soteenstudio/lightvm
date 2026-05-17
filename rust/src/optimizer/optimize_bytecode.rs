@@ -16,29 +16,24 @@ use crate::optimizer::{
   strength_reduction::strength_reduction,
 };
 use crate::types::instructions::Instructions;
-use std::borrow::Cow;
 pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
   strength_reduction(&mut bytecode);
   fold_constants(&mut bytecode);
   fold_conversions(&mut bytecode);
   jump_threading(&mut bytecode);
-  bytecode.retain(|instr| !matches!(instr, Instructions::Nop));
   let usage = analyze_usage(&bytecode);
-  bytecode = eliminate_dead_stores(&bytecode, &usage)
-    .into_iter()
-    .map(Cow::into_owned)
-    .collect();
+  eliminate_dead_stores(&mut bytecode, &usage);
   bytecode = eliminate_dead_loops(bytecode);
   bytecode = eliminate_redundant_loads(bytecode);
-  let mut j = 0;
-  while j < bytecode.len() {
-    if let Instructions::Jump(target) = bytecode[j] {
-      if target == j + 1 {
-        bytecode[j] = Instructions::Nop;
-      }
-    }
-    j += 1;
-  }
-  bytecode.retain(|instr| !matches!(instr, Instructions::Nop));
+  let mut current_idx = 0;
+  bytecode.retain(|instr| {
+    let keep = match instr {
+      Instructions::Jump(target) => *target != current_idx + 1,
+      Instructions::Nop => false,
+      _ => true,
+    };
+    current_idx += 1;
+    keep
+  });
   bytecode
 }

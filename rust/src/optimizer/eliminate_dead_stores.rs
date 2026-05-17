@@ -10,48 +10,42 @@
 
 use crate::types::instructions::Instructions;
 use crate::types::usage::Usage;
-use std::borrow::Cow;
 #[derive(PartialEq, Debug)]
 enum Demand {
   Keep,
   Drop,
 }
 #[inline]
-#[cold]
-pub fn eliminate_dead_stores<'a>(
-  bytecode: &'a [Instructions],
-  usage: &Usage,
-) -> Vec<Cow<'a, Instructions>> {
-  let mut result = Vec::new();
+pub fn eliminate_dead_stores(bytecode: &mut Vec<Instructions>, usage: &Usage) {
   let mut stack_demands: Vec<Demand> = Vec::new();
-  for inst in bytecode.iter().rev() {
+  for i in (0..bytecode.len()).rev() {
+    let inst = &mut bytecode[i];
     match inst {
       Instructions::Push(_) | Instructions::Get(_) | Instructions::GetIdx(_) => {
         if let Some(demand) = stack_demands.pop() {
-          if demand == Demand::Keep {
-            result.push(Cow::Borrowed(inst));
+          if demand == Demand::Drop {
+            *inst = Instructions::Nop;
           }
+        } else {
+          *inst = Instructions::Nop;
         }
       }
       Instructions::Val(_) | Instructions::ValIdx(_) => {
-        result.push(Cow::Borrowed(inst));
         stack_demands.push(Demand::Keep);
       }
       Instructions::Set(arg) => {
         if !usage.read.contains(arg.as_ref()) {
           stack_demands.push(Demand::Drop);
+          *inst = Instructions::Nop;
           continue;
         }
         stack_demands.push(Demand::Keep);
-        result.push(Cow::Borrowed(inst));
       }
       Instructions::SetIdx(_) => {
         stack_demands.push(Demand::Keep);
-        result.push(Cow::Borrowed(inst));
       }
       Instructions::Println | Instructions::Print => {
         stack_demands.push(Demand::Keep);
-        result.push(Cow::Borrowed(inst));
       }
       Instructions::Add(_)
       | Instructions::Sub(_)
@@ -69,14 +63,13 @@ pub fn eliminate_dead_stores<'a>(
           if demand == Demand::Keep {
             stack_demands.push(Demand::Keep);
             stack_demands.push(Demand::Keep);
-            result.push(Cow::Borrowed(inst));
           } else {
             stack_demands.push(Demand::Drop);
             stack_demands.push(Demand::Drop);
-            continue;
+            *inst = Instructions::Nop;
           }
         } else {
-          continue;
+          *inst = Instructions::Nop;
         }
       }
       Instructions::Gt(_)
@@ -93,11 +86,13 @@ pub fn eliminate_dead_stores<'a>(
           if demand == Demand::Keep {
             stack_demands.push(Demand::Keep);
             stack_demands.push(Demand::Keep);
-            result.push(Cow::Borrowed(inst));
           } else {
             stack_demands.push(Demand::Drop);
             stack_demands.push(Demand::Drop);
+            *inst = Instructions::Nop;
           }
+        } else {
+          *inst = Instructions::Nop;
         }
       }
       Instructions::Not
@@ -119,10 +114,12 @@ pub fn eliminate_dead_stores<'a>(
         if let Some(demand) = stack_demands.pop() {
           if demand == Demand::Keep {
             stack_demands.push(Demand::Keep);
-            result.push(Cow::Borrowed(inst));
           } else {
             stack_demands.push(Demand::Drop);
+            *inst = Instructions::Nop;
           }
+        } else {
+          *inst = Instructions::Nop;
         }
       }
       Instructions::MakeObj(count) | Instructions::MakeArray(count) => {
@@ -131,22 +128,26 @@ pub fn eliminate_dead_stores<'a>(
             for _ in 0..*count {
               stack_demands.push(Demand::Keep);
             }
-            result.push(Cow::Borrowed(inst));
           } else {
             for _ in 0..*count {
               stack_demands.push(Demand::Drop);
             }
+            *inst = Instructions::Nop;
           }
+        } else {
+          *inst = Instructions::Nop;
         }
       }
       Instructions::Access(_) => {
         if let Some(demand) = stack_demands.pop() {
           if demand == Demand::Keep {
             stack_demands.push(Demand::Keep);
-            result.push(Cow::Borrowed(inst));
           } else {
             stack_demands.push(Demand::Drop);
+            *inst = Instructions::Nop;
           }
+        } else {
+          *inst = Instructions::Nop;
         }
       }
       Instructions::AccessIndex => {
@@ -154,15 +155,16 @@ pub fn eliminate_dead_stores<'a>(
           if demand == Demand::Keep {
             stack_demands.push(Demand::Keep);
             stack_demands.push(Demand::Keep);
-            result.push(Cow::Borrowed(inst));
           } else {
             stack_demands.push(Demand::Drop);
             stack_demands.push(Demand::Drop);
+            *inst = Instructions::Nop;
           }
+        } else {
+          *inst = Instructions::Nop;
         }
       }
       Instructions::SetProp(_) => {
-        result.push(Cow::Borrowed(inst));
         stack_demands.push(Demand::Keep);
         stack_demands.push(Demand::Keep);
       }
@@ -170,33 +172,24 @@ pub fn eliminate_dead_stores<'a>(
         let d1 = stack_demands.pop().unwrap_or(Demand::Drop);
         let d2 = stack_demands.pop().unwrap_or(Demand::Drop);
         if d1 == Demand::Keep || d2 == Demand::Keep {
-          result.push(Cow::Borrowed(inst));
           stack_demands.push(Demand::Keep);
         } else {
           stack_demands.push(Demand::Drop);
+          *inst = Instructions::Nop;
         }
       }
       Instructions::Inc(arg, _) | Instructions::Dec(arg, _) => {
         if !usage.read.contains(arg.as_ref()) {
-          continue;
+          *inst = Instructions::Nop;
         }
-        result.push(Cow::Borrowed(inst));
       }
-      Instructions::IncIdx(_, _) | Instructions::DecIdx(_, _) => {
-        result.push(Cow::Borrowed(inst));
-      }
+      Instructions::IncIdx(_, _) | Instructions::DecIdx(_, _) => {}
       Instructions::IfFalse(_) => {
-        result.push(Cow::Borrowed(inst));
         stack_demands.push(Demand::Keep);
       }
-      Instructions::Jump(_) | Instructions::Stop | Instructions::Return => {
-        result.push(Cow::Borrowed(inst));
-      }
-      _ => {
-        result.push(Cow::Borrowed(inst));
-      }
+      Instructions::Jump(_) | Instructions::Stop | Instructions::Return => {}
+      _ => {}
     }
   }
-  result.reverse();
-  result
+  bytecode.retain(|x| !matches!(x, Instructions::Nop));
 }

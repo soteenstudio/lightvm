@@ -17,6 +17,7 @@ use crate::instructions::math::sub::{
   sub_i16in::sub_i16in, sub_i32in::sub_i32in, sub_i64in::sub_i64in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
+use crate::utils::vmerror::VMError;
 use half::f16;
 #[inline]
 pub fn inc_func(
@@ -24,28 +25,28 @@ pub fn inc_func(
   stack: &mut Vec<Value>,
   index: usize,
   num_type: PrimitiveTypes,
-  is_hot: bool,
-) -> Result<(), String> {
+  ip: usize,
+) -> Result<(), VMError> {
   while vars.len() <= index {
     vars.push(Value::Undefined);
   }
   let var_ref = &mut vars[index];
   if !var_ref.is_number() {
-    return Err("TypeError: Cannot increment non-number".into());
+    return Err(VMError::TypeMismatch {
+      ip,
+      expected: "Number",
+      found: "Non-Number/Undefined",
+    });
   }
-  let result = if is_hot {
-    match num_type {
-      PrimitiveTypes::Sht => Value::Int16(add_i16in(var_ref.as_i16(), 1)),
-      PrimitiveTypes::Int => Value::Int32(add_i32in(var_ref.as_i32(), 1)),
-      PrimitiveTypes::Lng => Value::Int64(add_i64in(var_ref.as_i64(), 1)),
-      PrimitiveTypes::Oct => Value::Int128(add_i128in(var_ref.as_i128(), 1)),
-      PrimitiveTypes::Hlf => Value::Float16(add_f16in(var_ref.as_f16(), f16::ONE)),
-      PrimitiveTypes::Flt => Value::Float32(add_f32in(var_ref.as_f32(), 1.0)),
-      PrimitiveTypes::Dbl => Value::Float64(add_f64in(var_ref.as_f64(), 1.0)),
-      _ => Value::Int32(add_i32in(var_ref.as_i32(), 1)),
-    }
-  } else {
-    Value::Int32(add_i32in(var_ref.as_i32(), 1))
+  let result = match num_type {
+    PrimitiveTypes::Sht => Value::Int16(add_i16in(var_ref.as_i16(), 1)),
+    PrimitiveTypes::Int => Value::Int32(add_i32in(var_ref.as_i32(), 1)),
+    PrimitiveTypes::Lng => Value::Int64(add_i64in(var_ref.as_i64(), 1)),
+    PrimitiveTypes::Oct => Value::Int128(add_i128in(var_ref.as_i128(), 1)),
+    PrimitiveTypes::Hlf => Value::Float16(add_f16in(var_ref.as_f16(), f16::ONE)),
+    PrimitiveTypes::Flt => Value::Float32(add_f32in(var_ref.as_f32(), 1.0)),
+    PrimitiveTypes::Dbl => Value::Float64(add_f64in(var_ref.as_f64(), 1.0)),
+    _ => Value::Int32(add_i32in(var_ref.as_i32(), 1)),
   };
   *var_ref = result.clone();
   stack.push(result);
@@ -56,10 +57,15 @@ pub fn dec_func(
   vars: &mut Vec<Value>,
   index: usize,
   num_type: PrimitiveTypes,
-) -> Result<(), String> {
+  ip: usize,
+) -> Result<(), VMError> {
   if let Some(var_ref) = vars.get_mut(index) {
     if !var_ref.is_number() {
-      return Err("TypeError: Cannot decrement non-number".into());
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: "Number",
+        found: "Non-Number/Undefined",
+      });
     }
     *var_ref = match num_type {
       PrimitiveTypes::Sht => Value::Int16(sub_i16in(var_ref.as_i16(), 1)),

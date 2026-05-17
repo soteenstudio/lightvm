@@ -9,6 +9,7 @@
  */
 
 use crate::types::value::{FuncMetadata, Value};
+use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
 use smol_str::SmolStr;
 #[inline]
@@ -20,13 +21,17 @@ pub fn call_func(
   call_stack: &mut Vec<usize>,
   vars: &mut Vec<Value>,
   functions: &AHashMap<SmolStr, FuncMetadata>,
-) -> Result<(), SmolStr> {
-  let fn_meta = functions
-    .get(name)
-    .ok_or_else(|| SmolStr::from(format!("Function {} not found", name)))?;
+) -> Result<(), VMError> {
+  let fn_meta = functions.get(name).ok_or_else(|| VMError::InvalidOpcode {
+    ip: *ip,
+    code: SmolStr::from(format!("CALL {}", name)),
+  })?;
   let argc_usize = argc as usize;
   if stack.len() < argc_usize {
-    return Err(SmolStr::new_static("Stack underflow on CALL arguments"));
+    return Err(VMError::StackUnderflow {
+      ip: *ip,
+      opcode: "CALL_ARGS",
+    });
   }
   call_stack.push(*ip);
   let start_idx = stack.len() - argc_usize;

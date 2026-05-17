@@ -9,6 +9,7 @@
  */
 
 use crate::types::instructions::Instructions;
+#[inline(always)]
 pub fn jump_threading(bytecode: &mut [Instructions]) {
   let mut changed = true;
   while changed {

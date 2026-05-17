@@ -21,22 +21,25 @@ pub fn prepare_vm(
   bytecode: &[Instructions],
   options: &Option<RunOptions>,
 ) -> (AHashMap<SmolStr, FuncMetadata>, HashSet<SmolStr>, usize) {
-  let mut functions = AHashMap::new();
-  let mut exported = HashSet::new();
+  let mut functions = AHashMap::with_capacity(8);
+  let mut exported = HashSet::with_capacity(4);
   for instr in bytecode {
-    if let Instructions::Func(name, params, start, end, names) = instr {
-      functions.insert(
-        name.clone(),
-        FuncMetadata {
-          params_count: *params,
-          param_names: names.iter().map(|n| n.to_string().into()).collect(),
-          start: *start,
-          end: *end,
-        },
-      );
-    }
-    if let Instructions::Export(name) = instr {
-      exported.insert(name.clone());
+    match instr {
+      Instructions::Func(name, params, start, end, names) => {
+        functions.insert(
+          name.clone(),
+          FuncMetadata {
+            params_count: *params,
+            param_names: names.iter().map(|n| n.clone()).collect(),
+            start: *start,
+            end: *end,
+          },
+        );
+      }
+      Instructions::Export(name) => {
+        exported.insert(name.clone());
+      }
+      _ => {}
     }
   }
   let ip = options.as_ref().and_then(|o| o.entry).unwrap_or(0);

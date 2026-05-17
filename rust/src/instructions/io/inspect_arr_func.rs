@@ -9,10 +9,11 @@
  */
 
 use crate::types::value::Value;
+use crate::utils::vmerror::VMError;
 use smol_str::SmolStr;
 use std::fmt::Write;
 #[inline]
-pub fn inspect_arr_func(stack: &mut [Value]) -> Result<(), SmolStr> {
+pub fn inspect_arr_func(stack: &mut [Value], ip: usize) -> Result<(), VMError> {
   if let Some(top) = stack.last_mut() {
     if let Value::Array(arr) = top {
       let mut result = String::with_capacity(arr.len() * 10 + 2);
@@ -27,9 +28,16 @@ pub fn inspect_arr_func(stack: &mut [Value]) -> Result<(), SmolStr> {
       *top = Value::String(SmolStr::from(result));
       Ok(())
     } else {
-      Err(SmolStr::new("Value is not an array"))
+      Err(VMError::TypeMismatch {
+        ip,
+        expected: "Array",
+        found: top.type_of(),
+      })
     }
   } else {
-    Err(SmolStr::new("Stack underflow on INSPECT_ARR"))
+    Err(VMError::StackUnderflow {
+      ip,
+      opcode: "INSPECT_ARR",
+    })
   }
 }

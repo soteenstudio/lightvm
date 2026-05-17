@@ -9,12 +9,11 @@
  */
 
 use crate::instructions::{
-  math::{cos_func::cos_values, sin_func::sin_values, tan_func::tan_values},
   logic::not_func::not_values,
+  math::{cos_func::cos_values, sin_func::sin_values, tan_func::tan_values},
 };
 use crate::types::{instructions::Instructions, value::Value};
-#[inline]
-#[cold]
+#[inline(always)]
 pub fn fold_conversions(bytecode: &mut [Instructions]) {
   let mut i = 0;
   while i < bytecode.len().saturating_sub(1) {

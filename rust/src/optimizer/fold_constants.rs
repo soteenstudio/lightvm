@@ -13,17 +13,16 @@ use crate::instructions::{
     eq_func::eq_values, ge_func::ge_values, gt_func::gt_values, le_func::le_values,
     lt_func::lt_values, neq_func::neq_values,
   },
+  logic::{and_func::and_values, or_func::or_values, xor_func::xor_values},
   math::{
     add_func::add_values, div_func::div_values, mod_func::mod_values, mul_func::mul_values,
     pow_func::pow_values, powf_func::powf_values, powi_func::powi_values, rol_func::rol_values,
     ror_func::ror_values, shl_func::shl_values, shr_func::shr_values, sub_func::sub_values,
   },
-  logic::{and_func::and_values, or_func::or_values, xor_func::xor_values},
   stack::concat_func::concat_values,
 };
 use crate::types::{instructions::Instructions, value::Value};
-#[inline]
-#[cold]
+#[inline(always)]
 pub fn fold_constants(bytecode: &mut [Instructions]) {
   let mut i = 0;
   while i < bytecode.len().saturating_sub(2) {

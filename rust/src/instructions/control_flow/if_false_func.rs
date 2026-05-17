@@ -9,7 +9,13 @@
  */
 
 use crate::types::value::Value;
+use crate::utils::vmerror::VMError;
 #[inline(always)]
-pub fn if_false_func(cond: Value) -> bool {
-  !cond.is_truthy()
+pub fn if_false_func(stack: &mut Vec<Value>, ip: usize) -> Result<bool, VMError> {
+  let cond_ref = stack.last_mut().ok_or(VMError::StackUnderflow {
+    ip,
+    opcode: "IF_FALSE",
+  })?;
+  let cond = std::mem::take(cond_ref);
+  Ok(!cond.is_truthy())
 }

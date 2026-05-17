@@ -9,27 +9,27 @@
  */
 
 use crate::types::{instructions::Instructions, usage::Usage};
+use smol_str::SmolStr;
 use std::collections::HashSet;
-#[inline]
-#[cold]
-pub fn analyze_usage(bytecode: &[Instructions]) -> Usage<'_> {
+#[inline(always)]
+pub fn analyze_usage(bytecode: &[Instructions]) -> Usage {
   let mut read = HashSet::new();
   let mut written = HashSet::new();
   for inst in bytecode {
     match inst {
       Instructions::Get(var_name) => {
-        read.insert(var_name.as_ref());
+        read.insert(var_name.clone());
       }
       Instructions::Set(var_name)
       | Instructions::Inc(var_name, _)
       | Instructions::Dec(var_name, _) => {
-        written.insert(var_name.as_ref());
+        written.insert(var_name.clone());
       }
       Instructions::Print | Instructions::Println => {
-        read.insert("*IO*");
+        read.insert(SmolStr::new("*IO*"));
       }
       Instructions::Return => {
-        read.insert("*RETURN*");
+        read.insert(SmolStr::new("*RETURN*"));
       }
       _ => {}
     }

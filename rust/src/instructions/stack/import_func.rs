@@ -9,18 +9,23 @@
  */
 
 use crate::types::value::{RunOptions, Value};
+use crate::utils::vmerror::VMError;
 use smol_str::SmolStr;
 pub fn import_func(
   vars: &mut [Value],
   options: &Option<RunOptions>,
   module_name: &SmolStr,
   idx: usize,
-) -> Result<(), SmolStr> {
+  ip: usize,
+) -> Result<(), VMError> {
   if let Some(opts) = options {
     if let Some(module_val) = opts.imports.get(module_name) {
       vars[idx] = module_val.clone();
       return Ok(());
     }
   }
-  Err(SmolStr::new(format!("Module '{}' not found", module_name)))
+  Err(VMError::SystemError(SmolStr::from(format!(
+    "Module '{}' not found at IP: {}",
+    module_name, ip
+  ))))
 }

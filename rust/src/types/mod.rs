@@ -9,6 +9,7 @@
  */
 
 pub mod capability;
+pub mod control_flow_signal;
 pub mod instructions;
 pub mod primitive_types;
 pub mod usage;

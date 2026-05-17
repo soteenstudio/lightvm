@@ -9,6 +9,7 @@
  */
 
 use crate::types::value::Value;
+use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
 use smol_str::SmolStr;
 use std::sync::Arc;
@@ -17,10 +18,14 @@ pub fn instantiate_func(
   _vars: &mut Vec<Value>,
   class_name: &SmolStr,
   argc: u32,
-) -> Result<Value, SmolStr> {
-  let mut args = Vec::new();
+  ip: usize,
+) -> Result<Value, VMError> {
+  let mut args = Vec::with_capacity(argc as usize);
   for _ in 0..argc {
-    args.push(stack.pop().ok_or("Stack underflow on INSTANTIATE args")?);
+    args.push(stack.pop().ok_or(VMError::StackUnderflow {
+      ip,
+      opcode: "INSTANTIATE",
+    })?);
   }
   args.reverse();
   let mut instance_map = AHashMap::new();

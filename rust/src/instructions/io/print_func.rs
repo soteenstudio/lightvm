@@ -10,7 +10,14 @@
 
 use crate::types::value::Value;
 use crate::utils::format_output::format_output;
+use crate::utils::vmerror::VMError;
 #[inline(always)]
-pub fn print_func(val: Value) {
+pub fn print_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
+  let val_ref = stack.last_mut().ok_or(VMError::StackUnderflow {
+    ip,
+    opcode: "PRINT",
+  })?;
+  let val = std::mem::take(val_ref);
   format_output(&val, false);
+  Ok(())
 }

@@ -9,10 +9,11 @@
  */
 
 use crate::types::value::Value;
+use crate::utils::vmerror::VMError;
 use smol_str::SmolStr;
 use std::fmt::Write;
 #[inline]
-pub fn inspect_obj_func(stack: &mut [Value]) -> Result<(), SmolStr> {
+pub fn inspect_obj_func(stack: &mut [Value], ip: usize) -> Result<(), VMError> {
   if let Some(top) = stack.last_mut() {
     if let Value::Object(obj) = top {
       let mut result = String::from("{ ");
@@ -26,9 +27,16 @@ pub fn inspect_obj_func(stack: &mut [Value]) -> Result<(), SmolStr> {
       *top = Value::String(SmolStr::from(result));
       Ok(())
     } else {
-      Err(SmolStr::new("Value is not an object"))
+      Err(VMError::TypeMismatch {
+        ip,
+        expected: "Object",
+        found: top.type_of(),
+      })
     }
   } else {
-    Err(SmolStr::new("Stack underflow on INSPECT_OBJ"))
+    Err(VMError::StackUnderflow {
+      ip,
+      opcode: "INSPECT_OBJ",
+    })
   }
 }

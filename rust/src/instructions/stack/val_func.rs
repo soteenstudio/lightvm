@@ -9,13 +9,22 @@
  */
 
 use crate::types::value::Value;
+use crate::utils::vmerror::VMError;
 use smol_str::SmolStr;
+const MAX_VARIABLES: usize = 4096;
 #[inline]
-pub fn val_func(vars: &mut Vec<Value>, index: usize) {
+pub fn val_func(vars: &mut Vec<Value>, index: usize, ip: usize) -> Result<(), VMError> {
+  if index >= MAX_VARIABLES {
+    return Err(VMError::StackOverflow {
+      ip,
+      limit: MAX_VARIABLES,
+    });
+  }
   if index >= vars.len() {
     vars.resize(index + 1, Value::Undefined);
   }
   if vars[index] == Value::Undefined {
     vars[index] = Value::Marker(SmolStr::new("NoInitExpression"));
   }
+  Ok(())
 }

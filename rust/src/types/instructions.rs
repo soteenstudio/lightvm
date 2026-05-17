@@ -16,6 +16,7 @@ use serde_json::Value as JsonValue;
 use smol_str::SmolStr;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[repr(u16)]
 pub enum Instructions {
   InitStack(u32),
   PushInt16(i16),
@@ -207,13 +208,19 @@ impl Instructions {
       }
     };
     let op = arr[0].as_str().expect("Opcode must be a string");
-    match op {
-      "init_stack" => {
-        let size = arr.get(1).and_then(|v| v.as_u64()).unwrap_or(16) as u32;
+    let op_bytes = op.as_bytes();
+    let arg1 = arr.get(1);
+    let arg2 = arr.get(2);
+    match op_bytes {
+      b"init_stack" => {
+        let size = arg1.and_then(|v| v.as_u64()).unwrap_or(16) as u32;
         Instructions::InitStack(size)
       }
-      "push" => {
-        let val = &arr[1];
+      b"push" => {
+        let val = match arg1 {
+          Some(v) => v,
+          None => return Instructions::Stop,
+        };
         let value_internal = if let Some(n) = val.as_i64() {
           if n >= i16::MIN as i64 && n <= i16::MAX as i64 {
             Value::Int16(n as i16)
@@ -222,8 +229,7 @@ impl Instructions {
           } else {
             Value::Int64(n)
           }
-        } else if val.is_number() {
-          let f = val.as_f64().unwrap_or(0.0);
+        } else if let Some(f) = val.as_f64() {
           if f == (f as f32) as f64 {
             if f == half::f16::from_f64(f).to_f64() {
               Value::Float16(half::f16::from_f64(f))
@@ -233,6 +239,8 @@ impl Instructions {
           } else {
             Value::Float64(f)
           }
+        } else if val.is_boolean() {
+          Value::Bool(val.as_bool().unwrap_or(false))
         } else if let Some(s) = val.as_str() {
           if let Ok(big_n) = s.parse::<i128>() {
             if big_n >= i64::MIN as i128 && big_n <= i64::MAX as i128 {
@@ -243,8 +251,6 @@ impl Instructions {
           } else {
             Value::String(SmolStr::new(s))
           }
-        } else if val.is_boolean() {
-          Value::Bool(val.as_bool().unwrap())
         } else if val.is_null() {
           Value::Null
         } else {
@@ -252,63 +258,76 @@ impl Instructions {
         };
         Instructions::Push(value_internal)
       }
-      "add" => Instructions::Add(map_primitive(arr.get(1))),
-      "sub" => Instructions::Sub(map_primitive(arr.get(1))),
-      "mul" => Instructions::Mul(map_primitive(arr.get(1))),
-      "div" => Instructions::Div(map_primitive(arr.get(1))),
-      "mod" => Instructions::Mod(map_primitive(arr.get(1))),
-      "shl" => Instructions::Shl(map_primitive(arr.get(1))),
-      "shr" => Instructions::Shr(map_primitive(arr.get(1))),
-      "ror" => Instructions::Ror(map_primitive(arr.get(1))),
-      "rol" => Instructions::Rol(map_primitive(arr.get(1))),
-      "sin" => Instructions::Sin(map_primitive(arr.get(1))),
-      "cos" => Instructions::Cos(map_primitive(arr.get(1))),
-      "tan" => Instructions::Tan(map_primitive(arr.get(1))),
-      "pow" => Instructions::Pow(map_primitive(arr.get(1))),
-      "powi" => Instructions::Powi(map_primitive(arr.get(1))),
-      "powf" => Instructions::Powf(map_primitive(arr.get(1))),
-      "gt" => Instructions::Gt(map_primitive(arr.get(1))),
-      "lt" => Instructions::Lt(map_primitive(arr.get(1))),
-      "ge" => Instructions::Ge(map_primitive(arr.get(1))),
-      "le" => Instructions::Le(map_primitive(arr.get(1))),
-      "eq" => Instructions::Eq(map_primitive(arr.get(1))),
-      "neq" => Instructions::Neq(map_primitive(arr.get(1))),
-      "and" => Instructions::And,
-      "or" => Instructions::Or,
-      "xor" => Instructions::Xor,
-      "not" => Instructions::Not,
-      "set" => Instructions::Set(SmolStr::new(arr[1].as_str().expect("Need string"))),
-      "get" => Instructions::Get(SmolStr::new(arr[1].as_str().expect("Need string"))),
-      "val" => Instructions::Val(SmolStr::new(arr[1].as_str().expect("Need string"))),
-      "access" => {
-        let prop = arr[1].as_str().expect("Access property must be a string");
+      b"add" => Instructions::Add(map_primitive(arg1)),
+      b"sub" => Instructions::Sub(map_primitive(arg1)),
+      b"mul" => Instructions::Mul(map_primitive(arg1)),
+      b"div" => Instructions::Div(map_primitive(arg1)),
+      b"mod" => Instructions::Mod(map_primitive(arg1)),
+      b"shl" => Instructions::Shl(map_primitive(arg1)),
+      b"shr" => Instructions::Shr(map_primitive(arg1)),
+      b"ror" => Instructions::Ror(map_primitive(arg1)),
+      b"rol" => Instructions::Rol(map_primitive(arg1)),
+      b"sin" => Instructions::Sin(map_primitive(arg1)),
+      b"cos" => Instructions::Cos(map_primitive(arg1)),
+      b"tan" => Instructions::Tan(map_primitive(arg1)),
+      b"pow" => Instructions::Pow(map_primitive(arg1)),
+      b"powi" => Instructions::Powi(map_primitive(arg1)),
+      b"powf" => Instructions::Powf(map_primitive(arg1)),
+      b"gt" => Instructions::Gt(map_primitive(arg1)),
+      b"lt" => Instructions::Lt(map_primitive(arg1)),
+      b"ge" => Instructions::Ge(map_primitive(arg1)),
+      b"le" => Instructions::Le(map_primitive(arg1)),
+      b"eq" => Instructions::Eq(map_primitive(arg1)),
+      b"neq" => Instructions::Neq(map_primitive(arg1)),
+      b"and" => Instructions::And,
+      b"or" => Instructions::Or,
+      b"xor" => Instructions::Xor,
+      b"not" => Instructions::Not,
+      b"set" => Instructions::Set(SmolStr::new(
+        arg1.and_then(|v| v.as_str()).expect("Need string"),
+      )),
+      b"get" => Instructions::Get(SmolStr::new(
+        arg1.and_then(|v| v.as_str()).expect("Need string"),
+      )),
+      b"val" => Instructions::Val(SmolStr::new(
+        arg1.and_then(|v| v.as_str()).expect("Need string"),
+      )),
+      b"access" => {
+        let prop = arg1
+          .and_then(|v| v.as_str())
+          .expect("Access property must be a string");
         Instructions::Access(SmolStr::new(prop))
       }
-      "print" => Instructions::Print,
-      "println" => Instructions::Println,
-      "if_false" => {
-        let target = arr[1].as_u64().expect("Target jump IF_FALSE harus angka") as usize;
+      b"print" => Instructions::Print,
+      b"println" => Instructions::Println,
+      b"if_false" => {
+        let target = arg1
+          .and_then(|v| v.as_u64())
+          .expect("Target jump IF_FALSE harus angka") as usize;
         Instructions::IfFalse(target)
       }
-      "jump" => {
-        let target = arr[1].as_u64().expect("Target jump harus angka") as usize;
+      b"jump" => {
+        let target = arg1
+          .and_then(|v| v.as_u64())
+          .expect("Target jump harus angka") as usize;
         Instructions::Jump(target)
       }
-      "inc" => {
-        let s = arr[1].as_str().expect("Expected string");
-        let num_type_str = arr.get(2).and_then(|v| v.as_str()).unwrap_or("int");
+      b"inc" => {
+        let s = arg1.and_then(|v| v.as_str()).expect("Expected string");
+        let num_type_str = arg2.and_then(|v| v.as_str()).unwrap_or("int");
         let num_type = match num_type_str {
           "int" => PrimitiveTypes::Int,
           "flt" => PrimitiveTypes::Flt,
           "lng" => PrimitiveTypes::Lng,
           "dbl" => PrimitiveTypes::Dbl,
+          "oct" => PrimitiveTypes::Oct,
           _ => PrimitiveTypes::Dbl,
         };
         Instructions::Inc(SmolStr::new(s), num_type)
       }
-      "dec" => {
-        let s = arr[1].as_str().expect("Expected string");
-        let num_type_str = arr.get(2).and_then(|v| v.as_str()).unwrap_or("int");
+      b"dec" => {
+        let s = arg1.and_then(|v| v.as_str()).expect("Expected string");
+        let num_type_str = arg2.and_then(|v| v.as_str()).unwrap_or("int");
         let num_type = match num_type_str {
           "int" => PrimitiveTypes::Int,
           "flt" => PrimitiveTypes::Flt,
@@ -318,9 +337,9 @@ impl Instructions {
         };
         Instructions::Dec(SmolStr::new(s), num_type)
       }
-      "func" => {
-        let name = SmolStr::new(arr.get(1).and_then(|v| v.as_str()).unwrap_or(""));
-        let params = arr.get(2).and_then(|v| v.as_u64()).unwrap_or(0) as u32;
+      b"func" => {
+        let name = SmolStr::new(arg1.and_then(|v| v.as_str()).unwrap_or(""));
+        let params = arg2.and_then(|v| v.as_u64()).unwrap_or(0) as u32;
         let start = arr.get(3).and_then(|v| v.as_u64()).unwrap_or(0) as usize;
         let end = arr.get(4).and_then(|v| v.as_u64()).unwrap_or(0) as usize;
         let mut names: Vec<SmolStr> = Vec::new();
@@ -342,59 +361,77 @@ impl Instructions {
         }
         Instructions::Func(name, params, start, end, names)
       }
-      "make_obj" => {
-        let count = arr[1].as_u64().expect("MakeObj count harus angka") as u32;
+      b"make_obj" => {
+        let count = arg1
+          .and_then(|v| v.as_u64())
+          .expect("MakeObj count harus angka") as u32;
         Instructions::MakeObj(count)
       }
-      "make_array" => {
-        let count = arr[1].as_u64().expect("MakeArray count harus angka") as u32;
+      b"make_array" => {
+        let count = arg1
+          .and_then(|v| v.as_u64())
+          .expect("MakeArray count harus angka") as u32;
         Instructions::MakeArray(count)
       }
-      "to_string" => Instructions::ToString,
-      "to_short" => Instructions::ToShort,
-      "to_integer" => Instructions::ToInteger,
-      "to_long" => Instructions::ToLong,
-      "to_octa" => Instructions::ToOcta,
-      "to_half" => Instructions::ToHalf,
-      "to_float" => Instructions::ToFloat,
-      "to_double" => Instructions::ToDouble,
-      "dup" => Instructions::Dup,
-      "truncate" => Instructions::Truncate,
-      "shrink" => Instructions::Shrink,
-      "length" => Instructions::Length,
-      "typeof" => Instructions::TypeOf,
-      "inspect_obj" => Instructions::InspectObj,
-      "inspect_arr" => Instructions::InspectArr,
-      "instantiate" => {
-        let class_name = arr[1].as_str().expect("ClassName must be string");
-        let argc = arr[2].as_u64().unwrap_or(0) as u32;
+      b"to_string" => Instructions::ToString,
+      b"to_short" => Instructions::ToShort,
+      b"to_integer" => Instructions::ToInteger,
+      b"to_long" => Instructions::ToLong,
+      b"to_octa" => Instructions::ToOcta,
+      b"to_half" => Instructions::ToHalf,
+      b"to_float" => Instructions::ToFloat,
+      b"to_double" => Instructions::ToDouble,
+      b"dup" => Instructions::Dup,
+      b"truncate" => Instructions::Truncate,
+      b"shrink" => Instructions::Shrink,
+      b"length" => Instructions::Length,
+      b"typeof" => Instructions::TypeOf,
+      b"inspect_obj" => Instructions::InspectObj,
+      b"inspect_arr" => Instructions::InspectArr,
+      b"instantiate" => {
+        let class_name = arg1
+          .and_then(|v| v.as_str())
+          .expect("ClassName must be string");
+        let argc = arg2.and_then(|v| v.as_u64()).unwrap_or(0) as u32;
         Instructions::Instantiate(SmolStr::new(class_name), argc)
       }
-      "set_prop" => {
-        let prop = arr[1].as_str().expect("set_prop property must be a string");
+      b"set_prop" => {
+        let prop = arg1
+          .and_then(|v| v.as_str())
+          .expect("set_prop property must be a string");
         Instructions::SetProp(SmolStr::new(prop))
       }
-      "import" => {
-        let module_name = arr[1].as_str().expect("Module name must be string");
-        let idx = arr[2]
-          .as_u64()
+      b"import" => {
+        let module_name = arg1
+          .and_then(|v| v.as_str())
+          .expect("Module name must be string");
+        let idx = arg2
+          .and_then(|v| v.as_u64())
           .expect("Import alias index must be a number") as usize;
         Instructions::Import(SmolStr::new(module_name), idx)
       }
-      "break" => {
-        let target = arr.get(1).and_then(|v| v.as_u64()).unwrap_or(0) as usize;
+      b"break" => {
+        let target = arg1.and_then(|v| v.as_u64()).unwrap_or(0) as usize;
         Instructions::Jump(target)
       }
-      "access_index" => Instructions::AccessIndex,
-      "export" => Instructions::Export(arr[1].as_str().unwrap_or("stop").to_owned().into()),
-      "return" => Instructions::Return,
-      "call" => {
-        let s = arr[1].as_str().unwrap_or("stop");
-        let argc = arr[2].as_u64().expect("Argc must be a number") as u32;
+      b"access_index" => Instructions::AccessIndex,
+      b"export" => Instructions::Export(
+        arg1
+          .and_then(|v| v.as_str())
+          .unwrap_or("stop")
+          .to_owned()
+          .into(),
+      ),
+      b"return" => Instructions::Return,
+      b"call" => {
+        let s = arg1.and_then(|v| v.as_str()).unwrap_or("stop");
+        let argc = arg2
+          .and_then(|v| v.as_u64())
+          .expect("Argc must be a number") as u32;
         Instructions::Call(SmolStr::new(s), argc)
       }
-      "concat" => Instructions::Concat,
-      "stop" => Instructions::Stop,
+      b"concat" => Instructions::Concat,
+      b"stop" => Instructions::Stop,
       _ => Instructions::Nop,
     }
   }
