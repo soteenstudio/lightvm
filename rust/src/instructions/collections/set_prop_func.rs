@@ -9,23 +9,31 @@
  */
 
 use crate::types::value::Value;
+use crate::utils::vmerror::VMError;
 use smol_str::SmolStr;
 use std::sync::Arc;
 #[inline]
-pub fn set_prop_func(stack: &mut Vec<Value>, prop: &SmolStr) -> Result<(), SmolStr> {
-  let obj_val = stack
-    .pop()
-    .ok_or_else(|| SmolStr::new("Stack underflow on SET_PROP (object)"))?;
-  let val = stack
-    .pop()
-    .ok_or_else(|| SmolStr::new("Stack underflow on SET_PROP (value)"))?;
-  let mut obj = obj_val;
-  if let Value::Object(ref mut map_arc) = obj {
-    let map = Arc::make_mut(map_arc);
-    map.insert(prop.clone(), val);
-    stack.push(obj);
-    Ok(())
+pub fn set_prop_func(stack: &mut Vec<Value>, prop: &SmolStr, ip: usize) -> Result<(), VMError> {
+  let val = stack.pop().ok_or_else(|| VMError::StackUnderflow {
+    ip,
+    opcode: "SET_PROP (value)",
+  })?;
+  if let Some(top) = stack.last_mut() {
+    if let Value::Object(ref mut map_arc) = top {
+      let map = Arc::make_mut(map_arc);
+      map.insert(prop.clone(), val);
+      Ok(())
+    } else {
+      Err(VMError::TypeMismatch {
+        ip,
+        expected: "Object",
+        found: "Non-Object",
+      })
+    }
   } else {
-    Err(SmolStr::new("TypeError: Cannot set property of non-object"))
+    Err(VMError::StackUnderflow {
+      ip,
+      opcode: "SET_PROP (object)",
+    })
   }
 }

@@ -9,8 +9,14 @@
  */
 
 use crate::instructions::{
+  conversion::{
+    to_double_func::to_double_values, to_float_func::to_float_values, to_half_func::to_half_values,
+    to_integer_func::to_integer_values, to_long_func::to_long_values, to_octa_func::to_octa_values,
+    to_short_func::to_short_values, to_string_func::to_string_values,
+  },
   logic::not_func::not_values,
   math::{cos_func::cos_values, sin_func::sin_values, tan_func::tan_values},
+  metadata::typeof_func::typeof_values,
 };
 use crate::types::{instructions::Instructions, value::Value};
 #[inline(always)]
@@ -28,9 +34,8 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         i += 2;
       }
       (Instructions::Push(v), Instructions::ToShort) => {
-        let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
-        crate::instructions::conversion::to_short_func::to_short_func(&mut tmp_stack);
-        if let Some(converted_val) = tmp_stack.pop() {
+        let owned_val = std::mem::replace(v, Value::Null);
+        if let Ok(converted_val) = to_short_values(owned_val) {
           bytecode[i] = Instructions::Push(converted_val);
           bytecode[i + 1] = Instructions::Nop;
           i += 2;
@@ -40,9 +45,8 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         }
       }
       (Instructions::Push(v), Instructions::ToInteger) => {
-        let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
-        crate::instructions::conversion::to_integer_func::to_integer_func(&mut tmp_stack);
-        if let Some(converted_val) = tmp_stack.pop() {
+        let owned_val = std::mem::replace(v, Value::Null);
+        if let Ok(converted_val) = to_integer_values(owned_val) {
           bytecode[i] = Instructions::Push(converted_val);
           bytecode[i + 1] = Instructions::Nop;
           i += 2;
@@ -52,9 +56,8 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         }
       }
       (Instructions::Push(v), Instructions::ToLong) => {
-        let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
-        crate::instructions::conversion::to_long_func::to_long_func(&mut tmp_stack);
-        if let Some(converted_val) = tmp_stack.pop() {
+        let owned_val = std::mem::replace(v, Value::Null);
+        if let Ok(converted_val) = to_long_values(owned_val) {
           bytecode[i] = Instructions::Push(converted_val);
           bytecode[i + 1] = Instructions::Nop;
           i += 2;
@@ -64,9 +67,8 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         }
       }
       (Instructions::Push(v), Instructions::ToOcta) => {
-        let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
-        crate::instructions::conversion::to_octa_func::to_octa_func(&mut tmp_stack);
-        if let Some(converted_val) = tmp_stack.pop() {
+        let owned_val = std::mem::replace(v, Value::Null);
+        if let Ok(converted_val) = to_octa_values(owned_val) {
           bytecode[i] = Instructions::Push(converted_val);
           bytecode[i + 1] = Instructions::Nop;
           i += 2;
@@ -76,9 +78,8 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         }
       }
       (Instructions::Push(v), Instructions::ToHalf) => {
-        let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
-        crate::instructions::conversion::to_half_func::to_half_func(&mut tmp_stack);
-        if let Some(converted_val) = tmp_stack.pop() {
+        let owned_val = std::mem::replace(v, Value::Null);
+        if let Ok(converted_val) = to_half_values(owned_val) {
           bytecode[i] = Instructions::Push(converted_val);
           bytecode[i + 1] = Instructions::Nop;
           i += 2;
@@ -88,9 +89,8 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         }
       }
       (Instructions::Push(v), Instructions::ToFloat) => {
-        let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
-        crate::instructions::conversion::to_float_func::to_float_func(&mut tmp_stack);
-        if let Some(converted_val) = tmp_stack.pop() {
+        let owned_val = std::mem::replace(v, Value::Null);
+        if let Ok(converted_val) = to_float_values(owned_val) {
           bytecode[i] = Instructions::Push(converted_val);
           bytecode[i + 1] = Instructions::Nop;
           i += 2;
@@ -100,9 +100,8 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         }
       }
       (Instructions::Push(v), Instructions::ToDouble) => {
-        let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
-        crate::instructions::conversion::to_double_func::to_double_func(&mut tmp_stack);
-        if let Some(converted_val) = tmp_stack.pop() {
+        let owned_val = std::mem::replace(v, Value::Null);
+        if let Ok(converted_val) = to_double_values(owned_val) {
           bytecode[i] = Instructions::Push(converted_val);
           bytecode[i + 1] = Instructions::Nop;
           i += 2;
@@ -112,9 +111,8 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         }
       }
       (Instructions::Push(v), Instructions::ToString) => {
-        let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
-        crate::instructions::conversion::to_string_func::to_string_func(&mut tmp_stack);
-        if let Some(converted_val) = tmp_stack.pop() {
+        let owned_val = std::mem::replace(v, Value::Null);
+        if let Ok(converted_val) = to_string_values(owned_val) {
           bytecode[i] = Instructions::Push(converted_val);
           bytecode[i + 1] = Instructions::Nop;
           i += 2;
@@ -124,16 +122,11 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         }
       }
       (Instructions::Push(v), Instructions::TypeOf) => {
-        let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
-        let _ = crate::instructions::metadata::typeof_func::typeof_func(&mut tmp_stack, 0);
-        if let Some(converted_val) = tmp_stack.pop() {
-          bytecode[i] = Instructions::Push(converted_val);
-          bytecode[i + 1] = Instructions::Nop;
-          i += 2;
-        } else {
-          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
-          i += 1;
-        }
+        let owned_val = std::mem::replace(v, Value::Null);
+        let converted_val = typeof_values(owned_val);
+        bytecode[i] = Instructions::Push(converted_val);
+        bytecode[i + 1] = Instructions::Nop;
+        i += 2;
       }
       (Instructions::Push(v), Instructions::Sin(t)) => {
         let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];

@@ -9,36 +9,52 @@
  */
 
 use crate::types::value::Value;
+use crate::utils::vmerror::VMError;
 use smol_str::SmolStr;
 use std::sync::Arc;
 #[inline(always)]
-pub fn shrink_func(stack: &mut Vec<Value>) -> Result<(), SmolStr> {
-  let len_val = stack
-    .pop()
-    .ok_or_else(|| SmolStr::new("Stack underflow on SHRINK (length)"))?;
-  let target = stack
-    .pop()
-    .ok_or_else(|| SmolStr::new("Stack underflow on SHRINK (target)"))?;
+pub fn shrink_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
+  let len_val = stack.pop().ok_or_else(|| VMError::StackUnderflow {
+    ip,
+    opcode: "SHRINK (length)",
+  })?;
   let length = match len_val {
     Value::Int16(i) => i as usize,
     Value::Int32(i) => i as usize,
     Value::Int64(i) => i as usize,
     Value::Int128(i) => i as usize,
-    _ => return Err(SmolStr::new("SHRINK length must be an integer")),
-  };
-  let result = match target {
-    Value::String(s) => {
-      let mut s_val = s.to_string();
-      s_val.truncate(length);
-      Value::String(SmolStr::from(s_val))
+    _ => {
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: "Integer (Length)",
+        found: "Non-Integer Length",
+      })
     }
-    Value::Array(arr) => {
-      let mut a_val = (*arr).clone();
-      a_val.truncate(length);
-      Value::Array(Arc::new(a_val))
-    }
-    _ => return Err(SmolStr::new("SHRINK target must be String or Array")),
   };
-  stack.push(result);
-  Ok(())
+  if let Some(target) = stack.last_mut() {
+    match target {
+      Value::String(s) => {
+        let mut s_val = s.to_string();
+        s_val.truncate(length);
+        *target = Value::String(SmolStr::from(s_val));
+        Ok(())
+      }
+      Value::Array(arr) => {
+        let mut a_val = (**arr).clone();
+        a_val.truncate(length);
+        *target = Value::Array(Arc::new(a_val));
+        Ok(())
+      }
+      _ => Err(VMError::TypeMismatch {
+        ip,
+        expected: "String or Array",
+        found: "Invalid Shrink Target",
+      }),
+    }
+  } else {
+    Err(VMError::StackUnderflow {
+      ip,
+      opcode: "SHRINK (target)",
+    })
+  }
 }

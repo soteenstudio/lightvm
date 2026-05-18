@@ -62,6 +62,9 @@ pub enum Instructions {
   Not,
   Print,
   Println,
+  Stdout,
+  Stdoutln,
+  Stdin,
   IfFalse(usize),
   Jump(usize),
   Inc(SmolStr, PrimitiveTypes),
@@ -100,6 +103,7 @@ pub enum Instructions {
   Shrink,
 }
 impl Instructions {
+  #[inline]
   pub fn from_parts(op: String, args: Vec<serde_json::Value>) -> Self {
     let op_lower = op.to_lowercase();
     if args.is_empty() {
@@ -175,6 +179,9 @@ impl Instructions {
         "not" => Instructions::Not,
         "print" => Instructions::Print,
         "println" => Instructions::Println,
+        "stdout" => Instructions::Stdout,
+        "stdoutln" => Instructions::Stdoutln,
+        "stdin" => Instructions::Stdin,
         "break" => Instructions::Break(0),
         "accessindex" => Instructions::AccessIndex,
         "to_string" => Instructions::ToString,
@@ -300,6 +307,9 @@ impl Instructions {
       }
       b"print" => Instructions::Print,
       b"println" => Instructions::Println,
+      b"stdout" => Instructions::Stdout,
+      b"stdoutln" => Instructions::Stdoutln,
+      b"stdin" => Instructions::Stdin,
       b"if_false" => {
         let target = arg1
           .and_then(|v| v.as_u64())

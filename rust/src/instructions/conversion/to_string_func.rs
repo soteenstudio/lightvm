@@ -9,11 +9,22 @@
  */
 
 use crate::types::value::Value;
+use crate::utils::vmerror::VMError;
 use smol_str::SmolStr;
 #[inline(always)]
-pub fn to_string_func(stack: &mut [Value]) {
+pub fn to_string_values(val: Value) -> Result<Value, &'static str> {
+  let formatted = format!("{}::string", val.as_string());
+  Ok(Value::String(SmolStr::from(formatted)))
+}
+#[inline(always)]
+pub fn to_string_func(stack: &mut [Value], ip: usize) -> Result<(), VMError> {
   if let Some(top) = stack.last_mut() {
-    let formatted = format!("{}::string", top.as_string());
-    *top = Value::String(SmolStr::from(formatted));
+    let owned_val = std::mem::take(top);
+    *top = to_string_values(owned_val).map_err(|err| VMError::TypeMismatch {
+      ip,
+      expected: "Any Valid Value",
+      found: err,
+    })?;
   }
+  Ok(())
 }

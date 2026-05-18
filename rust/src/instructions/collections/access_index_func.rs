@@ -9,12 +9,13 @@
  */
 
 use crate::types::value::Value;
-use smol_str::SmolStr;
+use crate::utils::vmerror::VMError;
 #[inline(always)]
-pub fn access_index_func(stack: &mut Vec<Value>) -> Result<(), SmolStr> {
-  let index_val = stack
-    .pop()
-    .ok_or_else(|| SmolStr::new("Stack underflow: missing index"))?;
+pub fn access_index_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
+  let index_val = stack.pop().ok_or_else(|| VMError::StackUnderflow {
+    ip,
+    opcode: "ACCESS_INDEX (index)",
+  })?;
   if let Some(top) = stack.last_mut() {
     match (&mut *top, index_val) {
       (Value::Array(arr), Value::Int64(idx)) => {
@@ -23,13 +24,28 @@ pub fn access_index_func(stack: &mut Vec<Value>) -> Result<(), SmolStr> {
           *top = arr[i].clone();
           Ok(())
         } else {
-          Err(SmolStr::new("Array index out of bounds"))
+          Err(VMError::OutOfBounds {
+            ip,
+            index: i,
+            len: arr.len(),
+          })
         }
       }
-      (Value::Array(_), _) => Err(SmolStr::new("Array index must be an integer")),
-      _ => Err(SmolStr::new("Cannot access index of non-array")),
+      (Value::Array(_), _) => Err(VMError::TypeMismatch {
+        ip,
+        expected: "Int64 (Index)",
+        found: "Invalid Index Type",
+      }),
+      _ => Err(VMError::TypeMismatch {
+        ip,
+        expected: "Array",
+        found: "Non-Array",
+      }),
     }
   } else {
-    Err(SmolStr::new("Stack underflow: missing array object"))
+    Err(VMError::StackUnderflow {
+      ip,
+      opcode: "ACCESS_INDEX (array)",
+    })
   }
 }

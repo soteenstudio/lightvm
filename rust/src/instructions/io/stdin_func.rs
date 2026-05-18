@@ -9,17 +9,17 @@
  */
 
 use crate::types::value::Value;
-use crate::utils::format_output::format_output;
 use crate::utils::vmerror::VMError;
+use smol_str::SmolStr;
 use std::io::{self, Write};
 #[inline(always)]
-pub fn print_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
-  let val_ref = stack.last_mut().ok_or(VMError::StackUnderflow {
-    ip,
-    opcode: "PRINT",
-  })?;
-  let val = std::mem::take(val_ref);
-  format_output(&val, false);
+pub fn stdin_func(stack: &mut Vec<Value>) -> Result<(), VMError> {
   let _ = io::stdout().flush();
+  let mut input = String::new();
+  io::stdin()
+    .read_line(&mut input)
+    .map_err(|e| VMError::SystemError(SmolStr::new(format!("Failed to read stdin: {}", e))))?;
+  let trimmed = input.trim_end_matches(['\r', '\n']);
+  stack.push(Value::String(SmolStr::new(trimmed)));
   Ok(())
 }

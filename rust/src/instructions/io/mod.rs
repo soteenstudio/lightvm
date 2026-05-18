@@ -12,3 +12,5 @@ pub mod inspect_arr_func;
 pub mod inspect_obj_func;
 pub mod print_func;
 pub mod println_func;
+pub mod stdin_func;
+pub mod stdout_func;
