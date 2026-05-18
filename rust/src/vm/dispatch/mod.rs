@@ -8,6 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0  
  */
 
+pub mod collections_dispatch;
 pub mod comparison_dispatch;
 pub mod control_flow_dispatch;
 pub mod io_dispatch;

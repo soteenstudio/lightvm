@@ -8,30 +8,31 @@
  *     http://www.apache.org/licenses/LICENSE-2.0  
  */
 
-use std::io::{self, Write};
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
-
+use std::io::{self, Write};
 #[inline(always)]
 pub fn stdout_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
-  // Ambil data dari stack dengan pop() agar tidak menyisakan string kosong
   let val = stack.pop().ok_or(VMError::StackUnderflow {
     ip,
     opcode: "STDOUT",
   })?;
-
-  // Validasi ketat: Hanya mau menerima tipe String/Str
   if let Value::String(s) = val {
     let mut out = io::stdout().lock();
     out.write_all(s.as_bytes()).map_err(|e| {
-      VMError::SystemError(smol_str::SmolStr::new(format!("Stdout write failed: {}", e)))
+      VMError::SystemError(smol_str::SmolStr::new(format!(
+        "Stdout write failed: {}",
+        e
+      )))
     })?;
     out.flush().map_err(|e| {
-      VMError::SystemError(smol_str::SmolStr::new(format!("Stdout flush failed: {}", e)))
+      VMError::SystemError(smol_str::SmolStr::new(format!(
+        "Stdout flush failed: {}",
+        e
+      )))
     })?;
     Ok(())
   } else {
-    // Menolak mentah-mentah jika tipenya bukan string (biar gak niru PRINT)
     Err(VMError::TypeMismatch {
       ip,
       expected: "String",
@@ -39,21 +40,25 @@ pub fn stdout_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
     })
   }
 }
-
 #[inline(always)]
 pub fn stdoutln_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
   let val = stack.pop().ok_or(VMError::StackUnderflow {
     ip,
     opcode: "STDOUTLN",
   })?;
-
   if let Value::String(s) = val {
     let mut out = io::stdout().lock();
     out.write_all(s.as_bytes()).map_err(|e| {
-      VMError::SystemError(smol_str::SmolStr::new(format!("Stdoutln write failed: {}", e)))
+      VMError::SystemError(smol_str::SmolStr::new(format!(
+        "Stdoutln write failed: {}",
+        e
+      )))
     })?;
     out.write_all(b"\n").map_err(|e| {
-      VMError::SystemError(smol_str::SmolStr::new(format!("Stdoutln newline failed: {}", e)))
+      VMError::SystemError(smol_str::SmolStr::new(format!(
+        "Stdoutln newline failed: {}",
+        e
+      )))
     })?;
     Ok(())
   } else {

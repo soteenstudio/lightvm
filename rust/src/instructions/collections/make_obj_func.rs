@@ -9,23 +9,29 @@
  */
 
 use crate::types::value::Value;
+use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
-use smol_str::SmolStr;
 use std::sync::Arc;
 #[inline]
-pub fn make_obj_func(stack: &mut Vec<Value>, count: u32) -> Result<(), SmolStr> {
+pub fn make_obj_func(stack: &mut Vec<Value>, count: u32, ip: usize) -> Result<(), VMError> {
   let mut obj = AHashMap::with_capacity(count as usize);
   for _ in 0..count {
-    let val = stack
-      .pop()
-      .ok_or_else(|| SmolStr::new("Stack underflow: obj value"))?;
-    let key_raw = stack
-      .pop()
-      .ok_or_else(|| SmolStr::new("Stack underflow: obj key"))?;
+    let val = stack.pop().ok_or_else(|| VMError::StackUnderflow {
+      ip,
+      opcode: "MAKE_OBJ (value)",
+    })?;
+    let key_raw = stack.pop().ok_or_else(|| VMError::StackUnderflow {
+      ip,
+      opcode: "MAKE_OBJ (key)",
+    })?;
     if let Value::String(s) = key_raw {
       obj.insert(s, val);
     } else {
-      return Err(SmolStr::new("TypeError: Object key must be a string"));
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: "String (Key)",
+        found: "Non-String Key",
+      });
     }
   }
   stack.push(Value::Object(Arc::new(obj)));

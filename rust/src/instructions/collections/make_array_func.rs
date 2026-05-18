@@ -9,13 +9,16 @@
  */
 
 use crate::types::value::Value;
-use smol_str::SmolStr;
+use crate::utils::vmerror::VMError;
 use std::sync::Arc;
 #[inline]
-pub fn make_array_func(stack: &mut Vec<Value>, count: u32) -> Result<(), SmolStr> {
+pub fn make_array_func(stack: &mut Vec<Value>, count: u32, ip: usize) -> Result<(), VMError> {
   let count = count as usize;
   if stack.len() < count {
-    return Err(SmolStr::new("Stack underflow: array element"));
+    return Err(VMError::StackUnderflow {
+      ip,
+      opcode: "MAKE_ARRAY",
+    });
   }
   let start_index = stack.len() - count;
   let elements: Vec<Value> = stack.drain(start_index..).collect();

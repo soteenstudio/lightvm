@@ -9,7 +9,9 @@
  */
 
 use crate::instructions::io::{
-  inspect_arr_func::inspect_arr_func, inspect_obj_func::inspect_obj_func, print_func::print_func,
+  inspect_arr_func::inspect_arr_func,
+  inspect_obj_func::inspect_obj_func,
+  print_func::print_func,
   println_func::println_func,
   stdin_func::stdin_func,
   stdout_func::{stdout_func, stdoutln_func},

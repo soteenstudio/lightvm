@@ -9,11 +9,6 @@
  */
 
 use crate::instructions::{
-  collections::{
-    access_func::access_func, access_index_func::access_index_func,
-    make_array_func::make_array_func, make_obj_func::make_obj_func, set_prop_func::set_prop_func,
-    shrink_func::shrink_func,
-  },
   conversion::{
     to_double_func::to_double_func, to_float_func::to_float_func, to_half_func::to_half_func,
     to_integer_func::to_integer_func, to_long_func::to_long_func, to_octa_func::to_octa_func,
@@ -28,9 +23,9 @@ use crate::types::{
 };
 use crate::utils::resolve_symbols::resolve_symbols;
 use crate::vm::dispatch::{
-  comparison_dispatch::comparison_dispatch, control_flow_dispatch::control_flow_dispatch,
-  io_dispatch::io_dispatch, logic_dispatch::logic_dispatch, math_dispatch::math_dispatch,
-  stack_dispatch::stack_dispatch,
+  collections_dispatch::collections_dispatch, comparison_dispatch::comparison_dispatch,
+  control_flow_dispatch::control_flow_dispatch, io_dispatch::io_dispatch,
+  logic_dispatch::logic_dispatch, math_dispatch::math_dispatch, stack_dispatch::stack_dispatch,
 };
 use crate::vm::{inject_args::inject_args, prepare_vm::prepare_vm};
 use smol_str::SmolStr;
@@ -131,17 +126,13 @@ pub fn execute(
       | Instructions::InspectArr => {
         io_dispatch(instr, &mut stack, ip).map_err(|e| e.format())?;
       }
-      Instructions::MakeObj(count) => {
-        make_obj_func(&mut stack, *count)?;
-      }
-      Instructions::MakeArray(count) => {
-        make_array_func(&mut stack, *count)?;
-      }
-      Instructions::AccessIndex => {
-        access_index_func(&mut stack)?;
-      }
-      Instructions::Access(prop) => {
-        access_func(&mut stack, prop)?;
+      Instructions::MakeObj(_)
+      | Instructions::MakeArray(_)
+      | Instructions::AccessIndex
+      | Instructions::Access(_)
+      | Instructions::SetProp(_)
+      | Instructions::Shrink => {
+        collections_dispatch(instr, &mut stack, ip).map_err(|e| e.format())?;
       }
       Instructions::TypeOf => {
         typeof_func(&mut stack, ip).map_err(|e| e.format())?;
@@ -172,12 +163,6 @@ pub fn execute(
       }
       Instructions::Length => {
         length_func(&mut stack);
-      }
-      Instructions::SetProp(prop) => {
-        set_prop_func(&mut stack, prop)?;
-      }
-      Instructions::Shrink => {
-        let _ = shrink_func(&mut stack);
       }
       Instructions::Nop
       | Instructions::Val(_)
