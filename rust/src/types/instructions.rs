@@ -103,6 +103,7 @@ pub enum Instructions {
   Shrink,
 }
 impl Instructions {
+  #[inline]
   pub fn from_parts(op: String, args: Vec<serde_json::Value>) -> Self {
     let op_lower = op.to_lowercase();
     if args.is_empty() {

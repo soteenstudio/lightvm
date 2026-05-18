@@ -8,14 +8,6 @@
  *     http://www.apache.org/licenses/LICENSE-2.0  
  */
 
-use crate::instructions::{
-  conversion::{
-    to_double_func::to_double_func, to_float_func::to_float_func, to_half_func::to_half_func,
-    to_integer_func::to_integer_func, to_long_func::to_long_func, to_octa_func::to_octa_func,
-    to_short_func::to_short_func, to_string_func::to_string_func,
-  },
-  metadata::{length_func::length_func, typeof_func::typeof_func},
-};
 use crate::types::{
   control_flow_signal::ControlFlowSignal,
   instructions::Instructions,
@@ -24,10 +16,12 @@ use crate::types::{
 use crate::utils::resolve_symbols::resolve_symbols;
 use crate::vm::dispatch::{
   collections_dispatch::collections_dispatch, comparison_dispatch::comparison_dispatch,
-  control_flow_dispatch::control_flow_dispatch, io_dispatch::io_dispatch,
-  logic_dispatch::logic_dispatch, math_dispatch::math_dispatch, stack_dispatch::stack_dispatch,
+  control_flow_dispatch::control_flow_dispatch, conversions_dispatch::conversions_dispatch,
+  io_dispatch::io_dispatch, logic_dispatch::logic_dispatch, math_dispatch::math_dispatch,
+  metadata_dispatch::metadata_dispatch, stack_dispatch::stack_dispatch,
 };
 use crate::vm::{inject_args::inject_args, prepare_vm::prepare_vm};
+use likely_stable::{likely, unlikely};
 use smol_str::SmolStr;
 #[inline(never)]
 pub fn execute(
@@ -43,7 +37,7 @@ pub fn execute(
   inject_args(&mut vars, &functions, &options, ip);
   let bytecode_ptr = bytecode.as_ptr();
   let bytecode_len = bytecode.len();
-  while ip < bytecode_len {
+  while likely(ip < bytecode_len) {
     let instr = unsafe { &*bytecode_ptr.add(ip) };
     match instr {
       Instructions::InitStack(_)
@@ -134,35 +128,18 @@ pub fn execute(
       | Instructions::Shrink => {
         collections_dispatch(instr, &mut stack, ip).map_err(|e| e.format())?;
       }
-      Instructions::TypeOf => {
-        typeof_func(&mut stack, ip).map_err(|e| e.format())?;
+      Instructions::ToString
+      | Instructions::ToShort
+      | Instructions::ToInteger
+      | Instructions::ToLong
+      | Instructions::ToOcta
+      | Instructions::ToHalf
+      | Instructions::ToFloat
+      | Instructions::ToDouble => {
+        conversions_dispatch(instr, &mut stack, ip).map_err(|e| e.format())?;
       }
-      Instructions::ToString => {
-        to_string_func(&mut stack);
-      }
-      Instructions::ToShort => {
-        to_short_func(&mut stack);
-      }
-      Instructions::ToInteger => {
-        to_integer_func(&mut stack);
-      }
-      Instructions::ToLong => {
-        to_long_func(&mut stack);
-      }
-      Instructions::ToOcta => {
-        to_octa_func(&mut stack);
-      }
-      Instructions::ToHalf => {
-        to_half_func(&mut stack);
-      }
-      Instructions::ToFloat => {
-        to_float_func(&mut stack);
-      }
-      Instructions::ToDouble => {
-        to_double_func(&mut stack);
-      }
-      Instructions::Length => {
-        length_func(&mut stack);
+      Instructions::TypeOf | Instructions::Length => {
+        metadata_dispatch(instr, &mut stack, ip).map_err(|e| e.format())?
       }
       Instructions::Nop
       | Instructions::Val(_)
