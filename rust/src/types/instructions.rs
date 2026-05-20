@@ -65,6 +65,7 @@ pub enum Instructions {
   Stdout,
   Stdoutln,
   Stdin,
+  ClearScreen,
   IfFalse(usize),
   Jump(usize),
   Inc(SmolStr, PrimitiveTypes),
@@ -182,6 +183,7 @@ impl Instructions {
         "stdout" => Instructions::Stdout,
         "stdoutln" => Instructions::Stdoutln,
         "stdin" => Instructions::Stdin,
+        "clear_screen" => Instructions::ClearScreen,
         "break" => Instructions::Break(0),
         "accessindex" => Instructions::AccessIndex,
         "to_string" => Instructions::ToString,
@@ -310,6 +312,7 @@ impl Instructions {
       b"stdout" => Instructions::Stdout,
       b"stdoutln" => Instructions::Stdoutln,
       b"stdin" => Instructions::Stdin,
+      b"clear_screen" => Instructions::ClearScreen,
       b"if_false" => {
         let target = arg1
           .and_then(|v| v.as_u64())

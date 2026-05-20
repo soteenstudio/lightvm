@@ -8,6 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0  
  */
 
+pub mod clear_screen_func;
 pub mod inspect_arr_func;
 pub mod inspect_obj_func;
 pub mod print_func;

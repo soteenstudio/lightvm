@@ -15,6 +15,7 @@ use napi_derive::napi;
 pub enum VmState {
   Idle,
   Running,
+  Generate,
   Halted,
   Panic,
 }

@@ -117,7 +117,8 @@ pub fn execute(
       | Instructions::Stdoutln
       | Instructions::Stdin
       | Instructions::InspectObj
-      | Instructions::InspectArr => {
+      | Instructions::InspectArr
+      | Instructions::ClearScreen => {
         io_dispatch(instr, &mut stack, ip).map_err(|e| e.format())?;
       }
       Instructions::MakeObj(_)

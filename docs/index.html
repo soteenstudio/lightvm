@@ -378,22 +378,29 @@ async function getDownloads() {
       
       let rangePath = currentRange === 'td' ? `point/2026-05-01:${new Date().toISOString().split('T')[0]}` : `point/${currentRange}`;
       
+      // 1. Fetch NPM (Tetep jalan di semua range)
       const npmRequests = packages.map(pkg => 
         fetch(`https://api.npmjs.org/downloads/${rangePath}/${encodeURIComponent(pkg)}`)
           .then(res => res.json())
           .catch(() => ({ downloads: 0 }))
       );
 
-      const crateRequests = rustCrates.map(crate =>
-        fetch(`https://crates.io/api/v1/crates/${crate}`)
+      // 2. Fetch Crates.io (Cuma fetch kalau tab All-Time / 'td')
+      const crateRequests = rustCrates.map(crate => {
+        if (currentRange !== 'td') {
+          // Kalau bukan tab td, return 0 biar gak ngerusak totalan
+          return Promise.resolve({ package: `${crate} (crate)`, downloads: 0, isCrate: true });
+        }
+        
+        return fetch(`https://crates.io/api/v1/crates/${crate}`)
           .then(res => res.json())
           .then(data => ({ 
             package: `${crate} (crate)`, 
             downloads: data.crate.downloads,
             isCrate: true 
           }))
-          .catch(() => ({ downloads: 0 }))
-      );
+          .catch(() => ({ downloads: 0, isCrate: true }));
+      });
 
       const [npmResults, crateResults] = await Promise.all([
         Promise.all(npmRequests),

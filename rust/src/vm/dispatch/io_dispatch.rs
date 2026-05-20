@@ -9,6 +9,7 @@
  */
 
 use crate::instructions::io::{
+  clear_screen_func::clear_screen_func,
   inspect_arr_func::inspect_arr_func,
   inspect_obj_func::inspect_obj_func,
   print_func::print_func,
@@ -27,6 +28,7 @@ pub fn io_dispatch(instr: &Instructions, stack: &mut Vec<Value>, ip: usize) -> R
     Instructions::Stdin => stdin_func(stack),
     Instructions::InspectObj => inspect_obj_func(stack, ip),
     Instructions::InspectArr => inspect_arr_func(stack, ip),
+    Instructions::ClearScreen => clear_screen_func(ip),
     _ => unsafe { std::hint::unreachable_unchecked() },
   }
 }
