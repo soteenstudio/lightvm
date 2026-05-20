@@ -74,6 +74,7 @@ pub fn execute(
       | Instructions::Sin(_)
       | Instructions::Cos(_)
       | Instructions::Tan(_)
+      | Instructions::Neg(_)
       | Instructions::IncIdx(_, _)
       | Instructions::DecIdx(_, _) => {
         math_dispatch(instr, &mut stack, &mut vars, ip).map_err(|e| e.format())?;
