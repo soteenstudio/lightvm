@@ -21,5 +21,6 @@ pub mod push_i16_func;
 pub mod push_i32_func;
 pub mod push_i64_func;
 pub mod set_func;
+pub mod swap_func;
 pub mod truncate_func;
 pub mod val_func;

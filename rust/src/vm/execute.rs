@@ -55,6 +55,7 @@ pub fn execute(
       | Instructions::GetIdx(_)
       | Instructions::Concat
       | Instructions::Dup
+      | Instructions::Swap
       | Instructions::Truncate
       | Instructions::Import(_, _) => {
         stack_dispatch(instr, &mut stack, &mut vars, &options, ip).map_err(|e| e.format())?;

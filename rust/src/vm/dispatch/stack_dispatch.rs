@@ -13,7 +13,7 @@ use crate::instructions::stack::{
   push_f16_func::push_f16_func, push_f32_func::push_f32_func, push_f64_func::push_f64_func,
   push_func::push_func, push_i128_func::push_i128_func, push_i16_func::push_i16_func,
   push_i32_func::push_i32_func, push_i64_func::push_i64_func, set_func::set_func,
-  truncate_func::truncate_func, val_func::val_func,
+  swap_func::swap_func, truncate_func::truncate_func, val_func::val_func,
 };
 use crate::types::{
   instructions::Instructions,
@@ -51,6 +51,7 @@ pub fn stack_dispatch(
     Instructions::GetIdx(idx) => get_func(stack, vars, *idx, ip),
     Instructions::Concat => concat_func(stack, ip),
     Instructions::Dup => dup_func(stack, ip),
+    Instructions::Swap => swap_func(stack, ip),
     Instructions::Truncate => truncate_func(stack, ip),
     Instructions::Import(module_name, alias_idx) => {
       import_func(vars, options, module_name, *alias_idx, ip)
