@@ -283,9 +283,6 @@ LightVM requires explicit type definitions for certain instructions to maintain 
 | dbl | f64 | Double | 64-bit Floating Point (Float64) |
 | str | - | String | String / Text data |
 
-> [!WARNING]
-> __Preview Type__: `hlf` (Half-precision) is currently in __Preview__. It's more stable than Nightly but may still undergo refinements or behavior changes.
-
 ### Bytecode Instructions
 LightVM has a total of 40+ instructions for bytecode.
 1. Stack & Variable Management  

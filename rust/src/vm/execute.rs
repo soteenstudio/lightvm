@@ -21,7 +21,6 @@ use crate::vm::dispatch::{
   metadata_dispatch::metadata_dispatch, stack_dispatch::stack_dispatch,
 };
 use crate::vm::{inject_args::inject_args, prepare_vm::prepare_vm};
-use likely_stable::{likely, unlikely};
 use smol_str::SmolStr;
 #[inline(never)]
 pub fn execute(
@@ -37,7 +36,7 @@ pub fn execute(
   inject_args(&mut vars, &functions, &options, ip);
   let bytecode_ptr = bytecode.as_ptr();
   let bytecode_len = bytecode.len();
-  while likely(ip < bytecode_len) {
+  while ip < bytecode_len {
     let instr = unsafe { &*bytecode_ptr.add(ip) };
     match instr {
       Instructions::InitStack(_)
