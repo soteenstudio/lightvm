@@ -295,6 +295,7 @@ A group of instructions for basic data manipulation and memory (variable) alloca
 | set    | name      | val | Take the top stack and then save it to the variable ``name`` |
 | get    | name      | - | Take the contents of the ``name`` variable and push it onto the stack |
 | dup    | -         | val | Duplicate the top value in the stack |
+| swap | - | val1, val2 | Swap the top stack with the bottom stack |
 2. Arithmetic & Logic  
 Instructions for calculations. Note that for optimization, these instructions require a ``PrimitiveTypes`` (``sht``, ``hlf``, ``int``, ``flt``, ``lng``, ``dbl``, ``oct``) to prevent the VM from guessing the data type during execution.
 
@@ -303,6 +304,7 @@ Instructions for calculations. Note that for optimization, these instructions re
 | add / sub | type       | val1, val2 | Addition or Subtraction |
 | mul / div | type       | val1, val2 | Multiplication or Division |
 | mod       | type       | val1, val2 | Modulo (Remainder) |
+| neg | type | val | Negation (-5 to 5, or vice versa) |
 | inc / dec | name, type | - | Directly add/remove variable contents (without going through the stack) |
 | gt / lt   | type       | val1, val2 |Greater Than or Less Than |
 | ge / le   | type       | val1, val2 | Greater/Less Than or Equal |
@@ -384,6 +386,9 @@ Instructions for standard output and more specific iteration control.
 |--------|-----------|------------------|-------------|
 | print | - | val | Prints the top value of the stack to the console without a newline |
 | println | - | val | Prints the top value of the stack to the console with a newline |
+| stdout | - | val | - |
+| stdoutln | - | val | - |
+| clear_screen | - | - | - |
 | break | - | target_ip | Stops the loop and jumps to the specified target_ip |
 | nop | - | - | Empty instructions (usually for placeholders or alignment) |
 

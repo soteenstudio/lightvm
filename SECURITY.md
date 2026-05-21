@@ -6,8 +6,8 @@ Security updates are prioritized for the latest active development releases. Ple
 
 | Version         | Supported          |
 | --------------- | ------------------ |
-| 0.1.0-alpha.1   | :white_check_mark: |
-| < 0.1.0-alpha.0 | :x:                |
+| > 0.1.0-alpha.3 | :white_check_mark: |
+| < 0.1.0-alpha.3 | :x:                |
 
 ## Reporting a Vulnerability
 
