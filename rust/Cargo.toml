@@ -29,11 +29,6 @@ smol_str = { version = "0.2", features = ["serde"] }
 ahash = { version = "0.8", features = ["serde"] }
 half = { version = "2.7.1", features = ["num-traits", "serde", "std"] }
 num-traits = "0.1"
-smallvec = "0.1"
-likely_stable = "0.1"
-dynasmrt = "3.2.1"
-dynasm = "3.2.1"
-
 
 [profile.release]
 opt-level = 3
