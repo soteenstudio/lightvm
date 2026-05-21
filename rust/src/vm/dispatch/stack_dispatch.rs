@@ -10,13 +10,11 @@
 
 use crate::instructions::stack::{
   concat_func::concat_func, dup_func::dup_func, get_func::get_func, import_func::import_func,
-  push_f16_func::push_f16_func, push_f32_func::push_f32_func, push_f64_func::push_f64_func,
-  push_func::push_func, push_i128_func::push_i128_func, push_i16_func::push_i16_func,
-  push_i32_func::push_i32_func, push_i64_func::push_i64_func, set_func::set_func,
+  push_array_func::push_array_func, push_f16_func::push_f16_func, push_f32_func::push_f32_func,
+  push_f64_func::push_f64_func, push_func::push_func, push_i128_func::push_i128_func,
+  push_i16_func::push_i16_func, push_i32_func::push_i32_func, push_i64_func::push_i64_func,
+  push_object_func::push_object_func, push_string_func::push_string_func, set_func::set_func,
   swap_func::swap_func, truncate_func::truncate_func, val_func::val_func,
-  push_string_func::push_string_func,
-  push_array_func::push_array_func,
-  push_object_func::push_object_func,
 };
 use crate::types::{
   instructions::Instructions,
