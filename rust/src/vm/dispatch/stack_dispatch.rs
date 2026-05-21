@@ -14,6 +14,9 @@ use crate::instructions::stack::{
   push_func::push_func, push_i128_func::push_i128_func, push_i16_func::push_i16_func,
   push_i32_func::push_i32_func, push_i64_func::push_i64_func, set_func::set_func,
   swap_func::swap_func, truncate_func::truncate_func, val_func::val_func,
+  push_string_func::push_string_func,
+  push_array_func::push_array_func,
+  push_object_func::push_object_func,
 };
 use crate::types::{
   instructions::Instructions,
@@ -41,8 +44,19 @@ pub fn stack_dispatch(
     Instructions::PushFloat16(v) => push_f16_func(stack, v, ip),
     Instructions::PushFloat32(v) => push_f32_func(stack, v, ip),
     Instructions::PushFloat64(v) => push_f64_func(stack, v, ip),
+    Instructions::PushString(v) => push_string_func(stack, v, ip),
+    Instructions::PushArray(v) => push_array_func(stack, v, ip),
+    Instructions::PushObject(v) => push_object_func(stack, v, ip),
     Instructions::PushUndefined => {
       stack.push(Value::Undefined);
+      Ok(())
+    }
+    Instructions::PushNull => {
+      stack.push(Value::Null);
+      Ok(())
+    }
+    Instructions::PushNaN => {
+      stack.push(Value::NaN);
       Ok(())
     }
     Instructions::Push(val) => push_func(stack, val.clone(), ip),

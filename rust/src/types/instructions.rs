@@ -14,6 +14,8 @@ use half::f16;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use smol_str::SmolStr;
+use ahash::AHashMap;
+use std::sync::Arc;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[repr(u16)]
@@ -26,8 +28,13 @@ pub enum Instructions {
   PushFloat16(f16),
   PushFloat32(f32),
   PushFloat64(f64),
+  PushString(SmolStr),
+  PushArray(Arc<Vec<Value>>),
+  PushObject(Arc<AHashMap<SmolStr, Value>>),
   PushBool(bool),
+  PushNull,
   PushUndefined,
+  PushNaN,
   Push(Value),
   Val(SmolStr),
   ValIdx(usize),
@@ -242,7 +249,9 @@ impl Instructions {
             Value::Int64(n)
           }
         } else if let Some(f) = val.as_f64() {
-          if f == (f as f32) as f64 {
+          if f.is_nan() {
+            Value::NaN
+          } else if f == (f as f32) as f64 {
             if f == half::f16::from_f64(f).to_f64() {
               Value::Float16(half::f16::from_f64(f))
             } else {

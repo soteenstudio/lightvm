@@ -26,6 +26,7 @@ pub fn resolve_symbols(bytecode: &mut [Instructions]) -> usize {
         Value::Float16(v) => *instr = Instructions::PushFloat16(*v),
         Value::Float32(v) => *instr = Instructions::PushFloat32(*v),
         Value::Float64(v) => *instr = Instructions::PushFloat64(*v),
+        Value::String(v) => *instr = Instructions::PushString(v.clone()),
         Value::Bool(v) => *instr = Instructions::PushBool(*v),
         Value::Undefined => *instr = Instructions::PushUndefined,
         _ => {}

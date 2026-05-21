@@ -47,7 +47,12 @@ pub fn execute(
       | Instructions::PushFloat16(_)
       | Instructions::PushFloat32(_)
       | Instructions::PushFloat64(_)
+      | Instructions::PushString(_)
+      | Instructions::PushArray(_)
+      | Instructions::PushObject(_)
       | Instructions::PushUndefined
+      | Instructions::PushNull
+      | Instructions::PushNaN
       | Instructions::Push(_)
       | Instructions::ValIdx(_)
       | Instructions::SetIdx(_)

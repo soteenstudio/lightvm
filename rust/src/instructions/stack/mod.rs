@@ -24,3 +24,6 @@ pub mod set_func;
 pub mod swap_func;
 pub mod truncate_func;
 pub mod val_func;
+pub mod push_string_func;
+pub mod push_array_func;
+pub mod push_object_func;
