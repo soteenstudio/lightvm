@@ -28,7 +28,7 @@ pub fn io_dispatch(instr: &Instructions, stack: &mut Vec<Value>, ip: usize) -> R
     Instructions::Stdin => stdin_func(stack),
     Instructions::InspectObj => inspect_obj_func(stack, ip),
     Instructions::InspectArr => inspect_arr_func(stack, ip),
-    Instructions::ClearScreen => clear_screen_func(),
+    Instructions::ClearScreen => clear_screen_func(), 
     _ => unsafe { std::hint::unreachable_unchecked() },
   }
 }

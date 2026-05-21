@@ -45,13 +45,10 @@ strip = true
 overflow-checks = false
 debug = false
 rpath = false
-backend = "llvm"
-vtable-generation = "vtable-thin"
 
 [profile.release.package."*"]
 opt-level = 3
 codegen-units = 1
 incremental = false
 split-debuginfo = "off"
-vtable-generation = "vtable-thin"
 debug = false
