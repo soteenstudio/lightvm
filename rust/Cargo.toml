@@ -28,7 +28,7 @@ ryu = "1.0"
 smol_str = { version = "0.2", features = ["serde"] }
 ahash = { version = "0.8", features = ["serde"] }
 half = { version = "2.7.1", features = ["num-traits", "serde", "std"] }
-num-traits = "0.1"
+num-traits = "0.2"
 
 [profile.release]
 opt-level = 3
