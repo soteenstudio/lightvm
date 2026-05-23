@@ -18,7 +18,7 @@ native = []
 
 [dependencies]
 napi = { version = "2.16", features = ["napi4", "serde", "serde-json"], optional = true } 
-napi-derive = { version = "2.16", optional = true }
+napi-derive = { version = "3.5", optional = true }
 colored = "2"
 regex = "1.12.3"
 serde = { version = "1.0", features = ["derive", "rc"] }
