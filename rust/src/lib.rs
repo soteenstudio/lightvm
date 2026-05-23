@@ -21,6 +21,7 @@ use crate::types::{
   vmevent::VmEvent,
   vmstate::VmState,
 };
+use crate::utils::vmerror::VMError;
 use crate::vm::run::run;
 use ahash::AHashMap;
 #[cfg(feature = "node")]
@@ -71,9 +72,12 @@ impl LightVM {
       _imports: AHashMap::new(),
     }
   }
-  fn require(&self, cap: Capability) -> Result<(), String> {
+  fn require(&self, cap: Capability) -> Result<(), VMError> {
     if !self.caps.contains(&cap) {
-      return Err(format!("Capability {:?} not granted", cap));
+      return Err(VMError::SystemError(smol_str::SmolStr::new(format!(
+        "Capability {:?} not granted",
+        cap
+      ))));
     }
     Ok(())
   }
@@ -117,33 +121,45 @@ impl LightVM {
       }
     }
   }
-  fn load_internal(&mut self, source: String) -> Result<(), String> {
+  fn load_internal(&mut self, source: String) -> Result<(), VMError> {
     let trimmed = source.trim();
     if trimmed.starts_with('[') {
-      let raw_list: Vec<serde_json::Value> =
-        serde_json::from_str(trimmed).map_err(|e| format!("Gagal parse JSON: {}", e))?;
+      let raw_list: Vec<serde_json::Value> = serde_json::from_str(trimmed).map_err(|e| {
+        VMError::SystemError(smol_str::SmolStr::new(format!("Failed to parse JSON: {}", e)))
+      })?;
       self.bytecode = raw_list.iter().map(Instructions::from_json_array).collect();
     } else {
       let path = std::path::Path::new(trimmed);
       if path.exists() {
-        let code = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
+        let code = std::fs::read_to_string(path)
+          .map_err(|e| VMError::SystemError(smol_str::SmolStr::new(e.to_string())))?;
         self.bytecode = crate::utils::loader::parse_ltc(&code);
       } else {
-        return Err("Source bukan JSON dan file tidak ditemukan".into());
+        return Err(VMError::InvalidOpcode {
+          ip: 0,
+          code: smol_str::SmolStr::new("INVALID_SOURCE"),
+        });
       }
     }
     self.index_metadata();
     Ok(())
   }
-  fn run_internal(&mut self, _options: Option<RunOptions>) -> Result<(), String> {
+  fn run_internal(&mut self, _options: Option<RunOptions>) -> Result<(), VMError> {
     self.require(Capability::Control)?;
     if self.bytecode.is_empty() {
-      return Err("No bytecode loaded".into());
+      return Err(VMError::InvalidOpcode {
+        ip: 0,
+        code: smol_str::SmolStr::new("EMPTY_BYTECODE"),
+      });
     }
     self.state = VmState::Running;
     self.emit(VmEvent::Tick, serde_json::json!({ "state": "start" }));
-    let bytecode_str = serde_json::to_string(&self.bytecode)
-      .map_err(|e| format!("Gagal stringify bytecode: {}", e))?;
+    let bytecode_str = serde_json::to_string(&self.bytecode).map_err(|e| {
+      VMError::SystemError(smol_str::SmolStr::new(format!(
+        "Gagal stringify bytecode: {}",
+        e
+      )))
+    })?;
     run(bytecode_str);
     Ok(())
   }
@@ -158,15 +174,19 @@ impl LightVM {
       .push(Box::new(callback));
     Ok(())
   }
-  fn provide_internal(&mut self, name: String, value: serde_json::Value) -> Result<(), String> {
+  fn provide_internal(&mut self, name: String, value: serde_json::Value) -> Result<(), VMError> {
     self.require(Capability::Control)?;
     let json_str = value.to_string();
-    let val: Value =
-      serde_json::from_str(&json_str).map_err(|e| format!("Invalid value format: {}", e))?;
+    let val: Value = serde_json::from_str(&json_str).map_err(|e| {
+      VMError::SystemError(smol_str::SmolStr::new(format!(
+        "Invalid value format: {}",
+        e
+      )))
+    })?;
     self._imports.insert(name, val);
     Ok(())
   }
-  fn inspect_internal(&self) -> Result<String, String> {
+  fn inspect_internal(&self) -> Result<String, VMError> {
     self.require(Capability::Observe)?;
     let info = serde_json::json!({
         "state": format!("{:?}", self.state),
@@ -177,7 +197,7 @@ impl LightVM {
     });
     Ok(info.to_string())
   }
-  fn halt_internal(&mut self) -> Result<(), String> {
+  fn halt_internal(&mut self) -> Result<(), VMError> {
     self.require(Capability::Unsafe)?;
     self.state = VmState::Halted;
     self.emit(VmEvent::Halt, serde_json::Value::Null);
@@ -187,18 +207,24 @@ impl LightVM {
     &mut self,
     name: String,
     args_raw: serde_json::Value,
-  ) -> Result<String, String> {
+  ) -> Result<String, VMError> {
     self.require(Capability::Control)?;
     if !self.exported.contains(name.as_str()) {
-      return Err(format!("Function '{}' is not exported", name));
+      return Err(VMError::InvalidOpcode {
+        ip: 0,
+        code: SmolStr::new(format!("NOT_EXPORTED:{}", name)),
+      });
     }
     let fn_meta = self
       .functions
       .get(name.as_str())
-      .ok_or_else(|| format!("Function '{}' not found", name))?;
+      .ok_or_else(|| VMError::InvalidOpcode {
+        ip: 0,
+        code: SmolStr::new(format!("NOT_FOUND:{}", name)),
+      })?;
     let json_args = args_raw.to_string();
-    let args: Vec<Value> =
-      serde_json::from_str(&json_args).map_err(|e| format!("Invalid args: {}", e))?;
+    let args: Vec<Value> = serde_json::from_str(&json_args)
+      .map_err(|e| VMError::SystemError(SmolStr::new(format!("Invalid args: {}", e))))?;
     self.state = VmState::Running;
     let _options = crate::types::value::RunOptions {
       entry: Some(fn_meta.start),
@@ -206,16 +232,17 @@ impl LightVM {
       capture_return: true,
       imports: ahash::AHashMap::new(),
     };
-    let bytecode_str = serde_json::to_string(&self.bytecode)
-      .map_err(|e| format!("Failed to stringify bytecode: {}", e))?;
+    let bytecode_str = serde_json::to_string(&self.bytecode).map_err(|e| {
+      VMError::SystemError(SmolStr::new(format!("Failed to stringify bytecode: {}", e)))
+    })?;
     run(bytecode_str.clone());
     Ok(bytecode_str)
   }
-  fn get_outputs_internal(&mut self) -> Result<Vec<String>, String> {
+  fn get_outputs_internal(&mut self) -> Result<Vec<String>, VMError> {
     self.require(Capability::Observe)?;
     Ok(std::mem::take(&mut self._outputs))
   }
-  fn clear_outputs_internal(&mut self) -> Result<(), String> {
+  fn clear_outputs_internal(&mut self) -> Result<(), VMError> {
     self.require(Capability::Control)?;
     self._outputs.clear();
     Ok(())
