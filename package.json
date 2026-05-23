@@ -46,6 +46,7 @@
   "devDependencies": {
     "@types/node": "^24.8.0",
     "esbuild": "^0.25.12",
+    "lightvm": "file:lightvm-0.1.0-proto.0.tgz",
     "prettier": "3.8.3"
   }
 }

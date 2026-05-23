@@ -49,7 +49,6 @@ export class LightVM {
     } else {
       payload = JSON.stringify(source);
     }
-    console.log('Payload: ', payload);
     this.instance.load(payload);
     return this;
   }
