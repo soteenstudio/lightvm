@@ -5,9 +5,15 @@ on:
       - main
     tags:
       - 'v*'
+  
+  workflow_run:
+    workflows: ["Check Token Status"]
+    types:
+      - completed
 
 jobs:
   build-npm:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
