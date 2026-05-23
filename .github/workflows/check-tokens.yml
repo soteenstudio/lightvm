@@ -17,7 +17,6 @@ jobs:
     steps:
       - name: Check NPM Token
         id: check_npm
-        # Kita tambahin 'continue-on-error' biar kalau NPM mati, step crates.io tetep dicek
         continue-on-error: true
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -45,16 +44,15 @@ jobs:
           fi
 
       - name: Send Email Notification if Token Expired
-        # Step ini cuma jalan kalau salah satu atau kedua token di atas statusnya bukan 'valid'
         if: steps.check_npm.outputs.status != 'valid' || steps.check_crates.outputs.status != 'valid'
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
           server_port: 465
           username: ${{ secrets.MAIL_USERNAME }}
-          password: ${{ secrets.MAIL_PASSWORD }} # Ini diisi App Password Gmail, bukan password utama!
+          password: ${{ secrets.MAIL_PASSWORD }}
           subject: "⚠️ ALERT: GitHub Token Registry Expired!"
-          to: ${{ secrets.RECEIVER_EMAIL }} # Email tujuan (bisa disamain ama MAIL_USERNAME)
+          to: ${{ secrets.RECEIVER_EMAIL }}
           from: "GitHub Actions Token Checker"
           body: |
             Halo, Clay. Ada token lu yang udah gak valid nih:
@@ -65,6 +63,5 @@ jobs:
             Buruan ganti di repo settings ya!
 
       - name: Force Workflow Failure
-        # Biar di tab GitHub Actions tetep kelihatan tanda silang merah kalau ada yang mati
         if: steps.check_npm.outputs.status != 'valid' || steps.check_crates.outputs.status != 'valid'
         run: exit 1
