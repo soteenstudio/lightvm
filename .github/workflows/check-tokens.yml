@@ -14,6 +14,9 @@ on:
 jobs:
   check-tokens:
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
     steps:
       - name: Check NPM Token
         id: check_npm
@@ -47,7 +50,7 @@ jobs:
         if: steps.check_npm.outputs.status != 'valid' || steps.check_crates.outputs.status != 'valid'
         uses: imjohnbo/issue-bot@v3
         with:
-          assignees: "claycuy" # Ganti pake username GitHub lu
+          assignees: "claycuy"
           labels: "bug, security"
           title: "⚠️ ALERT: GitHub Token Registry Expired!"
           body: |
