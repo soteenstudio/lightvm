@@ -34,7 +34,7 @@ pub fn eliminate_dead_stores(bytecode: &mut Vec<Instructions>, usage: &Usage) {
         stack_demands.push(Demand::Keep);
       }
       Instructions::Set(arg) => {
-        if !usage.read.contains(arg.as_ref()) {
+        if !usage.read.contains(arg.as_str()) {
           stack_demands.push(Demand::Drop);
           *inst = Instructions::Nop;
           continue;
@@ -179,7 +179,7 @@ pub fn eliminate_dead_stores(bytecode: &mut Vec<Instructions>, usage: &Usage) {
         }
       }
       Instructions::Inc(arg, _) | Instructions::Dec(arg, _) => {
-        if !usage.read.contains(arg.as_ref()) {
+        if !usage.read.contains(arg.as_str()) {
           *inst = Instructions::Nop;
         }
       }

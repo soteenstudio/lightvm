@@ -8,14 +8,6 @@
  *     http://www.apache.org/licenses/LICENSE-2.0  
  */
 
-#[allow(clippy::type_complexity)]
-pub mod instructions;
-pub mod interfaces;
-pub mod optimizer;
-pub mod types;
-pub mod utils;
-pub mod vm;
-#[cfg(not(feature = "node"))]
-pub use interfaces::interface::LightVM;
-#[cfg(feature = "node")]
-pub use crate::interfaces::napi_interface::NodeLightVM;
+pub mod interface;
+pub mod napi_interface;
+pub mod native_interface;
