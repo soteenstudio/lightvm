@@ -58,56 +58,96 @@ export class LightVM {
     }
   }
   run(options: any = {}) {
-    this.instance.run(options);
+    try {
+      this.instance.run(options);
+    } catch (err) {
+      console.error(err.message);
+      process.exit(1);
+    }
   }
   export(name: string) {
-    return (...args: any[]) => {
-      const rawResult = this.instance.callExported(name, JSON.stringify(args));
-      const parsed = JSON.parse(rawResult);
-      if (!parsed || parsed === 'Undefined') return undefined;
-      return typeof parsed === 'object' ? Object.values(parsed)[0] : parsed;
-    };
+    try {
+      return (...args: any[]) => {
+        const rawResult = this.instance.callExported(name, JSON.stringify(args));
+        const parsed = JSON.parse(rawResult);
+        if (!parsed || parsed === 'Undefined') return undefined;
+        return typeof parsed === 'object' ? Object.values(parsed)[0] : parsed;
+      };
+    } catch (err) {
+      console.error(err.message);
+      process.exit(1);
+    }
   }
   provide(name: string, value: any) {
-    this.instance.provide(name, JSON.stringify(value));
-    return this;
+    try {
+      this.instance.provide(name, JSON.stringify(value));
+      return this;
+    } catch (err) {
+      console.error(err.message);
+      process.exit(1);
+    }
   }
   halt() {
-    this.instance.halt();
+    try {
+      this.instance.halt();
+    } catch (err) {
+      console.error(err.message);
+      process.exit(1);
+    }
   }
   on(event: VMEvent, fn: Listener) {
-    if (!this.listeners.has(event)) {
-      this.listeners.set(event, []);
-      this.instance.on(event, (payload: string) => {
-        let data;
-        try {
-          data = JSON.parse(payload);
-        } catch {
-          data = payload;
-        }
-        this.emit(event, data);
-      });
+    try {
+      if (!this.listeners.has(event)) {
+        this.listeners.set(event, []);
+        this.instance.on(event, (payload: string) => {
+          let data;
+          try {
+            data = JSON.parse(payload);
+          } catch {
+            data = payload;
+          }
+          this.emit(event, data);
+        });
+      }
+      this.listeners.get(event)!.push(fn);
+      return this;
+    } catch (err) {
+      console.error(err.message);
+      process.exit(1);
     }
-    this.listeners.get(event)!.push(fn);
-    return this;
   }
   private emit(event: VMEvent, payload?: any) {
-    const list = this.listeners.get(event);
-    if (list) {
-      for (const fn of list) fn(payload);
+    try {
+      const list = this.listeners.get(event);
+      if (list) {
+        for (const fn of list) fn(payload);
+      }
+    } catch (err) {
+      console.error(err.message);
+      process.exit(1);
     }
   }
   inspect() {
-    return JSON.parse(this.instance.inspect());
+    try {
+      return JSON.parse(this.instance.inspect());
+    } catch (err) {
+      console.error(err.message);
+      process.exit(1);
+    }
   }
   embedded(): VMResult {
-    this.instance.clear_outputs();
-    this.instance.run({});
-    return {
-      value: undefined,
-      outputs: this.instance.get_outputs(),
-      halted: true,
-    };
+    try {
+      this.instance.clear_outputs();
+      this.instance.run({});
+      return {
+        value: undefined,
+        outputs: this.instance.get_outputs(),
+        halted: true,
+      };
+    } catch (err) {
+      console.error(err.message);
+      process.exit(1);
+    }
   }
   tools() {
     return {
