@@ -37,7 +37,7 @@ try {
   console.log(`🏗️  Building Rust (${RUST_OUT_DIR})...`);
   const buildCmd = isDebug
     ? 'cargo build --features node'
-    : 'cargo build --release';
+    : 'cargo build --release --features node';
   execSync(buildCmd, {
     cwd: join(process.cwd(), 'rust'),
     stdio: STDIO_MODE,

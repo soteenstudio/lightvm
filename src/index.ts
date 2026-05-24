@@ -39,18 +39,23 @@ export class LightVM {
     this.instance = new native.LightVM(numericCaps);
   }
   load(source: Instruction[] | string) {
-    let payload: string;
-    if (typeof source === 'string') {
-      if (source.trim().startsWith('[')) {
-        payload = source;
+    try {
+      let payload: string;
+      if (typeof source === 'string') {
+        if (source.trim().startsWith('[')) {
+          payload = source;
+        } else {
+          payload = source;
+        }
       } else {
-        payload = source;
+        payload = JSON.stringify(source);
       }
-    } else {
-      payload = JSON.stringify(source);
+      this.instance.load(payload);
+      return this;
+    } catch (err) {
+      console.error(err.message);
+      process.exit(1);
     }
-    this.instance.load(payload);
-    return this;
   }
   run(options: any = {}) {
     this.instance.run(options);
@@ -106,14 +111,40 @@ export class LightVM {
   }
   tools() {
     return {
-      optimizeBytecode: native.LightVM.optimizeBytecode,
+      optimizeBytecode: (bytecode: any) => {
+        try {
+          return native.LightVM.optimizeBytecode(bytecode);
+        } catch (err) {
+          console.error(err.message);
+          process.exit(1);
+        }
+      },
       loader: {
         stringifyLTC: (json) => {
-          const input = typeof json === 'string' ? json : JSON.stringify(json);
-          return native.LightVM.stringifyLtc(input);
+          try {
+            const input = typeof json === 'string' ? json : JSON.stringify(json);
+            return native.LightVM.stringifyLtc(input);
+          } catch (err) {
+            console.error(err.message);
+            process.exit(1);
+          }
         },
-        parseLTC: (code) => native.LightVM.parseLtc(code),
-        parseLTCArray: (code) => native.LightVM.parseLtcArray(code),
+        parseLTC: (code) => {
+          try {
+            return native.LightVM.parseLtc(code);
+          } catch (err) {
+            console.error(err.message);
+            process.exit(1);
+          }
+        },
+        parseLTCArray: (code) => {
+          try {
+            return native.LightVM.parseLtcArray(code);
+          } catch (err) {
+            console.error(err.message);
+            process.exit(1);
+          }
+        },
       },
     };
   }

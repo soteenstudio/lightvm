@@ -12,6 +12,7 @@ import { createRequire } from 'module';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { VMSystemError } from './vmerror';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 let cachedNative = null;
@@ -51,7 +52,7 @@ export function loadNapi() {
           ? '@lightvm/core-android-arm'
           : '';
   } else {
-    throw new Error(
+    throw new VMSystemError(
       `LightVM: Platform ${platform} ${arch} gak didukung, Clay.`,
     );
   }
@@ -59,7 +60,7 @@ export function loadNapi() {
     cachedNative = require(packageName);
     return cachedNative;
   } catch (err) {
-    throw new Error(
+    throw new VMSystemError(
       `LightVM: Gagal load biner untuk ${packageName}. Pastiin koneksi aman pas install.`,
     );
   }
