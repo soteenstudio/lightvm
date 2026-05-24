@@ -39,6 +39,7 @@ jobs:
           CRATES_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
         run: |
           echo "Checking Crates.io token..."
+          # Kita kirim token murni tanpa embel-embel string lain di header Authorization
           RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: $CRATES_TOKEN" -H "User-Agent: TokenChecker/1.0" https://crates.io/api/v1/me)
           if [ "$RESPONSE" -eq 200 ]; then
             echo "status=valid" >> $GITHUB_OUTPUT
