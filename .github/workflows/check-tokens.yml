@@ -40,8 +40,10 @@ jobs:
           CRATES_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
         run: |
           echo "Checking Crates.io token..."
+          
+          # Pakai header X-Cargo-Auth, ini standar rahasia CLI Cargo buat nembus API
           RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
-            -H "Authorization: $CRATES_TOKEN" \
+            -H "X-Cargo-Auth: $CRATES_TOKEN" \
             -H "User-Agent: LightVM-TokenChecker (https://github.com/soteenstudio/lightvm)" \
             https://crates.io/api/v1/me)
           
