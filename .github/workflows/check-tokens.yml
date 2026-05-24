@@ -33,7 +33,7 @@ jobs:
         id: check_crates
         continue-on-error: true
         env:
-          CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
+          CRATES_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
         run: |
           echo "Checking Crates.io token..."
           RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: $CRATES_TOKEN" -H "User-Agent: TokenChecker/1.0" https://crates.io/api/v1/me)
@@ -43,24 +43,22 @@ jobs:
             echo "status=invalid" >> $GITHUB_OUTPUT
           fi
 
-      - name: Send Email Notification if Token Expired
+      - name: Create Issue on Token Expiration
         if: steps.check_npm.outputs.status != 'valid' || steps.check_crates.outputs.status != 'valid'
-        uses: dawidd6/action-send-mail@v3
+        uses: imjohnbo/issue-bot@v3
         with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          username: ${{ secrets.MAIL_USERNAME }}
-          password: ${{ secrets.MAIL_PASSWORD }}
-          subject: "⚠️ ALERT: GitHub Token Registry Expired!"
-          to: ${{ secrets.RECEIVER_EMAIL }}
-          from: "GitHub Actions Token Checker"
+          assignees: "claycuy" # Ganti pake username GitHub lu
+          labels: "bug, security"
+          title: "⚠️ ALERT: GitHub Token Registry Expired!"
           body: |
-            Halo, Clay. Ada token lu yang udah gak valid nih:
+            Hi, Maintainer. One of your tokens is no longer valid:
             
             - NPM Token: ${{ steps.check_npm.outputs.status == 'valid' && '✅ VALID' || '❌ EXPIRED/INVALID' }}
             - Crates.io Token: ${{ steps.check_crates.outputs.status == 'valid' && '✅ VALID' || '❌ EXPIRED/INVALID' }}
             
-            Buruan ganti di repo settings ya!
+            Hurry up and change it in the repo settings!
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Force Workflow Failure
         if: steps.check_npm.outputs.status != 'valid' || steps.check_crates.outputs.status != 'valid'
