@@ -132,7 +132,7 @@ export class LightVM {
   }
   inspect() {
     try {
-      return JSON.parse(this.instance.inspect());
+      return this.instance.inspect();
     } catch (err) {
       console.error(err.message);
       process.exit(1);
