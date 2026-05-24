@@ -178,10 +178,10 @@ pub fn eliminate_dead_stores(bytecode: &mut Vec<Instructions>, usage: &Usage) {
           *inst = Instructions::Nop;
         }
       }
-      Instructions::Inc(arg, _) | Instructions::Dec(arg, _) => {
-        if !usage.read.contains(arg.as_str()) {
-          *inst = Instructions::Nop;
-        }
+      Instructions::Inc(arg, _) | Instructions::Dec(arg, _)
+        if !usage.read.contains(arg.as_str()) =>
+      {
+        *inst = Instructions::Nop;
       }
       Instructions::IncIdx(_, _) | Instructions::DecIdx(_, _) => {}
       Instructions::IfFalse(_) => {
