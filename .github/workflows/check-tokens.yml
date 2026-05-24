@@ -33,26 +33,24 @@ jobs:
             echo "status=invalid" >> $GITHUB_OUTPUT
           fi
 
+      # Kita install Rust Toolchain dulu khusus buat runner ini
+      - name: Install Rust CLI
+        uses: dtolnay/rust-toolchain@stable
+
       - name: Check Crates.io Token
         id: check_crates
         continue-on-error: true
         env:
           CRATES_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
         run: |
-          echo "Checking Crates.io token..."
+          echo "Checking Crates.io token using Cargo CLI..."
           
-          # Pakai header X-Cargo-Auth, ini standar rahasia CLI Cargo buat nembus API
-          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
-            -H "X-Cargo-Auth: $CRATES_TOKEN" \
-            -H "User-Agent: LightVM-TokenChecker (https://github.com/soteenstudio/lightvm)" \
-            https://crates.io/api/v1/me)
-          
-          echo "Crates.io API Response Code: $RESPONSE"
-          echo "code=$RESPONSE" >> $GITHUB_OUTPUT
-          
-          if [ "$RESPONSE" -eq 200 ]; then
+          # Kita tes minta daftar owner crate 'lightvm' pake token lu
+          if cargo owner --list lightvm --token "$CRATES_TOKEN" > /dev/null 2>&1; then
+            echo "code=200" >> $GITHUB_OUTPUT
             echo "status=valid" >> $GITHUB_OUTPUT
           else
+            echo "code=401" >> $GITHUB_OUTPUT
             echo "status=invalid" >> $GITHUB_OUTPUT
           fi
 
