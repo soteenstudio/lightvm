@@ -12,10 +12,11 @@ import { createRequire } from 'module';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { VMSystemError } from './vmerror';
+import { VMSystemError } from './vmerror.js';
+import { isMusl } from './isMusl.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
-let cachedNative = null;
+let cachedNative: any = null;
 export function loadNapi() {
   if (cachedNative) return cachedNative;
   try {

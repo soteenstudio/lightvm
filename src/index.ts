@@ -53,7 +53,7 @@ export class LightVM {
       this.instance.load(payload);
       return this;
     } catch (err) {
-      console.error(err.message);
+      console.error((err as Error).message);
       process.exit(1);
     }
   }
@@ -61,7 +61,7 @@ export class LightVM {
     try {
       this.instance.run(options);
     } catch (err) {
-      console.error(err.message);
+      console.error((err as Error).message);
       process.exit(1);
     }
   }
@@ -77,7 +77,7 @@ export class LightVM {
         return typeof parsed === 'object' ? Object.values(parsed)[0] : parsed;
       };
     } catch (err) {
-      console.error(err.message);
+      console.error((err as Error).message);
       process.exit(1);
     }
   }
@@ -86,7 +86,7 @@ export class LightVM {
       this.instance.provide(name, JSON.stringify(value));
       return this;
     } catch (err) {
-      console.error(err.message);
+      console.error((err as Error).message);
       process.exit(1);
     }
   }
@@ -94,7 +94,7 @@ export class LightVM {
     try {
       this.instance.halt();
     } catch (err) {
-      console.error(err.message);
+      console.error((err as Error).message);
       process.exit(1);
     }
   }
@@ -115,7 +115,7 @@ export class LightVM {
       this.listeners.get(event)!.push(fn);
       return this;
     } catch (err) {
-      console.error(err.message);
+      console.error((err as Error).message);
       process.exit(1);
     }
   }
@@ -126,7 +126,7 @@ export class LightVM {
         for (const fn of list) fn(payload);
       }
     } catch (err) {
-      console.error(err.message);
+      console.error((err as Error).message);
       process.exit(1);
     }
   }
@@ -134,7 +134,7 @@ export class LightVM {
     try {
       return this.instance.inspect();
     } catch (err) {
-      console.error(err.message);
+      console.error((err as Error).message);
       process.exit(1);
     }
   }
@@ -148,7 +148,7 @@ export class LightVM {
         halted: true,
       };
     } catch (err) {
-      console.error(err.message);
+      console.error((err as Error).message);
       process.exit(1);
     }
   }
@@ -158,34 +158,34 @@ export class LightVM {
         try {
           return native.LightVM.optimizeBytecode(bytecode);
         } catch (err) {
-          console.error(err.message);
+          console.error((err as Error).message);
           process.exit(1);
         }
       },
       loader: {
-        stringifyLTC: (json) => {
+        stringifyLTC: (json: string | Instruction[]) => {
           try {
             const input =
               typeof json === 'string' ? json : JSON.stringify(json);
             return native.LightVM.stringifyLtc(input);
           } catch (err) {
-            console.error(err.message);
+            console.error((err as Error).message);
             process.exit(1);
           }
         },
-        parseLTC: (code) => {
+        parseLTC: (code: string) => {
           try {
             return native.LightVM.parseLtc(code);
           } catch (err) {
-            console.error(err.message);
+            console.error((err as Error).message);
             process.exit(1);
           }
         },
-        parseLTCArray: (code) => {
+        parseLTCArray: (code: string) => {
           try {
             return native.LightVM.parseLtcArray(code);
           } catch (err) {
-            console.error(err.message);
+            console.error((err as Error).message);
             process.exit(1);
           }
         },

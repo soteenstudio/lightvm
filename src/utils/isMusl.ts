@@ -9,11 +9,16 @@
  */
 
 import { execSync } from 'child_process';
-function isMusl() {
+interface NodeReport {
+  header?: {
+    glibcVersionRuntime?: string;
+  };
+}
+export function isMusl() {
   try {
-    const report = process.report.getReport();
+    const report = process.report.getReport() as NodeReport;
     if (
-      typeof report === 'object' &&
+      report &&
       report.header &&
       !report.header.glibcVersionRuntime
     ) {
