@@ -49,7 +49,7 @@ jobs:
           fi
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci --prefer-offline
 
       - name: Linting & Formatting
         run: |
