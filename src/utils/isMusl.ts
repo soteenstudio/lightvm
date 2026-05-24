@@ -17,11 +17,7 @@ interface NodeReport {
 export function isMusl() {
   try {
     const report = process.report.getReport() as NodeReport;
-    if (
-      report &&
-      report.header &&
-      !report.header.glibcVersionRuntime
-    ) {
+    if (report && report.header && !report.header.glibcVersionRuntime) {
       return true;
     }
   } catch (e) {}
