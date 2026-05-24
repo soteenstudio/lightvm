@@ -14,7 +14,7 @@ use smol_str::SmolStr;
 use std::sync::Arc;
 #[inline(always)]
 pub fn shrink_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
-  let len_val = stack.pop().ok_or_else(|| VMError::StackUnderflow {
+  let len_val = stack.pop().ok_or(VMError::StackUnderflow {
     ip,
     opcode: "SHRINK (length)",
   })?;

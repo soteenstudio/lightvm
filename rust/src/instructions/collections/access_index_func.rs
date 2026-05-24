@@ -12,7 +12,7 @@ use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn access_index_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
-  let index_val = stack.pop().ok_or_else(|| VMError::StackUnderflow {
+  let index_val = stack.pop().ok_or(VMError::StackUnderflow {
     ip,
     opcode: "ACCESS_INDEX (index)",
   })?;

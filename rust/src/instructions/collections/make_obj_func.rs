@@ -16,11 +16,11 @@ use std::sync::Arc;
 pub fn make_obj_func(stack: &mut Vec<Value>, count: u32, ip: usize) -> Result<(), VMError> {
   let mut obj = AHashMap::with_capacity(count as usize);
   for _ in 0..count {
-    let val = stack.pop().ok_or_else(|| VMError::StackUnderflow {
+    let val = stack.pop().ok_or(VMError::StackUnderflow {
       ip,
       opcode: "MAKE_OBJ (value)",
     })?;
-    let key_raw = stack.pop().ok_or_else(|| VMError::StackUnderflow {
+    let key_raw = stack.pop().ok_or(VMError::StackUnderflow {
       ip,
       opcode: "MAKE_OBJ (key)",
     })?;

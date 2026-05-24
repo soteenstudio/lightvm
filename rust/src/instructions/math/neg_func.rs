@@ -28,11 +28,7 @@ pub fn neg_values(a: Value, num_type: PrimitiveTypes) -> Value {
   }
 }
 #[inline]
-pub fn neg_func(
-  stack: &mut Vec<Value>,
-  num_type: PrimitiveTypes,
-  ip: usize,
-) -> Result<(), VMError> {
+pub fn neg_func(stack: &mut [Value], num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
   let a_ref = stack
     .last_mut()
     .ok_or(VMError::StackUnderflow { ip, opcode: "NEG" })?;

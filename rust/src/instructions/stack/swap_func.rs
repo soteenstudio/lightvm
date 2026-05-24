@@ -10,7 +10,7 @@
 
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
-pub fn swap_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
+pub fn swap_func(stack: &mut [Value], ip: usize) -> Result<(), VMError> {
   let len = stack.len();
   if len < 2 {
     return Err(VMError::StackUnderflow { ip, opcode: "SWAP" });

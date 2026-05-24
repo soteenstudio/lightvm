@@ -11,7 +11,7 @@
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
 #[inline(always)]
-pub fn if_false_func(stack: &mut Vec<Value>, ip: usize) -> Result<bool, VMError> {
+pub fn if_false_func(stack: &mut [Value], ip: usize) -> Result<bool, VMError> {
   let cond_ref = stack.last_mut().ok_or(VMError::StackUnderflow {
     ip,
     opcode: "IF_FALSE",

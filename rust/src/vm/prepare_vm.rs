@@ -30,7 +30,7 @@ pub fn prepare_vm(
           name.clone(),
           FuncMetadata {
             params_count: *params,
-            param_names: names.iter().map(|n| n.clone()).collect(),
+            param_names: names.to_vec(),
             start: *start,
             end: *end,
           },

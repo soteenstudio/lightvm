@@ -14,7 +14,7 @@ use smol_str::SmolStr;
 use std::sync::Arc;
 #[inline]
 pub fn set_prop_func(stack: &mut Vec<Value>, prop: &SmolStr, ip: usize) -> Result<(), VMError> {
-  let val = stack.pop().ok_or_else(|| VMError::StackUnderflow {
+  let val = stack.pop().ok_or(VMError::StackUnderflow {
     ip,
     opcode: "SET_PROP (value)",
   })?;

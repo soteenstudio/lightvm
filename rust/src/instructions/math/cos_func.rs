@@ -23,11 +23,7 @@ pub fn cos_values(a: Value, num_type: PrimitiveTypes) -> Value {
   }
 }
 #[inline]
-pub fn cos_func(
-  stack: &mut Vec<Value>,
-  num_type: PrimitiveTypes,
-  ip: usize,
-) -> Result<(), VMError> {
+pub fn cos_func(stack: &mut [Value], num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
   let val_ref = stack
     .last_mut()
     .ok_or(VMError::StackUnderflow { ip, opcode: "COS" })?;

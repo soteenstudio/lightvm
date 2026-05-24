@@ -13,7 +13,7 @@ use crate::utils::format_output::format_output;
 use crate::utils::vmerror::VMError;
 use std::io::{self, Write};
 #[inline(always)]
-pub fn print_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
+pub fn print_func(stack: &mut [Value], ip: usize) -> Result<(), VMError> {
   let val_ref = stack.last_mut().ok_or(VMError::StackUnderflow {
     ip,
     opcode: "PRINT",

@@ -13,7 +13,7 @@ use crate::types::{instructions::Instructions, value::Value};
 use crate::utils::vmerror::VMError;
 pub fn metadata_dispatch(
   instr: &Instructions,
-  stack: &mut Vec<Value>,
+  stack: &mut [Value],
   ip: usize,
 ) -> Result<(), VMError> {
   println!("Jalan!");
