@@ -24,10 +24,8 @@ export class VMSystemError extends Error {
 
     super(formattedMessage);
 
-    // Tetap pertahankan nama class asli saat di-trace di konsol
     this.name = 'SystemError';
 
-    // Amankan stack trace bawaan V8 engine
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, VMSystemError);
     }

@@ -15,7 +15,7 @@ pub mod optimizer;
 pub mod types;
 pub mod utils;
 pub mod vm;
-#[cfg(not(feature = "node"))]
-pub use interfaces::interface::LightVM;
 #[cfg(feature = "node")]
 pub use crate::interfaces::napi_interface::NodeLightVM;
+#[cfg(not(feature = "node"))]
+pub use interfaces::interface::LightVM;
