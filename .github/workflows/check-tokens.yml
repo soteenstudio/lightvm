@@ -26,6 +26,7 @@ jobs:
         run: |
           echo "Checking NPM token..."
           RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $NPM_TOKEN" https://registry.npmjs.org/-/whoami)
+          echo "code=$RESPONSE" >> $GITHUB_OUTPUT
           if [ "$RESPONSE" -eq 200 ]; then
             echo "status=valid" >> $GITHUB_OUTPUT
           else
@@ -39,14 +40,13 @@ jobs:
           CRATES_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
         run: |
           echo "Checking Crates.io token..."
-          
-          # Pakai User-Agent resmi yang menyertakan info repo/kontak lu biar gak diblokir API
           RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
             -H "Authorization: $CRATES_TOKEN" \
             -H "User-Agent: LightVM-TokenChecker (https://github.com/soteenstudio/lightvm)" \
             https://crates.io/api/v1/me)
           
           echo "Crates.io API Response Code: $RESPONSE"
+          echo "code=$RESPONSE" >> $GITHUB_OUTPUT
           
           if [ "$RESPONSE" -eq 200 ]; then
             echo "status=valid" >> $GITHUB_OUTPUT
@@ -59,8 +59,14 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const npmStatus = "${{ steps.check_npm.outputs.status }}" === "valid" ? "✅ VALID" : "❌ EXPIRED/INVALID";
-            const cratesStatus = "${{ steps.check_crates.outputs.status }}" === "valid" ? "✅ VALID" : "❌ EXPIRED/INVALID";
+            const npmValid = "${{ steps.check_npm.outputs.status }}" === "valid";
+            const cratesValid = "${{ steps.check_crates.outputs.status }}" === "valid";
+            
+            const npmCode = "${{ steps.check_npm.outputs.code }}";
+            const cratesCode = "${{ steps.check_crates.outputs.code }}";
+            
+            const npmStatus = npmValid ? "✅ VALID" : `❌ EXPIRED/INVALID (HTTP ${npmCode})`;
+            const cratesStatus = cratesValid ? "✅ VALID" : `❌ EXPIRED/INVALID (HTTP ${cratesCode})`;
             
             await github.rest.issues.create({
               owner: context.repo.owner,
