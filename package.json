@@ -26,7 +26,8 @@
     "build": "node ./esbuild.config.js",
     "build:release": "node ./build-script.js --local --silent",
     "build:debug": "node ./build-script.js --local --debug --silent",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "prettier": "npx prettier . --write"
   },
   "keywords": [
     "lightvm",
