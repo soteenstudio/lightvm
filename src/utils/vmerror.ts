@@ -1,11 +1,11 @@
-/*  
+/*
  * Copyright 2026 SoTeen Studio
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");  
- * you may not use this file except in compliance with the License.  
- * You may obtain a copy of the License at  
- *  
- *     http://www.apache.org/licenses/LICENSE-2.0  
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
 export class VMSystemError extends Error {
@@ -23,10 +23,10 @@ export class VMSystemError extends Error {
     const formattedMessage = `${prefix} ${red}Runtime Error LVM500${reset}: ${detail}\n${yellow}Location: ${cyan}instruction_pointer: 0${reset}`;
 
     super(formattedMessage);
-    
+
     // Tetap pertahankan nama class asli saat di-trace di konsol
     this.name = 'SystemError';
-    
+
     // Amankan stack trace bawaan V8 engine
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, VMSystemError);

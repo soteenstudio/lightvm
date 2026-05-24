@@ -68,7 +68,10 @@ export class LightVM {
   export(name: string) {
     try {
       return (...args: any[]) => {
-        const rawResult = this.instance.callExported(name, JSON.stringify(args));
+        const rawResult = this.instance.callExported(
+          name,
+          JSON.stringify(args),
+        );
         const parsed = JSON.parse(rawResult);
         if (!parsed || parsed === 'Undefined') return undefined;
         return typeof parsed === 'object' ? Object.values(parsed)[0] : parsed;
@@ -162,7 +165,8 @@ export class LightVM {
       loader: {
         stringifyLTC: (json) => {
           try {
-            const input = typeof json === 'string' ? json : JSON.stringify(json);
+            const input =
+              typeof json === 'string' ? json : JSON.stringify(json);
             return native.LightVM.stringifyLtc(input);
           } catch (err) {
             console.error(err.message);
