@@ -6,6 +6,8 @@ on:
       - main
   pull_request_review_comment:
     types: [created]
+  issue_comment: # Tambahin ini biar dia dengerin chat di PR
+    types: [created]
 
 permissions:
   contents: write
@@ -20,8 +22,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install jq
-        run: sudo apt-get install jq -y
+      - name: Deteksi Trigger
+        id: deteksi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" == "issue_comment" ]; then
+            # Ambil komentar dari event
+            COMMENT_BODY="${{ github.event.comment.body }}"
+            echo "COMMENT_FOUND=$COMMENT_BODY" >> $GITHUB_ENV
+            echo "IS_COMMENT=true" >> $GITHUB_ENV
+          fi
 
       - name: Jalankan Otak Bot Pinter
         env:
@@ -63,25 +74,26 @@ jobs:
           fi
 
           echo "=== 3. PARSING COMMAND FROM PR ==="
+          # 1. Pastikan variabel versi sudah ada
           BASE_VERSION=$(echo "$LATEST_TAG" | sed -E 's/v([^#-]+).*/\1/')
           TAG_COUNTER=$(echo "$LATEST_TAG" | sed -E 's/.*\.([0-9]+)$/\1/' | grep -E '^[0-9]+$' || echo "0")
           
-          # AMBIL PR_NUMBER SESUAI EVENT
-          if [ "$GITHUB_EVENT_NAME" == "pull_request_review_comment" ]; then
-            # Ambil nomor PR dari event review comment
-            PR_NUMBER=$(jq -r '.pull_request.number' "$GITHUB_EVENT_PATH")
-            # Ambil ISI KOMEN yang baru aja dibuat
-            COMMAND=$(jq -r '.comment.body' "$GITHUB_EVENT_PATH" | grep -oE "@domloo-release (major|minor|patch|proto|alpha|beta|rc|stable|set [0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?)")
-          else
-            # Cara lama buat push event
-            CURRENT_COMMIT=$(git rev-parse HEAD)
-            PR_NUMBER=$(gh pr list --state open --search "$CURRENT_COMMIT" --json number -q '.[0].number' || echo "")
-            PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q '.body' 2>/dev/null || echo "")
+          # 2. Cari PR terbaru
+          CURRENT_COMMIT=$(git rev-parse HEAD)
+          PR_NUMBER=$(gh pr list --state merged --search "$CURRENT_COMMIT" --json number -q '.[0].number' || echo "")
+          
+          # 3. Ambil command dari body PR (kalau ada)
+          if [ "$IS_COMMENT" == "true" ]; then
+            # Pakai command dari komentar
+            COMMAND=$(echo "$COMMENT_FOUND" | grep -oE "@domloo-release (major|minor|patch|proto|alpha|beta|rc|stable|set [0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?)")
+          elif [ ! -z "$PR_NUMBER" ]; then
+            # Kalau bukan komentar, baru cek body PR
+            PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q '.body')
             COMMAND=$(echo "$PR_BODY" | grep -oE "@domloo-release (major|minor|patch|proto|alpha|beta|rc|stable|set [0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?)")
           fi
           
-          # TIPE (Fallback)
-          TYPE=${COMMAND:-@domloo-release alpha}
+          # 4. Tentukan Tipe (Default ke patch kalau kosong)
+          TYPE=${COMMAND:-@domloo-release patch}
           TYPE=${TYPE#@domloo-release }
 
           # Logic Semantik Versi
