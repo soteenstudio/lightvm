@@ -78,21 +78,20 @@ jobs:
           git config --global user.name "ClayReleaseBot"
           git config --global user.email "claybot@internal"
           
+          # Pake cp (copy) biar file current_changelog.md aslinya GAK HILANG
           if [ -f "CHANGELOG.md" ]; then
             cat current_changelog.md CHANGELOG.md > temp_changelog.md && mv temp_changelog.md CHANGELOG.md
           else
-            mv current_changelog.md CHANGELOG.md
+            cp current_changelog.md CHANGELOG.md
           fi
 
           BRANCH_NAME="release/v${{ env.NEW_VERSION }}"
           git checkout -b "$BRANCH_NAME"
 
-          # BIAR GAK ERROR: Kita cek file-nya satu-satu sebelum di-add beneran
           [ -f "package.json" ] && git add package.json
           [ -f "Cargo.toml" ] && git add Cargo.toml
           [ -f "CHANGELOG.md" ] && git add CHANGELOG.md
 
-          # Kasih guard `|| true` di commit biar kalau git ngerasa gak ada perubahan, dia gak nge-crash
           git commit -m "chore: prepare release ${{ env.NEW_VERSION }}" || echo "No changes to commit"
           
           git push origin "$BRANCH_NAME" --force
