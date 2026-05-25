@@ -165,7 +165,9 @@ jobs:
             cp current_changelog.md CHANGELOG.md
           fi
 
-          BRANCH_NAME="release/v${{ env.NEW_VERSION#v }}"
+          # Pakai bash parameter expansion buat hapus prefix 'v' kalau ada
+          CLEAN_VERSION="${{ env.NEW_VERSION#v }}"
+          BRANCH_NAME="release/v${CLEAN_VERSION}"
           git checkout -b "$BRANCH_NAME"
 
           [ -f "package.json" ] && git add package.json
