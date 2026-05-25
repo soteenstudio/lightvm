@@ -165,7 +165,7 @@ jobs:
             cp current_changelog.md CHANGELOG.md
           fi
 
-          BRANCH_NAME="release/v${{ env.NEW_VERSION }}"
+          BRANCH_NAME="release/v${{ env.NEW_VERSION#v }}"
           git checkout -b "$BRANCH_NAME"
 
           [ -f "package.json" ] && git add package.json
