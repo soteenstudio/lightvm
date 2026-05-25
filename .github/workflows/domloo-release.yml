@@ -130,7 +130,7 @@ jobs:
               # TYPE-nya jadi "set 1.2.3", kita ambil "1.2.3"-nya aja
               NEXT_VERSION=$(echo "$TYPE" | awk '{print $2}')
               # Tambahin 'v' di depannya kalau emang format lo pake 'v'
-              [[ "$NEXT_VERSION" != v* ]] && NEXT_VERSION="$NEXT_VERSION"
+              [[ "$NEXT_VERSION" != v* ]] && NEXT_VERSION="v$NEXT_VERSION"
               ;;
           esac
 
