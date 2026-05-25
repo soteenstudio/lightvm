@@ -75,7 +75,7 @@ jobs:
 
           echo "=== 3. PARSING COMMAND FROM PR ==="
           # 1. Pastikan variabel versi sudah ada
-          BASE_VERSION=$(echo "$LATEST_TAG" | sed -E 's/v([^#-]+).*/\1/')
+          BASE_VERSION=$(echo "$LATEST_TAG" | sed -E 's/([^#-]+).*/\1/')
           TAG_COUNTER=$(echo "$LATEST_TAG" | sed -E 's/.*\.([0-9]+)$/\1/' | grep -E '^[0-9]+$' || echo "0")
           
           # 2. Cari PR terbaru
@@ -93,7 +93,7 @@ jobs:
           fi
           
           # 4. Tentukan Tipe (Default ke patch kalau kosong)
-          TYPE=${COMMAND:-@domloo-release patch}
+          TYPE=${COMMAND:-@domloo-release alpha}
           TYPE=${TYPE#@domloo-release }
 
           # Logic Semantik Versi
@@ -130,7 +130,7 @@ jobs:
               # TYPE-nya jadi "set 1.2.3", kita ambil "1.2.3"-nya aja
               NEXT_VERSION=$(echo "$TYPE" | awk '{print $2}')
               # Tambahin 'v' di depannya kalau emang format lo pake 'v'
-              [[ "$NEXT_VERSION" != v* ]] && NEXT_VERSION="v$NEXT_VERSION"
+              [[ "$NEXT_VERSION" != v* ]] && NEXT_VERSION="$NEXT_VERSION"
               ;;
           esac
 
