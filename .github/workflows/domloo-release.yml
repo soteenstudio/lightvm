@@ -20,6 +20,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install jq
+        run: sudo apt-get install jq -y
+
       - name: Jalankan Otak Bot Pinter
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
