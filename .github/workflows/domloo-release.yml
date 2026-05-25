@@ -60,22 +60,25 @@ jobs:
           fi
 
           echo "=== 3. PARSING COMMAND FROM PR ==="
-          # 1. Pastikan variabel versi sudah ada
           BASE_VERSION=$(echo "$LATEST_TAG" | sed -E 's/v([^#-]+).*/\1/')
           TAG_COUNTER=$(echo "$LATEST_TAG" | sed -E 's/.*\.([0-9]+)$/\1/' | grep -E '^[0-9]+$' || echo "0")
           
-          # 2. Cari PR terbaru
-          CURRENT_COMMIT=$(git rev-parse HEAD)
-          PR_NUMBER=$(gh pr list --state merged --search "$CURRENT_COMMIT" --json number -q '.[0].number' || echo "")
-          
-          # 3. Ambil command dari body PR (kalau ada)
-          if [ ! -z "$PR_NUMBER" ]; then
-            PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q '.body')
+          # AMBIL PR_NUMBER SESUAI EVENT
+          if [ "$GITHUB_EVENT_NAME" == "pull_request_review_comment" ]; then
+            # Ambil nomor PR dari event review comment
+            PR_NUMBER=$(jq -r '.pull_request.number' "$GITHUB_EVENT_PATH")
+            # Ambil ISI KOMEN yang baru aja dibuat
+            COMMAND=$(jq -r '.comment.body' "$GITHUB_EVENT_PATH" | grep -oE "@domloo-release (major|minor|patch|proto|alpha|beta|rc|stable|set [0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?)")
+          else
+            # Cara lama buat push event
+            CURRENT_COMMIT=$(git rev-parse HEAD)
+            PR_NUMBER=$(gh pr list --state open --search "$CURRENT_COMMIT" --json number -q '.[0].number' || echo "")
+            PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q '.body' 2>/dev/null || echo "")
             COMMAND=$(echo "$PR_BODY" | grep -oE "@domloo-release (major|minor|patch|proto|alpha|beta|rc|stable|set [0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?)")
           fi
           
-          # 4. Tentukan Tipe (Default ke patch kalau kosong)
-          TYPE=${COMMAND:-@domloo-release patch}
+          # TIPE (Fallback)
+          TYPE=${COMMAND:-@domloo-release alpha}
           TYPE=${TYPE#@domloo-release }
 
           # Logic Semantik Versi
