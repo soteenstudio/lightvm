@@ -60,7 +60,7 @@ jobs:
           echo "NEW_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
           
           # Bikin format Changelog yang rapi dan estetik
-          echo "## Changelog for $NEXT_VERSION" > current_changelog.md
+          echo "## Changelog for v$NEXT_VERSION" > current_changelog.md
           echo "" >> current_changelog.md
           echo "$CHANGELOG_COMMITS" >> current_changelog.md
 
