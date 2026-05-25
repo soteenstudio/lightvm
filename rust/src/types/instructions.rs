@@ -329,13 +329,13 @@ impl Instructions {
       b"if_false" => {
         let target = arg1
           .and_then(|v| v.as_u64())
-          .expect("Target jump IF_FALSE harus angka") as usize;
+          .expect("IF_FALSE jump target must be a number") as usize;
         Instructions::IfFalse(target)
       }
       b"jump" => {
         let target = arg1
           .and_then(|v| v.as_u64())
-          .expect("Target jump harus angka") as usize;
+          .expect("Target jump must be a number") as usize;
         Instructions::Jump(target)
       }
       b"inc" => {
@@ -390,13 +390,13 @@ impl Instructions {
       b"make_obj" => {
         let count = arg1
           .and_then(|v| v.as_u64())
-          .expect("MakeObj count harus angka") as u32;
+          .expect("MakeObj count must be a number") as u32;
         Instructions::MakeObj(count)
       }
       b"make_array" => {
         let count = arg1
           .and_then(|v| v.as_u64())
-          .expect("MakeArray count harus angka") as u32;
+          .expect("MakeArray count must be a number") as u32;
         Instructions::MakeArray(count)
       }
       b"to_string" => Instructions::ToString,

@@ -507,5 +507,6 @@ LightVM supports a wide range of platforms and architectures to ensure maximum o
 | macOS (Darwin) | x64      | Apple Clang | ✓ | ✓ |
 | Android      | arm64, arm   | NDK       | ✓ | ✓ |
 | FreeBSD      | x64          | Clang     | ✓ | ✓ |
-## 📜 License
-This project is distributed using the __Apache-2.0 license__
+## 📜 License & Changelog
+ - This project is distributed using the [Apache-2.0 license](LICENSE).
+ - See [CHANGELOG.md](CHANGELOG.md) for the latest updates and release history.
