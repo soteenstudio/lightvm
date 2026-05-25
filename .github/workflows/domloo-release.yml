@@ -180,9 +180,12 @@ jobs:
           # Cek apakah PR untuk branch ini sudah pernah ada sebelumnya
           PR_EXISTS=$(gh pr list --head "$BRANCH_NAME" --json number -q '.[0].number')
 
-          # --- CLEANUP MECHANISM (Kecuali branch yang baru dibuat) ---
-          # Kita cari semua PR release/ selain yang namanya sama dengan BRANCH_NAME kita sekarang
-          OLD_PRS=$(gh pr list --base main --state open --json number,headRefName -q ".[] | select(.headRefName | startswith(\"release/\") and .headRefName != \"$BRANCH_NAME\") | .number")
+          # --- CLEANUP MECHANISM ---
+          # Ganti baris OLD_PRS jadi ini (pake kutip tunggal buat filter di dalam)
+          OLD_PRS=$(gh pr list --base main --state open --json number,headRefName -q '.[] | select(.headRefName | startswith("release/") and .headRefName != "'$BRANCH_NAME'") | .number')
+          
+          # Lo bisa cek dulu isinya bener gak dengan echo
+          echo "Old PRs to cleanup: $OLD_PRS"
           
           for PR_NUM in $OLD_PRS; do
             OLD_BRANCH=$(gh pr view "$PR_NUM" --json headRefName -q '.headRefName')
