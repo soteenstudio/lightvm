@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write # <-- WAJIB! Biar bisa bikin PR pake GitHub CLI
 
 jobs:
   smart-release:
@@ -15,102 +16,95 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # WAJIB! Biar bisa narik semua history commit dan tag
+          fetch-depth: 0
 
       - name: Jalankan Otak Bot Pinter
         run: |
           echo "=== 1. MENCARI TAG TERBARU & COMMIT ACUAN ==="
-          # Nyari tag paling baru di repo, kalau gak ada set ke base awal
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.1.0-proto.0")
           echo "Tag paling baru yang ditemuin: $LATEST_TAG"
           
-          # Ambil SHA Commit tempat tag terbaru itu nempel (Batas Suci)
           TAG_COMMIT_SHA=$(git rev-list -n 1 "$LATEST_TAG" 2>/dev/null || echo "")
           echo "SHA Commit dari tag itu: $TAG_COMMIT_SHA"
 
           echo "=== 2. MENARIK COMMIT YANG SEHARUSNYA MASUK RILIS SEKARANG ==="
           if [ -z "$TAG_COMMIT_SHA" ]; then
-            # Kalau gak ada tag sama sekali, ambil semua commit di main
             CHANGELOG_COMMITS=$(git log --oneline)
           else
-            # INI LOGIKA PINTERNYA: Ambil commit dari HEAD (paling baru di main) sampai batas SHA tag kemarin
-            # Commit yang udah lewat dari batas tag gak bakal masuk!
             CHANGELOG_COMMITS=$(git log --oneline ${TAG_COMMIT_SHA}..HEAD)
           fi
           
           if [ -z "$CHANGELOG_COMMITS" ]; then
-            echo "Kagak ada commit baru setelah tag $LATEST_TAG. Skip rilis!"
+            echo "Kagak ada commit baru setelah tag $LATEST_TAG. Skip bikin PR rilis!"
             exit 0
           fi
-          
-          echo "Daftar commit baru buat rilis ini:"
-          echo "$CHANGELOG_COMMITS"
 
-          echo "=== 3. PARSING FORMAT VERSI KUSTOM (x.x.x-xxx.x) ==="
-          # Misal tag: v0.1.0-proto.4 atau v0.1.0-alpha.1
-          # Kita pisah base versi (0.1.0), tag name (proto/alpha/beta/rc), dan angka counter-nya
+          echo "=== 3. PARSING FORMAT VERSI KUSTOM ==="
           BASE_VERSION=$(echo "$LATEST_TAG" | sed -E 's/v([^#-]+).*/\1/')
           TAG_NAME=$(echo "$LATEST_TAG" | sed -E 's/v[0-9.]+-?([a-zA-Z]+)?.*/\1/')
           TAG_COUNTER=$(echo "$LATEST_TAG" | sed -E 's/.*\.([0-9]+)$/\1/' | grep -E '^[0-9]+$' || echo "0")
 
-          echo "Base Versi saat ini: $BASE_VERSION"
-          echo "Tipe Tag saat ini: $TAG_NAME"
-          echo "Angka Versi saat ini: $TAG_COUNTER"
-
-          # LOGIKA PENAIKAN VERSI (Otomatis naik +1 di angka ekornya)
           NEXT_COUNTER=$((TAG_COUNTER + 1))
           
           if [ -z "$TAG_NAME" ]; then
-            # Kasus kalau gak ada strip-nya alias STABLE (misal v0.1.0)
-            # Default bot pinter lo: kalau stable, naikin patch belakangnya
             PATCH=$(echo "$BASE_VERSION" | cut -d. -f3)
             NEW_PATCH=$((PATCH + 1))
             MAJOR_MINOR=$(echo "$BASE_VERSION" | cut -d. -f1,2)
             NEXT_VERSION="${MAJOR_MINOR}.${NEW_PATCH}"
           else
-            # Kasus kalau formatnya -proto, -alpha, -beta, -rc
             NEXT_VERSION="${BASE_VERSION}-${TAG_NAME}.${NEXT_COUNTER}"
           fi
           
-          echo "Selesai kalkulasi! Versi baru lo: $NEXT_VERSION"
           echo "NEW_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
-
-          # Tulis isi changelog pinter ke file temporary buat dipake step commit
+          
+          # Bikin draf changelog buat isi body Pull Request nanti
           echo "## Rilis $NEXT_VERSION" > current_changelog.md
           echo "$CHANGELOG_COMMITS" >> current_changelog.md
 
       - name: Update File Konfigurasi Projek (SED Engine)
         if: env.NEW_VERSION != ''
         run: |
-          # Inject versi baru ke package.json
           if [ -f "package.json" ]; then
             sed -i "s/\"version\": \".*\"/\"version\": \"${{ env.NEW_VERSION }}\"/g" package.json
-            echo "package.json updated!"
           fi
-          
-          # Inject versi baru ke Cargo.toml
           if [ -f "Cargo.toml" ]; then
             sed -i "s/^version = \".*\"/version = \"${{ env.NEW_VERSION }}\"/g" Cargo.toml
-            echo "Cargo.toml updated!"
           fi
 
-      - name: Commit, Push, & Tagging (100% Mandiri)
+      - name: Create Release Branch and Push
         if: env.NEW_VERSION != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Token buat otentikasi GitHub CLI
         run: |
           git config --global user.name "ClayReleaseBot"
-          git config --global user.email "claybot@soteenstudio.internal"
+          git config --global user.email "claybot@internal"
           
-          # Update CHANGELOG.md yang asli dengan cara naruh teks baru di paling atas
+          # 1. Update CHANGELOG.md lokal
           if [ -f "CHANGELOG.md" ]; then
             cat current_changelog.md CHANGELOG.md > temp_changelog.md && mv temp_changelog.md CHANGELOG.md
           else
             mv current_changelog.md CHANGELOG.md
           fi
 
+          # 2. Bikin branch baru khusus rilis versi ini
+          BRANCH_NAME="release/v${{ env.NEW_VERSION }}"
+          git checkout -b "$BRANCH_NAME"
+
+          # 3. Commit dan Push ke branch baru tersebut
           git add package.json Cargo.toml CHANGELOG.md 2>/dev/null || true
-          git commit -m "chore: release version ${{ env.NEW_VERSION }} [skip ci]" || echo "No changes to commit"
-          git push origin main
-          
-          # Bikin tag baru di Git berdasarkan perhitungan akurat tadi
-          git tag -a "v${{ env.NEW_VERSION }}" -m "Release v${{ env.NEW_VERSION }}"
-          git push origin "v${{ env.NEW_VERSION }}"
+          git commit -m "chore: prepare release ${{ env.NEW_VERSION }}"
+          git push origin "$BRANCH_NAME" --force
+
+          # 4. LOGIKA PINTER BIKIN PR: Cek dulu apakah PR buat branch ini udah ada atau belum
+          PR_EXISTS=$(gh pr list --head "$BRANCH_NAME" --json number -q '.[0].number')
+
+          if [ -z "$PR_EXISTS" ]; then
+            echo "Membuka PR Rilis Baru..."
+            gh pr create \
+              --title "chore: release ${{ env.NEW_VERSION }}" \
+              --body-file current_changelog.md \
+              --base main \
+              --head "$BRANCH_NAME"
+          else
+            echo "PR udah ada (ID: $PR_EXISTS), otomatis ter-update lewat force push tadi!"
+          fi
