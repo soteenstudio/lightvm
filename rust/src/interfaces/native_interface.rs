@@ -19,6 +19,7 @@ use crate::types::{
 use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
 use std::collections::HashSet;
+use unescape::unescape;
 #[cfg(not(feature = "node"))]
 impl LightVM {
   pub fn new(caps: Vec<Capability>) -> Self {
@@ -131,11 +132,23 @@ impl LightVMTools {
       std::process::exit(1);
     })
   }
-  pub fn stringify_ltc(&self, json: serde_json::Value) -> Result<String, String> {
-    LightVM::stringify_ltc_internal(json)
+  pub fn stringify_ltc(&self, json: serde_json::Value) -> String {
+    match LightVM::stringify_ltc_internal(json) {
+      Ok(text) => unescape(&text).unwrap_or(text),
+      Err(e) => {
+        eprintln!("{}", e);
+        std::process::exit(1);
+      }
+    }
   }
-  pub fn parse_ltc(&self, code: String) -> Result<String, VMError> {
-    LightVM::parse_ltc_internal(code)
+  pub fn parse_ltc(&self, code: String) -> String {
+    match LightVM::parse_ltc_internal(code) {
+      Ok(text) => text,
+      Err(e) => {
+        eprintln!("{}", e.format());
+        std::process::exit(1);
+      }
+    }
   }
   pub fn parse_ltc_array(&self, code: String) -> serde_json::Value {
     LightVM::parse_ltc_array_internal(code)

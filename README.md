@@ -270,29 +270,96 @@ LightVM uses a strict capability-based security model. You must explicitly grant
 6. ``tools()`` method:  
   Functions used to call utilities  
   
-  <ol type="a">
-    <li>Function to optimize bytecode</li>
-    <details>
-    <summary>TypeScript:</summary>
-    
-    ```typescript
-    const optimized = vm.tools().optimizeBytecode(raw);
-    console.log(optimized);
-    ```
-    
-    </details>
-    <details>
-    <summary>Rust:</summary>
-    
-    ```rust
-    let optimized = LightVM::tools().optimize_bytecode(raw);
-    println!(optimized.clone());
-    ```
-    
-    </details>
-    <li>Langkah Kedua</li>
-    <li>Langkah Ketiga</li>
-  </ol>
+    <ol type="a">
+      <li>Optimizes raw JSON bytecode and serializes it to a string</li>
+      <details>
+      <summary>TypeScript:</summary>
+      
+      ```typescript
+      const tools = vm.tools();
+      const optimized = tools.optimizeBytecode(raw);
+      console.log(optimized);
+      ```
+      
+      </details>
+      <details>
+      <summary>Rust:</summary>
+      
+      ```rust
+      let tools = LightVM::tools();
+      let optimized = tools.optimize_bytecode(raw);
+      println!(optimized.clone());
+      ```
+      
+      </details>
+      
+      <li>Converts raw JSON bytecode into a readable LTC assembly string</li>
+      <details>
+      <summary>TypeScript:</summary>
+      
+      ```typescript
+      const tools = vm.tools().tools;
+      const stringify = tools.stringifyLTC(raw);
+      console.log(stringify);
+      ```
+      
+      </details>
+      <details>
+      <summary>Rust:</summary>
+      
+      ```rust
+      let tools = LightVM::tools();
+      let stringify = tools.stringify_ltc(raw);
+      println!("{:#}", stringify.clone());
+      ```
+      
+      </details>
+      
+      <li>Parses LTC code and serializes the instructions to a JSON string</li>
+      <details>
+      <summary>TypeScript:</summary>
+      
+      ```typescript
+      const tools = vm.tools();
+      const parsed = tools.parseLTC(raw);
+      console.log(parsed.clone());
+      ```
+      
+      </details>
+      <details>
+      <summary>Rust:</summary>
+      
+      ```rust
+      let tools = LightVM::tools();
+      let parsed = tools.parse_ltc(raw);
+      println!("{:#}", parsed.clone());
+      ```
+      
+      </details>
+      
+      <li>Parses an LTC string into a JSON array</li>
+      <details>
+      <summary>TypeScript:</summary>
+      
+      ```typescript
+      const tools = vm.tools();
+      const json = tools.parseLTCArray(raw);
+      console.log(json.clone());
+      ```
+      
+      </details>
+      <details>
+      <summary>Rust:</summary>
+      
+      ```rust
+      let tools = LightVM::tools();
+      let json = tools.parse_ltc_array(raw);
+      println!("{:#}", json.clone());
+      ```
+      
+      </details>
+      
+    </ol>
 
 > [!NOTE]
 > __Capability Required__: no spesific capability

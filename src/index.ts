@@ -162,33 +162,29 @@ export class LightVM {
           process.exit(1);
         }
       },
-      loader: {
-        stringifyLTC: (json: string | Instruction[]) => {
-          try {
-            const input =
-              typeof json === 'string' ? json : JSON.stringify(json);
-            return native.LightVM.stringifyLtc(input);
-          } catch (err) {
-            console.error((err as Error).message);
-            process.exit(1);
-          }
-        },
-        parseLTC: (code: string) => {
-          try {
-            return native.LightVM.parseLtc(code);
-          } catch (err) {
-            console.error((err as Error).message);
-            process.exit(1);
-          }
-        },
-        parseLTCArray: (code: string) => {
-          try {
-            return native.LightVM.parseLtcArray(code);
-          } catch (err) {
-            console.error((err as Error).message);
-            process.exit(1);
-          }
-        },
+      stringifyLTC: (json: Instruction[]) => {
+        try {
+          return native.LightVM.stringifyLtc(json);
+        } catch (err) {
+          console.error((err as Error).message);
+          process.exit(1);
+        }
+      },
+      parseLTC: (code: string) => {
+        try {
+          return native.LightVM.parseLtc(code);
+        } catch (err) {
+          console.error((err as Error).message);
+          process.exit(1);
+        }
+      },
+      parseLTCArray: (code: string) => {
+        try {
+          return native.LightVM.parseLtcArray(code);
+        } catch (err) {
+          console.error((err as Error).message);
+          process.exit(1);
+        }
       },
     };
   }
