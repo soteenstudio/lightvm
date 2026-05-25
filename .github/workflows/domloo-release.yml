@@ -28,14 +28,22 @@ jobs:
           echo "Commit SHA for that tag: $TAG_COMMIT_SHA"
 
           echo "=== 2. FETCHING COMMITS FOR CURRENT RELEASE ==="
+          # Ambil log mentah dulu
           if [ -z "$TAG_COMMIT_SHA" ]; then
-            # Format markdown bullet points (*), lalu saring buang chore, docs, test, ci (termasuk yang pakai scope kurung)
-            CHANGELOG_COMMITS=$(git log --format="* %s" | grep -vE "^\* (chore|docs|test|ci)(\([^)]+\))?:" || echo "")
+            RAW_LOG=$(git log --format="* %s")
           else
-            # Hanya ambil commit baru dari batas tag sampai HEAD main, lalu saring bersih total
-            CHANGELOG_COMMITS=$(git log --format="* %s" ${TAG_COMMIT_SHA}..HEAD | grep -vE "^\* (Merge pull request.*)?(chore|docs|test|ci)(\([^)]+\))?:" || echo "")
+            RAW_LOG=$(git log --format="* %s" ${TAG_COMMIT_SHA}..HEAD)
           fi
-          
+
+          # SED MAGIC: Bersihin semua baris yang mengandung keyword sampah dalam satu perintah
+          CHANGELOG_COMMITS=$(echo "$RAW_LOG" | sed -E '/^\* (Merge pull request|Merge branch|chore|docs|test|ci)(\([^)]+\))?:/d' | sed -E '/^\* Merge pull request #[0-9]+ from .*/d')
+
+          # VALIDASI PINTER: Kalau kosong, ya stop!
+          if [ -z "$CHANGELOG_COMMITS" ] || ! echo "$CHANGELOG_COMMITS" | grep -q '[^[:space:]]'; then
+            echo "No feature or bugfix commits found. Skipping release PR!"
+            exit 0
+          fi
+
           # VALIDASI PINTER: Kalau setelah disaring isinya kosong, stop proses rilis!
           if [ -z "$CHANGELOG_COMMITS" ] || ! echo "$CHANGELOG_COMMITS" | grep -q '[^[:space:]]'; then
             echo "No feature or bugfix commits found. All new commits are minor maintenance (chore/docs/test/ci). Skipping release PR!"
