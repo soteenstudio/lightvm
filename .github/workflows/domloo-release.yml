@@ -206,16 +206,3 @@ jobs:
             echo "Updating existing PR #$PR_EXISTS body..."
             gh pr edit "$PR_EXISTS" --body-file current_changelog.md
           fi
-
-          if [ -z "$PR_EXISTS" ]; then
-            echo "Opening a brand new Release PR..."
-            gh pr create \
-              --title "chore: release ${{ env.NEW_VERSION }}" \
-              --body-file current_changelog.md \
-              --base main \
-              --head "$BRANCH_NAME"
-          else
-            echo "PR already exists (ID: $PR_EXISTS). Auto-updating PR body description..."
-            # FITUR BARU: Otomatis ngedit isi body deskripsi PR lama pake changelog yang barusan di-generate
-            gh pr edit "$PR_EXISTS" --body-file current_changelog.md
-          fi
