@@ -270,29 +270,29 @@ LightVM uses a strict capability-based security model. You must explicitly grant
 6. ``tools()`` method:  
   Functions used to call utilities  
   
-    <ol type="a">
-      <li>Function to optimize bytecode</li>
-      <details>
-      <summary>TypeScript:</summary>
-      
-      ```typescript
-      const optimized = vm.tools().optimizeBytecode(raw);
-      console.log(optimized);
-      ```
-      
-      </details>
-      <details>
-      <summary>Rust:</summary>
-      
-      ```rust
-      let optimized = LightVM::tools().optimize_bytecode(raw);
-      println!(optimized.clone());
-      ```
-      
-      </details>
-      <li>Langkah Kedua</li>
-      <li>Langkah Ketiga</li>
-    </ol>
+  <ol type="a">
+    <li>Function to optimize bytecode</li>
+    <details>
+    <summary>TypeScript:</summary>
+    
+    ```typescript
+    const optimized = vm.tools().optimizeBytecode(raw);
+    console.log(optimized);
+    ```
+    
+    </details>
+    <details>
+    <summary>Rust:</summary>
+    
+    ```rust
+    let optimized = LightVM::tools().optimize_bytecode(raw);
+    println!(optimized.clone());
+    ```
+    
+    </details>
+    <li>Langkah Kedua</li>
+    <li>Langkah Ketiga</li>
+  </ol>
 
 > [!NOTE]
 > __Capability Required__: no spesific capability
