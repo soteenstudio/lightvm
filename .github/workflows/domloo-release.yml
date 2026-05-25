@@ -33,7 +33,7 @@ jobs:
             CHANGELOG_COMMITS=$(git log --format="* %s" | grep -vE "^\* (chore|docs|test|ci)(\([^)]+\))?:" || echo "")
           else
             # Hanya ambil commit baru dari batas tag sampai HEAD main, lalu saring bersih total
-            CHANGELOG_COMMITS=$(git log --format="* %s" ${TAG_COMMIT_SHA}..HEAD | grep -vE "^\* (chore|docs|test|ci)(\([^)]+\))?:" || echo "")
+            CHANGELOG_COMMITS=$(git log --format="* %s" ${TAG_COMMIT_SHA}..HEAD | grep -vE "^\* (Merge pull request.*)? (chore|docs|test|ci)(\([^)]+\))?:" || echo "")
           fi
           
           # VALIDASI PINTER: Kalau setelah disaring isinya kosong, stop proses rilis!
