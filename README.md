@@ -142,7 +142,7 @@ LightVM uses a strict capability-based security model. You must explicitly grant
       ["val", "x"],
       ["set", "x"]
     ];
-    vm.load(vm.tools().optimizeBytecode(JSON.stringify(raw)))
+    vm.load(vm.tools().optimizeBytecode(raw))
       .run();
     ```
     </details>  
@@ -156,9 +156,8 @@ LightVM uses a strict capability-based security model. You must explicitly grant
       ["val", "x"],
       ["set", "x"]
     ]);
-    LightVM::tools().optimize_bytecode(raw)
-      .map(|opt| vm.load(serde_json::from_str(&opt).unwrap()).run(None))
-      .expect("Optimization failed");
+    vm.load(LightVM::tools().optimize_bytecode(raw).clone())
+      .run(None))
     ```
     </details>
     
@@ -268,6 +267,35 @@ LightVM uses a strict capability-based security model. You must explicitly grant
     
 > [!NOTE]
 > __Capability Required__: control
+6. ``tools()`` method:  
+  Functions used to call utilities  
+  
+    <ol type="a">
+      <li>Function to optimize bytecode</li>
+      <details>
+      <summary>TypeScript:</summary>
+      
+      ```typescript
+      const optimized = vm.tools().optimizeBytecode(raw);
+      console.log(optimized);
+      ```
+      
+      </details>
+      <details>
+      <summary>Rust:</summary>
+      
+      ```rust
+      let optimized = LightVM::tools().optimize_bytecode(raw);
+      println!(optimized.clone());
+      ```
+      
+      </details>
+      <li>Langkah Kedua</li>
+      <li>Langkah Ketiga</li>
+    </ol>
+
+> [!NOTE]
+> __Capability Required__: no spesific capability
 
 ## References
 ### Supported Primitive Types
