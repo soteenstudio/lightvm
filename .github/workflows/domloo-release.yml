@@ -181,10 +181,9 @@ jobs:
           PR_EXISTS=$(gh pr list --head "$BRANCH_NAME" --json number -q '.[0].number')
 
           # --- CLEANUP MECHANISM (Lebih Aman) ---
-          # Kita ambil ID-nya aja, kalau kosong ya udah aman.
-          # Kita tambahin --limit 100 biar aman kalau PR lo numpuk banyak
-          OLD_PRS=$(gh pr list --base main --state open --limit 100 --json number -q '.[] | select(.headRefName | startswith("release/") and .headRefName != "'"$BRANCH_NAME"'") | .number')
-
+          # Tambahin filter (.headRefName != null) biar dia gak kena null pointer
+          OLD_PRS=$(gh pr list --base main --state open --limit 100 --json headRefName,number -q '.[] | select(.headRefName != null and (.headRefName | startswith("release/")) and .headRefName != "'"$BRANCH_NAME"'") | .number')
+          
           if [ ! -z "$OLD_PRS" ]; then
             for PR_NUM in $OLD_PRS; do
               # Pastikan kita ambil branch name-nya dengan cara aman
