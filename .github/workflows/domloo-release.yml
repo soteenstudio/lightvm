@@ -29,13 +29,19 @@ jobs:
 
           echo "=== 2. FETCHING COMMITS FOR CURRENT RELEASE ==="
           if [ -z "$TAG_COMMIT_SHA" ]; then
-            # Format pake markdown bullet points (*), buang SHA hash commit-nya
-            CHANGELOG_COMMITS=$(git log --format="* %s")
+            # Format markdown bullet points (*), lalu saring buang chore, docs, test, ci
+            CHANGELOG_COMMITS=$(git log --format="* %s" | grep -vE "^\* (chore|docs|test|ci):" || echo "")
           else
-            # INI LOGIKA PINTER: Hanya ambil commit baru dari batas tag sampai HEAD main
-            CHANGELOG_COMMITS=$(git log --format="* %s" ${TAG_COMMIT_SHA}..HEAD)
+            # Hanya ambil commit baru dari batas tag sampai HEAD main, lalu saring bersih
+            CHANGELOG_COMMITS=$(git log --format="* %s" ${TAG_COMMIT_SHA}..HEAD | grep -vE "^\* (chore|docs|test|ci):" || echo "")
           fi
           
+          # VALIDASI PINTER: Kalau setelah disaring isinya kosong, stop proses rilis!
+          if [ -z "$CHANGELOG_COMMITS" ] || ! echo "$CHANGELOG_COMMITS" | grep -q '[^[:space:]]'; then
+            echo "No feature or bugfix commits found. All new commits are minor maintenance (chore/docs/test/ci). Skipping release PR!"
+            exit 0
+          fi
+
           if [ -z "$CHANGELOG_COMMITS" ]; then
             echo "No new commits found after tag $LATEST_TAG. Skipping release PR!"
             exit 0
