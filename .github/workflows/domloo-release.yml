@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+  pull_request_review_comment:
+    types: [created]
 
 permissions:
   contents: write
@@ -19,6 +21,8 @@ jobs:
           fetch-depth: 0
 
       - name: Jalankan Otak Bot Pinter
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "=== 1. SEARCHING LATEST TAG & ANCHOR COMMIT ==="
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.1.0-proto.0")
@@ -55,22 +59,63 @@ jobs:
             exit 0
           fi
 
-          echo "=== 3. PARSING CUSTOM VERSION FORMAT ==="
+          echo "=== 3. PARSING COMMAND FROM PR ==="
+          # 1. Pastikan variabel versi sudah ada
           BASE_VERSION=$(echo "$LATEST_TAG" | sed -E 's/v([^#-]+).*/\1/')
-          TAG_NAME=$(echo "$LATEST_TAG" | sed -E 's/v[0-9.]+-?([a-zA-Z]+)?.*/\1/')
           TAG_COUNTER=$(echo "$LATEST_TAG" | sed -E 's/.*\.([0-9]+)$/\1/' | grep -E '^[0-9]+$' || echo "0")
-
-          NEXT_COUNTER=$((TAG_COUNTER + 1))
           
-          if [ -z "$TAG_NAME" ]; then
-            PATCH=$(echo "$BASE_VERSION" | cut -d. -f3)
-            NEW_PATCH=$((PATCH + 1))
-            MAJOR_MINOR=$(echo "$BASE_VERSION" | cut -d. -f1,2)
-            NEXT_VERSION="${MAJOR_MINOR}.${NEW_PATCH}"
-          else
-            NEXT_VERSION="${BASE_VERSION}-${TAG_NAME}.${NEXT_COUNTER}"
+          # 2. Cari PR terbaru
+          CURRENT_COMMIT=$(git rev-parse HEAD)
+          PR_NUMBER=$(gh pr list --state merged --search "$CURRENT_COMMIT" --json number -q '.[0].number' || echo "")
+          
+          # 3. Ambil command dari body PR (kalau ada)
+          if [ ! -z "$PR_NUMBER" ]; then
+            PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q '.body')
+            COMMAND=$(echo "$PR_BODY" | grep -oE "@domloo-release (major|minor|patch|proto|alpha|beta|rc|stable|set [0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)? )")
           fi
           
+          # 4. Tentukan Tipe (Default ke patch kalau kosong)
+          TYPE=${COMMAND:-@domloo-release patch}
+          TYPE=${TYPE#@domloo-release }
+
+          # Logic Semantik Versi
+          MAJOR=$(echo "$BASE_VERSION" | cut -d. -f1)
+          MINOR=$(echo "$BASE_VERSION" | cut -d. -f2)
+          PATCH=$(echo "$BASE_VERSION" | cut -d. -f3)
+
+          case $TYPE in
+            major) NEXT_VERSION="$((MAJOR + 1)).0.0" ;;
+            minor) NEXT_VERSION="${MAJOR}.$((MINOR + 1)).0" ;;
+            patch) NEXT_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))" ;;
+            proto) 
+              VERSION_BASE=$(echo "$LATEST_TAG" | sed -E 's/-proto\.[0-9]+//')
+              NEXT_VERSION="${VERSION_BASE}-proto.$((TAG_COUNTER + 1))" 
+              ;;
+            alpha) 
+              VERSION_BASE=$(echo "$LATEST_TAG" | sed -E 's/-alpha\.[0-9]+//')
+              NEXT_VERSION="${VERSION_BASE}-alpha.$((TAG_COUNTER + 1))" 
+              ;;
+            beta)  
+              VERSION_BASE=$(echo "$LATEST_TAG" | sed -E 's/-beta\.[0-9]+//')
+              NEXT_VERSION="${VERSION_BASE}-beta.$((TAG_COUNTER + 1))" 
+              ;;
+            rc) 
+              VERSION_BASE=$(echo "$LATEST_TAG" | sed -E 's/-rc\.[0-9]+//')
+              NEXT_VERSION="${VERSION_BASE}-rc.$((TAG_COUNTER + 1))" 
+              ;;
+            stable) 
+              # Ini ngambil bagian sebelum tanda '-' (misal: v0.1.0-rc.0 jadi v0.1.0)
+              NEXT_VERSION=$(echo "$LATEST_TAG" | sed -E 's/-.*//')
+              ;;
+            set*) 
+              # Kita ambil string setelah kata "set "
+              # TYPE-nya jadi "set 1.2.3", kita ambil "1.2.3"-nya aja
+              NEXT_VERSION=$(echo "$TYPE" | awk '{print $2}')
+              # Tambahin 'v' di depannya kalau emang format lo pake 'v'
+              [[ "$NEXT_VERSION" != v* ]] && NEXT_VERSION="v$NEXT_VERSION"
+              ;;
+          esac
+
           echo "NEW_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
           
           # Bikin format Changelog yang rapi dan estetik
@@ -93,7 +138,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config --global user.name "ClayReleaseBot"
+          git config --global user.name "Domloo Release"
           git config --global user.email "claybot@internal"
           
           if [ -f "CHANGELOG.md" ]; then
