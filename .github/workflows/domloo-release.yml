@@ -29,11 +29,11 @@ jobs:
 
           echo "=== 2. FETCHING COMMITS FOR CURRENT RELEASE ==="
           if [ -z "$TAG_COMMIT_SHA" ]; then
-            # Format markdown bullet points (*), lalu saring buang chore, docs, test, ci
-            CHANGELOG_COMMITS=$(git log --format="* %s" | grep -vE "^\* (chore|docs|test|ci):" || echo "")
+            # Format markdown bullet points (*), lalu saring buang chore, docs, test, ci (termasuk yang pakai scope kurung)
+            CHANGELOG_COMMITS=$(git log --format="* %s" | grep -vE "^\* (chore|docs|test|ci)(\([^)]+\))?:" || echo "")
           else
-            # Hanya ambil commit baru dari batas tag sampai HEAD main, lalu saring bersih
-            CHANGELOG_COMMITS=$(git log --format="* %s" ${TAG_COMMIT_SHA}..HEAD | grep -vE "^\* (chore|docs|test|ci):" || echo "")
+            # Hanya ambil commit baru dari batas tag sampai HEAD main, lalu saring bersih total
+            CHANGELOG_COMMITS=$(git log --format="* %s" ${TAG_COMMIT_SHA}..HEAD | grep -vE "^\* (chore|docs|test|ci)(\([^)]+\))?:" || echo "")
           fi
           
           # VALIDASI PINTER: Kalau setelah disaring isinya kosong, stop proses rilis!
