@@ -20,26 +20,28 @@ jobs:
 
       - name: Jalankan Otak Bot Pinter
         run: |
-          echo "=== 1. MENCARI TAG TERBARU & COMMIT ACUAN ==="
+          echo "=== 1. SEARCHING LATEST TAG & ANCHOR COMMIT ==="
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.1.0-proto.0")
-          echo "Tag paling baru yang ditemuin: $LATEST_TAG"
+          echo "Latest tag found: $LATEST_TAG"
           
           TAG_COMMIT_SHA=$(git rev-list -n 1 "$LATEST_TAG" 2>/dev/null || echo "")
-          echo "SHA Commit dari tag itu: $TAG_COMMIT_SHA"
+          echo "Commit SHA for that tag: $TAG_COMMIT_SHA"
 
-          echo "=== 2. MENARIK COMMIT YANG SEHARUSNYA MASUK RILIS SEKARANG ==="
+          echo "=== 2. FETCHING COMMITS FOR CURRENT RELEASE ==="
           if [ -z "$TAG_COMMIT_SHA" ]; then
-            CHANGELOG_COMMITS=$(git log --oneline)
+            # Format pake markdown bullet points (*), buang SHA hash commit-nya
+            CHANGELOG_COMMITS=$(git log --format="* %s")
           else
-            CHANGELOG_COMMITS=$(git log --oneline ${TAG_COMMIT_SHA}..HEAD)
+            # INI LOGIKA PINTER: Hanya ambil commit baru dari batas tag sampai HEAD main
+            CHANGELOG_COMMITS=$(git log --format="* %s" ${TAG_COMMIT_SHA}..HEAD)
           fi
           
           if [ -z "$CHANGELOG_COMMITS" ]; then
-            echo "Kagak ada commit baru setelah tag $LATEST_TAG. Skip bikin PR rilis!"
+            echo "No new commits found after tag $LATEST_TAG. Skipping release PR!"
             exit 0
           fi
 
-          echo "=== 3. PARSING FORMAT VERSI KUSTOM ==="
+          echo "=== 3. PARSING CUSTOM VERSION FORMAT ==="
           BASE_VERSION=$(echo "$LATEST_TAG" | sed -E 's/v([^#-]+).*/\1/')
           TAG_NAME=$(echo "$LATEST_TAG" | sed -E 's/v[0-9.]+-?([a-zA-Z]+)?.*/\1/')
           TAG_COUNTER=$(echo "$LATEST_TAG" | sed -E 's/.*\.([0-9]+)$/\1/' | grep -E '^[0-9]+$' || echo "0")
@@ -57,7 +59,9 @@ jobs:
           
           echo "NEW_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
           
-          echo "## Rilis $NEXT_VERSION" > current_changelog.md
+          # Bikin format Changelog yang rapi dan estetik
+          echo "## Changelog for $NEXT_VERSION" > current_changelog.md
+          echo "" >> current_changelog.md
           echo "$CHANGELOG_COMMITS" >> current_changelog.md
 
       - name: Update File Konfigurasi Projek (SED Engine)
@@ -78,7 +82,6 @@ jobs:
           git config --global user.name "ClayReleaseBot"
           git config --global user.email "claybot@internal"
           
-          # Pake cp (copy) biar file current_changelog.md aslinya GAK HILANG
           if [ -f "CHANGELOG.md" ]; then
             cat current_changelog.md CHANGELOG.md > temp_changelog.md && mv temp_changelog.md CHANGELOG.md
           else
@@ -94,17 +97,21 @@ jobs:
 
           git commit -m "chore: prepare release ${{ env.NEW_VERSION }}" || echo "No changes to commit"
           
+          # Force push biar branch rilis lama otomatis ke-repull/ke-update dengan commit main paling baru
           git push origin "$BRANCH_NAME" --force
 
+          # Cek apakah PR untuk branch ini sudah pernah ada sebelumnya
           PR_EXISTS=$(gh pr list --head "$BRANCH_NAME" --json number -q '.[0].number')
 
           if [ -z "$PR_EXISTS" ]; then
-            echo "Membuka PR Rilis Baru..."
+            echo "Opening a brand new Release PR..."
             gh pr create \
               --title "chore: release ${{ env.NEW_VERSION }}" \
               --body-file current_changelog.md \
               --base main \
               --head "$BRANCH_NAME"
           else
-            echo "PR udah ada (ID: $PR_EXISTS), otomatis ter-update lewat force push tadi!"
+            echo "PR already exists (ID: $PR_EXISTS). Auto-updating PR body description..."
+            # FITUR BARU: Otomatis ngedit isi body deskripsi PR lama pake changelog yang barusan di-generate
+            gh pr edit "$PR_EXISTS" --body-file current_changelog.md
           fi
