@@ -136,7 +136,7 @@ jobs:
             cd rust
             ../cross build --release --target ${{ matrix.target }}
           fi
-
+  
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
