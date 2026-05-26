@@ -158,11 +158,12 @@ pub fn execute(
         metadata_dispatch(instr, &mut stack, ip).map_err(|e| e.format())?
       }
       Instructions::Nop
+      | Instructions::Export(_)
       | Instructions::Val(_)
       | Instructions::Set(_)
       | Instructions::Get(_)
       | Instructions::Inc(_, _)
-      | Instructions::Dec(_, _) => {}
+      | Instructions::Dec(_, _)=> {}
       _ => unsafe { std::hint::unreachable_unchecked() },
     }
     ip += 1;
