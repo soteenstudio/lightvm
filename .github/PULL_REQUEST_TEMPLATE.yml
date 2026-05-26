@@ -32,7 +32,7 @@ body:
           required: true
         - label: "The code is in accordance with the project style guide."
         - label: "I have updated the documentation if necessary."
-
+ 
   - type: input
     id: issue_link
     attributes:
