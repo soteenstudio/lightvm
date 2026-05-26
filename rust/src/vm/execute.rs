@@ -163,7 +163,7 @@ pub fn execute(
       | Instructions::Set(_)
       | Instructions::Get(_)
       | Instructions::Inc(_, _)
-      | Instructions::Dec(_, _)=> {}
+      | Instructions::Dec(_, _) => {}
       _ => unsafe { std::hint::unreachable_unchecked() },
     }
     ip += 1;
