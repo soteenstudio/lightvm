@@ -81,14 +81,15 @@ export class LightVM {
       process.exit(1);
     }
   }
-  provide(name: string, value: any) {
-    try {
-      this.instance.provide(name, JSON.stringify(value));
-      return this;
-    } catch (err) {
-      console.error((err as Error).message);
-      process.exit(1);
+  provide(nameOrObj: string | any, value?: any) {
+    if (typeof nameOrObj === 'object') {
+       for (const [key, val] of Object.entries(nameOrObj)) {
+         this.instance.provide(key, val);
+       }
+    } else {
+       this.instance.provide(nameOrObj, value);
     }
+    return this;
   }
   halt() {
     try {

@@ -32,7 +32,7 @@ pub struct LightVM {
   pub _last_value: Value,
   pub functions: AHashMap<SmolStr, FuncMetadata>,
   pub exported: HashSet<SmolStr>,
-  pub _imports: AHashMap<String, Value>,
+  pub _imports: AHashMap<SmolStr, Value>,
 }
 impl LightVM {
   #[inline(always)]
@@ -117,7 +117,13 @@ impl LightVM {
         e
       )))
     })?;
-    run(bytecode_str);
+    let options = RunOptions {
+      entry: None,
+      args: Vec::new(),
+      capture_return: false,
+      imports: self._imports.clone(),
+    };
+    run(bytecode_str, Some(options));
     Ok(())
   }
   #[inline]
@@ -134,17 +140,11 @@ impl LightVM {
   }
   pub fn provide_internal(
     &mut self,
-    name: String,
+    name: SmolStr,
     value: serde_json::Value,
   ) -> Result<(), VMError> {
     self.require(Capability::Control)?;
-    let json_str = value.to_string();
-    let val: Value = serde_json::from_str(&json_str).map_err(|e| {
-      VMError::SystemError(smol_str::SmolStr::new(format!(
-        "Invalid value format: {}",
-        e
-      )))
-    })?;
+    let val: Value = value.into();
     self._imports.insert(name, val);
     Ok(())
   }
@@ -199,7 +199,13 @@ impl LightVM {
     let bytecode_str = serde_json::to_string(&self.bytecode).map_err(|e| {
       VMError::SystemError(SmolStr::new(format!("Failed to stringify bytecode: {}", e)))
     })?;
-    run(bytecode_str.clone());
+    let options = RunOptions {
+      entry: None,
+      args: Vec::new(),
+      capture_return: false,
+      imports: self._imports.clone(),
+    };
+    run(bytecode_str.clone(), Some(options));
     Ok(bytecode_str)
   }
   #[inline]

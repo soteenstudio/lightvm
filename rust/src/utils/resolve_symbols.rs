@@ -13,9 +13,16 @@ use ahash::AHashMap;
 use smol_str::SmolStr;
 #[inline]
 #[cold]
-pub fn resolve_symbols(bytecode: &mut [Instructions]) -> usize {
+pub fn resolve_symbols(
+  bytecode: &mut [Instructions],
+  imports: &AHashMap<SmolStr, Value>,
+) -> (usize, AHashMap<SmolStr, usize>) {
   let mut symbol_table: AHashMap<SmolStr, usize> = AHashMap::new();
   let mut next_idx = 0;
+  for name in imports.keys() {
+    symbol_table.insert(name.clone(), next_idx);
+    next_idx += 1;
+  }
   for instr in bytecode.iter_mut() {
     match instr {
       Instructions::Push(val) => match val {
@@ -58,5 +65,5 @@ pub fn resolve_symbols(bytecode: &mut [Instructions]) -> usize {
       _ => {}
     }
   }
-  next_idx
+  (next_idx, symbol_table)
 }

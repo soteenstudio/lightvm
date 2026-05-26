@@ -84,8 +84,15 @@ impl LightVM {
       }
     })
   }
-  pub fn provide(&mut self, name: String, value: serde_json::Value) -> &mut Self {
-    let _ = self.provide_internal(name, value);
+  pub fn provide(&mut self, data: serde_json::Value) -> &mut Self {
+    if let serde_json::Value::Object(map) = data {
+      for (name, val) in map {
+        if let Err(e) = self.provide_internal(name.into(), val) {
+          eprintln!("{}", e.format());
+          std::process::exit(1);
+        }
+      }
+    }
     self
   }
   pub fn halt(&mut self) {

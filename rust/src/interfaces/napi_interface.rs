@@ -83,7 +83,7 @@ impl NodeLightVM {
   pub fn provide(&mut self, name: String, value: serde_json::Value) -> Result<()> {
     self
       .inner
-      .provide_internal(name, value)
+      .provide_internal(name.into(), value)
       .map_err(|e| Error::from_reason(e.format().to_string()))
   }
   #[napi]

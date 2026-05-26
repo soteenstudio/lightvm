@@ -21,6 +21,7 @@ use crate::vm::dispatch::{
   metadata_dispatch::metadata_dispatch, stack_dispatch::stack_dispatch,
 };
 use crate::vm::{inject_args::inject_args, prepare_vm::prepare_vm};
+use ahash::AHashMap;
 use smol_str::SmolStr;
 #[inline(never)]
 pub fn execute(
@@ -29,8 +30,15 @@ pub fn execute(
 ) -> Result<Value, SmolStr> {
   let mut last_return = Value::Undefined;
   let mut stack: Vec<Value> = Vec::with_capacity(16);
-  let var_count = resolve_symbols(&mut bytecode);
+  let empty_map: AHashMap<SmolStr, Value> = AHashMap::new();
+  let imports = options.as_ref().map(|o| &o.imports).unwrap_or(&empty_map);
+  let (var_count, symbol_table) = resolve_symbols(&mut bytecode, imports);
   let mut vars: Vec<Value> = vec![Value::Undefined; var_count];
+  for (name, val) in imports {
+    if let Some(&idx) = symbol_table.get(name) {
+      vars[idx] = val.clone();
+    }
+  }
   let mut _call_stack: Vec<usize> = Vec::new();
   let (functions, _exported, mut ip) = prepare_vm(&bytecode, &options);
   inject_args(&mut vars, &functions, &options, ip);

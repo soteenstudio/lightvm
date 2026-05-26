@@ -9,16 +9,17 @@
  */
 
 use crate::types::instructions::Instructions;
+use crate::types::value::RunOptions;
 use serde_json::Value as JsonValue;
 #[inline]
 #[cold]
-pub fn run(bytecode_json: String) -> String {
+pub fn run(bytecode_json: String, options: Option<RunOptions>) -> String {
   let raw_bytecode: Vec<JsonValue> = serde_json::from_str(&bytecode_json).expect("Invalid JSON");
   let bytecode: Vec<Instructions> = raw_bytecode
     .into_iter()
     .map(|item| Instructions::from_json_array(&item))
     .collect();
-  let result = crate::vm::execute::execute(bytecode, None);
+  let result = crate::vm::execute::execute(bytecode, options);
   match result {
     Ok(val) => serde_json::to_string(&val)
       .unwrap_or_else(|_| r#"{"error": "Failed to serialize result"}"#.to_string()),

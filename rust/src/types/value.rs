@@ -209,6 +209,29 @@ impl Value {
     }
   }
 }
+impl From<serde_json::Value> for Value {
+  fn from(json: serde_json::Value) -> Self {
+    match json {
+      serde_json::Value::String(s) => Value::String(SmolStr::from(s)),
+      serde_json::Value::Number(n) => {
+        if let Some(i) = n.as_i64() {
+          Value::Int64(i)
+        } else if let Some(f) = n.as_f64() {
+          Value::Float64(f)
+        } else {
+          Value::NaN
+        }
+      }
+      serde_json::Value::Bool(b) => Value::Bool(b),
+      serde_json::Value::Null => Value::Null,
+      serde_json::Value::Array(a) => {
+        let converted: Vec<Value> = a.into_iter().map(Value::from).collect();
+        Value::Array(Arc::new(converted))
+      }
+      _ => Value::Undefined,
+    }
+  }
+}
 use std::fmt;
 impl fmt::Display for Value {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
