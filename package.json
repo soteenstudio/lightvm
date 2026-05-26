@@ -36,8 +36,7 @@
     "typescript"
   ],
   "dependencies": {
-    "chalk": "^5.6.2",
-    "lightvm": "file:lightvm-v0.1.0-alpha.5.tgz"
+    "chalk": "^5.6.2"
   },
   "devDependencies": {
     "@types/node": "^25.9.1",
