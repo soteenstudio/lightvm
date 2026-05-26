@@ -118,6 +118,7 @@ pub fn execute(
           &mut _call_stack,
           &mut last_return,
           &functions,
+          &symbol_table,
           &mut ip,
         )? {
           ControlFlowSignal::Continue => continue,

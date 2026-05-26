@@ -27,6 +27,7 @@ pub fn control_flow_dispatch(
   call_stack: &mut Vec<usize>,
   last_return: &mut Value,
   functions: &AHashMap<SmolStr, FuncMetadata>,
+  symbol_table: &AHashMap<SmolStr, usize>,
   ip: &mut usize,
 ) -> Result<ControlFlowSignal, SmolStr> {
   match instr {
@@ -50,7 +51,7 @@ pub fn control_flow_dispatch(
       }
     }
     Instructions::Call(name, argc) => {
-      call_func(name, *argc, ip, stack, call_stack, vars, functions).map_err(|e| e.format())?;
+      call_func(name, *argc, ip, stack, call_stack, vars, functions, symbol_table).map_err(|e| e.format())?;
       Ok(ControlFlowSignal::Continue)
     }
     Instructions::Stop => {

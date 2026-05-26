@@ -62,6 +62,15 @@ pub fn resolve_symbols(
         });
         *instr = Instructions::IncIdx(idx, *num_type);
       }
+      Instructions::Func(_,_,_,_, names) => {
+        for p_name in names {
+             symbol_table.entry(p_name.clone()).or_insert_with(|| {
+                let i = next_idx;
+                next_idx += 1;
+                i
+             });
+        }
+      }
       _ => {}
     }
   }

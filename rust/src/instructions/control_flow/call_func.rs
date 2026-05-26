@@ -12,6 +12,7 @@ use crate::types::value::{FuncMetadata, Value};
 use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
 use smol_str::SmolStr;
+
 #[inline]
 pub fn call_func(
   name: &SmolStr,
@@ -21,11 +22,13 @@ pub fn call_func(
   call_stack: &mut Vec<usize>,
   vars: &mut Vec<Value>,
   functions: &AHashMap<SmolStr, FuncMetadata>,
+  symbol_table: &AHashMap<SmolStr, usize>, // Tambahin ini buat lookup index
 ) -> Result<(), VMError> {
   let fn_meta = functions.get(name).ok_or_else(|| VMError::InvalidOpcode {
     ip: *ip,
     code: SmolStr::from(format!("CALL {}", name)),
   })?;
+
   let argc_usize = argc as usize;
   if stack.len() < argc_usize {
     return Err(VMError::StackUnderflow {
@@ -33,19 +36,29 @@ pub fn call_func(
       opcode: "CALL_ARGS",
     });
   }
+
   call_stack.push(*ip);
-  let start_idx = stack.len() - argc_usize;
-  let params_count = fn_meta.params_count as usize;
-  if vars.len() < params_count {
-    vars.resize(params_count, Value::Undefined);
+
+  // Ambil argumen dari stack
+  let mut args = Vec::with_capacity(argc_usize);
+  for _ in 0..argc_usize {
+    args.push(stack.pop().unwrap());
   }
-  let mut arg_idx = 0;
-  for val in stack.drain(start_idx..) {
-    if arg_idx < params_count {
-      vars[arg_idx] = val;
-      arg_idx += 1;
+  // Stack tadi di-drain/pop dari belakang (LIFO), jadi reverse biar urutannya bener
+  args.reverse();
+
+  // Mapping parameter ke index global yang sudah di-resolve
+  for (i, val) in args.into_iter().enumerate() {
+    if i < fn_meta.param_names.len() {
+      let param_name = &fn_meta.param_names[i];
+      if let Some(&idx) = symbol_table.get(param_name) {
+        if idx < vars.len() {
+          vars[idx] = val;
+        }
+      }
     }
   }
+
   *ip = fn_meta.start;
   Ok(())
 }
