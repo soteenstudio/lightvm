@@ -81,7 +81,7 @@ jobs:
             PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q '.body')
             COMMAND=$(echo "$PR_BODY" | grep -oE "@domloo-release (major|minor|patch|proto|alpha|beta|rc|stable|set [0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?)")
           fi
-           
+          
           TYPE=${COMMAND:-@domloo-release alpha}
           TYPE=${TYPE#@domloo-release }
 
