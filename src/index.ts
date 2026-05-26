@@ -83,11 +83,11 @@ export class LightVM {
   }
   provide(nameOrObj: string | any, value?: any) {
     if (typeof nameOrObj === 'object') {
-       for (const [key, val] of Object.entries(nameOrObj)) {
-         this.instance.provide(key, val);
-       }
+      for (const [key, val] of Object.entries(nameOrObj)) {
+        this.instance.provide(key, val);
+      }
     } else {
-       this.instance.provide(nameOrObj, value);
+      this.instance.provide(nameOrObj, value);
     }
     return this;
   }
