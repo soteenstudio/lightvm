@@ -51,7 +51,17 @@ pub fn control_flow_dispatch(
       }
     }
     Instructions::Call(name, argc) => {
-      call_func(name, *argc, ip, stack, call_stack, vars, functions, symbol_table).map_err(|e| e.format())?;
+      call_func(
+        name,
+        *argc,
+        ip,
+        stack,
+        call_stack,
+        vars,
+        functions,
+        symbol_table,
+      )
+      .map_err(|e| e.format())?;
       Ok(ControlFlowSignal::Continue)
     }
     Instructions::Stop => {

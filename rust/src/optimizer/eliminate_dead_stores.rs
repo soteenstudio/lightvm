@@ -187,7 +187,10 @@ pub fn eliminate_dead_stores(bytecode: &mut Vec<Instructions>, usage: &Usage) {
       Instructions::IfFalse(_) => {
         stack_demands.push(Demand::Keep);
       }
-      Instructions::Jump(_) | Instructions::Stop | Instructions::Return => {}
+      Instructions::Return => {
+        stack_demands.push(Demand::Keep);
+      }
+      Instructions::Jump(_) | Instructions::Stop => {}
       _ => {}
     }
   }
