@@ -1,3 +1,8 @@
+## Changelog for v0.1.0-alpha.6
+
+* fix: fix DSE opcode return section
+* fix: fix func opcode and call opcode
+* refactor: simplify provide API and fix provide function bug
 ## Changelog for v0.1.0-alpha.5
 
 * refactor: simplify internal API and update documentation
