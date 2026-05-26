@@ -1,5 +1,9 @@
 name: Code Quality Check
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main]
@@ -35,17 +39,16 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
+            ~/.cargo/registry/
+            rust/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
       - name: Build Rust Core
         run: |
           if [ -d "./rust" ]; then
-            cd rust && cargo build --release
+            cd rust && cargo build --release --locked
           fi
 
       - name: Install dependencies
