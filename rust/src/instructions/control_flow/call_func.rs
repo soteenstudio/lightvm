@@ -13,13 +13,14 @@ use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
 use smol_str::SmolStr;
 #[inline]
+#[allow(clippy::too_many_arguments)]
 pub fn call_func(
   name: &SmolStr,
   argc: u32,
   ip: &mut usize,
   stack: &mut Vec<Value>,
   call_stack: &mut Vec<usize>,
-  vars: &mut Vec<Value>,
+  vars: &mut [Value],
   functions: &AHashMap<SmolStr, FuncMetadata>,
   symbol_table: &AHashMap<SmolStr, usize>,
 ) -> Result<(), VMError> {

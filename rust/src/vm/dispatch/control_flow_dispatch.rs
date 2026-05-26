@@ -20,6 +20,7 @@ use crate::types::{
 };
 use ahash::AHashMap;
 use smol_str::SmolStr;
+#[allow(clippy::too_many_arguments)]
 pub fn control_flow_dispatch(
   instr: &Instructions,
   stack: &mut Vec<Value>,
