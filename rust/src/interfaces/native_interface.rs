@@ -80,7 +80,10 @@ impl LightVM {
             Some(parsed)
           }
         }
-        Err(_) => None,
+        Err(e) => {
+          eprintln!("{}", e.format());
+          std::process::exit(1);
+        },
       }
     })
   }

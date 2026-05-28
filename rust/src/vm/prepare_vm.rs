@@ -39,7 +39,7 @@ pub fn prepare_vm(
       Instructions::Export(name) => {
         exported.insert(name.clone());
       }
-      _ => unsafe { std::hint::unreachable_unchecked() },
+      _ => {},
     }
   }
   let ip = options.as_ref().and_then(|o| o.entry).unwrap_or(0);

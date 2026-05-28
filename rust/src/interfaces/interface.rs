@@ -48,25 +48,40 @@ impl LightVM {
   pub fn index_metadata(&mut self) {
     self.functions.clear();
     self.exported.clear();
+    
     let mut itoa_buf = itoa::Buffer::new();
     for (i, instr) in self.bytecode.iter().enumerate() {
-      if let Instructions::Func(_name, params, start, end, _names) = instr {
-        let idx_str = itoa_buf.format(i);
-        let mut key = String::with_capacity(6 + idx_str.len());
-        key.push_str("__idx_");
-        key.push_str(idx_str);
-        self.functions.insert(
-          SmolStr::from(key),
-          FuncMetadata {
+      match instr {
+        Instructions::Func(name, params, start, end, names) => {
+          // Tetap simpan index internal asli jika dibutuhkan compiler lo
+          let idx_str = itoa_buf.format(i);
+          let mut key = String::with_capacity(6 + idx_str.len());
+          key.push_str("__idx_");
+          key.push_str(idx_str);
+          
+          let meta = FuncMetadata {
             params_count: *params,
-            param_names: Vec::new(),
+            param_names: names.to_vec(),
             start: *start,
             end: *end,
-          },
-        );
+          };
+          
+          self.functions.insert(SmolStr::from(key), meta.clone());
+          
+          // CRITICAL FIX: Masukin juga nama aslinya ke map functions 
+          // biar call_exported_internal bisa lookup pake string biasa ("greeting")
+          self.functions.insert(name.clone(), meta);
+        }
+        Instructions::Export(name) => {
+          // CRITICAL FIX: Masukin nama fungsi yang di-export ke HashSet LightVM
+          self.exported.insert(name.clone());
+        }
+        _ => {}
       }
     }
+    println!("Jalan");
   }
+
   pub fn emit(&self, event: VmEvent, payload: serde_json::Value) {
     if let Some(list) = self.listeners.get(&event) {
       let json_payload = payload.to_string();
@@ -167,47 +182,55 @@ impl LightVM {
     self.emit(VmEvent::Halt, serde_json::Value::Null);
     Ok(())
   }
-  pub fn call_exported_internal(
-    &mut self,
-    name: String,
-    args_raw: serde_json::Value,
-  ) -> Result<String, VMError> {
-    self.require(Capability::Control)?;
-    if !self.exported.contains(name.as_str()) {
-      return Err(VMError::InvalidOpcode {
-        ip: 0,
-        code: SmolStr::new(format!("NOT_EXPORTED:{}", name)),
-      });
-    }
-    let fn_meta = self
-      .functions
-      .get(name.as_str())
-      .ok_or_else(|| VMError::InvalidOpcode {
-        ip: 0,
-        code: SmolStr::new(format!("NOT_FOUND:{}", name)),
-      })?;
-    let json_args = args_raw.to_string();
-    let args: Vec<Value> = serde_json::from_str(&json_args)
-      .map_err(|e| VMError::SystemError(SmolStr::new(format!("Invalid args: {}", e))))?;
-    self.state = VmState::Running;
-    let _options = crate::types::value::RunOptions {
-      entry: Some(fn_meta.start),
-      args,
-      capture_return: true,
-      imports: ahash::AHashMap::new(),
-    };
-    let bytecode_str = serde_json::to_string(&self.bytecode).map_err(|e| {
-      VMError::SystemError(SmolStr::new(format!("Failed to stringify bytecode: {}", e)))
-    })?;
-    let options = RunOptions {
-      entry: None,
-      args: Vec::new(),
-      capture_return: false,
-      imports: self._imports.clone(),
-    };
-    run(bytecode_str.clone(), Some(options));
-    Ok(bytecode_str)
+pub fn call_exported_internal(
+  &mut self,
+  name: String,
+  args_raw: serde_json::Value,
+) -> Result<String, VMError> {
+  self.require(Capability::Control)?;
+  
+  if !self.exported.contains(name.as_str()) {
+    return Err(VMError::InvalidOpcode {
+      ip: 0,
+      code: SmolStr::new(format!("NOT_EXPORTED:{}", name)),
+    });
   }
+  
+  let fn_meta = self
+    .functions
+    .get(name.as_str())
+    .ok_or_else(|| VMError::InvalidOpcode {
+      ip: 0,
+      code: SmolStr::new(format!("NOT_FOUND:{}", name)),
+    })?;
+
+  // Pastikan konversi dari serde_json::Value ke internal Value lu aman
+  let json_args = args_raw.to_string();
+  let args: Vec<Value> = serde_json::from_str(&json_args)
+    .map_err(|e| VMError::SystemError(SmolStr::new(format!("Invalid args: {}", e))))?;
+
+  self.state = VmState::Running;
+
+  let bytecode_str = serde_json::to_string(&self.bytecode).map_err(|e| {
+    VMError::SystemError(SmolStr::new(format!("Failed to stringify bytecode: {}", e)))
+  })?;
+
+  // --- FIX DI SINI: Pake options yang bener-bener bawa arguments ---
+  let options = RunOptions {
+    entry: Some(fn_meta.start), // Isi entry pointer-nya
+    args,                       // Ambil args hasil parsing tadi!
+    capture_return: true,
+    imports: self._imports.clone(),
+  };
+
+  //println!("{:?}", bytecode_str.clone());
+  
+  // --- FIX: Tangkap string kembalian dari fungsi run() ---
+  let hasil_run = run(bytecode_str.clone(), Some(options));
+  
+  Ok(hasil_run)
+}
+
   #[inline]
   pub fn get_outputs_internal(&mut self) -> Result<Vec<String>, VMError> {
     self.require(Capability::Observe)?;

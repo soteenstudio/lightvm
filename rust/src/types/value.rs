@@ -16,6 +16,7 @@ use smol_str::SmolStr;
 use std::sync::Arc;
 #[repr(u8, align(32))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+#[serde(untagged)]
 pub enum Value {
   Int16(i16),
   Int32(i32),
