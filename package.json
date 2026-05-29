@@ -36,6 +36,10 @@
     "src/**/*.{js,ts,jsx,tsx}": [
       "eslint --fix",
       "prettier --write"
+    ],
+    "rust/**/*.rs": [
+      "synclean format",
+      "synclean check"
     ]
   },
   "keywords": [
