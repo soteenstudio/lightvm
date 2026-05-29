@@ -50,7 +50,7 @@ impl LightVM {
       source.to_string()
     };
     if let Err(err) = self.load_internal(payload) {
-      eprintln!("{}", err.format());
+      eprintln!("{}", err);
       std::process::exit(1);
     }
     self
@@ -81,9 +81,9 @@ impl LightVM {
           }
         }
         Err(e) => {
-          eprintln!("{}", e.format());
+          eprintln!("{}", e);
           std::process::exit(1);
-        },
+        }
       }
     })
   }
@@ -91,7 +91,7 @@ impl LightVM {
     if let serde_json::Value::Object(map) = data {
       for (name, val) in map {
         if let Err(e) = self.provide_internal(name.into(), val) {
-          eprintln!("{}", e.format());
+          eprintln!("{}", e);
           std::process::exit(1);
         }
       }
@@ -133,12 +133,12 @@ pub struct LightVMTools;
 impl LightVMTools {
   pub fn optimize_bytecode(&self, bytecode: serde_json::Value) -> serde_json::Value {
     let opt_str = LightVM::optimize_bytecode_internal(bytecode).unwrap_or_else(|err| {
-      eprintln!("\n{}", err.format());
+      eprintln!("\n{}", err);
       std::process::exit(1);
     });
     serde_json::from_str::<serde_json::Value>(&opt_str).unwrap_or_else(|e| {
       let format_err = VMError::SystemError(format!("Internal JSON Parsing Failed: {}", e).into());
-      eprintln!("\n{}", format_err.format());
+      eprintln!("\n{}", format_err);
       std::process::exit(1);
     })
   }
@@ -155,7 +155,7 @@ impl LightVMTools {
     match LightVM::parse_ltc_internal(code) {
       Ok(text) => text,
       Err(e) => {
-        eprintln!("{}", e.format());
+        eprintln!("{}", e);
         std::process::exit(1);
       }
     }

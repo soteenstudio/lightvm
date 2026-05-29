@@ -9,6 +9,7 @@
  */
 
 use smol_str::SmolStr;
+use std::fmt;
 pub enum VMError {
   /// Terjadi saat stack mencapai batas maksimum yang ditentukan InitStack atau default
   StackOverflow { ip: usize, limit: usize },
@@ -27,6 +28,53 @@ pub enum VMError {
   /// Error saat akses index di luar jangkauan (Array/Object)
   OutOfBounds { ip: usize, index: usize, len: usize },
 }
+impl fmt::Display for VMError {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    let red = "\x1b[31;1m";
+    let yellow = "\x1b[33m";
+    let cyan = "\x1b[36m";
+    let reset = "\x1b[0m";
+    let bold = "\x1b[1m";
+    write!(
+      f,
+      "{bold}[LightVM]{reset} {red}Runtime Error {}{reset}: ",
+      self.error_code()
+    )?;
+    match self {
+    VMError::StackOverflow { ip, limit } =>
+      write!(f, "Stack limit reached (limit: {}) at [IP: {}]. Potential infinite recursion or unoptimized InitStack.", limit, ip),
+    VMError::StackUnderflow { ip, opcode } =>
+      write!(f, "Attempted to pop from an empty stack during '{}' instruction at [IP: {}].", opcode, ip),
+    VMError::InvalidOpcode { ip, code } =>
+      write!(f, "Illegal instruction '{}' encountered at [IP: {}]. Bytecode may be corrupted.", code, ip),
+    VMError::TypeMismatch { ip, expected, found } =>
+      write!(f, "Type mismatch at [IP: {}]. Expected type '{}', but found '{}'.", ip, expected, found),
+    VMError::OutOfBounds { ip, index, len } =>
+      write!(f, "Index out of bounds at [IP: {}]. Accessing index {} on a collection of length {}.", ip, index, len),
+    VMError::SystemError(s) => write!(f, "{}", s)
+    }?;
+    let ip = match self {
+      VMError::SystemError(_) => 0,
+      _ => *match self {
+        VMError::StackOverflow { ip, .. }
+        | VMError::StackUnderflow { ip, .. }
+        | VMError::InvalidOpcode { ip, .. }
+        | VMError::TypeMismatch { ip, .. }
+        | VMError::OutOfBounds { ip, .. } => ip,
+        _ => &0,
+      },
+    };
+    write!(
+      f,
+      "\n{yellow}Location: {cyan}instruction_pointer: {ip}{reset}"
+    )
+  }
+}
+impl From<VMError> for SmolStr {
+  fn from(err: VMError) -> Self {
+    SmolStr::from(err.to_string())
+  }
+}
 impl VMError {
   /// Mengembalikan kode error unik untuk dokumentasi (misal: LVM001)
   fn error_code(&self) -> &'static str {
@@ -38,43 +86,5 @@ impl VMError {
       VMError::OutOfBounds { .. } => "LVM005",
       VMError::SystemError(_) => "LVM500",
     }
-  }
-  pub fn format(&self) -> SmolStr {
-    let red = "\x1b[31;1m";
-    let yellow = "\x1b[33m";
-    let cyan = "\x1b[36m";
-    let reset = "\x1b[0m";
-    let bold = "\x1b[1m";
-    let code = self.error_code();
-    let prefix = format!("{}[LightVM]{}", bold, reset);
-    let detail = match self {
-      VMError::StackOverflow { ip, limit } =>
-          format!("Stack limit reached (limit: {}) at [IP: {}]. Potential infinite recursion or unoptimized InitStack.", limit, ip),
-      VMError::StackUnderflow { ip, opcode } =>
-          format!("Attempted to pop from an empty stack during '{}' instruction at [IP: {}].", opcode, ip),
-      VMError::InvalidOpcode { ip, code } =>
-          format!("Illegal instruction '{}' encountered at [IP: {}]. Bytecode may be corrupted.", code, ip),
-      VMError::TypeMismatch { ip, expected, found } =>
-          format!("Type mismatch at [IP: {}]. Expected type '{}', but found '{}'.", ip, expected, found),
-      VMError::OutOfBounds { ip, index, len } =>
-          format!("Index out of bounds at [IP: {}]. Accessing index {} on a collection of length {}.", ip, index, len),
-      VMError::SystemError(s) => s.to_string(),
-    };
-    SmolStr::new(format!(
-      "{prefix} {red}Runtime Error {code}{reset}: {detail}\n{yellow}Location: {cyan}instruction_pointer: {ip}{reset}",
-      prefix = prefix,
-      red = red,
-      code = code,
-      reset = reset,
-      detail = detail,
-      yellow = yellow,
-      cyan = cyan,
-      ip = match self {
-          VMError::SystemError(_) => 0,
-          VMError::StackOverflow { ip, .. } | VMError::StackUnderflow { ip, .. } |
-          VMError::InvalidOpcode { ip, .. } | VMError::TypeMismatch { ip, .. } |
-          VMError::OutOfBounds { ip, .. } => *ip,
-      }
-    ))
   }
 }

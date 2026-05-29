@@ -18,6 +18,7 @@ use crate::types::{
   instructions::Instructions,
   value::{FuncMetadata, Value},
 };
+use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
 use smol_str::SmolStr;
 #[allow(clippy::too_many_arguments)]
@@ -30,10 +31,10 @@ pub fn control_flow_dispatch(
   functions: &AHashMap<SmolStr, FuncMetadata>,
   symbol_table: &AHashMap<SmolStr, usize>,
   ip: &mut usize,
-) -> Result<ControlFlowSignal, SmolStr> {
+) -> Result<ControlFlowSignal, VMError> {
   match instr {
     Instructions::IfFalse(target_ip) => {
-      let cond = if_false_func(stack, *ip).map_err(|e| e.format())?;
+      let cond = if_false_func(stack, *ip).map_err(|e| e)?;
       if cond {
         *ip = *target_ip;
         return Ok(ControlFlowSignal::Continue);
@@ -62,7 +63,7 @@ pub fn control_flow_dispatch(
         functions,
         symbol_table,
       )
-      .map_err(|e| e.format())?;
+      .map_err(|e| e)?;
       Ok(ControlFlowSignal::Continue)
     }
     Instructions::Stop => {
@@ -73,8 +74,7 @@ pub fn control_flow_dispatch(
       }
     }
     Instructions::Instantiate(class_name, argc) => {
-      let instance =
-        instantiate_func(stack, vars, class_name, *argc, *ip).map_err(|e| e.format())?;
+      let instance = instantiate_func(stack, vars, class_name, *argc, *ip).map_err(|e| e)?;
       stack.push(instance);
       Ok(ControlFlowSignal::None)
     }

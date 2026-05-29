@@ -13,3 +13,4 @@ pub mod execute;
 pub mod inject_args;
 pub mod prepare_vm;
 pub mod run;
+pub mod validate_bytecode;

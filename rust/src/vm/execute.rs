@@ -20,7 +20,9 @@ use crate::vm::dispatch::{
   io_dispatch::io_dispatch, logic_dispatch::logic_dispatch, math_dispatch::math_dispatch,
   metadata_dispatch::metadata_dispatch, stack_dispatch::stack_dispatch,
 };
-use crate::vm::{inject_args::inject_args, prepare_vm::prepare_vm};
+use crate::vm::{
+  inject_args::inject_args, prepare_vm::prepare_vm, validate_bytecode::validate_bytecode,
+};
 use ahash::AHashMap;
 use smol_str::SmolStr;
 #[inline(never)]
@@ -41,11 +43,18 @@ pub fn execute(
   }
   let mut _call_stack: Vec<usize> = Vec::new();
   let (functions, _exported, mut ip) = prepare_vm(&bytecode, &options);
+  validate_bytecode(&bytecode, &functions)?;
   inject_args(&mut vars, &functions, &options, ip);
   let bytecode_ptr = bytecode.as_ptr();
   let bytecode_len = bytecode.len();
   while ip < bytecode_len {
-    let instr = unsafe { &*bytecode_ptr.add(ip) };
+    debug_assert!(
+      ip < bytecode_len,
+      "IP out of bounds! IP: {}, Len: {}",
+      ip,
+      bytecode_len
+    );
+    let instr = unsafe { bytecode.get_unchecked(ip) };
     match instr {
       Instructions::InitStack(_)
       | Instructions::PushInt16(_)
@@ -70,7 +79,7 @@ pub fn execute(
       | Instructions::Swap
       | Instructions::Truncate
       | Instructions::Import(_, _) => {
-        stack_dispatch(instr, &mut stack, &mut vars, &options, ip).map_err(|e| e.format())?;
+        stack_dispatch(instr, &mut stack, &mut vars, &options, ip)?;
       }
       Instructions::Add(_)
       | Instructions::Sub(_)
@@ -90,7 +99,7 @@ pub fn execute(
       | Instructions::Neg(_)
       | Instructions::IncIdx(_, _)
       | Instructions::DecIdx(_, _) => {
-        math_dispatch(instr, &mut stack, &mut vars, ip).map_err(|e| e.format())?;
+        math_dispatch(instr, &mut stack, &mut vars, ip)?;
       }
       Instructions::Gt(_)
       | Instructions::Lt(_)
@@ -98,10 +107,10 @@ pub fn execute(
       | Instructions::Le(_)
       | Instructions::Eq(_)
       | Instructions::Neq(_) => {
-        comparison_dispatch(instr, &mut stack, ip).map_err(|e| e.format())?;
+        comparison_dispatch(instr, &mut stack, ip)?;
       }
       Instructions::And | Instructions::Or | Instructions::Xor | Instructions::Not => {
-        logic_dispatch(instr, &mut stack, ip).map_err(|e| e.format())?;
+        logic_dispatch(instr, &mut stack, ip)?;
       }
       Instructions::IfFalse(_)
       | Instructions::Jump(_)
@@ -134,7 +143,7 @@ pub fn execute(
       | Instructions::InspectObj
       | Instructions::InspectArr
       | Instructions::ClearScreen => {
-        io_dispatch(instr, &mut stack, ip).map_err(|e| e.format())?;
+        io_dispatch(instr, &mut stack, ip)?;
       }
       Instructions::MakeObj(_)
       | Instructions::MakeArray(_)
@@ -142,7 +151,7 @@ pub fn execute(
       | Instructions::Access(_)
       | Instructions::SetProp(_)
       | Instructions::Shrink => {
-        collections_dispatch(instr, &mut stack, ip).map_err(|e| e.format())?;
+        collections_dispatch(instr, &mut stack, ip)?;
       }
       Instructions::ToString
       | Instructions::ToShort
@@ -152,11 +161,9 @@ pub fn execute(
       | Instructions::ToHalf
       | Instructions::ToFloat
       | Instructions::ToDouble => {
-        conversions_dispatch(instr, &mut stack, ip).map_err(|e| e.format())?;
+        conversions_dispatch(instr, &mut stack, ip)?;
       }
-      Instructions::TypeOf | Instructions::Length => {
-        metadata_dispatch(instr, &mut stack, ip).map_err(|e| e.format())?
-      }
+      Instructions::TypeOf | Instructions::Length => metadata_dispatch(instr, &mut stack, ip)?,
       Instructions::Nop
       | Instructions::Export(_)
       | Instructions::Val(_)
