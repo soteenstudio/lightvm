@@ -9,13 +9,4 @@
  */
 
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
-use smallvec::SmallVec;
-pub fn swap_func(stack: &mut SmallVec<[Value; 16]>, ip: usize) -> Result<(), VMError> {
-  let len = stack.len();
-  if len < 2 {
-    return Err(VMError::StackUnderflow { ip, opcode: "SWAP" });
-  }
-  stack.swap(len - 1, len - 2);
-  Ok(())
-}
+pub type VarStack = Vec<Value>;

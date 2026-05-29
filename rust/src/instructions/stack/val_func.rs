@@ -8,12 +8,12 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::types::value::Value;
+use crate::types::{value::Value, var_stack::VarStack};
 use crate::utils::vmerror::VMError;
 use smol_str::SmolStr;
 const MAX_VARIABLES: usize = 4096;
 #[inline]
-pub fn val_func(vars: &mut Vec<Value>, index: usize, ip: usize) -> Result<(), VMError> {
+pub fn val_func(vars: &mut VarStack, index: usize, ip: usize) -> Result<(), VMError> {
   if index >= MAX_VARIABLES {
     return Err(VMError::StackOverflow {
       ip,
@@ -23,8 +23,11 @@ pub fn val_func(vars: &mut Vec<Value>, index: usize, ip: usize) -> Result<(), VM
   if index >= vars.len() {
     vars.resize(index + 1, Value::Undefined);
   }
-  if vars[index] == Value::Undefined {
-    vars[index] = Value::Marker(SmolStr::new("NoInitExpression"));
+  unsafe {
+    let var_ref = vars.get_unchecked_mut(index);
+    if *var_ref == Value::Undefined {
+      *var_ref = Value::Marker(SmolStr::new("NoInitExpression"));
+    }
   }
   Ok(())
 }

@@ -11,7 +11,6 @@
 use crate::types::{instructions::Instructions, value::Value};
 use ahash::AHashMap;
 use smol_str::SmolStr;
-#[inline]
 #[cold]
 pub fn resolve_symbols(
   bytecode: &mut [Instructions],

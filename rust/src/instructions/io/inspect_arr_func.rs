@@ -10,10 +10,11 @@
 
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
+use smallvec::SmallVec;
 use smol_str::SmolStr;
 use std::fmt::Write;
 #[inline]
-pub fn inspect_arr_func(stack: &mut [Value], ip: usize) -> Result<(), VMError> {
+pub fn inspect_arr_func(stack: &mut SmallVec<[Value; 16]>, ip: usize) -> Result<(), VMError> {
   if let Some(top) = stack.last_mut() {
     if let Value::Array(arr) = top {
       let mut result = String::with_capacity(arr.len() * 10 + 2);

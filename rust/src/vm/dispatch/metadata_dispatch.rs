@@ -11,12 +11,13 @@
 use crate::instructions::metadata::{length_func::length_func, typeof_func::typeof_func};
 use crate::types::{instructions::Instructions, value::Value};
 use crate::utils::vmerror::VMError;
+use smallvec::SmallVec;
+#[inline(always)]
 pub fn metadata_dispatch(
   instr: &Instructions,
-  stack: &mut [Value],
+  stack: &mut SmallVec<[Value; 16]>,
   ip: usize,
 ) -> Result<(), VMError> {
-  println!("Jalan!");
   match instr {
     Instructions::TypeOf => typeof_func(stack, ip),
     Instructions::Length => length_func(stack, ip),

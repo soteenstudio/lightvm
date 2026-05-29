@@ -10,9 +10,14 @@
 
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
+use smallvec::SmallVec;
 use std::sync::Arc;
 #[inline]
-pub fn make_array_func(stack: &mut Vec<Value>, count: u32, ip: usize) -> Result<(), VMError> {
+pub fn make_array_func(
+  stack: &mut SmallVec<[Value; 16]>,
+  count: u32,
+  ip: usize,
+) -> Result<(), VMError> {
   let count = count as usize;
   if stack.len() < count {
     return Err(VMError::StackUnderflow {

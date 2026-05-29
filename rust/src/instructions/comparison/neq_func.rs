@@ -12,6 +12,7 @@ use super::eq_func::eq_values;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
+use smallvec::SmallVec;
 #[inline(always)]
 pub fn neq_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   let is_equal = eq_values(a, b, num_type);
@@ -23,7 +24,7 @@ pub fn neq_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
 }
 #[inline]
 pub fn neq_func(
-  stack: &mut Vec<Value>,
+  stack: &mut SmallVec<[Value; 16]>,
   num_type: PrimitiveTypes,
   ip: usize,
 ) -> Result<(), VMError> {

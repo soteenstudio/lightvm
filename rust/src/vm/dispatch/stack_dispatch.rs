@@ -11,27 +11,31 @@
 use crate::instructions::stack::{
   concat_func::concat_func, dup_func::dup_func, get_func::get_func, import_func::import_func,
   push_array_func::push_array_func, push_f16_func::push_f16_func, push_f32_func::push_f32_func,
-  push_f64_func::push_f64_func, push_func::push_func, push_i128_func::push_i128_func,
-  push_i16_func::push_i16_func, push_i32_func::push_i32_func, push_i64_func::push_i64_func,
+  push_f64_func::push_f64_func, push_func::push_func, push_i16_func::push_i16_func,
+  push_i32_func::push_i32_func, push_i64_func::push_i64_func, push_i128_func::push_i128_func,
   push_object_func::push_object_func, push_string_func::push_string_func, set_func::set_func,
   swap_func::swap_func, truncate_func::truncate_func, val_func::val_func,
 };
 use crate::types::{
   instructions::Instructions,
   value::{RunOptions, Value},
+  var_stack::VarStack,
 };
 use crate::utils::vmerror::VMError;
+use smallvec::SmallVec;
+#[inline(always)]
 pub fn stack_dispatch(
   instr: &Instructions,
-  stack: &mut Vec<Value>,
-  vars: &mut Vec<Value>,
+  stack: &mut SmallVec<[Value; 16]>,
+  vars: &mut VarStack,
   options: &Option<RunOptions>,
   ip: usize,
 ) -> Result<(), VMError> {
   match instr {
     Instructions::InitStack(size) => {
       if ip == 0 {
-        *stack = Vec::with_capacity(*size as usize);
+        stack.clear();
+        stack.reserve(*size as usize);
       }
       Ok(())
     }

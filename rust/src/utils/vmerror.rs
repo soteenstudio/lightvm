@@ -29,6 +29,7 @@ pub enum VMError {
   OutOfBounds { ip: usize, index: usize, len: usize },
 }
 impl fmt::Display for VMError {
+  #[cold]
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     let red = "\x1b[31;1m";
     let yellow = "\x1b[33m";
@@ -41,17 +42,36 @@ impl fmt::Display for VMError {
       self.error_code()
     )?;
     match self {
-    VMError::StackOverflow { ip, limit } =>
-      write!(f, "Stack limit reached (limit: {}) at [IP: {}]. Potential infinite recursion or unoptimized InitStack.", limit, ip),
-    VMError::StackUnderflow { ip, opcode } =>
-      write!(f, "Attempted to pop from an empty stack during '{}' instruction at [IP: {}].", opcode, ip),
-    VMError::InvalidOpcode { ip, code } =>
-      write!(f, "Illegal instruction '{}' encountered at [IP: {}]. Bytecode may be corrupted.", code, ip),
-    VMError::TypeMismatch { ip, expected, found } =>
-      write!(f, "Type mismatch at [IP: {}]. Expected type '{}', but found '{}'.", ip, expected, found),
-    VMError::OutOfBounds { ip, index, len } =>
-      write!(f, "Index out of bounds at [IP: {}]. Accessing index {} on a collection of length {}.", ip, index, len),
-    VMError::SystemError(s) => write!(f, "{}", s)
+      VMError::StackOverflow { ip, limit } => write!(
+        f,
+        "Stack limit reached (limit: {}) at [IP: {}]. Potential infinite recursion or unoptimized InitStack.",
+        limit, ip
+      ),
+      VMError::StackUnderflow { ip, opcode } => write!(
+        f,
+        "Attempted to pop from an empty stack during '{}' instruction at [IP: {}].",
+        opcode, ip
+      ),
+      VMError::InvalidOpcode { ip, code } => write!(
+        f,
+        "Illegal instruction '{}' encountered at [IP: {}]. Bytecode may be corrupted.",
+        code, ip
+      ),
+      VMError::TypeMismatch {
+        ip,
+        expected,
+        found,
+      } => write!(
+        f,
+        "Type mismatch at [IP: {}]. Expected type '{}', but found '{}'.",
+        ip, expected, found
+      ),
+      VMError::OutOfBounds { ip, index, len } => write!(
+        f,
+        "Index out of bounds at [IP: {}]. Accessing index {} on a collection of length {}.",
+        ip, index, len
+      ),
+      VMError::SystemError(s) => write!(f, "{}", s),
     }?;
     let ip = match self {
       VMError::SystemError(_) => 0,
@@ -77,6 +97,7 @@ impl From<VMError> for SmolStr {
 }
 impl VMError {
   /// Mengembalikan kode error unik untuk dokumentasi (misal: LVM001)
+  #[cold]
   fn error_code(&self) -> &'static str {
     match self {
       VMError::StackOverflow { .. } => "LVM001",

@@ -9,11 +9,12 @@
  */
 
 use crate::instructions::math::neg::{
-  neg_f16in::neg_f16in, neg_f32in::neg_f32in, neg_f64in::neg_f64in, neg_i128in::neg_i128in,
-  neg_i16in::neg_i16in, neg_i32in::neg_i32in, neg_i64in::neg_i64in,
+  neg_f16in::neg_f16in, neg_f32in::neg_f32in, neg_f64in::neg_f64in, neg_i16in::neg_i16in,
+  neg_i32in::neg_i32in, neg_i64in::neg_i64in, neg_i128in::neg_i128in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
 use crate::utils::vmerror::VMError;
+use smallvec::SmallVec;
 #[inline(always)]
 pub fn neg_values(a: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
@@ -28,7 +29,11 @@ pub fn neg_values(a: Value, num_type: PrimitiveTypes) -> Value {
   }
 }
 #[inline]
-pub fn neg_func(stack: &mut [Value], num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
+pub fn neg_func(
+  stack: &mut SmallVec<[Value; 16]>,
+  num_type: PrimitiveTypes,
+  ip: usize,
+) -> Result<(), VMError> {
   let a_ref = stack
     .last_mut()
     .ok_or(VMError::StackUnderflow { ip, opcode: "NEG" })?;

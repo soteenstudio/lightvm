@@ -13,9 +13,11 @@ use crate::instructions::logic::{
 };
 use crate::types::{instructions::Instructions, value::Value};
 use crate::utils::vmerror::VMError;
+use smallvec::SmallVec;
+#[inline(always)]
 pub fn logic_dispatch(
   instr: &Instructions,
-  stack: &mut Vec<Value>,
+  stack: &mut SmallVec<[Value; 16]>,
   ip: usize,
 ) -> Result<(), VMError> {
   match instr {

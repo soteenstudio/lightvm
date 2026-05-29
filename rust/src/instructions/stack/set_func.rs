@@ -8,12 +8,13 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::types::value::Value;
+use crate::types::{value::Value, var_stack::VarStack};
 use crate::utils::vmerror::VMError;
+use smallvec::SmallVec;
 #[inline]
 pub fn set_func(
-  stack: &mut Vec<Value>,
-  vars: &mut Vec<Value>,
+  stack: &mut SmallVec<[Value; 16]>,
+  vars: &mut VarStack,
   index: usize,
   ip: usize,
 ) -> Result<(), VMError> {
@@ -23,6 +24,8 @@ pub fn set_func(
   if index >= vars.len() {
     vars.resize(index + 1, Value::Undefined);
   }
-  vars[index] = val;
+  unsafe {
+    *vars.get_unchecked_mut(index) = val;
+  }
   Ok(())
 }

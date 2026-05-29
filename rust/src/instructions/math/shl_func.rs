@@ -9,10 +9,11 @@
  */
 
 use crate::instructions::math::shl::{
-  shl_i128in::shl_i128in, shl_i16in::shl_i16in, shl_i32in::shl_i32in, shl_i64in::shl_i64in,
+  shl_i16in::shl_i16in, shl_i32in::shl_i32in, shl_i64in::shl_i64in, shl_i128in::shl_i128in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
 use crate::utils::vmerror::VMError;
+use smallvec::SmallVec;
 #[inline(always)]
 pub fn shl_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
@@ -25,7 +26,7 @@ pub fn shl_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
 }
 #[inline]
 pub fn shl_func(
-  stack: &mut Vec<Value>,
+  stack: &mut SmallVec<[Value; 16]>,
   num_type: PrimitiveTypes,
   ip: usize,
 ) -> Result<(), VMError> {

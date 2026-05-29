@@ -9,9 +9,10 @@
  */
 
 use crate::types::value::Value;
+use smallvec::SmallVec;
 #[inline(always)]
 pub fn return_func(
-  stack: &mut Vec<Value>,
+  stack: &mut SmallVec<[Value; 16]>,
   call_stack: &mut Vec<usize>,
   ip: &mut usize,
   last_return: &mut Value,

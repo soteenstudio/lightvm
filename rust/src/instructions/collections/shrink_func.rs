@@ -10,10 +10,11 @@
 
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
+use smallvec::SmallVec;
 use smol_str::SmolStr;
 use std::sync::Arc;
 #[inline(always)]
-pub fn shrink_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
+pub fn shrink_func(stack: &mut SmallVec<[Value; 16]>, ip: usize) -> Result<(), VMError> {
   let len_val = stack.pop().ok_or(VMError::StackUnderflow {
     ip,
     opcode: "SHRINK (length)",
@@ -28,7 +29,7 @@ pub fn shrink_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
         ip,
         expected: "Integer (Length)",
         found: "Non-Integer Length",
-      })
+      });
     }
   };
   if let Some(target) = stack.last_mut() {

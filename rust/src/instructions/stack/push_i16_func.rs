@@ -10,8 +10,13 @@
 
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
+use smallvec::SmallVec;
 #[inline(always)]
-pub fn push_i16_func(stack: &mut Vec<Value>, val: &i16, ip: usize) -> Result<(), VMError> {
+pub fn push_i16_func(
+  stack: &mut SmallVec<[Value; 16]>,
+  val: &i16,
+  ip: usize,
+) -> Result<(), VMError> {
   if stack.len() == stack.capacity() {
     return Err(VMError::StackOverflow {
       ip,

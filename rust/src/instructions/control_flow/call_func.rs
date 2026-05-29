@@ -11,6 +11,7 @@
 use crate::types::value::{FuncMetadata, Value};
 use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
+use smallvec::SmallVec;
 use smol_str::SmolStr;
 #[inline]
 #[allow(clippy::too_many_arguments)]
@@ -18,7 +19,7 @@ pub fn call_func(
   name: &SmolStr,
   argc: u32,
   ip: &mut usize,
-  stack: &mut Vec<Value>,
+  stack: &mut SmallVec<[Value; 16]>,
   call_stack: &mut Vec<usize>,
   vars: &mut [Value],
   functions: &AHashMap<SmolStr, FuncMetadata>,

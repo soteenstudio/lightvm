@@ -19,7 +19,13 @@ use crate::instructions::io::{
 };
 use crate::types::{instructions::Instructions, value::Value};
 use crate::utils::vmerror::VMError;
-pub fn io_dispatch(instr: &Instructions, stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
+use smallvec::SmallVec;
+#[inline(always)]
+pub fn io_dispatch(
+  instr: &Instructions,
+  stack: &mut SmallVec<[Value; 16]>,
+  ip: usize,
+) -> Result<(), VMError> {
   match instr {
     Instructions::Print => print_func(stack, ip),
     Instructions::Println => println_func(stack, ip),

@@ -8,21 +8,18 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::types::value::Value;
+use crate::types::{value::Value, var_stack::VarStack};
 use crate::utils::vmerror::VMError;
+use smallvec::SmallVec;
 #[allow(clippy::ptr_arg)]
 #[inline]
 pub fn get_func(
-  stack: &mut Vec<Value>,
-  vars: &mut Vec<Value>,
+  stack: &mut SmallVec<[Value; 16]>,
+  vars: &mut VarStack,
   index: usize,
   ip: usize,
 ) -> Result<(), VMError> {
-  let val = vars.get(index).cloned().ok_or(VMError::OutOfBounds {
-    ip,
-    index,
-    len: vars.len(),
-  })?;
+  let val = unsafe { vars.get_unchecked(index) }.clone();
   if stack.len() == stack.capacity() {
     return Err(VMError::StackOverflow {
       ip,

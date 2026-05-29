@@ -17,15 +17,18 @@ use crate::types::{
   control_flow_signal::ControlFlowSignal,
   instructions::Instructions,
   value::{FuncMetadata, Value},
+  var_stack::VarStack,
 };
 use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
+use smallvec::SmallVec;
 use smol_str::SmolStr;
+#[inline(always)]
 #[allow(clippy::too_many_arguments)]
 pub fn control_flow_dispatch(
   instr: &Instructions,
-  stack: &mut Vec<Value>,
-  vars: &mut Vec<Value>,
+  stack: &mut SmallVec<[Value; 16]>,
+  vars: &mut VarStack,
   call_stack: &mut Vec<usize>,
   last_return: &mut Value,
   functions: &AHashMap<SmolStr, FuncMetadata>,

@@ -10,8 +10,9 @@
 
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
+use smallvec::SmallVec;
 #[inline(always)]
-pub fn truncate_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
+pub fn truncate_func(stack: &mut SmallVec<[Value; 16]>, ip: usize) -> Result<(), VMError> {
   let val = stack.pop().ok_or(VMError::StackUnderflow {
     ip,
     opcode: "TRUNCATE",
@@ -25,7 +26,7 @@ pub fn truncate_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
         ip,
         expected: "Integer",
         found: "Unknown",
-      })
+      });
     }
   };
   if target_size <= stack.len() {

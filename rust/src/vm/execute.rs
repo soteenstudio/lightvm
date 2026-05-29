@@ -22,16 +22,17 @@ use crate::vm::dispatch::{
 };
 use crate::vm::{
   inject_args::inject_args, prepare_vm::prepare_vm, validate_bytecode::validate_bytecode,
+  validate_vars::validate_vars,
 };
 use ahash::AHashMap;
+use smallvec::SmallVec;
 use smol_str::SmolStr;
-#[inline(never)]
 pub fn execute(
   mut bytecode: Vec<Instructions>,
   options: Option<RunOptions>,
 ) -> Result<Value, SmolStr> {
   let mut last_return = Value::Undefined;
-  let mut stack: Vec<Value> = Vec::with_capacity(16);
+  let mut stack: SmallVec<[Value; 16]> = SmallVec::new();
   let empty_map: AHashMap<SmolStr, Value> = AHashMap::new();
   let imports = options.as_ref().map(|o| &o.imports).unwrap_or(&empty_map);
   let (var_count, symbol_table) = resolve_symbols(&mut bytecode, imports);
@@ -43,18 +44,20 @@ pub fn execute(
   }
   let mut _call_stack: Vec<usize> = Vec::new();
   let (functions, _exported, mut ip) = prepare_vm(&bytecode, &options);
+  validate_vars(&bytecode, var_count)?;
   validate_bytecode(&bytecode, &functions)?;
   inject_args(&mut vars, &functions, &options, ip);
   let bytecode_ptr = bytecode.as_ptr();
   let bytecode_len = bytecode.len();
   while ip < bytecode_len {
+    unsafe { std::hint::assert_unchecked(ip < bytecode_len) }
     debug_assert!(
       ip < bytecode_len,
       "IP out of bounds! IP: {}, Len: {}",
       ip,
       bytecode_len
     );
-    let instr = unsafe { bytecode.get_unchecked(ip) };
+    let instr = unsafe { &*bytecode_ptr.add(ip) };
     match instr {
       Instructions::InitStack(_)
       | Instructions::PushInt16(_)

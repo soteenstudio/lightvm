@@ -10,12 +10,13 @@
 
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
+use smallvec::SmallVec;
 #[inline(always)]
 pub fn and_values(a: Value, b: Value) -> Value {
   Value::Bool(a.is_truthy() && b.is_truthy())
 }
 #[inline]
-pub fn and_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
+pub fn and_func(stack: &mut SmallVec<[Value; 16]>, ip: usize) -> Result<(), VMError> {
   let b = stack
     .pop()
     .ok_or(VMError::StackUnderflow { ip, opcode: "AND" })?;

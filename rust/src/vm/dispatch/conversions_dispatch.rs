@@ -15,9 +15,11 @@ use crate::instructions::conversion::{
 };
 use crate::types::{instructions::Instructions, value::Value};
 use crate::utils::vmerror::VMError;
+use smallvec::SmallVec;
+#[inline(always)]
 pub fn conversions_dispatch(
   instr: &Instructions,
-  stack: &mut [Value],
+  stack: &mut SmallVec<[Value; 16]>,
   ip: usize,
 ) -> Result<(), VMError> {
   match instr {

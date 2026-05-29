@@ -9,11 +9,12 @@
  */
 
 use crate::instructions::math::add::{
-  add_f16in::add_f16in, add_f32in::add_f32in, add_f64in::add_f64in, add_i128in::add_i128in,
-  add_i16in::add_i16in, add_i32in::add_i32in, add_i64in::add_i64in,
+  add_f16in::add_f16in, add_f32in::add_f32in, add_f64in::add_f64in, add_i16in::add_i16in,
+  add_i32in::add_i32in, add_i64in::add_i64in, add_i128in::add_i128in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
 use crate::utils::vmerror::VMError;
+use smallvec::SmallVec;
 #[inline(always)]
 pub fn add_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
@@ -29,7 +30,7 @@ pub fn add_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
 }
 #[inline]
 pub fn add_func(
-  stack: &mut Vec<Value>,
+  stack: &mut SmallVec<[Value; 16]>,
   num_type: PrimitiveTypes,
   ip: usize,
 ) -> Result<(), VMError> {

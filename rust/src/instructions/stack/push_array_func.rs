@@ -10,10 +10,11 @@
 
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
+use smallvec::SmallVec;
 use std::sync::Arc;
 #[inline(always)]
 pub fn push_array_func(
-  stack: &mut Vec<Value>,
+  stack: &mut SmallVec<[Value; 16]>,
   val: &Arc<Vec<Value>>,
   ip: usize,
 ) -> Result<(), VMError> {

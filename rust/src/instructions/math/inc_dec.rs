@@ -9,20 +9,21 @@
  */
 
 use crate::instructions::math::add::{
-  add_f16in::add_f16in, add_f32in::add_f32in, add_f64in::add_f64in, add_i128in::add_i128in,
-  add_i16in::add_i16in, add_i32in::add_i32in, add_i64in::add_i64in,
+  add_f16in::add_f16in, add_f32in::add_f32in, add_f64in::add_f64in, add_i16in::add_i16in,
+  add_i32in::add_i32in, add_i64in::add_i64in, add_i128in::add_i128in,
 };
 use crate::instructions::math::sub::{
-  sub_f16in::sub_f16in, sub_f32in::sub_f32in, sub_f64in::sub_f64in, sub_i128in::sub_i128in,
-  sub_i16in::sub_i16in, sub_i32in::sub_i32in, sub_i64in::sub_i64in,
+  sub_f16in::sub_f16in, sub_f32in::sub_f32in, sub_f64in::sub_f64in, sub_i16in::sub_i16in,
+  sub_i32in::sub_i32in, sub_i64in::sub_i64in, sub_i128in::sub_i128in,
 };
-use crate::types::{primitive_types::PrimitiveTypes, value::Value};
+use crate::types::{primitive_types::PrimitiveTypes, value::Value, var_stack::VarStack};
 use crate::utils::vmerror::VMError;
 use half::f16;
+use smallvec::SmallVec;
 #[inline]
 pub fn inc_func(
-  vars: &mut Vec<Value>,
-  stack: &mut Vec<Value>,
+  vars: &mut VarStack,
+  stack: &mut SmallVec<[Value; 16]>,
   index: usize,
   num_type: PrimitiveTypes,
   ip: usize,
@@ -30,7 +31,7 @@ pub fn inc_func(
   while vars.len() <= index {
     vars.push(Value::Undefined);
   }
-  let var_ref = &mut vars[index];
+  let var_ref = unsafe { vars.get_unchecked_mut(index) };
   if !var_ref.is_number() {
     return Err(VMError::TypeMismatch {
       ip,
@@ -54,32 +55,28 @@ pub fn inc_func(
 }
 #[inline]
 pub fn dec_func(
-  vars: &mut Vec<Value>,
+  vars: &mut VarStack,
   index: usize,
   num_type: PrimitiveTypes,
   ip: usize,
 ) -> Result<(), VMError> {
-  if let Some(var_ref) = vars.get_mut(index) {
-    if !var_ref.is_number() {
-      return Err(VMError::TypeMismatch {
-        ip,
-        expected: "Number",
-        found: "Non-Number/Undefined",
-      });
-    }
-    *var_ref = match num_type {
-      PrimitiveTypes::Sht => Value::Int16(sub_i16in(var_ref.as_i16(), 1)),
-      PrimitiveTypes::Int => Value::Int32(sub_i32in(var_ref.as_i32(), 1)),
-      PrimitiveTypes::Lng => Value::Int64(sub_i64in(var_ref.as_i64(), 1)),
-      PrimitiveTypes::Oct => Value::Int128(sub_i128in(var_ref.as_i128(), 1)),
-      PrimitiveTypes::Hlf => Value::Float16(sub_f16in(var_ref.as_f16(), f16::ONE)),
-      PrimitiveTypes::Flt => Value::Float32(sub_f32in(var_ref.as_f32(), 1.0)),
-      PrimitiveTypes::Dbl => Value::Float64(sub_f64in(var_ref.as_f64(), 1.0)),
-      _ => Value::Int32(sub_i32in(var_ref.as_i32(), 1)),
-    };
-    Ok(())
-  } else {
-    vars.resize(index + 1, Value::Int32(-1));
-    Ok(())
+  let var_ref = unsafe { vars.get_unchecked_mut(index) };
+  if !var_ref.is_number() {
+    return Err(VMError::TypeMismatch {
+      ip,
+      expected: "Number",
+      found: "Non-Number/Undefined",
+    });
   }
+  *var_ref = match num_type {
+    PrimitiveTypes::Sht => Value::Int16(sub_i16in(var_ref.as_i16(), 1)),
+    PrimitiveTypes::Int => Value::Int32(sub_i32in(var_ref.as_i32(), 1)),
+    PrimitiveTypes::Lng => Value::Int64(sub_i64in(var_ref.as_i64(), 1)),
+    PrimitiveTypes::Oct => Value::Int128(sub_i128in(var_ref.as_i128(), 1)),
+    PrimitiveTypes::Hlf => Value::Float16(sub_f16in(var_ref.as_f16(), f16::ONE)),
+    PrimitiveTypes::Flt => Value::Float32(sub_f32in(var_ref.as_f32(), 1.0)),
+    PrimitiveTypes::Dbl => Value::Float64(sub_f64in(var_ref.as_f64(), 1.0)),
+    _ => Value::Int32(sub_i32in(var_ref.as_i32(), 1)),
+  };
+  Ok(())
 }

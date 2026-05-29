@@ -10,9 +10,14 @@
 
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
+use smallvec::SmallVec;
 use smol_str::SmolStr;
 #[inline(always)]
-pub fn push_string_func(stack: &mut Vec<Value>, val: &SmolStr, ip: usize) -> Result<(), VMError> {
+pub fn push_string_func(
+  stack: &mut SmallVec<[Value; 16]>,
+  val: &SmolStr,
+  ip: usize,
+) -> Result<(), VMError> {
   if stack.len() == stack.capacity() {
     return Err(VMError::StackOverflow {
       ip,

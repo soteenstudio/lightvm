@@ -10,9 +10,10 @@
 
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
+use smallvec::SmallVec;
 use std::io::{self, Write};
 #[inline(always)]
-pub fn stdout_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
+pub fn stdout_func(stack: &mut SmallVec<[Value; 16]>, ip: usize) -> Result<(), VMError> {
   let val = stack.pop().ok_or(VMError::StackUnderflow {
     ip,
     opcode: "STDOUT",
@@ -41,7 +42,7 @@ pub fn stdout_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
   }
 }
 #[inline(always)]
-pub fn stdoutln_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
+pub fn stdoutln_func(stack: &mut SmallVec<[Value; 16]>, ip: usize) -> Result<(), VMError> {
   let val = stack.pop().ok_or(VMError::StackUnderflow {
     ip,
     opcode: "STDOUTLN",

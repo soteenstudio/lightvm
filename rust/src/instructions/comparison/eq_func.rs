@@ -14,6 +14,7 @@ use crate::instructions::comparison::eq::{
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
 use crate::utils::vmerror::VMError;
+use smallvec::SmallVec;
 #[inline(always)]
 pub fn eq_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
@@ -28,7 +29,11 @@ pub fn eq_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   }
 }
 #[inline]
-pub fn eq_func(stack: &mut Vec<Value>, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
+pub fn eq_func(
+  stack: &mut SmallVec<[Value; 16]>,
+  num_type: PrimitiveTypes,
+  ip: usize,
+) -> Result<(), VMError> {
   let b = stack
     .pop()
     .ok_or(VMError::StackUnderflow { ip, opcode: "EQ" })?;

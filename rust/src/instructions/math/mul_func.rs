@@ -9,11 +9,12 @@
  */
 
 use crate::instructions::math::mul::{
-  mul_f16in::mul_f16in, mul_f32in::mul_f32in, mul_f64in::mul_f64in, mul_i128in::mul_i128in,
-  mul_i16in::mul_i16in, mul_i32in::mul_i32in, mul_i64in::mul_i64in,
+  mul_f16in::mul_f16in, mul_f32in::mul_f32in, mul_f64in::mul_f64in, mul_i16in::mul_i16in,
+  mul_i32in::mul_i32in, mul_i64in::mul_i64in, mul_i128in::mul_i128in,
 };
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
 use crate::utils::vmerror::VMError;
+use smallvec::SmallVec;
 #[inline(always)]
 pub fn mul_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
@@ -29,7 +30,7 @@ pub fn mul_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
 }
 #[inline]
 pub fn mul_func(
-  stack: &mut Vec<Value>,
+  stack: &mut SmallVec<[Value; 16]>,
   num_type: PrimitiveTypes,
   ip: usize,
 ) -> Result<(), VMError> {

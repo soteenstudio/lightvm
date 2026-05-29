@@ -10,16 +10,21 @@
 
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
+use smallvec::SmallVec;
 use smol_str::SmolStr;
 use std::sync::Arc;
 #[inline]
-pub fn set_prop_func(stack: &mut Vec<Value>, prop: &SmolStr, ip: usize) -> Result<(), VMError> {
+pub fn set_prop_func(
+  stack: &mut SmallVec<[Value; 16]>,
+  prop: &SmolStr,
+  ip: usize,
+) -> Result<(), VMError> {
   let val = stack.pop().ok_or(VMError::StackUnderflow {
     ip,
     opcode: "SET_PROP (value)",
   })?;
   if let Some(top) = stack.last_mut() {
-    if let Value::Object(ref mut map_arc) = top {
+    if let Value::Object(map_arc) = top {
       let map = Arc::make_mut(map_arc);
       map.insert(prop.clone(), val);
       Ok(())

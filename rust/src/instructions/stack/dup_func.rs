@@ -10,7 +10,8 @@
 
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
-pub fn dup_func(stack: &mut Vec<Value>, ip: usize) -> Result<(), VMError> {
+use smallvec::SmallVec;
+pub fn dup_func(stack: &mut SmallVec<[Value; 16]>, ip: usize) -> Result<(), VMError> {
   let top = stack
     .last()
     .ok_or(VMError::StackUnderflow { ip, opcode: "DUP" })?;
