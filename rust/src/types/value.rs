@@ -14,25 +14,32 @@ use half::f16;
 use serde::{Deserialize, Serialize};
 use smol_str::SmolStr;
 use std::sync::Arc;
+use ts_rs::TS;
 #[repr(u8, align(32))]
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default, TS)]
 #[serde(untagged)]
+#[ts(export)]
 pub enum Value {
   Int16(i16),
   Int32(i32),
   Int64(i64),
+  #[ts(type = "number")]
   Int128(i128),
+  #[ts(type = "number")]
   Float16(f16),
   Float32(f32),
   Float64(f64),
+  #[ts(type = "string")]
   String(SmolStr),
   Array(Arc<Vec<Value>>),
+  #[ts(type = "Record<string, Value>")]
   Object(Arc<AHashMap<SmolStr, Value>>),
   Bool(bool),
   Null,
   #[default]
   Undefined,
   NaN,
+  #[ts(type = "string")]
   Marker(SmolStr),
 }
 #[derive(Clone, Debug)]

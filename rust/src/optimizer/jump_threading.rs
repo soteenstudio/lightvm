@@ -16,19 +16,18 @@ pub fn jump_threading(bytecode: &mut [Instructions]) {
     changed = false;
     for i in 0..bytecode.len() {
       if let Instructions::Jump(target) = bytecode[i] {
-        if let Some(final_target) = find_final_target(bytecode, target) {
-          if final_target != target {
-            bytecode[i] = Instructions::Jump(final_target);
-            changed = true;
-          }
+        if let Some(final_target) = find_final_target(bytecode, target)
+          && final_target != target
+        {
+          bytecode[i] = Instructions::Jump(final_target);
+          changed = true;
         }
-      } else if let Instructions::IfFalse(target) = bytecode[i] {
-        if let Some(final_target) = find_final_target(bytecode, target) {
-          if final_target != target {
-            bytecode[i] = Instructions::IfFalse(final_target);
-            changed = true;
-          }
-        }
+      } else if let Instructions::IfFalse(target) = bytecode[i]
+        && let Some(final_target) = find_final_target(bytecode, target)
+        && final_target != target
+      {
+        bytecode[i] = Instructions::IfFalse(final_target);
+        changed = true;
       }
     }
   }

@@ -37,7 +37,7 @@ pub fn control_flow_dispatch(
 ) -> Result<ControlFlowSignal, VMError> {
   match instr {
     Instructions::IfFalse(target_ip) => {
-      let cond = if_false_func(stack, *ip).map_err(|e| e)?;
+      let cond = if_false_func(stack, *ip)?;
       if cond {
         *ip = *target_ip;
         return Ok(ControlFlowSignal::Continue);
@@ -65,8 +65,7 @@ pub fn control_flow_dispatch(
         vars,
         functions,
         symbol_table,
-      )
-      .map_err(|e| e)?;
+      )?;
       Ok(ControlFlowSignal::Continue)
     }
     Instructions::Stop => {
@@ -77,7 +76,7 @@ pub fn control_flow_dispatch(
       }
     }
     Instructions::Instantiate(class_name, argc) => {
-      let instance = instantiate_func(stack, vars, class_name, *argc, *ip).map_err(|e| e)?;
+      let instance = instantiate_func(stack, vars, class_name, *argc, *ip)?;
       stack.push(instance);
       Ok(ControlFlowSignal::None)
     }

@@ -9,8 +9,10 @@
  */
 
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 #[repr(u8)]
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, TS)]
+#[ts(export)]
 pub enum PrimitiveTypes {
   Sht,
   Int,

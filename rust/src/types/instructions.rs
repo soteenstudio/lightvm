@@ -16,30 +16,40 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use smol_str::SmolStr;
 use std::sync::Arc;
-#[derive(Debug, Clone, Serialize, Deserialize)]
+use ts_rs::TS;
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case")]
 #[repr(u16)]
+#[ts(export)]
 pub enum Instructions {
   InitStack(u32),
   PushInt16(i16),
   PushInt32(i32),
   PushInt64(i64),
+  #[ts(type = "number")]
   PushInt128(i128),
+  #[ts(type = "number")]
   PushFloat16(f16),
   PushFloat32(f32),
   PushFloat64(f64),
+  #[ts(type = "string")]
   PushString(SmolStr),
+  #[ts(type = "any[]")]
   PushArray(Arc<Vec<Value>>),
+  #[ts(type = "Record<string, Value>")]
   PushObject(Arc<AHashMap<SmolStr, Value>>),
   PushBool(bool),
   PushNull,
   PushUndefined,
   PushNaN,
   Push(Value),
+  #[ts(type = "string")]
   Val(SmolStr),
   ValIdx(usize),
+  #[ts(type = "string")]
   Set(SmolStr),
   SetIdx(usize),
+  #[ts(type = "string")]
   Get(SmolStr),
   GetIdx(usize),
   Add(PrimitiveTypes),
@@ -76,15 +86,20 @@ pub enum Instructions {
   ClearScreen,
   IfFalse(usize),
   Jump(usize),
+  #[ts(type = "[string, PrimitiveTypes]")]
   Inc(SmolStr, PrimitiveTypes),
   IncIdx(usize, PrimitiveTypes),
+  #[ts(type = "[string, PrimitiveTypes]")]
   Dec(SmolStr, PrimitiveTypes),
   DecIdx(usize, PrimitiveTypes),
+  #[ts(type = "[string, PrimitiveTypes]")]
   Call(SmolStr, u32),
+  #[ts(type = "[string, number, number, number, string[]")]
   Func(SmolStr, u32, usize, usize, Vec<SmolStr>),
   Stop,
   Return,
   Break(usize),
+  #[ts(type = "string")]
   Access(SmolStr),
   AccessIndex,
   ToString,
@@ -104,9 +119,13 @@ pub enum Instructions {
   Concat,
   Dup,
   Swap,
+  #[ts(type = "string")]
   SetProp(SmolStr),
+  #[ts(type = "[string, number]")]
   Import(SmolStr, usize),
+  #[ts(type = "string")]
   Export(SmolStr),
+  #[ts(type = "[string, number]")]
   Instantiate(SmolStr, u32),
   Nop,
   Truncate,
@@ -151,25 +170,25 @@ impl Instructions {
     if let Some(s) = json.as_str() {
       return vec![s.to_string()];
     }
-    if let Some(obj) = json.as_object() {
-      if let Some((key, val)) = obj.iter().next() {
-        let mut parts = vec![key.clone()];
-        match val {
-          JsonValue::Array(arr) => {
-            for v in arr {
-              if let Some(inner_arr) = v.as_array() {
-                for inner_v in inner_arr {
-                  parts.push(inner_v.as_str().unwrap_or("").replace("\"", ""));
-                }
-              } else {
-                parts.push(v.to_string().replace("\"", ""));
+    if let Some(obj) = json.as_object()
+      && let Some((key, val)) = obj.iter().next()
+    {
+      let mut parts = vec![key.clone()];
+      match val {
+        JsonValue::Array(arr) => {
+          for v in arr {
+            if let Some(inner_arr) = v.as_array() {
+              for inner_v in inner_arr {
+                parts.push(inner_v.as_str().unwrap_or("").replace("\"", ""));
               }
+            } else {
+              parts.push(v.to_string().replace("\"", ""));
             }
           }
-          _ => parts.push(val.to_string().replace("\"", "")),
         }
-        return parts;
+        _ => parts.push(val.to_string().replace("\"", "")),
       }
+      return parts;
     }
     vec!["Unknown".into()]
   }

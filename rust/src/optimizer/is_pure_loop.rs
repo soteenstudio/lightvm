@@ -12,8 +12,8 @@ use crate::types::instructions::Instructions;
 #[inline(always)]
 pub fn is_pure_loop(bytecode: &[Instructions], start: usize, end: usize) -> bool {
   for i in start..=end {
-    if let Some(inst) = bytecode.get(i) {
-      if matches!(
+    if let Some(inst) = bytecode.get(i)
+      && matches!(
         inst,
         Instructions::Print
           | Instructions::Println
@@ -27,9 +27,9 @@ pub fn is_pure_loop(bytecode: &[Instructions], start: usize, end: usize) -> bool
           | Instructions::IfFalse(..)
           | Instructions::Import(..)
           | Instructions::Instantiate(..)
-      ) {
-        return false;
-      }
+      )
+    {
+      return false;
     }
   }
   true

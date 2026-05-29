@@ -18,19 +18,18 @@ pub fn inject_args(
   options: &Option<RunOptions>,
   _current_ip: usize,
 ) {
-  if let Some(opts) = options {
-    if let Some(entry_ip) = opts.entry {
-      if let Some(fn_meta) = functions.values().find(|f| f.start == entry_ip) {
-        let params_to_fill = fn_meta.params_count as usize;
-        let target_vars = if params_to_fill < vars.len() {
-          &mut vars[..params_to_fill]
-        } else {
-          vars
-        };
-        for (i, slot) in target_vars.iter_mut().enumerate() {
-          *slot = opts.args.get(i).cloned().unwrap_or(Value::Undefined);
-        }
-      }
+  if let Some(opts) = options
+    && let Some(entry_ip) = opts.entry
+    && let Some(fn_meta) = functions.values().find(|f| f.start == entry_ip)
+  {
+    let params_to_fill = fn_meta.params_count as usize;
+    let target_vars = if params_to_fill < vars.len() {
+      &mut vars[..params_to_fill]
+    } else {
+      vars
+    };
+    for (i, slot) in target_vars.iter_mut().enumerate() {
+      *slot = opts.args.get(i).cloned().unwrap_or(Value::Undefined);
     }
   }
 }

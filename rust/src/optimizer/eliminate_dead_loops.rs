@@ -21,11 +21,11 @@ pub fn eliminate_dead_loops(bytecode: Vec<Instructions>) -> Vec<Instructions> {
       Instructions::Jump(target) | Instructions::IfFalse(target) if *target < i => {
         let loop_start = *target;
         let loop_end = i;
-        if is_pure_loop(&bytecode, loop_start, loop_end) {
-          if let Some(&out_start_index) = index_map.get(&loop_start) {
-            out.truncate(out_start_index);
-            is_eliminated = true;
-          }
+        if is_pure_loop(&bytecode, loop_start, loop_end)
+          && let Some(&out_start_index) = index_map.get(&loop_start)
+        {
+          out.truncate(out_start_index);
+          is_eliminated = true;
         }
       }
       _ => {}

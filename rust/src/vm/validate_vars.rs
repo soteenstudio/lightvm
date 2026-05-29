@@ -10,25 +10,25 @@
 
 use crate::types::instructions::Instructions;
 use smol_str::SmolStr;
-pub fn validate_vars(bytecode: &Vec<Instructions>, var_count: usize) -> Result<(), SmolStr> {
+pub fn validate_vars(bytecode: &[Instructions], var_count: usize) -> Result<(), SmolStr> {
   for (ip, instr) in bytecode.iter().enumerate() {
     let idx = match instr {
       Instructions::ValIdx(i)
       | Instructions::SetIdx(i)
       | Instructions::GetIdx(i)
       | Instructions::IncIdx(i, _)
-      | Instructions::DecIdx(i, _) => Some(*i as usize),
+      | Instructions::DecIdx(i, _) => Some(*i),
       _ => None,
     };
-    if let Some(i) = idx {
-      if i >= var_count {
-        return Err(SmolStr::from(format!(
-          "Variable index out of bounds at IP {}: {} (max: {})",
-          ip,
-          i,
-          var_count - 1
-        )));
-      }
+    if let Some(i) = idx
+      && i >= var_count
+    {
+      return Err(SmolStr::from(format!(
+        "Variable index out of bounds at IP {}: {} (max: {})",
+        ip,
+        i,
+        var_count - 1
+      )));
     }
   }
   Ok(())

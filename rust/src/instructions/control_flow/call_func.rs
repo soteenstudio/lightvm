@@ -45,10 +45,10 @@ pub fn call_func(
   for (i, val) in args.into_iter().enumerate() {
     if i < fn_meta.param_names.len() {
       let param_name = &fn_meta.param_names[i];
-      if let Some(&idx) = symbol_table.get(param_name) {
-        if idx < vars.len() {
-          vars[idx] = val;
-        }
+      if let Some(&idx) = symbol_table.get(param_name)
+        && idx < vars.len()
+      {
+        vars[idx] = val;
       }
     }
   }

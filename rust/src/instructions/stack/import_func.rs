@@ -18,11 +18,11 @@ pub fn import_func(
   idx: usize,
   ip: usize,
 ) -> Result<(), VMError> {
-  if let Some(opts) = options {
-    if let Some(module_val) = opts.imports.get(module_name) {
-      vars[idx] = module_val.clone();
-      return Ok(());
-    }
+  if let Some(opts) = options
+    && let Some(module_val) = opts.imports.get(module_name)
+  {
+    vars[idx] = module_val.clone();
+    return Ok(());
   }
   Err(VMError::SystemError(SmolStr::from(format!(
     "Module '{}' not found at IP: {}",

@@ -38,8 +38,9 @@
       "prettier --write"
     ],
     "rust/**/*.rs": [
-      "synclean format",
-      "synclean check"
+      "sh -c 'cargo fmt --manifest-path rust/Cargo.toml --'",
+      "sh -c 'cd rust && cargo test --color always -- --ignored'",
+      "sh -c 'cargo clippy --manifest-path rust/Cargo.toml --color always -- -D warnings'"
     ]
   },
   "keywords": [
