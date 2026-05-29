@@ -2,7 +2,7 @@
 name = "lightvm"
 version = "0.1.0-alpha.0"
 authors = ["SoTeen Studio <soteenstudio@gmail.com>"]
-edition = "2021"
+edition = "2024"
 description = "A capability-based virtual machine designed for secure, predictable, and optimized bytecode execution."
 license = "Apache-2.0"
 repository = "https://github.com/soteenstudio/lightvm"
