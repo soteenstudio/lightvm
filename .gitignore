@@ -1,7 +1,7 @@
 /dist/
 /assembly/
 /node_modules/
-/tests/
+/tests/benchmark/target
 *.tgz
 /rust/target/
 /rust/bindings/
