@@ -7,13 +7,14 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
+use crate::types::value::Value;
 
 use crate::instructions::math::powi::{
   powi_f16in::powi_f16in, powi_f32in::powi_f32in, powi_f64in::powi_f64in,
 };
-use crate::types::{primitive_types::PrimitiveTypes, value::Value};
+use crate::types::primitive_types::PrimitiveTypes;
+use crate::types::stack::Stack;
 use crate::utils::vmerror::VMError;
-use smallvec::SmallVec;
 #[inline(always)]
 pub fn powi_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
@@ -24,11 +25,7 @@ pub fn powi_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   }
 }
 #[inline]
-pub fn powi_func(
-  stack: &mut SmallVec<[Value; 16]>,
-  num_type: PrimitiveTypes,
-  ip: usize,
-) -> Result<(), VMError> {
+pub fn powi_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
   let b = stack
     .pop()
     .ok_or(VMError::StackUnderflow { ip, opcode: "POWI" })?;

@@ -8,13 +8,13 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::types::{value::Value, var_stack::VarStack};
+use crate::types::stack::Stack;
+use crate::types::var_stack::VarStack;
 use crate::utils::vmerror::VMError;
-use smallvec::SmallVec;
 #[allow(clippy::ptr_arg)]
-#[inline]
+#[inline(always)]
 pub fn get_func(
-  stack: &mut SmallVec<[Value; 16]>,
+  stack: &mut Stack,
   vars: &mut VarStack,
   index: usize,
   ip: usize,

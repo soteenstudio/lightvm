@@ -8,12 +8,12 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
-use smallvec::SmallVec;
 use std::io::{self, Write};
 #[inline(always)]
-pub fn stdout_func(stack: &mut SmallVec<[Value; 16]>, ip: usize) -> Result<(), VMError> {
+pub fn stdout_func(stack: &mut Stack, ip: usize) -> Result<(), VMError> {
   let val = stack.pop().ok_or(VMError::StackUnderflow {
     ip,
     opcode: "STDOUT",
@@ -42,7 +42,7 @@ pub fn stdout_func(stack: &mut SmallVec<[Value; 16]>, ip: usize) -> Result<(), V
   }
 }
 #[inline(always)]
-pub fn stdoutln_func(stack: &mut SmallVec<[Value; 16]>, ip: usize) -> Result<(), VMError> {
+pub fn stdoutln_func(stack: &mut Stack, ip: usize) -> Result<(), VMError> {
   let val = stack.pop().ok_or(VMError::StackUnderflow {
     ip,
     opcode: "STDOUTLN",

@@ -8,11 +8,11 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
-use smallvec::SmallVec;
 #[inline(always)]
-pub fn access_index_func(stack: &mut SmallVec<[Value; 16]>, ip: usize) -> Result<(), VMError> {
+pub fn access_index_func(stack: &mut Stack, ip: usize) -> Result<(), VMError> {
   let index_val = stack.pop().ok_or(VMError::StackUnderflow {
     ip,
     opcode: "ACCESS_INDEX (index)",

@@ -12,13 +12,13 @@ use crate::instructions::comparison::{
   eq_func::eq_func, ge_func::ge_func, gt_func::gt_func, le_func::le_func, lt_func::lt_func,
   neq_func::neq_func,
 };
-use crate::types::{instructions::Instructions, value::Value};
+use crate::types::instructions::Instructions;
+use crate::types::stack::Stack;
 use crate::utils::vmerror::VMError;
-use smallvec::SmallVec;
 #[inline(always)]
 pub fn comparison_dispatch(
   instr: &Instructions,
-  stack: &mut SmallVec<[Value; 16]>,
+  stack: &mut Stack,
   ip: usize,
 ) -> Result<(), VMError> {
   match instr {

@@ -7,13 +7,14 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
+use crate::types::value::Value;
 
 use crate::instructions::math::tan::{
   tan_f16in::tan_f16in, tan_f32in::tan_f32in, tan_f64in::tan_f64in,
 };
-use crate::types::{primitive_types::PrimitiveTypes, value::Value};
+use crate::types::primitive_types::PrimitiveTypes;
+use crate::types::stack::Stack;
 use crate::utils::vmerror::VMError;
-use smallvec::SmallVec;
 #[inline(always)]
 pub fn tan_values(a: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
@@ -24,11 +25,7 @@ pub fn tan_values(a: Value, num_type: PrimitiveTypes) -> Value {
   }
 }
 #[inline]
-pub fn tan_func(
-  stack: &mut SmallVec<[Value; 16]>,
-  num_type: PrimitiveTypes,
-  ip: usize,
-) -> Result<(), VMError> {
+pub fn tan_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
   let val_ref = stack
     .last_mut()
     .ok_or(VMError::StackUnderflow { ip, opcode: "TAN" })?;

@@ -7,7 +7,7 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-
+use crate::instructions::stack::import_func::import_func;
 use crate::types::{
   control_flow_signal::ControlFlowSignal,
   instructions::Instructions,
@@ -32,7 +32,7 @@ pub fn execute(
   options: Option<RunOptions>,
 ) -> Result<Value, SmolStr> {
   let mut last_return = Value::Undefined;
-  let mut stack: SmallVec<[Value; 16]> = SmallVec::new();
+  let mut stack: SmallVec<[Value; 128]> = SmallVec::new();
   let empty_map: AHashMap<SmolStr, Value> = AHashMap::new();
   let imports = options.as_ref().map(|o| &o.imports).unwrap_or(&empty_map);
   let (var_count, symbol_table) = resolve_symbols(&mut bytecode, imports);
@@ -80,9 +80,11 @@ pub fn execute(
       | Instructions::Concat
       | Instructions::Dup
       | Instructions::Swap
-      | Instructions::Truncate
-      | Instructions::Import(_, _) => {
-        stack_dispatch(instr, &mut stack, &mut vars, &options, ip)?;
+      | Instructions::Truncate => {
+        stack_dispatch(instr, &mut stack, &mut vars, ip)?;
+      }
+      Instructions::Import(module_name, alias_idx) => {
+        import_func(&mut vars, &options, module_name, *alias_idx, ip)?;
       }
       Instructions::Add(_)
       | Instructions::Sub(_)

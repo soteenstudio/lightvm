@@ -8,15 +8,15 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
-use smallvec::SmallVec;
 use smol_str::SmolStr;
 use std::sync::Arc;
 #[inline(always)]
 pub fn push_object_func(
-  stack: &mut SmallVec<[Value; 16]>,
+  stack: &mut Stack,
   val: &Arc<AHashMap<SmolStr, Value>>,
   ip: usize,
 ) -> Result<(), VMError> {

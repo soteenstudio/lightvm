@@ -7,6 +7,7 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
+use crate::types::value::Value;
 
 use crate::instructions::math::add::{
   add_f16in::add_f16in, add_f32in::add_f32in, add_f64in::add_f64in, add_i16in::add_i16in,
@@ -16,14 +17,14 @@ use crate::instructions::math::sub::{
   sub_f16in::sub_f16in, sub_f32in::sub_f32in, sub_f64in::sub_f64in, sub_i16in::sub_i16in,
   sub_i32in::sub_i32in, sub_i64in::sub_i64in, sub_i128in::sub_i128in,
 };
-use crate::types::{primitive_types::PrimitiveTypes, value::Value, var_stack::VarStack};
+use crate::types::stack::Stack;
+use crate::types::{primitive_types::PrimitiveTypes, var_stack::VarStack};
 use crate::utils::vmerror::VMError;
 use half::f16;
-use smallvec::SmallVec;
 #[inline]
 pub fn inc_func(
   vars: &mut VarStack,
-  stack: &mut SmallVec<[Value; 16]>,
+  stack: &mut Stack,
   index: usize,
   num_type: PrimitiveTypes,
   ip: usize,

@@ -11,6 +11,7 @@
 use crate::types::value::{RunOptions, Value};
 use crate::utils::vmerror::VMError;
 use smol_str::SmolStr;
+#[cold]
 pub fn import_func(
   vars: &mut [Value],
   options: &Option<RunOptions>,

@@ -11,14 +11,18 @@
 use crate::types::instructions::Instructions;
 use crate::types::value::RunOptions;
 use serde_json::Value as JsonValue;
+// FIX: Pake &str biar gak usah clone/alokasi String baru pas fungsi ini dipanggil
 #[inline]
 #[cold]
-pub fn run(bytecode_json: String, options: Option<RunOptions>) -> String {
-  let raw_bytecode: Vec<JsonValue> = serde_json::from_str(&bytecode_json).expect("Invalid JSON");
+pub fn run(bytecode_json: &str, options: Option<RunOptions>) -> String {
+  // Langsung pass &str ke serde, jauh lebih hemat memori
+  let raw_bytecode: Vec<JsonValue> = serde_json::from_str(bytecode_json).expect("Invalid JSON");
+
   let bytecode: Vec<Instructions> = raw_bytecode
     .into_iter()
     .map(|item| Instructions::from_json_array(&item))
     .collect();
+
   let result = crate::vm::execute::execute(bytecode, options);
   match result {
     Ok(val) => serde_json::to_string(&val)

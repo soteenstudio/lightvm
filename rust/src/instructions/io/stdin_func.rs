@@ -8,13 +8,13 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
-use smallvec::SmallVec;
 use smol_str::SmolStr;
 use std::io::{self, Write};
 #[inline(always)]
-pub fn stdin_func(stack: &mut SmallVec<[Value; 16]>) -> Result<(), VMError> {
+pub fn stdin_func(stack: &mut Stack) -> Result<(), VMError> {
   let _ = io::stdout().flush();
   let mut input = String::new();
   io::stdin()

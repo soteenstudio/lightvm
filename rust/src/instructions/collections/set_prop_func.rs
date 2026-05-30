@@ -8,17 +8,13 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
-use smallvec::SmallVec;
 use smol_str::SmolStr;
 use std::sync::Arc;
 #[inline]
-pub fn set_prop_func(
-  stack: &mut SmallVec<[Value; 16]>,
-  prop: &SmolStr,
-  ip: usize,
-) -> Result<(), VMError> {
+pub fn set_prop_func(stack: &mut Stack, prop: &SmolStr, ip: usize) -> Result<(), VMError> {
   let val = stack.pop().ok_or(VMError::StackUnderflow {
     ip,
     opcode: "SET_PROP (value)",

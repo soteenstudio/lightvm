@@ -8,10 +8,10 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::types::value::Value;
+use crate::types::stack::Stack;
 use crate::utils::vmerror::VMError;
-use smallvec::SmallVec;
-pub fn dup_func(stack: &mut SmallVec<[Value; 16]>, ip: usize) -> Result<(), VMError> {
+#[inline(always)]
+pub fn dup_func(stack: &mut Stack, ip: usize) -> Result<(), VMError> {
   let top = stack
     .last()
     .ok_or(VMError::StackUnderflow { ip, opcode: "DUP" })?;

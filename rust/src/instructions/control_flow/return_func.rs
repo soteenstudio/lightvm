@@ -8,11 +8,11 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::types::stack::Stack;
 use crate::types::value::Value;
-use smallvec::SmallVec;
 #[inline(always)]
 pub fn return_func(
-  stack: &mut SmallVec<[Value; 16]>,
+  stack: &mut Stack,
   call_stack: &mut Vec<usize>,
   ip: &mut usize,
   last_return: &mut Value,

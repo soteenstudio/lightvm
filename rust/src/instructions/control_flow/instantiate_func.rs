@@ -7,15 +7,16 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
+use crate::types::value::Value;
 
-use crate::types::{value::Value, var_stack::VarStack};
+use crate::types::stack::Stack;
+use crate::types::var_stack::VarStack;
 use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
-use smallvec::SmallVec;
 use smol_str::SmolStr;
 use std::sync::Arc;
 pub fn instantiate_func(
-  stack: &mut SmallVec<[Value; 16]>,
+  stack: &mut Stack,
   _vars: &mut VarStack,
   class_name: &SmolStr,
   argc: u32,

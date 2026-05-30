@@ -7,14 +7,15 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
+use crate::types::value::Value;
 
 use crate::instructions::math::mul::{
   mul_f16in::mul_f16in, mul_f32in::mul_f32in, mul_f64in::mul_f64in, mul_i16in::mul_i16in,
   mul_i32in::mul_i32in, mul_i64in::mul_i64in, mul_i128in::mul_i128in,
 };
-use crate::types::{primitive_types::PrimitiveTypes, value::Value};
+use crate::types::primitive_types::PrimitiveTypes;
+use crate::types::stack::Stack;
 use crate::utils::vmerror::VMError;
-use smallvec::SmallVec;
 #[inline(always)]
 pub fn mul_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
@@ -29,11 +30,7 @@ pub fn mul_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   }
 }
 #[inline]
-pub fn mul_func(
-  stack: &mut SmallVec<[Value; 16]>,
-  num_type: PrimitiveTypes,
-  ip: usize,
-) -> Result<(), VMError> {
+pub fn mul_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
   let b = stack
     .pop()
     .ok_or(VMError::StackUnderflow { ip, opcode: "MUL" })?;

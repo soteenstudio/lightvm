@@ -7,13 +7,14 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
+use crate::types::value::Value;
 
 use crate::instructions::math::ror::{
   ror_i16in::ror_i16in, ror_i32in::ror_i32in, ror_i64in::ror_i64in, ror_i128in::ror_i128in,
 };
-use crate::types::{primitive_types::PrimitiveTypes, value::Value};
+use crate::types::primitive_types::PrimitiveTypes;
+use crate::types::stack::Stack;
 use crate::utils::vmerror::VMError;
-use smallvec::SmallVec;
 #[inline(always)]
 pub fn ror_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
@@ -25,11 +26,7 @@ pub fn ror_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   }
 }
 #[inline]
-pub fn ror_func(
-  stack: &mut SmallVec<[Value; 16]>,
-  num_type: PrimitiveTypes,
-  ip: usize,
-) -> Result<(), VMError> {
+pub fn ror_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
   let b = stack
     .pop()
     .ok_or(VMError::StackUnderflow { ip, opcode: "ROR" })?;

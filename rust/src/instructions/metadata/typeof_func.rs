@@ -8,10 +8,10 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
-use smallvec::SmallVec;
 use smol_str::SmolStr;
 use std::sync::Arc;
 #[inline(always)]
@@ -42,7 +42,7 @@ pub fn typeof_values(val: Value) -> Value {
   Value::Object(Arc::new(metadata))
 }
 #[inline(always)]
-pub fn typeof_func(stack: &mut SmallVec<[Value; 16]>, ip: usize) -> Result<(), VMError> {
+pub fn typeof_func(stack: &mut Stack, ip: usize) -> Result<(), VMError> {
   if let Some(top) = stack.last_mut() {
     let owned_val = std::mem::take(top);
     *top = typeof_values(owned_val);

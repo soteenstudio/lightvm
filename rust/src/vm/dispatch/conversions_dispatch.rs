@@ -13,13 +13,13 @@ use crate::instructions::conversion::{
   to_integer_func::to_integer_func, to_long_func::to_long_func, to_octa_func::to_octa_func,
   to_short_func::to_short_func, to_string_func::to_string_func,
 };
-use crate::types::{instructions::Instructions, value::Value};
+use crate::types::instructions::Instructions;
+use crate::types::stack::Stack;
 use crate::utils::vmerror::VMError;
-use smallvec::SmallVec;
 #[inline(always)]
 pub fn conversions_dispatch(
   instr: &Instructions,
-  stack: &mut SmallVec<[Value; 16]>,
+  stack: &mut Stack,
   ip: usize,
 ) -> Result<(), VMError> {
   match instr {

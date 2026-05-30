@@ -27,13 +27,13 @@ use crate::instructions::math::{
   sub_func::sub_func,
   tan_func::tan_func,
 };
-use crate::types::{instructions::Instructions, value::Value, var_stack::VarStack};
+use crate::types::stack::Stack;
+use crate::types::{instructions::Instructions, var_stack::VarStack};
 use crate::utils::vmerror::VMError;
-use smallvec::SmallVec;
 #[inline(always)]
 pub fn math_dispatch(
   instr: &Instructions,
-  stack: &mut SmallVec<[Value; 16]>,
+  stack: &mut Stack,
   vars: &mut VarStack,
   ip: usize,
 ) -> Result<(), VMError> {

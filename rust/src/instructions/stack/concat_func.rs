@@ -8,10 +8,10 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::filtered_writer::FilteredWriter;
 use crate::utils::vmerror::VMError;
-use smallvec::SmallVec;
 use smol_str::SmolStr;
 use std::fmt::Write;
 #[inline(always)]
@@ -27,7 +27,7 @@ pub fn concat_values(a: &Value, b: &Value) -> Value {
   Value::String(SmolStr::new(f_writer.buffer))
 }
 #[inline]
-pub fn concat_func(stack: &mut SmallVec<[Value; 16]>, ip: usize) -> Result<(), VMError> {
+pub fn concat_func(stack: &mut Stack, ip: usize) -> Result<(), VMError> {
   let b = stack.pop().ok_or(VMError::StackUnderflow {
     ip,
     opcode: "CONCAT",

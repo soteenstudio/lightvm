@@ -8,17 +8,13 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
-use smallvec::SmallVec;
 use std::sync::Arc;
 #[inline]
-pub fn make_obj_func(
-  stack: &mut SmallVec<[Value; 16]>,
-  count: u32,
-  ip: usize,
-) -> Result<(), VMError> {
+pub fn make_obj_func(stack: &mut Stack, count: u32, ip: usize) -> Result<(), VMError> {
   let mut obj = AHashMap::with_capacity(count as usize);
   for _ in 0..count {
     let val = stack.pop().ok_or(VMError::StackUnderflow {

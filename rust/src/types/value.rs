@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 use smol_str::SmolStr;
 use std::sync::Arc;
 use ts_rs::TS;
-#[repr(u8, align(32))]
+#[repr(u8)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default, TS)]
 #[serde(untagged)]
 #[ts(export)]

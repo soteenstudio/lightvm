@@ -8,15 +8,15 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
-use smallvec::SmallVec;
 #[inline(always)]
 pub fn xor_values(a: Value, b: Value) -> Value {
   Value::Bool(a.is_truthy() ^ b.is_truthy())
 }
 #[inline]
-pub fn xor_func(stack: &mut SmallVec<[Value; 16]>, ip: usize) -> Result<(), VMError> {
+pub fn xor_func(stack: &mut Stack, ip: usize) -> Result<(), VMError> {
   let b = stack
     .pop()
     .ok_or(VMError::StackUnderflow { ip, opcode: "XOR" })?;

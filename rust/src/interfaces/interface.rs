@@ -71,7 +71,6 @@ impl LightVM {
         _ => {}
       }
     }
-    println!("Jalan");
   }
   pub fn emit(&self, event: VmEvent, payload: serde_json::Value) {
     if let Some(list) = self.listeners.get(&event) {
@@ -129,7 +128,7 @@ impl LightVM {
       capture_return: false,
       imports: self._imports.clone(),
     };
-    run(bytecode_str, Some(options));
+    run(&bytecode_str, Some(options));
     Ok(())
   }
   #[inline]
@@ -205,7 +204,7 @@ impl LightVM {
       capture_return: true,
       imports: self._imports.clone(),
     };
-    let hasil_run = run(bytecode_str.clone(), Some(options));
+    let hasil_run = run(&bytecode_str.clone(), Some(options));
     Ok(hasil_run)
   }
   #[inline]

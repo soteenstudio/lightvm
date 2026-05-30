@@ -8,14 +8,6 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod capability;
-pub mod control_flow_signal;
-pub mod instructions;
-pub mod primitive_types;
-pub mod stack;
-pub mod usage;
-pub mod value;
-pub mod var_stack;
-pub mod vmevent;
-pub mod vmresult;
-pub mod vmstate;
+use crate::types::value::Value;
+use smallvec::SmallVec;
+pub type Stack = SmallVec<[Value; 128]>;

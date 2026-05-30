@@ -8,15 +8,15 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
-use smallvec::SmallVec;
 #[inline(always)]
 pub fn not_values(a: Value) -> Value {
   Value::Bool(!a.is_truthy())
 }
 #[inline]
-pub fn not_func(stack: &mut SmallVec<[Value; 16]>, ip: usize) -> Result<(), VMError> {
+pub fn not_func(stack: &mut Stack, ip: usize) -> Result<(), VMError> {
   let a_ref = stack
     .last_mut()
     .ok_or(VMError::StackUnderflow { ip, opcode: "AND" })?;

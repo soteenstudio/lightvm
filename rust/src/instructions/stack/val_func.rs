@@ -7,12 +7,11 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-
 use crate::types::{value::Value, var_stack::VarStack};
 use crate::utils::vmerror::VMError;
 use smol_str::SmolStr;
 const MAX_VARIABLES: usize = 4096;
-#[inline]
+#[inline(always)]
 pub fn val_func(vars: &mut VarStack, index: usize, ip: usize) -> Result<(), VMError> {
   if index >= MAX_VARIABLES {
     return Err(VMError::StackOverflow {

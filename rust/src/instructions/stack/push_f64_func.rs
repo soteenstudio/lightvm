@@ -8,15 +8,11 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
-use smallvec::SmallVec;
 #[inline(always)]
-pub fn push_f64_func(
-  stack: &mut SmallVec<[Value; 16]>,
-  val: &f64,
-  ip: usize,
-) -> Result<(), VMError> {
+pub fn push_f64_func(stack: &mut Stack, val: &f64, ip: usize) -> Result<(), VMError> {
   if stack.len() == stack.capacity() {
     return Err(VMError::StackOverflow {
       ip,

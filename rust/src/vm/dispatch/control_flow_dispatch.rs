@@ -13,6 +13,7 @@ use crate::instructions::control_flow::{
   instantiate_func::instantiate_func, jump_func::jump_func, return_func::return_func,
   stop_func::stop_func,
 };
+use crate::types::stack::Stack;
 use crate::types::{
   control_flow_signal::ControlFlowSignal,
   instructions::Instructions,
@@ -21,13 +22,12 @@ use crate::types::{
 };
 use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
-use smallvec::SmallVec;
 use smol_str::SmolStr;
 #[inline(always)]
 #[allow(clippy::too_many_arguments)]
 pub fn control_flow_dispatch(
   instr: &Instructions,
-  stack: &mut SmallVec<[Value; 16]>,
+  stack: &mut Stack,
   vars: &mut VarStack,
   call_stack: &mut Vec<usize>,
   last_return: &mut Value,

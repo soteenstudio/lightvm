@@ -7,28 +7,22 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-
 use crate::instructions::stack::{
-  concat_func::concat_func, dup_func::dup_func, get_func::get_func, import_func::import_func,
+  concat_func::concat_func, dup_func::dup_func, get_func::get_func,
   push_array_func::push_array_func, push_f16_func::push_f16_func, push_f32_func::push_f32_func,
   push_f64_func::push_f64_func, push_func::push_func, push_i16_func::push_i16_func,
   push_i32_func::push_i32_func, push_i64_func::push_i64_func, push_i128_func::push_i128_func,
   push_object_func::push_object_func, push_string_func::push_string_func, set_func::set_func,
   swap_func::swap_func, truncate_func::truncate_func, val_func::val_func,
 };
-use crate::types::{
-  instructions::Instructions,
-  value::{RunOptions, Value},
-  var_stack::VarStack,
-};
+use crate::types::stack::Stack;
+use crate::types::{instructions::Instructions, value::Value, var_stack::VarStack};
 use crate::utils::vmerror::VMError;
-use smallvec::SmallVec;
 #[inline(always)]
 pub fn stack_dispatch(
   instr: &Instructions,
-  stack: &mut SmallVec<[Value; 16]>,
+  stack: &mut Stack,
   vars: &mut VarStack,
-  options: &Option<RunOptions>,
   ip: usize,
 ) -> Result<(), VMError> {
   match instr {
@@ -69,9 +63,6 @@ pub fn stack_dispatch(
     Instructions::Dup => dup_func(stack, ip),
     Instructions::Swap => swap_func(stack, ip),
     Instructions::Truncate => truncate_func(stack, ip),
-    Instructions::Import(module_name, alias_idx) => {
-      import_func(vars, options, module_name, *alias_idx, ip)
-    }
     _ => unsafe { std::hint::unreachable_unchecked() },
   }
 }

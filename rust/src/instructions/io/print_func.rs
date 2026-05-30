@@ -8,13 +8,12 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::types::value::Value;
+use crate::types::stack::Stack;
 use crate::utils::format_output::format_output;
 use crate::utils::vmerror::VMError;
-use smallvec::SmallVec;
 use std::io::{self, Write};
 #[inline(always)]
-pub fn print_func(stack: &mut SmallVec<[Value; 16]>, ip: usize) -> Result<(), VMError> {
+pub fn print_func(stack: &mut Stack, ip: usize) -> Result<(), VMError> {
   let val_ref = stack.last_mut().ok_or(VMError::StackUnderflow {
     ip,
     opcode: "PRINT",

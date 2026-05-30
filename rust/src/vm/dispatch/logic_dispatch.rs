@@ -11,15 +11,11 @@
 use crate::instructions::logic::{
   and_func::and_func, not_func::not_func, or_func::or_func, xor_func::xor_func,
 };
-use crate::types::{instructions::Instructions, value::Value};
+use crate::types::instructions::Instructions;
+use crate::types::stack::Stack;
 use crate::utils::vmerror::VMError;
-use smallvec::SmallVec;
 #[inline(always)]
-pub fn logic_dispatch(
-  instr: &Instructions,
-  stack: &mut SmallVec<[Value; 16]>,
-  ip: usize,
-) -> Result<(), VMError> {
+pub fn logic_dispatch(instr: &Instructions, stack: &mut Stack, ip: usize) -> Result<(), VMError> {
   match instr {
     Instructions::And => and_func(stack, ip),
     Instructions::Or => or_func(stack, ip),

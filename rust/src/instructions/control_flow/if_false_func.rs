@@ -8,11 +8,10 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::types::value::Value;
+use crate::types::stack::Stack;
 use crate::utils::vmerror::VMError;
-use smallvec::SmallVec;
 #[inline(always)]
-pub fn if_false_func(stack: &mut SmallVec<[Value; 16]>, ip: usize) -> Result<bool, VMError> {
+pub fn if_false_func(stack: &mut Stack, ip: usize) -> Result<bool, VMError> {
   let cond_ref = stack.last_mut().ok_or(VMError::StackUnderflow {
     ip,
     opcode: "IF_FALSE",

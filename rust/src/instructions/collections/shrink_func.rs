@@ -8,13 +8,13 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
-use smallvec::SmallVec;
 use smol_str::SmolStr;
 use std::sync::Arc;
 #[inline(always)]
-pub fn shrink_func(stack: &mut SmallVec<[Value; 16]>, ip: usize) -> Result<(), VMError> {
+pub fn shrink_func(stack: &mut Stack, ip: usize) -> Result<(), VMError> {
   let len_val = stack.pop().ok_or(VMError::StackUnderflow {
     ip,
     opcode: "SHRINK (length)",
