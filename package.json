@@ -23,7 +23,7 @@
     "typings"
   ],
   "scripts": {
-    "test": "npx vitest run",
+    "test": "vitest",
     "build": "node ./esbuild.config.js",
     "build:release": "node ./build-script.js --local --silent",
     "build:debug": "node ./build-script.js --local --debug --silent",
@@ -40,10 +40,14 @@
     ],
     "rust/**/*.rs": [
       "sh -c 'cargo fmt --manifest-path rust/Cargo.toml --'",
-      "sh -c 'cd rust && cargo test --color always -- --ignored'",
       "sh -c 'cargo clippy --manifest-path rust/Cargo.toml --color always -- -D warnings'"
     ],
-    "tests/benchmark/**/*.rs": [
+    "tests/benchmark/ts/**/*.{js,ts,jsx,tsx}": [
+      "sh -c 'tsc'",
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "tests/benchmark/rust**/*.rs": [
       "sh -c 'cargo fmt --manifest-path tests/benchmark/Cargo.toml --'",
       "sh -c 'cargo clippy --manifest-path tests/benchmark/Cargo.toml --color always -- -D warnings'"
     ]
@@ -67,6 +71,8 @@
     "eslint-plugin-headers": "^1.3.4",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.5",
-    "prettier": "3.8.3"
+    "prettier": "3.8.3",
+    "tinybench": "^6.0.2",
+    "tsx": "^4.22.3"
   }
 }

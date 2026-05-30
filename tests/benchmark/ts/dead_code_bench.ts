@@ -1,0 +1,26 @@
+/*
+ * Copyright 2026 SoTeen Studio
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+import { Bench } from 'tinybench';
+import { LightVM, Capability } from "../../../dist/index.min.mjs";
+async function runBenchmark() {
+  const bench = new Bench();
+  const vm = new LightVM([Capability.Observe, Capability.Control]);
+  const raw = [["push", 5], ["push", 8], ["add", "i16"]];
+  const tools = vm.tools();
+  const optimized = tools.optimizeBytecode(raw);
+  vm.load(optimized);
+  bench.add('add_bench', () => {
+    vm.run();
+  });
+  await bench.run();
+  console.table(bench.table());
+}
+runBenchmark().catch(console.error);
