@@ -14,8 +14,7 @@ const TARGET_NAME = 'lightvm.node';
 const RUST_OUT_DIR = isDebug ? 'debug' : 'release';
 const SOURCE_PATH = join(
   process.cwd(),
-  'rust',
-  'target',
+  'benchmarks',
   RUST_OUT_DIR,
   RUST_BINARY_NAME,
 );

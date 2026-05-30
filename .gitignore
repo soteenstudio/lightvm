@@ -1,10 +1,9 @@
 /dist/
 /assembly/
 /node_modules/
-/tests/benchmark/rust/target/
 *.tgz
-/rust/target/
-/rust/bindings/
+/target/
+/bindings/
 lz4.js
 /.trash/
 /binaries/

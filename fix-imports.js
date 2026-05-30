@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-const sourceDir = './rust/bindings';
+const sourceDir = './bindings';
 const targetDir = './src/bindings';
 if (!fs.existsSync(targetDir)) {
   fs.mkdirSync(targetDir, { recursive: true });

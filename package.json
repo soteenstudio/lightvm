@@ -50,18 +50,9 @@
       "eslint --fix",
       "prettier --write"
     ],
-    "rust/**/*.rs": [
-      "sh -c 'cargo fmt --manifest-path rust/Cargo.toml --'",
-      "sh -c 'cargo clippy --manifest-path rust/Cargo.toml --color always -- -D warnings'"
-    ],
-    "tests/benchmark/ts/**/*.{js,ts,jsx,tsx}": [
-      "sh -c 'tsc'",
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "tests/benchmark/rust**/*.rs": [
-      "sh -c 'cargo fmt --manifest-path tests/benchmark/Cargo.toml --'",
-      "sh -c 'cargo clippy --manifest-path tests/benchmark/Cargo.toml --color always -- -D warnings'"
+    "*.rs": [
+      "sh -c 'cargo fmt --'",
+      "sh -c 'cargo clippy --color always -- -D warnings'"
     ]
   },
   "keywords": [
