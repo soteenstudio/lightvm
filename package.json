@@ -34,7 +34,8 @@
     "typings"
   ],
   "scripts": {
-    "test": "vitest",
+    "bench:rust": "cargo bench --manifest-path ./tests/benchmark/rust/Cargo.toml",
+    "bench:ts": "node ts-bench.js",
     "build": "node ./esbuild.config.js",
     "build:release": "node ./build-script.js --local --silent",
     "build:debug": "node ./build-script.js --local --debug --silent",

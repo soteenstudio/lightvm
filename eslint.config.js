@@ -1,6 +1,5 @@
 import tsParser from '@typescript-eslint/parser';
 import headers from 'eslint-plugin-headers';
-
 const customNoCommentRule = {
   meta: {
     type: 'layout',
@@ -45,7 +44,6 @@ const customNoCommentRule = {
     };
   },
 };
-
 export default [
   {
     files: ['src/**/*.{js,jsx,ts,tsx}'],

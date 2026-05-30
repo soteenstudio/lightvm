@@ -26,6 +26,8 @@ async function runBenchmark() {
     vm.run();
   });
   await bench.run();
-  console.table(bench.table());
+  bench.table().forEach((row) => {
+    console.log(`Task: ${row['Task name']} | Avg Latency: ${row['Latency avg (ns)']}`);
+  });
 }
 runBenchmark().catch(console.error);

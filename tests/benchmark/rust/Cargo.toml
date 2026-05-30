@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-lightvm = { path = "../../rust" }
+lightvm = { path = "../../../rust" }
 serde_json = "1.0"
 criterion = "0.5"
 
