@@ -4,6 +4,7 @@
 /tests/
 *.tgz
 /rust/target/
+/rust/bindings/
 lz4.js
 /.trash/
 /binaries/
