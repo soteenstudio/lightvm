@@ -42,6 +42,10 @@
       "sh -c 'cargo fmt --manifest-path rust/Cargo.toml --'",
       "sh -c 'cd rust && cargo test --color always -- --ignored'",
       "sh -c 'cargo clippy --manifest-path rust/Cargo.toml --color always -- -D warnings'"
+    ],
+    "tests/benchmark/**/*.rs": [
+      "sh -c 'cargo fmt --manifest-path tests/benchmark/Cargo.toml --'",
+      "sh -c 'cargo clippy --manifest-path tests/benchmark/Cargo.toml --color always -- -D warnings'"
     ]
   },
   "keywords": [
