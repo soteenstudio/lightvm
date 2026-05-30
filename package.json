@@ -4,14 +4,25 @@
   "description": "A capability-based virtual machine designed for secure, predictable, and optimized bytecode execution.",
   "author": "SoTeen Studio",
   "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/soteenstudio/lightvm.git"
   },
+  "bugs": {
+    "url": "https://github.com/soteenstudio/lightvm/issues"
+  },
+  "homepage": "https://github.com/soteenstudio/lightvm#readme",
   "type": "module",
-  "typings": "./typings/index.d.ts",
+  "types": "./types/index.d.ts",
   "exports": {
     ".": {
+      "types": "./types/index.d.ts",
       "import": "./dist/index.min.mjs",
       "require": "./dist/index.min.cjs"
     },

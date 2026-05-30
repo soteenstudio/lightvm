@@ -11,7 +11,7 @@
 
 import { Instructions } from './bindings/Instructions.js';
 import { loadNapi } from './utils/loadNapi.js';
-import type { VMEvent, VMResult, Listener } from '../typings/index.d.ts';
+import type { VMEvent, VMResult, Listener } from '../types/index.d.ts';
 export enum Capability {
   Observe = 'OBSERVE',
   Control = 'CONTROL',
