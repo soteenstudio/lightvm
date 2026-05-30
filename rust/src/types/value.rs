@@ -31,8 +31,9 @@ pub enum Value {
   Float64(f64),
   #[ts(type = "string")]
   String(SmolStr),
+  #[ts(type = "any[]")]
   Array(Arc<Vec<Value>>),
-  #[ts(type = "Record<string, Value>")]
+  #[ts(type = "Record<string, any>")]
   Object(Arc<AHashMap<SmolStr, Value>>),
   Bool(bool),
   Null,

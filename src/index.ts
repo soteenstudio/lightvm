@@ -9,7 +9,7 @@
  *
  */
 
-import { Instruction } from './Instruction.js';
+import { Instructions } from './bindings/Instructions.js';
 import { loadNapi } from './utils/loadNapi.js';
 import type { VMEvent, VMResult, Listener } from '../typings/index.d.ts';
 export enum Capability {
@@ -39,7 +39,7 @@ export class LightVM {
     });
     this.instance = new native.LightVM(numericCaps);
   }
-  load(source: Instruction[] | string) {
+  load(source: Instructions[] | string) {
     try {
       let payload: string;
       if (typeof source === 'string') {
@@ -164,7 +164,7 @@ export class LightVM {
           process.exit(1);
         }
       },
-      stringifyLTC: (json: Instruction[]) => {
+      stringifyLTC: (json: Instructions[]) => {
         try {
           return native.LightVM.stringifyLtc(json);
         } catch (err) {
@@ -191,4 +191,4 @@ export class LightVM {
     };
   }
 }
-export { Instruction };
+export { Instructions };

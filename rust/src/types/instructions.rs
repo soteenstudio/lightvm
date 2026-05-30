@@ -36,7 +36,7 @@ pub enum Instructions {
   PushString(SmolStr),
   #[ts(type = "any[]")]
   PushArray(Arc<Vec<Value>>),
-  #[ts(type = "Record<string, Value>")]
+  #[ts(type = "Record<string, any>")]
   PushObject(Arc<AHashMap<SmolStr, Value>>),
   PushBool(bool),
   PushNull,
@@ -94,7 +94,7 @@ pub enum Instructions {
   DecIdx(usize, PrimitiveTypes),
   #[ts(type = "[string, PrimitiveTypes]")]
   Call(SmolStr, u32),
-  #[ts(type = "[string, number, number, number, string[]")]
+  #[ts(type = "[string, number, number, number, string[]]")]
   Func(SmolStr, u32, usize, usize, Vec<SmolStr>),
   Stop,
   Return,

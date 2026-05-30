@@ -1,1 +1,3 @@
+node ./fix-imports.js
+git add src/bindings
 npx lint-staged
