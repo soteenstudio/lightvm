@@ -39,6 +39,7 @@
     "build": "node ./esbuild.config.js",
     "build:release": "node ./scripts/build-script.js --local --silent",
     "build:debug": "node ./scripts/build-script.js --local --debug --silent",
+    "check:deps": "node ./scripts/check-deps.js",
     "typecheck": "tsc",
     "prettier": "npx prettier ./ts/**/*.ts --write",
     "eslint": "npx eslint ./ts/**/*.ts --fix",

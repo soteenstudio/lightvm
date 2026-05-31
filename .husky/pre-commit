@@ -1,3 +1,4 @@
+npm run check:deps
 node ./scripts/fix-imports.js
 git add ./ts/src/generated
 npx lint-staged

@@ -46,7 +46,7 @@ impl NodeLightVM {
               ip: 0,
               code: smol_str::SmolStr::new(format!("UNKNOWN_CAPABILITY:{}", cap_num)),
             };
-            return Err(Error::from_reason(vm_err.format().to_string()));
+            return Err(Error::from_reason(vm_err.to_string()));
           }
         }
       }
@@ -70,21 +70,21 @@ impl NodeLightVM {
     self
       .inner
       .load_internal(source)
-      .map_err(|e| Error::from_reason(e.format().to_string()))
+      .map_err(|e| Error::from_reason(e.to_string()))
   }
   #[napi]
   pub fn run(&mut self) -> Result<()> {
     self
       .inner
       .run_internal(None)
-      .map_err(|e| Error::from_reason(e.format().to_string()))
+      .map_err(|e| Error::from_reason(e.to_string()))
   }
   #[napi]
   pub fn provide(&mut self, name: String, value: serde_json::Value) -> Result<()> {
     self
       .inner
       .provide_internal(name.into(), value)
-      .map_err(|e| Error::from_reason(e.format().to_string()))
+      .map_err(|e| Error::from_reason(e.to_string()))
   }
   #[napi]
   pub fn inspect(&self) -> Result<serde_json::Value> {
@@ -92,13 +92,13 @@ impl NodeLightVM {
     let json_str = self
       .inner
       .inspect_internal()
-      .map_err(|e| Error::from_reason(e.format().to_string()))?;
+      .map_err(|e| Error::from_reason(e.to_string()))?;
     serde_json::from_str(&json_str).map_err(|e| {
       let vm_err = VMError::SystemError(smol_str::SmolStr::new(format!(
         "Failed to parse inspect object: {}",
         e
       )));
-      Error::from_reason(vm_err.format().to_string())
+      Error::from_reason(vm_err.to_string())
     })
   }
   #[napi]
@@ -106,22 +106,22 @@ impl NodeLightVM {
     self
       .inner
       .halt_internal()
-      .map_err(|e| Error::from_reason(e.format().to_string()))
+      .map_err(|e| Error::from_reason(e.to_string()))
   }
   #[napi]
   pub fn embedded(&mut self) -> Result<serde_json::Value> {
     self
       .inner
       .clear_outputs_internal()
-      .map_err(|e| Error::from_reason(e.format().to_string()))?;
+      .map_err(|e| Error::from_reason(e.to_string()))?;
     self
       .inner
       .run_internal(None)
-      .map_err(|e| Error::from_reason(e.format().to_string()))?;
+      .map_err(|e| Error::from_reason(e.to_string()))?;
     let outputs = self
       .inner
       .get_outputs_internal()
-      .map_err(|e| Error::from_reason(e.format().to_string()))?;
+      .map_err(|e| Error::from_reason(e.to_string()))?;
     Ok(serde_json::json!({
       "value": serde_json::Value::Null,
       "outputs": outputs,
@@ -137,13 +137,13 @@ impl NodeLightVM {
     let raw_result = self
       .inner
       .call_exported_internal(name, args)
-      .map_err(|e| Error::from_reason(e.format().to_string()))?;
+      .map_err(|e| Error::from_reason(e.to_string()))?;
     serde_json::from_str(&raw_result).map_err(|e| {
       let vm_err = VMError::SystemError(smol_str::SmolStr::new(format!(
         "Failed to parse export return value: {}",
         e
       )));
-      Error::from_reason(vm_err.format().to_string())
+      Error::from_reason(vm_err.to_string())
     })
   }
   #[napi(js_name = "optimizeBytecode")]
@@ -154,35 +154,35 @@ impl NodeLightVM {
         "Failed to serialize input: {}",
         e
       )));
-      Error::from_reason(vm_err.format().to_string())
+      Error::from_reason(vm_err.to_string())
     })?;
     let input_json: serde_json::Value = serde_json::from_str(&input_string).map_err(|e| {
       let vm_err = VMError::SystemError(smol_str::SmolStr::new(format!(
         "Invalid input structure: {}",
         e
       )));
-      Error::from_reason(vm_err.format().to_string())
+      Error::from_reason(vm_err.to_string())
     })?;
     let opt_str = LightVM::optimize_bytecode_internal(input_json)
-      .map_err(|e| Error::from_reason(e.format().to_string()))?;
+      .map_err(|e| Error::from_reason(e.to_string()))?;
     serde_json::from_str::<serde_json::Value>(&opt_str).map_err(|e| {
       let vm_err = VMError::SystemError(smol_str::SmolStr::new(format!(
         "Internal JSON Parsing Failed: {}",
         e
       )));
-      Error::from_reason(vm_err.format().to_string())
+      Error::from_reason(vm_err.to_string())
     })
   }
   #[napi(js_name = "stringifyLtc")]
   pub fn napi_stringify_ltc(json: serde_json::Value) -> Result<String> {
     LightVM::stringify_ltc_internal(json).map_err(|e| {
       let vm_err = VMError::SystemError(smol_str::SmolStr::new(e));
-      Error::from_reason(vm_err.format().to_string())
+      Error::from_reason(vm_err.to_string())
     })
   }
   #[napi(js_name = "parseLtc")]
   pub fn napi_parse_ltc(code: String) -> Result<String> {
-    LightVM::parse_ltc_internal(code).map_err(|e| Error::from_reason(e.format().to_string()))
+    LightVM::parse_ltc_internal(code).map_err(|e| Error::from_reason(e.to_string()))
   }
   #[napi(js_name = "parseLtcArray")]
   pub fn napi_parse_ltc_array(code: String) -> serde_json::Value {
