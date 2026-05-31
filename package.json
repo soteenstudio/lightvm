@@ -22,19 +22,19 @@
   "types": "./types/index.d.ts",
   "exports": {
     ".": {
-      "types": "./types/index.d.ts",
-      "import": "./dist/index.min.mjs",
-      "require": "./dist/index.min.cjs"
+      "types": "./ts/types/index.d.ts",
+      "import": "./ts/dist/index.min.mjs",
+      "require": "./ts/dist/index.min.cjs"
     },
     "./package.json": "./package.json"
   },
   "files": [
-    "dist/index.min.cjs",
-    "dist/index.min.mjs",
-    "typings"
+    "./ts/dist/index.min.cjs",
+    "./ts/dist/index.min.mjs",
+    "./ts/types"
   ],
   "scripts": {
-    "bench:rust": "cargo bench --manifest-path ./tests/benchmark/rust/Cargo.toml",
+    "bench:rust": "cargo bench",
     "bench:ts": "node ts-bench.js",
     "build": "node ./esbuild.config.js",
     "build:release": "node ./build-script.js --local --silent",
@@ -45,12 +45,12 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "src/**/*.{js,ts,jsx,tsx}": [
+    "ts/src/**/*.{js,ts,jsx,tsx}": [
       "sh -c 'tsc'",
       "eslint --fix",
       "prettier --write"
     ],
-    "*.rs": [
+    "/rust/**/*.rs": [
       "sh -c 'cargo fmt --'",
       "sh -c 'cargo clippy --color always -- -D warnings'"
     ]

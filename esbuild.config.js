@@ -1,14 +1,14 @@
 import esbuild from 'esbuild';
 const builds = [
   {
-    entryPoints: ['./src/index.ts'],
+    entryPoints: ['./ts/src/index.ts'],
     format: 'esm',
-    outfile: 'dist/index.min.mjs',
+    outfile: './ts/dist/index.min.mjs',
   },
   {
-    entryPoints: ['./src/index.ts'],
+    entryPoints: ['./ts/src/index.ts'],
     format: 'cjs',
-    outfile: 'dist/index.min.cjs',
+    outfile: './ts/dist/index.min.cjs',
   },
 ];
 for (const config of builds) {

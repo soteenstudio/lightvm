@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-const sourceDir = './bindings';
-const targetDir = './src/bindings';
+const sourceDir = './ts/src/generated/';
+const targetDir = './ts/src/generated/'; 
 if (!fs.existsSync(targetDir)) {
   fs.mkdirSync(targetDir, { recursive: true });
 }
@@ -14,7 +14,7 @@ function processFile(filePath) {
   const fileName = path.basename(filePath);
   const targetPath = path.join(targetDir, fileName);
   fs.writeFileSync(targetPath, content);
-  console.log(`Successfully processed & moved: ${fileName}`);
+  console.log(`Successfully processed: ${fileName}`);
 }
 fs.readdirSync(sourceDir).forEach(file => {
   if (file.endsWith('.ts')) {

@@ -9,16 +9,11 @@
  */
 
 import { Bench } from 'tinybench';
-import { LightVM, Capability } from "../../../dist/index.min.mjs";
+import { LightVM, Capability } from "../dist/index.min.mjs";
 async function runBenchmark() {
   const bench = new Bench();
   const vm = new LightVM([Capability.Observe, Capability.Control]);
-  const raw = [
-    ["val", "x"],
-    ["push", "Hello from "],
-    ["push", "LightVM!"],
-    ["set", "x"]
-  ];
+  const raw = [["push", 5], ["push", 8], ["add", "i16"]];
   const tools = vm.tools();
   const optimized = tools.optimizeBytecode(raw);
   vm.load(optimized);

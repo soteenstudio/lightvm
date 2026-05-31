@@ -1,4 +1,4 @@
-/dist/
+/ts/dist/
 /assembly/
 /node_modules/
 *.tgz
@@ -6,4 +6,4 @@
 /bindings/
 lz4.js
 /.trash/
-/binaries/
+/ts/binaries/

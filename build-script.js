@@ -14,21 +14,22 @@ const TARGET_NAME = 'lightvm.node';
 const RUST_OUT_DIR = isDebug ? 'debug' : 'release';
 const SOURCE_PATH = join(
   process.cwd(),
-  'benchmarks',
+  'target',
   RUST_OUT_DIR,
   RUST_BINARY_NAME,
 );
-const DEST_DIR = join(process.cwd(), 'binaries');
+const DEST_DIR = join(process.cwd(), 'ts', 'binaries');
 const DEST_PATH = join(DEST_DIR, TARGET_NAME);
 function togglePackageFiles(mode) {
   const pkg = JSON.parse(fs.readFileSync(PKG_PATH, 'utf-8'));
   if (!pkg.files) pkg.files = [];
+  const targetDir = 'ts/binaries';
   if (mode === 'local') {
-    if (!pkg.files.includes('binaries')) {
-      pkg.files.push('binaries');
+    if (!pkg.files.includes(targetDir)) {
+      pkg.files.push(targetDir);
     }
   } else {
-    pkg.files = pkg.files.filter((file) => file !== 'binaries');
+    pkg.files = pkg.files.filter((file) => file !== targetDir);
   }
   fs.writeFileSync(PKG_PATH, JSON.stringify(pkg, null, 2));
 }
@@ -38,7 +39,7 @@ try {
     ? 'cargo build --features node'
     : 'cargo build --release --features node';
   execSync(buildCmd, {
-    cwd: join(process.cwd(), 'rust'),
+    cwd: join(process.cwd()),
     stdio: STDIO_MODE,
   });
   console.log('🏗️  Building JS...');

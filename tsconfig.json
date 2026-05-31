@@ -5,8 +5,8 @@
     "lib": ["es5", "es6", "es7", "es2022", "dom"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "rootDir": "./src",
-    "typeRoots": ["./typings", "./node_modules/@types"],
+    "rootDir": "./ts/src",
+    "typeRoots": ["./ts/types", "./node_modules/@types"],
     "sourceMap": true,
     "outDir": "./dist",
     "esModuleInterop": true,
@@ -14,6 +14,6 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src", "typings"],
+  "include": ["./ts/src", "./ts/types"],
   "exclude": ["tests"]
 }

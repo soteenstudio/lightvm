@@ -9,7 +9,7 @@
  *
  */
 
-import { Instructions } from './bindings/Instructions.js';
+import { Instructions } from './generated/Instructions.js';
 import { loadNapi } from './utils/loadNapi.js';
 import type { VMEvent, VMResult, Listener } from '../types/index.d.ts';
 export enum Capability {

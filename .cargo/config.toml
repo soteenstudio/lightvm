@@ -11,3 +11,7 @@ rustflags = [
   "-C", "link-arg=-undefined",
   "-C", "link-arg=dynamic_lookup",
 ]
+
+[env]
+TS_RS_EXPORT_DIR = { value = "ts/src/generated" }
+TS_RS_LARGE_INT = "number"
