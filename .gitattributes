@@ -3,6 +3,6 @@
 .prettierrc          linguist-detectable=false
 /tests/**            linguist-detectable=false
 /benches/**          linguist-detectable=false
-/benchmarks/**       linguist-detectable=false
+/ts/benchmarks/**    linguist-detectable=false
 /ts/src/generated/** linguist-detectable=false
 *.d.ts               linguist-documentation=true
