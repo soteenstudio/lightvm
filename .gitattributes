@@ -4,6 +4,5 @@
 /tests/**            linguist-detectable=false
 /benches/**          linguist-detectable=false
 /benchmarks/**       linguist-detectable=false
-/src/bindings/**     linguist-detectable=false
-/ts/src/generated/   linguist-detectable=false
+/ts/src/generated/** linguist-detectable=false
 *.d.ts               linguist-documentation=true
