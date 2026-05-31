@@ -107,7 +107,6 @@ jobs:
           matrix.platform == 'win32-ia32' || 
           matrix.platform == 'darwin-x64'
         run: cargo build --release --target ${{ matrix.target }}
-        working-directory: rust
 
       - name: Build Release (Specialized)
         if: |
@@ -124,15 +123,13 @@ jobs:
               curl -L https://github.com/cross-rs/cross/releases/latest/download/cross-x86_64-unknown-linux-musl.tar.gz | tar xz
               chmod +x cross
             fi
-            cd rust
-            RUSTFLAGS="-C target-feature=-crt-static" ../cross build --release --target ${{ matrix.target }}
+            RUSTFLAGS="-C target-feature=-crt-static" ./cross build --release --target ${{ matrix.target }}
           else
             if [ ! -f "./cross" ]; then
               curl -L https://github.com/cross-rs/cross/releases/latest/download/cross-x86_64-unknown-linux-musl.tar.gz | tar xz
               chmod +x cross
             fi
-            cd rust
-            ../cross build --release --target ${{ matrix.target }}
+            ./cross build --release --target ${{ matrix.target }}
           fi
   
       - name: Upload Artifacts
@@ -140,10 +137,10 @@ jobs:
         with:
           name: binary-${{ matrix.platform }}
           path: |
-            rust/target/${{ matrix.target }}/release/*.node
-            rust/target/${{ matrix.target }}/release/*.dll
-            rust/target/${{ matrix.target }}/release/*.so
-            rust/target/${{ matrix.target }}/release/*.dylib
+            target/${{ matrix.target }}/release/*.node
+            target/${{ matrix.target }}/release/*.dll
+            target/${{ matrix.target }}/release/*.so
+            target/${{ matrix.target }}/release/*.dylib
 
   publish-npm:
     needs: build-npm
@@ -256,20 +253,11 @@ jobs:
 
       - name: Sync Assets and Version
         run: |
-          # 1. Ambil versi dari tag (buang prefix 'v' kalau ada)
           RAW_VERSION="${{ github.event.release.tag_name }}"
           VERSION=${RAW_VERSION#v}
           echo "Publishing version: $VERSION"
 
-          # 2. Modif Cargo.toml pake sed (cari line yang mulai dengan 'version =')
-          # Kita pake -i buat edit file langsung
-          sed -i "s/^version = \".*\"/version = \"$VERSION\"/" rust/Cargo.toml
-
-          # 3. Copy README & LICENSE
-          cp README.md rust/
-          cp LICENSE rust/
+          sed -i "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
 
       - name: Publish to Crates.io
-        # Wajib pake --allow-dirty karena Cargo.toml & README berubah statusnya
         run: cargo publish --token ${{ secrets.CRATES_IO_TOKEN }} --allow-dirty
-        working-directory: rust
