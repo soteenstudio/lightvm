@@ -77,6 +77,7 @@
     "lint-staged": "^17.0.5",
     "prettier": "3.8.3",
     "tinybench": "^6.0.2",
-    "tsx": "^4.22.3"
+    "tsx": "^4.22.3",
+    "unitry": "^0.1.0-alpha.0"
   }
 }
