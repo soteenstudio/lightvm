@@ -40,8 +40,8 @@
     "build:release": "node ./scripts/build-script.js --local --silent",
     "build:debug": "node ./scripts/build-script.js --local --debug --silent",
     "typecheck": "tsc",
-    "prettier": "npx prettier . --write",
-    "eslint": "npx eslint . --fix",
+    "prettier": "npx prettier ./ts/**/*.ts --write",
+    "eslint": "npx eslint ./ts/**/*.ts --fix",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -50,7 +50,7 @@
       "eslint --fix",
       "prettier --write"
     ],
-    "/rust/**/*.rs": [
+    "rust/**/*.rs": [
       "sh -c 'cargo fmt --'",
       "sh -c 'cargo clippy --color always -- -D warnings'"
     ]

@@ -40,25 +40,23 @@ jobs:
         with:
           path: |
             ~/.cargo/registry/
-            rust/target/
+            target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
 
       - name: Build Rust Core
-        run: |
-          if [ -d "./rust" ]; then
-            cd rust && cargo build --release --locked
-          fi
+        run: cargo build --release --locked
 
       - name: Install dependencies
         run: npm ci --prefer-offline
 
       - name: Linting & Formatting
         run: |
-          echo "Running Prettier & Rustfmt check..."
-          npx prettier --check "src/**/*.ts"
-          if [ -d "./rust" ]; then cd rust && cargo fmt --check && cd ..; fi
+          echo "Running Prettier, ESLint & Rustfmt check..."
+          npm run prettier
+          npm run eslint
+          cargo fmt --check
 
       - name: Deep Code Audit (Junk & Header)
         run: |
@@ -84,10 +82,7 @@ jobs:
           fi
 
       - name: Rust Security & Quality (Clippy)
-        run: |
-          if [ -d "./rust" ]; then
-            cd rust && cargo clippy -- -D warnings
-          fi
+        run: cargo clippy -- -D warnings
 
       - name: Final Build Check (TypeScript)
         run: npm run build
