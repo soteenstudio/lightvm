@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-const sourceDir = './ts/src/generated/';
-const targetDir = './ts/src/generated/'; 
+const sourceDir = path.join(process.cwd(), 'ts', 'src', 'generated');
+const targetDir = path.join(process.cwd(), 'ts', 'src', 'generated');
 if (!fs.existsSync(targetDir)) {
   fs.mkdirSync(targetDir, { recursive: true });
 }

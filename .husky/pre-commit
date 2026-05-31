@@ -1,3 +1,3 @@
-node ./fix-imports.js
+node ./scripts/fix-imports.js
 git add ./ts/src/generated
 npx lint-staged

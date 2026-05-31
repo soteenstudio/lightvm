@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const targetDir = path.join(__dirname, 'ts', 'benchmarks');
+const targetDir = path.join(__dirname, '../ts', 'benchmarks');
 const files = fs.readdirSync(targetDir).filter(file => file.endsWith('.ts'));
 files.forEach(file => {
   console.log(`Running: ${file}...`);

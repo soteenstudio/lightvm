@@ -35,10 +35,10 @@
   ],
   "scripts": {
     "bench:rust": "cargo bench",
-    "bench:ts": "node ts-bench.js",
+    "bench:ts": "node ./scripts/ts-bench.js",
     "build": "node ./esbuild.config.js",
-    "build:release": "node ./build-script.js --local --silent",
-    "build:debug": "node ./build-script.js --local --debug --silent",
+    "build:release": "node ./scripts/build-script.js --local --silent",
+    "build:debug": "node ./scripts/build-script.js --local --debug --silent",
     "typecheck": "tsc",
     "prettier": "npx prettier . --write",
     "eslint": "npx eslint . --fix",
