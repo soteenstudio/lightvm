@@ -154,15 +154,30 @@ jobs:
           fi
 
           BRANCH_NAME="release/${{ env.NEW_VERSION }}"
-          git checkout -b "$BRANCH_NAME"
+          
+          # 1. Tarik info branch paling update dari remote GitHub
+          git fetch origin 2>/dev/null || true
 
+          # 2. Cek apakah branch target udah eksis di remote GitHub
+          if git show-ref --verify --quiet "refs/remotes/origin/$BRANCH_NAME"; then
+            echo "Branch $BRANCH_NAME detected on remote. Syncing and overwriting..."
+            # Pindah ke branch tersebut dan samakan history-nya dengan remote
+            git checkout -B "$BRANCH_NAME"
+          else
+            echo "Branch $BRANCH_NAME is brand new. Creating cleanly from current HEAD..."
+            # Kalau beneran baru, bikin branch fresh dari branch utama (main)
+            git checkout -b "$BRANCH_NAME"
+          fi
+
+          # 3. Proses injeksi changelog & file config (seperti bawaan script lu)
           [ -f "package.json" ] && git add package.json
           [ -f "Cargo.toml" ] && git add Cargo.toml
           [ -f "CHANGELOG.md" ] && git add CHANGELOG.md
 
           git commit -m "chore: prepare release ${{ env.NEW_VERSION }}" || echo "No changes to commit"
           
-          git push origin "$BRANCH_NAME"
+          # 4. FIX UTAMA: Pakai flag '-f' (force push) biar ga kena reject non-fast-forward
+          git push -f origin "$BRANCH_NAME"
 
           PR_EXISTS=$(gh pr list --head "$BRANCH_NAME" --json number -q '.[0].number')
 
