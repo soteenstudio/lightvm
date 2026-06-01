@@ -7,6 +7,7 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
+
 use crate::instructions::stack::import_func::import_func;
 use crate::types::{
   control_flow_signal::ControlFlowSignal,

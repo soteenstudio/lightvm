@@ -7,7 +7,6 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-use crate::types::value::Value;
 
 use crate::instructions::comparison::gt::{
   gt_f16in::gt_f16in, gt_f32in::gt_f32in, gt_f64in::gt_f64in, gt_i16in::gt_i16in,
@@ -15,6 +14,7 @@ use crate::instructions::comparison::gt::{
 };
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
+use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn gt_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {

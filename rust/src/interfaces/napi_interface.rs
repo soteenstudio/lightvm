@@ -13,6 +13,7 @@ use crate::interfaces::interface::LightVM;
 use crate::types::capability::Capability;
 use crate::utils::vmerror::VMError;
 use napi::bindgen_prelude::*;
+use napi::threadsafe_function::ThreadsafeFunctionCallMode;
 use napi_derive::napi;
 #[napi(js_name = "LightVM")]
 pub struct NodeLightVM {
@@ -110,6 +111,23 @@ impl NodeLightVM {
       .inner
       .halt_internal()
       .map_err(|e| Error::from_reason(e.to_string()))
+  }
+  #[napi]
+  pub fn on(&mut self, event_type: String, callback: Function<String, ()>) -> Result<()> {
+    use crate::types::vmevent::VmEvent;
+    let event = match event_type.as_str() {
+      "tick" => VmEvent::Tick,
+      "halt" => VmEvent::Halt,
+      "panic" => VmEvent::Panic,
+      _ => return Err(Error::from_reason(format!("Unknown event: {}", event_type))),
+    };
+    let threadsafe_callback = callback.build_threadsafe_function().build()?;
+    self
+      .inner
+      .on_internal(event, move |payload| {
+        let _ = threadsafe_callback.call(payload, ThreadsafeFunctionCallMode::NonBlocking);
+      })
+      .map_err(|e| Error::from_reason(e))
   }
   #[napi]
   pub fn embedded(&mut self) -> Result<serde_json::Value> {

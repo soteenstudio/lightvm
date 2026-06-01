@@ -7,7 +7,6 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-use crate::types::value::Value;
 
 use crate::instructions::math::neg::{
   neg_f16in::neg_f16in, neg_f32in::neg_f32in, neg_f64in::neg_f64in, neg_i16in::neg_i16in,
@@ -15,6 +14,7 @@ use crate::instructions::math::neg::{
 };
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
+use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn neg_values(a: Value, num_type: PrimitiveTypes) -> Value {

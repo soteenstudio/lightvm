@@ -7,7 +7,6 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-use crate::types::value::Value;
 
 use crate::instructions::math::div::{
   div_f16in::div_f16in, div_f32in::div_f32in, div_f64in::div_f64in, div_i16in::div_i16in,
@@ -15,6 +14,7 @@ use crate::instructions::math::div::{
 };
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
+use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn div_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {

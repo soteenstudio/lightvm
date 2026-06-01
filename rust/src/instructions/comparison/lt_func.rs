@@ -7,7 +7,6 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-use crate::types::value::Value;
 
 use crate::instructions::comparison::lt::{
   lt_f16in::lt_f16in, lt_f32in::lt_f32in, lt_f64in::lt_f64in, lt_i16in::lt_i16in,
@@ -15,6 +14,7 @@ use crate::instructions::comparison::lt::{
 };
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
+use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn lt_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {

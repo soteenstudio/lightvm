@@ -14,12 +14,19 @@ function run() {
     execSync('npm run build', { stdio: 'ignore' });
     console.log('Build success!');
 
-    // 2. Run tests (inherit logs)
+    // 2. Run tests (inherit logs) + Timeout Perlindungan
     console.log('Running tests...');
     try {
-      execSync('npx unitry ./ts/tests', { stdio: 'inherit' });
+      execSync('npx unitry ./ts/tests', {
+        stdio: 'inherit',
+        timeout: 10000,
+      });
     } catch (err) {
-      console.log('Tests finished with some failures.');
+      if (err.code === 'ETIMEDOUT') {
+        console.error('Tests stuck / timeout! Forcing cleanup...');
+      } else {
+        console.log('Tests finished with some failures.');
+      }
     }
 
     // 3. Delete dist folder

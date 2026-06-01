@@ -1,4 +1,4 @@
-target_dir = "src"
+target_dir = "rust/src"
 entry_file = "lib.rs"
 
 [scripts.format]

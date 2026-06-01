@@ -7,6 +7,7 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
+
 use crate::types::value::{FuncMetadata, RunOptions, Value};
 use ahash::AHashMap;
 use smol_str::SmolStr;

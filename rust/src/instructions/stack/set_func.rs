@@ -7,9 +7,9 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-use crate::types::value::Value;
 
 use crate::types::stack::Stack;
+use crate::types::value::Value;
 use crate::types::var_stack::VarStack;
 use crate::utils::vmerror::VMError;
 #[inline(always)]

@@ -30,6 +30,21 @@ test('provide test', () => {
 test('halt test', () => {
   expect(() => vm.halt()).not.toThrow();
 });
+test('on test', async () => {
+  let halted = false;
+  const optimized = tools.optimizeBytecode(raw);
+  vm.load(optimized);
+  const waitForHalt = new Promise<void>((resolve) => {
+    vm.on('halt', () => {
+      halted = true;
+      resolve();
+    });
+  });
+  vm.run();
+  vm.halt();
+  await waitForHalt;
+  expect(halted).toBe(true);
+});
 test('inspect test', () => {
   const result = vm.inspect();
   expect(result.capabilities.length > 0 && result.instructions !== 0).toBe(true);

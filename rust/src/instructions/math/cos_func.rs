@@ -7,13 +7,13 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-use crate::types::value::Value;
 
 use crate::instructions::math::cos::{
   cos_f16in::cos_f16in, cos_f32in::cos_f32in, cos_f64in::cos_f64in,
 };
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
+use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn cos_values(a: Value, num_type: PrimitiveTypes) -> Value {

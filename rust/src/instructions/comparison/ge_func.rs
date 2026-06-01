@@ -7,7 +7,6 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-use crate::types::value::Value;
 
 use crate::instructions::comparison::ge::{
   ge_f16in::ge_f16in, ge_f32in::ge_f32in, ge_f64in::ge_f64in, ge_i16in::ge_i16in,
@@ -15,6 +14,7 @@ use crate::instructions::comparison::ge::{
 };
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
+use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn ge_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {

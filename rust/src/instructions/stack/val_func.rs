@@ -7,6 +7,7 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
+
 use crate::types::{value::Value, var_stack::VarStack};
 use crate::utils::vmerror::VMError;
 use smol_str::SmolStr;

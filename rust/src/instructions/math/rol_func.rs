@@ -7,13 +7,13 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-use crate::types::value::Value;
 
 use crate::instructions::math::rol::{
   rol_i16in::rol_i16in, rol_i32in::rol_i32in, rol_i64in::rol_i64in, rol_i128in::rol_i128in,
 };
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
+use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn rol_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {

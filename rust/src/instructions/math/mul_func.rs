@@ -7,7 +7,6 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-use crate::types::value::Value;
 
 use crate::instructions::math::mul::{
   mul_f16in::mul_f16in, mul_f32in::mul_f32in, mul_f64in::mul_f64in, mul_i16in::mul_i16in,
@@ -15,6 +14,7 @@ use crate::instructions::math::mul::{
 };
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
+use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn mul_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {

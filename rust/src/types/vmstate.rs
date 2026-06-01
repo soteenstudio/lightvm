@@ -11,7 +11,7 @@
 #[cfg(feature = "node")]
 use napi_derive::napi;
 #[cfg_attr(feature = "node", napi(string_enum))]
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum VmState {
   Idle,
   Running,

@@ -7,7 +7,6 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-use crate::types::value::Value;
 
 use crate::instructions::math::sub::{
   sub_f16in::sub_f16in, sub_f32in::sub_f32in, sub_f64in::sub_f64in, sub_i16in::sub_i16in,
@@ -15,6 +14,7 @@ use crate::instructions::math::sub::{
 };
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
+use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn sub_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {

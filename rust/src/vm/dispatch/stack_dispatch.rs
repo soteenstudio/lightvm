@@ -7,6 +7,7 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
+
 use crate::instructions::stack::{
   concat_func::concat_func, dup_func::dup_func, get_func::get_func,
   push_array_func::push_array_func, push_f16_func::push_f16_func, push_f32_func::push_f32_func,
