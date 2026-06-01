@@ -46,7 +46,7 @@ const customNoCommentRule = {
 };
 export default [
   {
-    files: ['src/**/*.{js,jsx,ts,tsx}'],
+    files: ['ts/src/**/*.{js,ts}', 'ts/tests/**/*.{js,ts}', 'scripts/**/*.{js,ts}'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
