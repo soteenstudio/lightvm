@@ -4,11 +4,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
 
 jobs:
   build-npm:
-    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -117,7 +119,7 @@ jobs:
           matrix.platform == 'linux-ia32'
         run: |
           if [[ "${{ matrix.platform }}" == *"android"* ]]; then
-            cd rust && cargo build --release --target ${{ matrix.target }}
+            cargo build --release --target ${{ matrix.target }}
           elif [[ "${{ matrix.platform }}" == *"musl"* ]]; then
             if [ ! -f "./cross" ]; then
               curl -L https://github.com/cross-rs/cross/releases/latest/download/cross-x86_64-unknown-linux-musl.tar.gz | tar xz
