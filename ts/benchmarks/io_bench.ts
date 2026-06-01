@@ -9,11 +9,11 @@
  */
 
 import { Bench } from 'tinybench';
-import { LightVM, Capability } from "../dist/index.min.mjs";
+import { LightVM, Capability } from '../dist/index.min.mjs';
 async function runBenchmark() {
   const bench = new Bench();
   const vm = new LightVM([Capability.Observe, Capability.Control]);
-  const raw = [["push", "Hello from LightVM!"], ["println"]];
+  const raw = [['push', 'Hello from LightVM!'], ['println']];
   const tools = vm.tools();
   const optimized = tools.optimizeBytecode(raw);
   vm.load(optimized);
@@ -22,7 +22,9 @@ async function runBenchmark() {
   });
   await bench.run();
   bench.table().forEach((row) => {
-    console.log(`Task: ${row['Task name']} | Avg Latency: ${row['Latency avg (ns)']}`);
+    console.log(
+      `Task: ${row['Task name']} | Avg Latency: ${row['Latency avg (ns)']}`,
+    );
   });
 }
 runBenchmark().catch(console.error);
