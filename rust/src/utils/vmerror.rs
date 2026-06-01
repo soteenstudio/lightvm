@@ -10,6 +10,7 @@
 
 use smol_str::SmolStr;
 use std::fmt;
+#[derive(Debug)]
 pub enum VMError {
   /// Terjadi saat stack mencapai batas maksimum yang ditentukan InitStack atau default
   StackOverflow { ip: usize, limit: usize },

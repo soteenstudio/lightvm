@@ -181,89 +181,64 @@ mod tests {
     Arc, Mutex,
     atomic::{AtomicBool, Ordering},
   };
-
   #[test]
   fn new_creates_vm() {
     let vm = LightVM::new(vec![]);
-
     assert!(vm.bytecode.is_empty());
     assert_eq!(vm.state, VmState::Idle);
   }
-
   #[test]
   fn on_registers_listener() {
     let mut vm = LightVM::new(vec![]);
-
     vm.on("tick", |_| {});
-
     assert_eq!(vm.listeners.get(&VmEvent::Tick).unwrap().len(), 1);
   }
-
   #[test]
   fn tick_event_calls_listener() {
     let mut vm = LightVM::new(vec![]);
-
     let called = Arc::new(AtomicBool::new(false));
     let flag = called.clone();
-
     vm.on("tick", move |_| {
       flag.store(true, Ordering::SeqCst);
     });
-
     vm.emit(VmEvent::Tick, json!({"state":"start"}));
-
     assert!(called.load(Ordering::SeqCst));
   }
-
   #[test]
   fn tick_event_sends_payload() {
     let mut vm = LightVM::new(vec![]);
-
     let payload = Arc::new(Mutex::new(String::new()));
     let out = payload.clone();
-
     vm.on("tick", move |data| {
       *out.lock().unwrap() = data;
     });
-
     vm.emit(VmEvent::Tick, json!({"hello":"world"}));
-
     assert_eq!(*payload.lock().unwrap(), r#"{"hello":"world"}"#);
   }
-
   #[test]
   fn provide_adds_imports() {
     let mut vm = LightVM::new(vec![Capability::Control]);
-
     vm.provide(json!({
         "foo": 123,
         "bar": "hello"
     }));
-
     assert_eq!(vm._imports.len(), 2);
   }
-
   #[test]
   fn inspect_returns_json() {
     let vm = LightVM::new(vec![]);
-
     let info = vm.inspect();
-
     assert!(info.is_object());
     assert!(info.get("state").is_some());
   }
-
   #[test]
   fn tools_exists() {
     let _tools = LightVM::tools();
   }
-
   #[test]
   fn embedded_returns_object() {
     let mut vm = LightVM::new(vec![Capability::Observe, Capability::Control]);
-
     let result = vm.embedded();
-
     assert!(result.is_object());
     assert!(result.get("outputs").is_some());
   }
