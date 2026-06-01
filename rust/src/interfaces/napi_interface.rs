@@ -39,6 +39,9 @@ impl NodeLightVM {
             caps_set.insert(Capability::Control);
           }
           2 => {
+            caps_set.insert(Capability::Debug);
+          }
+          3 => {
             caps_set.insert(Capability::Unsafe);
           }
           _ => {

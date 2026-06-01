@@ -1,7 +1,7 @@
 import { test, expect } from "unitry";
 import { LightVM, Capability } from "../dist/index.min.mjs";
 
-const vm = new LightVM([Capability.Observe, Capability.Control]);
+const vm = new LightVM([Capability.Observe, Capability.Control, Capability.Unsafe]);
 const tools = vm.tools();
 const raw = [
   ["push", 15],
@@ -26,6 +26,9 @@ test('provide test', () => {
   const length = Object.keys(result).length;
   const type = typeof result;
   expect(length > 0 && type === 'object').toBe(true);
+});
+test('halt test', () => {
+  expect(() => vm.halt()).not.toThrow();
 });
 test('inspect test', () => {
   const result = vm.inspect();
