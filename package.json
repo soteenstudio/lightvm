@@ -18,6 +18,7 @@
     "url": "https://github.com/soteenstudio/lightvm/issues"
   },
   "homepage": "https://github.com/soteenstudio/lightvm#readme",
+  "funding": "https://trakteer.id/soteen_studio/tip?quantity=1",
   "type": "module",
   "types": "./types/index.d.ts",
   "exports": {
