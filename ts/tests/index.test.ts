@@ -52,4 +52,4 @@ test('inspect test', () => {
 test('optimize bytecode test', () => {
   const result = JSON.stringify(tools.optimizeBytecode(raw));
   expect(result).toBe(JSON.stringify([ { push: 20 }, 'println' ]));
-});
+}); 
