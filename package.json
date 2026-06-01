@@ -52,6 +52,11 @@
       "eslint --fix",
       "prettier --write"
     ],
+    "ts/tests/**/*.{js,ts}": [
+      "sh -c 'tsc'",
+      "eslint --fix",
+      "prettier --write"
+    ],
     "scripts/**/*.{js,ts}": [
       "sh -c 'tsc'",
       "eslint --fix",
