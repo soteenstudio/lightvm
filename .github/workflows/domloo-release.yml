@@ -142,7 +142,7 @@ jobs:
       - name: Create Release Branch and Push
         if: env.NEW_VERSION != ''
         env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GH_TOKEN: ${{ secrets.LIGHTVM_PAT }}
         run: |
           git config --global user.name "Domloo Release"
           git config --global user.email "claybot@internal"
