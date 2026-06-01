@@ -147,10 +147,10 @@ jobs:
           git config --global user.name "Domloo Release"
           git config --global user.email "claybot@internal"
           
-          if [ -f ".github/CHANGELOG.md" ]; then
-            cat current_changelog.md .github/CHANGELOG.md > temp_changelog.md && mv temp_changelog.md .github/CHANGELOG.md
+          if [ -f "docs/CHANGELOG.md" ]; then
+            cat current_changelog.md docs/CHANGELOG.md > temp_changelog.md && mv temp_changelog.md docs/CHANGELOG.md
           else
-            cp current_changelog.md .github/CHANGELOG.md
+            cp current_changelog.md docs/CHANGELOG.md
           fi
 
           BRANCH_NAME="release/${{ env.NEW_VERSION }}"
@@ -160,7 +160,7 @@ jobs:
 
           [ -f "package.json" ] && git add package.json
           [ -f "Cargo.toml" ] && git add Cargo.toml
-          [ -f ".github/CHANGELOG.md" ] && git add .github/CHANGELOG.md
+          [ -f "docs/CHANGELOG.md" ] && git add docs/CHANGELOG.md
 
           git commit -m "chore: prepare release ${{ env.NEW_VERSION }}" || echo "No changes to commit"
           
