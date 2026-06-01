@@ -47,7 +47,12 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "ts/src/**/*.{js,ts,jsx,tsx}": [
+    "ts/src/**/*.{js,ts}": [
+      "sh -c 'tsc'",
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "scripts/**/*.{js,ts}": [
       "sh -c 'tsc'",
       "eslint --fix",
       "prettier --write"
