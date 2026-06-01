@@ -131,7 +131,7 @@ LightVM uses a strict capability-based security model. You must explicitly grant
 
 ### How to use
 1. ``run()`` __method__:  
-  Permission to start bytecode execution.  
+  Function to start bytecode execution.  
 
     <details>
     <summary>TypeScript:</summary>
@@ -166,15 +166,15 @@ LightVM uses a strict capability-based security model. You must explicitly grant
 > __Info__: parameters of ``load()`` can change bytecode directly or file path to .ltc
     
 2. ``provide()`` method:  
-  Permission to inject data/variables into the VM.
+  Function to inject data/variables into the VM.
 
     <details>
     <summary>TypeScript:</summary>
     
     ```typescript
-    vm.provide("identity", {
+    vm.provide({
       name: "John Doe", 
-      force: "2021",
+      force: 2021,
     });
     ```
     </details>
@@ -183,9 +183,9 @@ LightVM uses a strict capability-based security model. You must explicitly grant
     <summary>Rust:</summary>
     
     ```rust
-    vm.provide("identity".to_string(), serde_json::json!({
-        "name": "John Doe",
-        "force": "2021"
+    vm.provide(serde_json::json!({
+      "name": "John Doe",
+      "force": 2021
     }));
     ```
     </details>
@@ -194,7 +194,7 @@ LightVM uses a strict capability-based security model. You must explicitly grant
 > __Capability Required__: no spesific capability
     
 3. ``inspect()`` method:  
-  Permission to view state, number of instructions, and capability.
+  Function to view state, number of instructions, and capability.
 
     <details>
     <summary>TypeScript:</summary>
@@ -218,7 +218,7 @@ LightVM uses a strict capability-based security model. You must explicitly grant
 > __Capability Required__: observe
     
 4. ``halt()`` method:  
-  Permission to force/manually stop VM.
+  Function to force/manually stop VM.
 
     <details>
     <summary>TypeScript:</summary>
@@ -240,9 +240,36 @@ LightVM uses a strict capability-based security model. You must explicitly grant
     
 > [!NOTE]
 > __Capability Required__: unsafe
+
+5. ``on()`` method:
+  Function to register listener to VM.
+
+    <details>
+    <summary>TypeScript:</summary>
     
-5. ``export()`` method:  
-  Permission to export functions in the VM out.
+    ```typescript
+    vm.on("halt", (payload) => {
+      console.log("Halted: ", payload);
+    });
+    ```
+    </details>
+    
+    <details>
+    <summary>Rust:</summary>
+    
+    ```typescript
+    vm.on("halt", |payload| {
+      println!("Halted: ", payload);
+    });
+    ```
+    </details>
+  
+> [!NOTE]
+> __Capability Required__: no spesific capability  
+> __Event__: tick, halt, and panic
+    
+6. ``export()`` method:  
+  Function to export functions in the VM out.
 
     <details>
     <summary>TypeScript:</summary>
@@ -267,7 +294,8 @@ LightVM uses a strict capability-based security model. You must explicitly grant
     
 > [!NOTE]
 > __Capability Required__: control
-6. ``tools()`` method:  
+
+7. ``tools()`` method:  
   Functions used to call utilities  
   
     <ol type="a">
