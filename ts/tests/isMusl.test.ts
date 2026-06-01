@@ -5,3 +5,4 @@ test('isMusl should return a boolean', () => {
   const result = isMusl();
   expect(typeof result === 'boolean').toBe(true);
 });
+ 

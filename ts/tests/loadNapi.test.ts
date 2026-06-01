@@ -5,3 +5,4 @@ test('loadNapi should load the native module without error', () => {
   const native = loadNapi();
   expect(native !== undefined).toBe(true);
 });
+ 

@@ -10,3 +10,4 @@ test('VMError should have correct properties and message', () => {
   expect(error.ip).toBe(0);
   expect(error.message).toSatisfy((msg: string) => msg.includes(detail));
 });
+ 
