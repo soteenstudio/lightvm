@@ -1,8 +1,8 @@
 *.config.js          linguist-detectable=false
 *.js                 linguist-detectable=false
 .prettierrc          linguist-detectable=false
-/tests/**            linguist-detectable=false
 /benches/**          linguist-detectable=false
+/ts/tests/**         linguist-detectable=false
 /ts/benchmarks/**    linguist-detectable=false
 /ts/src/generated/** linguist-detectable=false
 *.d.ts               linguist-documentation=true
