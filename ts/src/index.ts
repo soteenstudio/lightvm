@@ -11,6 +11,8 @@
 
 import { Instructions } from './generated/Instructions.js';
 import { loadNapi } from './utils/loadNapi.js';
+import { isMusl } from './utils/isMusl.js';
+import { VMSystemError as VMError } from './utils/vmerror.js';
 import type { VMEvent, VMResult, Listener } from '../types/index.d.ts';
 export enum Capability {
   Observe = 'OBSERVE',
@@ -191,4 +193,4 @@ export class LightVM {
     };
   }
 }
-export { Instructions };
+export { Instructions, loadNapi, isMusl, VMError };
