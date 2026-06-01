@@ -253,7 +253,6 @@ impl LightVM {
 mod tests {
   use super::*;
   use crate::types::{capability::Capability, value::Value, vmevent::VmEvent, vmstate::VmState};
-
   use ahash::AHashMap;
   use smol_str::SmolStr;
   use std::{
@@ -263,10 +262,8 @@ mod tests {
       atomic::{AtomicBool, AtomicUsize, Ordering},
     },
   };
-
   fn make_vm(caps: Vec<Capability>) -> LightVM {
     let mut caps_set = HashSet::new();
-
     if caps.is_empty() {
       caps_set.insert(Capability::Observe);
     } else {
@@ -274,7 +271,6 @@ mod tests {
         caps_set.insert(cap);
       }
     }
-
     LightVM {
       bytecode: Vec::new(),
       listeners: AHashMap::new(),
@@ -287,185 +283,131 @@ mod tests {
       _imports: AHashMap::new(),
     }
   }
-
   #[test]
   fn require_success_when_capability_exists() {
     let vm = make_vm(vec![Capability::Control]);
-
     assert!(vm.require(Capability::Control).is_ok());
   }
-
   #[test]
   fn require_fails_when_capability_missing() {
     let vm = make_vm(vec![Capability::Observe]);
-
     assert!(vm.require(Capability::Control).is_err());
   }
-
   #[test]
   fn on_internal_registers_listener() {
     let mut vm = make_vm(vec![]);
-
     vm.on_internal(VmEvent::Tick, |_| {}).unwrap();
-
     assert_eq!(vm.listeners.get(&VmEvent::Tick).unwrap().len(), 1);
   }
-
   #[test]
   fn emit_calls_listener() {
     let mut vm = make_vm(vec![]);
-
     let called = Arc::new(AtomicBool::new(false));
     let flag = called.clone();
-
     vm.on_internal(VmEvent::Tick, move |_| {
       flag.store(true, Ordering::SeqCst);
     })
     .unwrap();
-
     vm.emit(VmEvent::Tick, serde_json::json!({"state":"start"}));
-
     assert!(called.load(Ordering::SeqCst));
   }
-
   #[test]
   fn emit_passes_payload() {
     let mut vm = make_vm(vec![]);
-
     let payload = Arc::new(Mutex::new(String::new()));
     let payload_ref = payload.clone();
-
     vm.on_internal(VmEvent::Tick, move |data| {
       *payload_ref.lock().unwrap() = data;
     })
     .unwrap();
-
     vm.emit(VmEvent::Tick, serde_json::json!({"hello":"world"}));
-
     assert_eq!(*payload.lock().unwrap(), r#"{"hello":"world"}"#);
   }
-
   #[test]
   fn emit_calls_all_registered_listeners() {
     let mut vm = make_vm(vec![]);
-
     let count = Arc::new(AtomicUsize::new(0));
-
     let c1 = count.clone();
     let c2 = count.clone();
-
     vm.on_internal(VmEvent::Tick, move |_| {
       c1.fetch_add(1, Ordering::SeqCst);
     })
     .unwrap();
-
     vm.on_internal(VmEvent::Tick, move |_| {
       c2.fetch_add(1, Ordering::SeqCst);
     })
     .unwrap();
-
     vm.emit(VmEvent::Tick, serde_json::Value::Null);
-
     assert_eq!(count.load(Ordering::SeqCst), 2);
   }
-
   #[test]
   fn provide_internal_adds_import() {
     let mut vm = make_vm(vec![Capability::Control]);
-
     vm.provide_internal(SmolStr::new("foo"), serde_json::json!(123))
       .unwrap();
-
     assert!(vm._imports.contains_key("foo"));
   }
-
   #[test]
   fn provide_internal_requires_control_capability() {
     let mut vm = make_vm(vec![Capability::Observe]);
-
     assert!(
       vm.provide_internal(SmolStr::new("foo"), serde_json::json!(123),)
         .is_err()
     );
   }
-
   #[test]
   fn inspect_internal_returns_valid_json() {
     let vm = make_vm(vec![Capability::Observe]);
-
     let json = vm.inspect_internal().unwrap();
-
     let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
-
     assert!(parsed.get("state").is_some());
     assert!(parsed.get("instructions").is_some());
     assert!(parsed.get("capabilities").is_some());
   }
-
   #[test]
   fn inspect_internal_requires_observe_capability() {
     let vm = make_vm(vec![Capability::Control]);
-
     assert!(vm.inspect_internal().is_err());
   }
-
   #[test]
   fn halt_internal_changes_state() {
     let mut vm = make_vm(vec![Capability::Unsafe]);
-
     vm.halt_internal().unwrap();
-
     assert_eq!(vm.state, VmState::Halted);
   }
-
   #[test]
   fn halt_internal_emits_event() {
     let mut vm = make_vm(vec![Capability::Unsafe]);
-
     let called = Arc::new(AtomicBool::new(false));
     let flag = called.clone();
-
     vm.on_internal(VmEvent::Halt, move |_| {
       flag.store(true, Ordering::SeqCst);
     })
     .unwrap();
-
     vm.halt_internal().unwrap();
-
     assert!(called.load(Ordering::SeqCst));
   }
-
   #[test]
   fn get_outputs_internal_returns_and_clears_outputs() {
     let mut vm = make_vm(vec![Capability::Observe]);
-
     vm._outputs.push("hello".into());
     vm._outputs.push("world".into());
-
     let outputs = vm.get_outputs_internal().unwrap();
-
     assert_eq!(outputs.len(), 2);
     assert!(vm._outputs.is_empty());
   }
-
   #[test]
   fn clear_outputs_internal_clears_outputs() {
     let mut vm = make_vm(vec![Capability::Control]);
-
     vm._outputs.push("hello".into());
     vm._outputs.push("world".into());
-
     vm.clear_outputs_internal().unwrap();
-
     assert!(vm._outputs.is_empty());
   }
-
   #[test]
   fn run_internal_rejects_empty_bytecode() {
     let mut vm = make_vm(vec![Capability::Control]);
-
     let result = vm.run_internal(None);
-
     assert!(result.is_err());
   }
 }
