@@ -12,7 +12,9 @@
     "esModuleInterop": true,
     "strict": true,
     "skipLibCheck": true,
-    "noEmit": true
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "declarationDir": "./ts/types"
   },
   "include": ["./ts/src", "./ts/types"],
   "exclude": ["tests"]
