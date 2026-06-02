@@ -135,6 +135,7 @@ pub fn execute(
           &functions,
           &symbol_table,
           &mut ip,
+          bytecode_len,
         )? {
           ControlFlowSignal::Continue => continue,
           ControlFlowSignal::Break => break,

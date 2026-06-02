@@ -28,6 +28,12 @@ pub enum VMError {
   SystemError(SmolStr),
   /// Error saat akses index di luar jangkauan (Array/Object)
   OutOfBounds { ip: usize, index: usize, len: usize },
+  /// Terjadi saat control flow melompat ke IP yang berada di luar panjang bytecode
+  InvalidJumpTarget {
+    ip: usize,
+    target: usize,
+    len: usize,
+  },
 }
 impl fmt::Display for VMError {
   #[cold]
@@ -72,6 +78,11 @@ impl fmt::Display for VMError {
         "Index out of bounds at [IP: {}]. Accessing index {} on a collection of length {}.",
         ip, index, len
       ),
+      VMError::InvalidJumpTarget { ip, target, len } => write!(
+        f,
+        "Invalid jump target {} at [IP: {}]. Bytecode length is only {}. Execution aborted to prevent UB.",
+        target, ip, len
+      ),
       VMError::SystemError(s) => write!(f, "{}", s),
     }?;
     let ip = match self {
@@ -81,7 +92,8 @@ impl fmt::Display for VMError {
         | VMError::StackUnderflow { ip, .. }
         | VMError::InvalidOpcode { ip, .. }
         | VMError::TypeMismatch { ip, .. }
-        | VMError::OutOfBounds { ip, .. } => ip,
+        | VMError::OutOfBounds { ip, .. }
+        | VMError::InvalidJumpTarget { ip, .. } => ip,
         _ => &0,
       },
     };
@@ -106,6 +118,7 @@ impl VMError {
       VMError::InvalidOpcode { .. } => "LVM003",
       VMError::TypeMismatch { .. } => "LVM004",
       VMError::OutOfBounds { .. } => "LVM005",
+      VMError::InvalidJumpTarget { .. } => "LVM006",
       VMError::SystemError(_) => "LVM500",
     }
   }

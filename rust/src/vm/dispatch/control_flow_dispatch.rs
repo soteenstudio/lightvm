@@ -34,9 +34,17 @@ pub fn control_flow_dispatch(
   functions: &AHashMap<SmolStr, FuncMetadata>,
   symbol_table: &AHashMap<SmolStr, usize>,
   ip: &mut usize,
+  len: usize,
 ) -> Result<ControlFlowSignal, VMError> {
   match instr {
     Instructions::IfFalse(target_ip) => {
+      if *target_ip >= len {
+        return Err(VMError::InvalidJumpTarget {
+          ip: *ip,
+          target: *target_ip,
+          len,
+        });
+      }
       let cond = if_false_func(stack, *ip)?;
       if cond {
         *ip = *target_ip;
@@ -45,6 +53,13 @@ pub fn control_flow_dispatch(
       Ok(ControlFlowSignal::None)
     }
     Instructions::Jump(target_ip) => {
+      if *target_ip >= len {
+        return Err(VMError::InvalidJumpTarget {
+          ip: *ip,
+          target: *target_ip,
+          len,
+        });
+      }
       jump_func(ip, *target_ip);
       Ok(ControlFlowSignal::Continue)
     }
@@ -81,10 +96,24 @@ pub fn control_flow_dispatch(
       Ok(ControlFlowSignal::None)
     }
     Instructions::Break(target_ip) => {
+      if *target_ip >= len {
+        return Err(VMError::InvalidJumpTarget {
+          ip: *ip,
+          target: *target_ip,
+          len,
+        });
+      }
       break_func(ip, *target_ip);
       Ok(ControlFlowSignal::Continue)
     }
     Instructions::Func(_name, _params, _start, end, _names) => {
+      if *end >= len {
+        return Err(VMError::InvalidJumpTarget {
+          ip: *ip,
+          target: *end,
+          len,
+        });
+      }
       *ip = *end;
       Ok(ControlFlowSignal::Continue)
     }
