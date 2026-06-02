@@ -21,14 +21,14 @@ pub fn validate_bytecode(
   let len = bytecode.len();
   for (ip, instr) in bytecode.iter().enumerate() {
     match instr {
-      Instructions::IfFalse(target) | Instructions::Jump(target) | Instructions::Break(target) => {
-        if *target >= len {
-          return Err(VMError::OutOfBounds {
-            ip,
-            index: *target,
-            len,
-          });
-        }
+      Instructions::IfFalse(target) | Instructions::Jump(target) | Instructions::Break(target)
+        if *target >= len =>
+      {
+        return Err(VMError::OutOfBounds {
+          ip,
+          index: *target,
+          len,
+        });
       }
       _ => {}
     }
