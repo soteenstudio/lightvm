@@ -88,6 +88,9 @@ yarn add lightvm@next
 
 ```bash
 cargo add lightvm
+
+# or specific version
+cargo add lightvm@0.1.0-alpha.6
 ```
 </details>
 
@@ -176,6 +179,12 @@ LightVM uses a strict capability-based security model. You must explicitly grant
       name: "John Doe", 
       force: 2021,
     });
+    let raw = [
+      ["get", "name"],
+      ["println"],
+      ["get", "force"],
+      ["println"]
+    ];
     ```
     </details>
     
@@ -187,6 +196,12 @@ LightVM uses a strict capability-based security model. You must explicitly grant
       "name": "John Doe",
       "force": 2021
     }));
+    let raw = serde_json::json!([
+      ["get", "name"],
+      ["println"],
+      ["get", "force"],
+      ["println"]
+    ]);
     ```
     </details>
     
@@ -537,4 +552,4 @@ LightVM supports a wide range of platforms and architectures to ensure maximum o
 | FreeBSD      | x64          | Clang     | ✓ | ✓ |
 ## 📜 License & Changelog
  - This project is distributed using the [Apache-2.0 license](LICENSE).
- - See [CHANGELOG.md](CHANGELOG.md) for the latest updates and release history.
+ - See [CHANGELOG.md](./docs/CHANGELOG.md) for the latest updates and release history.
