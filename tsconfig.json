@@ -14,8 +14,8 @@
     "skipLibCheck": true,
     "declaration": true,
     "emitDeclarationOnly": true,
-    "declarationDir": "./ts/types"
+    "declarationDir": "./types"
   },
-  "include": ["./ts/src", "./ts/types"],
-  "exclude": ["tests"]
+  "include": ["./ts/src/**/*"],
+  "exclude": ["tests", "./ts/types/**/*"]
 }

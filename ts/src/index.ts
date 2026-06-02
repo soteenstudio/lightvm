@@ -12,7 +12,13 @@ import { Instructions } from './generated/Instructions.js';
 import { loadNapi } from './utils/loadNapi.js';
 import { isMusl } from './utils/isMusl.js';
 import { VMSystemError as VMError } from './utils/vmerror.js';
-import type { VMEvent, VMResult, Listener } from '../types/index.d.ts';
+export type VMEvent = 'Tick' | 'Halt' | 'Panic';
+export type Listener = (payload?: any) => void;
+export interface VMResult {
+  value: any;
+  outputs: string[];
+  halted: boolean;
+}
 export enum Capability {
   Observe = 'OBSERVE',
   Control = 'CONTROL',
