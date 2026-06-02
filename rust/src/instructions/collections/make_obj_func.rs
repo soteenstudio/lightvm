@@ -13,9 +13,17 @@ use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
 use std::sync::Arc;
+const MAX_OBJECT_CAPACITY: usize = 10_000;
 #[inline]
 pub fn make_obj_func(stack: &mut Stack, count: u32, ip: usize) -> Result<(), VMError> {
-  let mut obj = AHashMap::with_capacity(count as usize);
+  let count_usize = count as usize;
+  if count_usize > MAX_OBJECT_CAPACITY {
+    return Err(VMError::StackOverflow {
+      ip,
+      limit: MAX_OBJECT_CAPACITY,
+    });
+  }
+  let mut obj = AHashMap::with_capacity(count_usize);
   for _ in 0..count {
     let val = stack.pop().ok_or(VMError::StackUnderflow {
       ip,
@@ -31,7 +39,7 @@ pub fn make_obj_func(stack: &mut Stack, count: u32, ip: usize) -> Result<(), VME
       return Err(VMError::TypeMismatch {
         ip,
         expected: "String (Key)",
-        found: "Non-String Key",
+        found: key_raw.type_of(),
       });
     }
   }

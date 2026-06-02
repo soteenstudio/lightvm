@@ -20,6 +20,13 @@ pub fn access_index_func(stack: &mut Stack, ip: usize) -> Result<(), VMError> {
   if let Some(top) = stack.last_mut() {
     match (&mut *top, index_val) {
       (Value::Array(arr), Value::Int64(idx)) => {
+        if idx < 0 {
+          return Err(VMError::OutOfBounds {
+            ip,
+            index: 0,
+            len: arr.len(),
+          });
+        }
         let i = idx as usize;
         if i < arr.len() {
           *top = arr[i].clone();
