@@ -11,6 +11,29 @@ commands = ["cargo clippy -- -D warnings"]
 desc = "Checking code performance"
 commands = ["clean", "header", "track"]
 
+# Commands for developers
+[scripts.test-rust]
+desc = "Running unit tests on .rs files"
+commands = ["cargo test"]
+[scripts.test-ts]
+desc = "Running unit tests on .ts file$"
+commands = ["node ./scripts/run-tests.js"]
+[scripts.bench-rust]
+desc = "To get benchmark results from Rust code"
+commands = ["cargo bench"]
+[scripts.bench-ts]
+desc = "To get benchmark results from TypeScript code"
+commands = ["node ./scripts/ts-bench.js"]
+[scripts.build]
+desc = "Generating build results from TypeScript source"
+commands = ["node ./esbuild.config.js"]
+[scripts.build-release]
+desc = "Create a build release .tgz file"
+commands = ["node ./scripts/build-script.js --local --silent"]
+[scripts.build-debug]
+desc = "Create a build debug .tgz file"
+commands = ["node ./scripts/build-script.js --local --debug --silent"]
+
 [copyright]
 license = "apache"
 year = "2026"

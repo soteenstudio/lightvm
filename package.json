@@ -35,7 +35,8 @@
     "./ts/types"
   ],
   "scripts": {
-    "test": "node ./scripts/run-tests.js",
+    "test:rust": "cargo test",
+    "test:ts": "node ./scripts/run-tests.js",
     "bench:rust": "cargo bench",
     "bench:ts": "node ./scripts/ts-bench.js",
     "build": "node ./esbuild.config.js",
