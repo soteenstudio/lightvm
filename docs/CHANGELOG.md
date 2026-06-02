@@ -1,3 +1,22 @@
+## Changelog for v0.1.0-alpha.6
+
+* fix(vm): Add bounds checking for access_index and optimize array shrink
+* feat: Add runtime bounds checking for control flow
+* feat: Added reverse size limit to init opcode
+* refactor: Tidy up the code structure
+* feat: Adding the on() function
+* fix: Fixed Capability issue with napi_interface.rs
+* refactor: Delete file Instruction.ts
+* perf: Optimize the dispatch and opcode execution sections
+* perf: Optimize performance in key areas to improve user experience (using unsafe)
+* perf: Optimizing the code of the program execution section
+* refactor: tidy up code with ESLint and Husky
+* refactor: tidy up some code
+* refactor: clean up code and warnings from clippy
+* refactor: tidy up the code
+* fix: fix DSE opcode return section
+* fix: fix func opcode and call opcode
+* refactor: simplify provide API and fix provide function bug
 ## Changelog for v0.1.0-alpha.5
 
 * refactor: simplify internal API and update documentation
