@@ -3,12 +3,12 @@ const builds = [
   {
     entryPoints: ['./ts/src/index.ts'],
     format: 'esm',
-    outfile: './ts/dist/index.min.mjs',
+    outfile: './dist/index.min.mjs',
   },
   {
     entryPoints: ['./ts/src/index.ts'],
     format: 'cjs',
-    outfile: './ts/dist/index.min.cjs',
+    outfile: './dist/index.min.cjs',
   },
 ];
 for (const config of builds) {

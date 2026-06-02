@@ -23,16 +23,16 @@
   "types": "./types/index.d.ts",
   "exports": {
     ".": {
-      "types": "./ts/types/index.d.ts",
-      "import": "./ts/dist/index.min.mjs",
-      "require": "./ts/dist/index.min.cjs"
+      "types": "./types/index.d.ts",
+      "import": "./dist/index.min.mjs",
+      "require": "./dist/index.min.cjs"
     },
     "./package.json": "./package.json"
   },
   "files": [
-    "./ts/dist/index.min.cjs",
-    "./ts/dist/index.min.mjs",
-    "./ts/types"
+    "./dist/index.min.cjs",
+    "./dist/index.min.mjs",
+    "./types"
   ],
   "scripts": {
     "test:rust": "cargo test",
