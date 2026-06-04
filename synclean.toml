@@ -33,6 +33,24 @@ commands = ["node ./scripts/build-script.js --local --silent"]
 [scripts.build-debug]
 desc = "Create a build debug .tgz file"
 commands = ["node ./scripts/build-script.js --local --debug --silent"]
+[scripts.check-deps]
+desc = "Checking installed local dependencies"
+commands = ["node ./scripts/check-deps.js"]
+[scripts.typecheck]
+desc = "Type checking"
+commands = ["tsc"]
+[scripts.prettier]
+desc = "Formatting code"
+commands = ["npx prettier ./ts/**/*.ts --write"]
+[scripts.eslint]
+desc = "Auto cleaner"
+commands = ["npx eslint ./ts/**/*.ts --fix"]
+[script.prepare]
+desc = "Prepare Husky"
+commands = ["npx husky"]
+[scripts.cleaner]
+desc = "Delete unused files and folders"
+commands = ["node ./scripts/cleaner.js"]
 
 [copyright]
 license = "apache"
