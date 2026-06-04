@@ -7,4 +7,4 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
-export declare function isMusl(): boolean;
+export declare function isMusl(reportProvider?: NodeJS.ProcessReport): boolean;

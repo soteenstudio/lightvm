@@ -1,5 +1,5 @@
 export default {
-  concurrency: 1,
+  concurrency: 4,
   timeout: 5000,
   bail: false,
   esbuild: {

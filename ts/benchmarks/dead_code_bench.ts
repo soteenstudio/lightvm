@@ -9,7 +9,7 @@
  */
 
 import { Bench } from 'tinybench';
-import { LightVM, Capability } from '../dist/index.min.mjs';
+import { LightVM, Capability } from '../../dist/index.min.mjs';
 async function runBenchmark() {
   const bench = new Bench();
   const vm = new LightVM([Capability.Observe, Capability.Control]);
