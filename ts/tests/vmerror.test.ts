@@ -8,16 +8,30 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-import { test, expect } from "unitry";
-import { VMError } from "../dist/index.min.mjs";
+import { test, expect, describe } from "unitry";
+import { importVM } from "./helper/importVM.js";
 
-test('VMError should have correct properties and message', () => {
-  const detail = "An error occurred";
-  const error = new VMError(detail);
-  expect(error instanceof Error).toBe(true);
-  expect(error instanceof VMError).toBe(true);
-  expect(error.code).toBe('LVM500');
-  expect(error.ip).toBe(0);
-  expect(error.message).toSatisfy((msg: string) => msg.includes(detail));
+const { VMError } = await importVM();
+
+describe("VMError Class", () => {
+  test("VMError: should correctly set properties and format message", () => {
+    const msg = "Terjadi sesuatu yang salah";
+    const err = new VMError(msg);
+    
+    expect(err.code).toBe("LVM500");
+    expect(err.ip).toBe(0);
+    
+    expect(err).toBeInstanceOf(VMError);
+    expect(err.name).toBe("SystemError");
+    
+    expect(err.message).toContain(msg);
+    expect(err.message).toContain("LVM500");
+  });
+
+  test("VMError: should be throwable", () => {
+    
+    expect(() => {
+      throw new VMError("Test error");
+    }).toThrow();
+  });
 });
-  

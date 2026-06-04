@@ -23,7 +23,9 @@ export function loadNapi() {
     const localPath = join(__dirname, '../binaries/lightvm.node');
     cachedNative = require(localPath);
     return cachedNative;
-  } catch (e) {}
+  } catch (err) {
+    console.warn(err);
+  }
   const { platform, arch } = process;
   let packageName = '';
   if (platform === 'linux') {

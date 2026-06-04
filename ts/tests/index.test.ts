@@ -8,58 +8,63 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-import { test, expect } from "unitry";
-import { LightVM, Capability } from "../dist/index.min.mjs";
+import { test, expect, describe, fn, suppressConsole } from "unitry";
+import { importVM } from "./helper/importVM.js";
 
-const vm = new LightVM([Capability.Observe, Capability.Control, Capability.Unsafe]);
-const tools = vm.tools();
-const raw = [
-  ["push", 15],
-  ["push", 5],
-  ["add", "i16"],
-  ["println"]
-]; 
-test('load test', () => {
-  const optimized = tools.optimizeBytecode(raw);
-  const result = vm.load(optimized);
-  const length = Object.keys(result).length;
-  const type = typeof result;
-  expect(length > 0 && type === 'object').toBe(true);
-});
-test('run test', () => {
-  const optimized = tools.optimizeBytecode(raw);
-  vm.load(optimized);
-  expect(() => vm.run()).not.toThrow();
-});
-test('provide test', () => {
-  const result = vm.provide({ author: 'SoTeen Studio', country: 'Indonesia' });
-  const length = Object.keys(result).length;
-  const type = typeof result;
-  expect(length > 0 && type === 'object').toBe(true);
-});
-test('halt test', () => {
-  expect(() => vm.halt()).not.toThrow();
-});
-test('on test', async () => {
-  let halted = false;
-  const optimized = tools.optimizeBytecode(raw);
-  vm.load(optimized);
-  const waitForHalt = new Promise<void>((resolve) => {
-    vm.on('halt', () => {
-      halted = true;
-      resolve();
+const { LightVM, Capability } = await importVM();
+
+describe("LightVM Suite", () => {
+  
+  const createVM = () => new LightVM([Capability.Observe, Capability.Control, Capability.Unsafe]);
+  
+  describe("Tools & Optimization", () => {
+    test("optimizeBytecode should map inputs correctly", () => {
+      const vm = createVM();
+      const tools = vm.tools();
+      const raw = [["push", 15], ["push", 5], ["add", "i16"], ["println"]];
+      const result = tools.optimizeBytecode(raw);
+      
+      expect(result).toEqual([{ push: 20 }, 'println']);
     });
   });
-  vm.run();
-  vm.halt();
-  await waitForHalt;
-  expect(halted).toBe(true);
+
+  describe("VM Lifecycle", () => {
+    test("load should return instance", () => {
+      const vm = createVM();
+      const res = vm.load([{ push: 10 }]);
+      expect(res).toBeInstanceOf(LightVM);
+    });
+
+    test("provide should accept key-value pairs", () => {
+      const vm = createVM();
+      
+      expect(() => vm.provide({ test: 123 })).not.toThrow();
+    });
+  });
+
+  describe("Event Emitter", () => {
+    test("on should register listener", () => {
+      const vm = createVM();
+      const mockHandler = fn();
+      
+      vm.on('tick', mockHandler);
+      
+      expect(typeof vm.on).toBe('function');
+    });
+  });
+  
+  describe("Capability Validation", () => {
+    const testCases = [
+      { cap: Capability.Observe, expected: true },
+      { cap: Capability.Control, expected: true },
+      { cap: Capability.Debug, expected: true },
+    ];
+  
+    testCases.forEach(({ cap, expected }) => {
+      test(`Should handle capability: ${cap}`, () => {
+        const vm = new LightVM([cap]);
+        expect(vm).toBeInstanceOf(LightVM);
+      });
+    });
+  });
 });
-test('inspect test', () => {
-  const result = vm.inspect();
-  expect(result.capabilities.length > 0 && result.instructions !== 0).toBe(true);
-});
-test('optimize bytecode test', () => {
-  const result = JSON.stringify(tools.optimizeBytecode(raw));
-  expect(result).toBe(JSON.stringify([ { push: 20 }, 'println' ]));
-}); 

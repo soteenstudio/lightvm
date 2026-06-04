@@ -8,11 +8,20 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-import { test, expect } from "unitry";
-import { loadNapi } from "../dist/index.min.mjs";
+import { test, expect, describe } from "unitry";
+import { importVM } from "./helper/importVM.js";
 
-test('loadNapi should load the native module without error', () => {
-  const native = loadNapi();
-  expect(native !== undefined).toBe(true);
-});
+const { loadNapi } = await importVM();
+
+describe("loadNapi Utility", () => {
   
+  test("loadNapi: should load and return native module (cached)", () => {
+    
+    const native1 = loadNapi();
+    
+    const native2 = loadNapi();
+    
+    expect(native1).toBe(native2);
+    expect(native1).toBeDefined();
+  });
+});

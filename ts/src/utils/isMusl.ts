@@ -14,9 +14,10 @@ interface NodeReport {
     glibcVersionRuntime?: string;
   };
 }
-export function isMusl() {
+
+export function isMusl(reportProvider = process.report) {
   try {
-    const report = process.report.getReport() as NodeReport;
+    const report = reportProvider.getReport() as any;
     if (report && report.header && !report.header.glibcVersionRuntime) {
       return true;
     }
