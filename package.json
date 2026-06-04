@@ -46,7 +46,8 @@
     "typecheck": "tsc",
     "prettier": "npx prettier ./ts/**/*.ts --write",
     "eslint": "npx eslint ./ts/**/*.ts --fix",
-    "prepare": "husky"
+    "prepare": "husky",
+    "cleaner": "node ./scripts/cleaner.js"
   },
   "lint-staged": {
     "ts/src/**/*.{js,ts}": [
