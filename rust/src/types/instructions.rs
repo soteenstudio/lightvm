@@ -1,13 +1,3 @@
-/*
- * Copyright 2026 SoTeen Studio
- *
- * Licensed under the Apache License, Version 2.0 (the "License")
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- */
-
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
 use crate::utils::map_primitive::map_primitive;
 use ahash::AHashMap;
@@ -17,6 +7,7 @@ use serde_json::Value as JsonValue;
 use smol_str::SmolStr;
 use std::sync::Arc;
 use ts_rs::TS;
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case")]
 #[repr(u16)]
@@ -131,30 +122,37 @@ pub enum Instructions {
   Truncate,
   Shrink,
 }
+
 impl Instructions {
   #[inline]
   pub fn from_parts(op: String, args: Vec<serde_json::Value>) -> Self {
-    let op_lower = op.to_lowercase();
+    // Dibanding to_lowercase() yang bikin String baru, kita match langsung
+    // atau lowercase in-place kalau emang perlu banget.
+    let mut op_lower = op;
+    op_lower.make_ascii_lowercase();
+
     if args.is_empty() {
       return serde_json::from_value(serde_json::Value::String(op_lower))
         .unwrap_or(Instructions::Stop);
     }
+
     let json_payload = if args.len() == 1 {
       serde_json::json!({ &op_lower: args[0] })
     } else {
       serde_json::json!({ &op_lower: args })
     };
+
     serde_json::from_value(json_payload).unwrap_or_else(|_| {
       if op_lower == "push" {
         let val = &args[0];
-        let value_internal = if val.is_i64() {
-          Value::Int64(val.as_i64().unwrap())
-        } else if val.is_f64() {
-          Value::Float64(val.as_f64().unwrap())
-        } else if val.is_boolean() {
-          Value::Bool(val.as_bool().unwrap())
-        } else if val.is_string() {
-          Value::String(SmolStr::new(val.as_str().unwrap()))
+        let value_internal = if let Some(i) = val.as_i64() {
+          Value::Int64(i)
+        } else if let Some(f) = val.as_f64() {
+          Value::Float64(f)
+        } else if let Some(b) = val.as_bool() {
+          Value::Bool(b)
+        } else if let Some(s) = val.as_str() {
+          Value::String(SmolStr::new(s))
         } else {
           Value::Null
         };
@@ -164,12 +162,14 @@ impl Instructions {
       }
     })
   }
+
   #[inline]
   pub fn to_parts(&self) -> Vec<String> {
     let json = serde_json::to_value(self).unwrap_or(serde_json::Value::Null);
     if let Some(s) = json.as_str() {
       return vec![s.to_string()];
     }
+
     if let Some(obj) = json.as_object()
       && let Some((key, val)) = obj.iter().next()
     {
@@ -179,19 +179,33 @@ impl Instructions {
           for v in arr {
             if let Some(inner_arr) = v.as_array() {
               for inner_v in inner_arr {
-                parts.push(inner_v.as_str().unwrap_or("").replace("\"", ""));
+                // Daripada .to_string().replace("\"", ""), cek as_str() dulu
+                if let Some(s) = inner_v.as_str() {
+                  parts.push(s.to_string());
+                } else {
+                  parts.push(inner_v.to_string());
+                }
               }
+            } else if let Some(s) = v.as_str() {
+              parts.push(s.to_string());
             } else {
-              parts.push(v.to_string().replace("\"", ""));
+              parts.push(v.to_string());
             }
           }
         }
-        _ => parts.push(val.to_string().replace("\"", "")),
+        _ => {
+          if let Some(s) = val.as_str() {
+            parts.push(s.to_string());
+          } else {
+            parts.push(val.to_string());
+          }
+        }
       }
       return parts;
     }
     vec!["Unknown".into()]
   }
+
   #[inline]
   pub fn from_json_array(item: &JsonValue) -> Self {
     if item.is_null() {
@@ -236,19 +250,22 @@ impl Instructions {
         _ => Instructions::Stop,
       };
     }
+
+    // Ganti item.clone() yang lambat dengan deserialization dari reference via serde
     if item.is_object() {
-      return serde_json::from_value(item.clone()).unwrap_or(Instructions::Stop);
+      return Instructions::deserialize(item).unwrap_or(Instructions::Stop);
     }
+
     let arr = match item.as_array() {
       Some(a) => a,
-      None => {
-        return Instructions::Stop;
-      }
+      None => return Instructions::Stop,
     };
+
     let op = arr[0].as_str().expect("Opcode must be a string");
     let op_bytes = op.as_bytes();
     let arg1 = arr.get(1);
     let arg2 = arr.get(2);
+
     match op_bytes {
       b"init_stack" => {
         let size = arg1.and_then(|v| v.as_u64()).unwrap_or(16) as u32;
@@ -279,8 +296,8 @@ impl Instructions {
           } else {
             Value::Float64(f)
           }
-        } else if val.is_boolean() {
-          Value::Bool(val.as_bool().unwrap_or(false))
+        } else if let Some(b) = val.as_bool() {
+          Value::Bool(b)
         } else if let Some(s) = val.as_str() {
           if let Ok(big_n) = s.parse::<i128>() {
             if big_n >= i64::MIN as i128 && big_n <= i64::MAX as i128 {
@@ -359,25 +376,23 @@ impl Instructions {
       }
       b"inc" => {
         let s = arg1.and_then(|v| v.as_str()).expect("Expected string");
-        let num_type_str = arg2.and_then(|v| v.as_str()).unwrap_or("int");
-        let num_type = match num_type_str {
-          "int" => PrimitiveTypes::Int,
-          "flt" => PrimitiveTypes::Flt,
-          "lng" => PrimitiveTypes::Lng,
-          "dbl" => PrimitiveTypes::Dbl,
-          "oct" => PrimitiveTypes::Oct,
+        let num_type = match arg2.and_then(|v| v.as_str()) {
+          Some("int") => PrimitiveTypes::Int,
+          Some("flt") => PrimitiveTypes::Flt,
+          Some("lng") => PrimitiveTypes::Lng,
+          Some("dbl") => PrimitiveTypes::Dbl,
+          Some("oct") => PrimitiveTypes::Oct,
           _ => PrimitiveTypes::Dbl,
         };
         Instructions::Inc(SmolStr::new(s), num_type)
       }
       b"dec" => {
         let s = arg1.and_then(|v| v.as_str()).expect("Expected string");
-        let num_type_str = arg2.and_then(|v| v.as_str()).unwrap_or("int");
-        let num_type = match num_type_str {
-          "int" => PrimitiveTypes::Int,
-          "flt" => PrimitiveTypes::Flt,
-          "lng" => PrimitiveTypes::Lng,
-          "dbl" => PrimitiveTypes::Dbl,
+        let num_type = match arg2.and_then(|v| v.as_str()) {
+          Some("int") => PrimitiveTypes::Int,
+          Some("flt") => PrimitiveTypes::Flt,
+          Some("lng") => PrimitiveTypes::Lng,
+          Some("dbl") => PrimitiveTypes::Dbl,
           _ => PrimitiveTypes::Int,
         };
         Instructions::Dec(SmolStr::new(s), num_type)
@@ -461,13 +476,7 @@ impl Instructions {
         Instructions::Jump(target)
       }
       b"access_index" => Instructions::AccessIndex,
-      b"export" => Instructions::Export(
-        arg1
-          .and_then(|v| v.as_str())
-          .unwrap_or("stop")
-          .to_owned()
-          .into(),
-      ),
+      b"export" => Instructions::Export(arg1.and_then(|v| v.as_str()).unwrap_or("stop").into()),
       b"return" => Instructions::Return,
       b"call" => {
         let s = arg1.and_then(|v| v.as_str()).unwrap_or("stop");
