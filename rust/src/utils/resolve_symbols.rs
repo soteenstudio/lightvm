@@ -38,27 +38,36 @@ pub fn resolve_symbols(
         _ => {}
       },
       Instructions::Get(name) => {
-        let idx = *symbol_table.entry(name.clone()).or_insert_with(|| {
+        let idx = if let Some(&idx) = symbol_table.get(name) {
+          idx
+        } else {
           let i = next_idx;
+          symbol_table.insert(name.clone(), i);
           next_idx += 1;
           i
-        });
+        };
         *instr = Instructions::GetIdx(idx);
       }
       Instructions::Set(name) => {
-        let idx = *symbol_table.entry(name.clone()).or_insert_with(|| {
+        let idx = if let Some(&idx) = symbol_table.get(name) {
+          idx
+        } else {
           let i = next_idx;
+          symbol_table.insert(name.clone(), i);
           next_idx += 1;
           i
-        });
+        };
         *instr = Instructions::SetIdx(idx);
       }
       Instructions::Inc(name, num_type) => {
-        let idx = *symbol_table.entry(name.clone()).or_insert_with(|| {
+        let idx = if let Some(&idx) = symbol_table.get(name) {
+          idx
+        } else {
           let i = next_idx;
+          symbol_table.insert(name.clone(), i);
           next_idx += 1;
           i
-        });
+        };
         *instr = Instructions::IncIdx(idx, *num_type);
       }
       Instructions::Func(_, _, _, _, names) => {

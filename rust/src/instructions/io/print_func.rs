@@ -12,7 +12,8 @@ use crate::types::stack::Stack;
 use crate::utils::format_output::format_output;
 use crate::utils::vmerror::VMError;
 use std::io::{self, Write};
-#[inline(always)]
+#[cold]
+#[inline(never)]
 pub fn print_func(stack: &mut Stack, ip: usize) -> Result<(), VMError> {
   let val_ref = stack.last_mut().ok_or(VMError::StackUnderflow {
     ip,

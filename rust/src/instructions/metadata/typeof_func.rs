@@ -14,7 +14,8 @@ use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
 use smol_str::SmolStr;
 use std::sync::Arc;
-#[inline(always)]
+#[cold]
+#[inline(never)]
 pub fn typeof_values(val: Value) -> Value {
   let (class_name, is_nullable) = match val {
     Value::Int16(_) => ("Short", false),

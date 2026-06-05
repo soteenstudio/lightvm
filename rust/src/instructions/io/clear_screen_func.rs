@@ -11,7 +11,8 @@
 use crate::utils::vmerror::VMError;
 use std::io;
 use std::io::Write;
-#[inline(always)]
+#[cold]
+#[inline(never)]
 pub fn clear_screen_func() -> Result<(), VMError> {
   let mut out = io::stdout().lock();
   out.write_all(b"\x1B[2J\x1B[1H").map_err(|e| {

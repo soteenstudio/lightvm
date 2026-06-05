@@ -13,7 +13,8 @@ use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
 use smol_str::SmolStr;
 use std::io::{self, Write};
-#[inline(always)]
+#[cold]
+#[inline(never)]
 pub fn stdin_func(stack: &mut Stack) -> Result<(), VMError> {
   let _ = io::stdout().flush();
   let mut input = String::new();

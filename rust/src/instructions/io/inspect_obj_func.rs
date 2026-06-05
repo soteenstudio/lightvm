@@ -13,7 +13,8 @@ use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
 use smol_str::SmolStr;
 use std::fmt::Write;
-#[inline]
+#[cold]
+#[inline(never)]
 pub fn inspect_obj_func(stack: &mut Stack, ip: usize) -> Result<(), VMError> {
   if let Some(top) = stack.last_mut() {
     if let Value::Object(obj) = top {

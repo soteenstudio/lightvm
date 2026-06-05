@@ -11,7 +11,8 @@
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
 use half::f16;
-#[inline(always)]
+#[cold]
+#[inline(never)]
 pub fn to_half_values(val: Value) -> Result<Value, &'static str> {
   match val {
     Value::String(s) => s

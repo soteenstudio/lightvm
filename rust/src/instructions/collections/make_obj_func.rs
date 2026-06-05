@@ -14,7 +14,8 @@ use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
 use std::sync::Arc;
 const MAX_OBJECT_CAPACITY: usize = 10_000;
-#[inline]
+#[cold]
+#[inline(never)]
 pub fn make_obj_func(stack: &mut Stack, count: u32, ip: usize) -> Result<(), VMError> {
   let count_usize = count as usize;
   if count_usize > MAX_OBJECT_CAPACITY {

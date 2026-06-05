@@ -10,7 +10,8 @@
 
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
-#[inline(always)]
+#[cold]
+#[inline(never)]
 pub fn to_integer_values(val: Value) -> Result<Value, &'static str> {
   match val {
     Value::String(s) => s

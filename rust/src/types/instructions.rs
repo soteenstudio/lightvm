@@ -1,3 +1,13 @@
+/*
+ * Copyright 2026 SoTeen Studio
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
 use crate::utils::map_primitive::map_primitive;
 use ahash::AHashMap;
@@ -7,7 +17,6 @@ use serde_json::Value as JsonValue;
 use smol_str::SmolStr;
 use std::sync::Arc;
 use ts_rs::TS;
-
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case")]
 #[repr(u16)]
@@ -122,26 +131,20 @@ pub enum Instructions {
   Truncate,
   Shrink,
 }
-
 impl Instructions {
   #[inline]
   pub fn from_parts(op: String, args: Vec<serde_json::Value>) -> Self {
-    // Dibanding to_lowercase() yang bikin String baru, kita match langsung
-    // atau lowercase in-place kalau emang perlu banget.
     let mut op_lower = op;
     op_lower.make_ascii_lowercase();
-
     if args.is_empty() {
       return serde_json::from_value(serde_json::Value::String(op_lower))
         .unwrap_or(Instructions::Stop);
     }
-
     let json_payload = if args.len() == 1 {
       serde_json::json!({ &op_lower: args[0] })
     } else {
       serde_json::json!({ &op_lower: args })
     };
-
     serde_json::from_value(json_payload).unwrap_or_else(|_| {
       if op_lower == "push" {
         let val = &args[0];
@@ -162,14 +165,12 @@ impl Instructions {
       }
     })
   }
-
   #[inline]
   pub fn to_parts(&self) -> Vec<String> {
     let json = serde_json::to_value(self).unwrap_or(serde_json::Value::Null);
     if let Some(s) = json.as_str() {
       return vec![s.to_string()];
     }
-
     if let Some(obj) = json.as_object()
       && let Some((key, val)) = obj.iter().next()
     {
@@ -179,7 +180,6 @@ impl Instructions {
           for v in arr {
             if let Some(inner_arr) = v.as_array() {
               for inner_v in inner_arr {
-                // Daripada .to_string().replace("\"", ""), cek as_str() dulu
                 if let Some(s) = inner_v.as_str() {
                   parts.push(s.to_string());
                 } else {
@@ -205,7 +205,6 @@ impl Instructions {
     }
     vec!["Unknown".into()]
   }
-
   #[inline]
   pub fn from_json_array(item: &JsonValue) -> Self {
     if item.is_null() {
@@ -250,22 +249,17 @@ impl Instructions {
         _ => Instructions::Stop,
       };
     }
-
-    // Ganti item.clone() yang lambat dengan deserialization dari reference via serde
     if item.is_object() {
       return Instructions::deserialize(item).unwrap_or(Instructions::Stop);
     }
-
     let arr = match item.as_array() {
       Some(a) => a,
       None => return Instructions::Stop,
     };
-
     let op = arr[0].as_str().expect("Opcode must be a string");
     let op_bytes = op.as_bytes();
     let arg1 = arr.get(1);
     let arg2 = arr.get(2);
-
     match op_bytes {
       b"init_stack" => {
         let size = arg1.and_then(|v| v.as_u64()).unwrap_or(16) as u32;

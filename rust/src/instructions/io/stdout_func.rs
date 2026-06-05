@@ -12,7 +12,8 @@ use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
 use std::io::{self, Write};
-#[inline(always)]
+#[cold]
+#[inline(never)]
 pub fn stdout_func(stack: &mut Stack, ip: usize) -> Result<(), VMError> {
   let val = stack.pop().ok_or(VMError::StackUnderflow {
     ip,
@@ -41,7 +42,8 @@ pub fn stdout_func(stack: &mut Stack, ip: usize) -> Result<(), VMError> {
     })
   }
 }
-#[inline(always)]
+#[cold]
+#[inline(never)]
 pub fn stdoutln_func(stack: &mut Stack, ip: usize) -> Result<(), VMError> {
   let val = stack.pop().ok_or(VMError::StackUnderflow {
     ip,

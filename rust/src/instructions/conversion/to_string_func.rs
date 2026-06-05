@@ -11,7 +11,8 @@
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
 use smol_str::SmolStr;
-#[inline(always)]
+#[cold]
+#[inline(never)]
 pub fn to_string_values(val: Value) -> Result<Value, &'static str> {
   let formatted = format!("{}::string", val.as_string());
   Ok(Value::String(SmolStr::from(formatted)))

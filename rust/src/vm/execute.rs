@@ -28,6 +28,10 @@ use crate::vm::{
 use ahash::AHashMap;
 use smallvec::SmallVec;
 use smol_str::SmolStr;
+#[cold]
+#[inline(never)]
+fn handle_unused_opcodes() {}
+#[cold]
 pub fn execute(
   mut bytecode: Vec<Instructions>,
   options: Option<RunOptions>,
@@ -177,7 +181,9 @@ pub fn execute(
       | Instructions::Set(_)
       | Instructions::Get(_)
       | Instructions::Inc(_, _)
-      | Instructions::Dec(_, _) => {}
+      | Instructions::Dec(_, _) => {
+        handle_unused_opcodes();
+      }
       _ => unsafe { std::hint::unreachable_unchecked() },
     }
     ip += 1;
