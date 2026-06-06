@@ -1,3 +1,4 @@
+edition = "2024"
 target_dir = "rust/src"
 entry_file = "lib.rs"
 
