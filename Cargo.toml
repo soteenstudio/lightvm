@@ -79,7 +79,7 @@ unescape = "0.1"
 smallvec = "1.15.1"
 ts-rs = { version = "10.0", features = ["serde_json"] }
 criterion = "0.8.2"
-getrandom = { version = "0.4.2", features = ["wasm_js"] }
+getrandom = { version = "0.4.2", features = ["js"] }
 
 [profile.release]
 opt-level = 3
