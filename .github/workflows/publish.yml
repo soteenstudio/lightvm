@@ -154,13 +154,9 @@ jobs:
       - name: Build WASM
         if: matrix.platform == 'browser-wasm'
         run: |
-          mkdir -p .cargo
-          # Paksa target wasm pake fitur js melalui env
-          echo '[target.wasm32-unknown-unknown]' > .cargo/config.toml
-          echo 'rustflags = ["--cfg", "getrandom_backend=\"wasm_js\""]' >> .cargo/config.toml
-          
           curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-          wasm-pack build --target web --release
+          # Pake fitur wasm_js sesuai dokumentasi getrandom
+          wasm-pack build --target web --release -- --features wasm_js
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
