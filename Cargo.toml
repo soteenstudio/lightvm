@@ -7,6 +7,7 @@ description = "A capability-based virtual machine designed for secure, predictab
 license = "Apache-2.0"
 repository = "https://github.com/soteenstudio/lightvm"
 readme = "README.md"
+include = ["Cargo.toml", "README.md", "LICENSE", "rust/**/*"]
 
 [lib]
 name = "lightvm"
