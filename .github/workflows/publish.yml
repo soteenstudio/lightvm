@@ -63,6 +63,11 @@ jobs:
             target: x86_64-unknown-freebsd
             platform: freebsd-x64
 
+          # --- WASM FAMILY ---
+          - os: ubuntu-latest
+            target: wasm32-unknown-unknown
+            platform: browser-wasm
+
     steps:
       - uses: actions/checkout@v4
 
@@ -146,6 +151,13 @@ jobs:
             ./cross build --release --target ${{ matrix.target }}
           fi
   
+      - name: Build WASM
+        if: matrix.platform == 'browser-wasm'
+        run: |
+          curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+          wasm-pack build --target web --release
+          ls -F pkg/  # <--- Tambahin ini buat nge-list file
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -155,6 +167,7 @@ jobs:
             target/${{ matrix.target }}/release/*.dll
             target/${{ matrix.target }}/release/*.so
             target/${{ matrix.target }}/release/*.dylib
+            pkg/*
 
   publish-npm:
     needs: build-npm
@@ -200,6 +213,7 @@ jobs:
             "binary-linux-musl-arm64|linux-musl-arm64|index.musl-arm64.node|arm64"
             "binary-linux-musl-ia32|linux-musl-ia32|index.musl-ia32.node|ia32"
             "binary-freebsd-x64|freebsd-x64|index.freebsd.node|x64"
+            "binary-browser-wasm|browser-wasm|index.wasm|wasm"
           )
 
           for item in "${PLATFORMS[@]}"; do
@@ -207,22 +221,40 @@ jobs:
             PKG_NAME="@lightvm/core-$PLATFORM"
             OS_VAL="${PLATFORM%-*}"
             mkdir -p "publish/$PLATFORM"
-            find "binaries/$ARTIFACT" -type f \( -name "*.node" -o -name "*.dll" -o -name "*.so" -o -name "*.dylib" \) -exec cp {} "publish/$PLATFORM/$BIN_NAME" \;
+            
+            # Handle WASM khusus
+            if [[ "$PLATFORM" == "browser-wasm" ]]; then
+                # Copy semua isi folder pkg hasil wasm-pack
+                cp -r "binaries/$ARTIFACT"/* "publish/$PLATFORM/"
+            else
+                # Handle binary native lainnya
+                find "binaries/$ARTIFACT" -type f \( -name "*.node" -o -name "*.dll" -o -name "*.so" -o -name "*.dylib" \) -exec cp {} "publish/$PLATFORM/$BIN_NAME" \;
+            fi
+            
             cp -f README.md "publish/$PLATFORM/" || true
             cp -f LICENSE "publish/$PLATFORM/" || true
             
+            if [[ "$PLATFORM" == "browser-wasm" ]]; then
+                MAIN_FIELD="index.js" 
+                FILES_FIELD='["*.wasm", "*.js", "*.d.ts", "README.md", "LICENSE"]'
+            else
+                MAIN_FIELD="$BIN_NAME"
+                FILES_FIELD='["'$BIN_NAME'", "README.md", "LICENSE"]'
+            fi
+            
             cat <<EOF > "publish/$PLATFORM/package.json"
-          {
-            "name": "$PKG_NAME",
-            "version": "$VERSION",
-            "os": ["$OS_VAL"],
-            "cpu": ["$CPU"],
-            "main": "$BIN_NAME",
-            "files": ["$BIN_NAME", "README.md", "LICENSE"],
-            "publishConfig": { "access": "public" },
-            "license": "Apache-2.0"
-          }
-          EOF
+            {
+              "name": "$PKG_NAME",
+              "version": "$VERSION",
+              "os": ["$OS_VAL"],
+              "cpu": ["$CPU"],
+              "main": "$MAIN_FIELD",
+              "files": $FILES_FIELD,
+              "publishConfig": { "access": "public" },
+              "license": "Apache-2.0"
+            }
+            EOF
+
             cd "publish/$PLATFORM"
             npm publish --tag $TAG --access public || echo "Skip existing"
             cd ../..
@@ -242,7 +274,8 @@ jobs:
             "@lightvm/core-linux-musl-x64": "$VERSION",
             "@lightvm/core-linux-musl-arm64": "$VERSION",
             "@lightvm/core-linux-musl-ia32": "$VERSION",
-            "@lightvm/core-freebsd-x64": "$VERSION"
+            "@lightvm/core-freebsd-x64": "$VERSION",
+            "@lightvm/core-browser-wasm": "$VERSION"
           }
           EOF
           )
@@ -256,7 +289,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-crates:
-    needs: build-npm
+    needs:build-npm
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
     steps:
