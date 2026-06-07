@@ -14,6 +14,7 @@ use half::f16;
 use serde::{Deserialize, Serialize};
 use smol_str::SmolStr;
 use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
 use ts_rs::TS;
 #[repr(u8)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default, TS)]
@@ -56,6 +57,7 @@ pub struct RunOptions {
   pub args: Vec<Value>,
   pub capture_return: bool,
   pub imports: AHashMap<SmolStr, Value>,
+  pub halt_flag: Arc<AtomicBool>,
 }
 impl Value {
   #[inline(always)]

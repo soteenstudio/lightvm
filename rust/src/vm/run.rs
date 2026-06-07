@@ -19,7 +19,8 @@ pub fn run(bytecode_json: &str, options: Option<RunOptions>) -> String {
     .into_iter()
     .map(|item| Instructions::from_json_array(&item))
     .collect();
-  let result = crate::vm::execute::execute(bytecode, options);
+  let halt_flag = options.as_ref().map(|o| o.halt_flag.clone());
+  let result = crate::vm::execute::execute(bytecode, options, halt_flag);
   match result {
     Ok(val) => serde_json::to_string(&val)
       .unwrap_or_else(|_| r#"{"error": "Failed to serialize result"}"#.to_string()),

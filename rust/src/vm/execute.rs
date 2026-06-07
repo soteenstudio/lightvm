@@ -28,6 +28,8 @@ use crate::vm::{
 use ahash::AHashMap;
 use smallvec::SmallVec;
 use smol_str::SmolStr;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 #[cold]
 #[inline(never)]
 fn handle_unused_opcodes() {}
@@ -35,6 +37,7 @@ fn handle_unused_opcodes() {}
 pub fn execute(
   mut bytecode: Vec<Instructions>,
   options: Option<RunOptions>,
+  halt_flag: Option<Arc<AtomicBool>>,
 ) -> Result<Value, SmolStr> {
   let mut last_return = Value::Undefined;
   let mut stack: SmallVec<[Value; 128]> = SmallVec::new();
@@ -54,7 +57,18 @@ pub fn execute(
   inject_args(&mut vars, &functions, &options, ip);
   let bytecode_ptr = bytecode.as_ptr();
   let bytecode_len = bytecode.len();
+  let threshold = if bytecode_len < 100 { 1 } else { 50 };
+  let mut tick = 0;
+
   while ip < bytecode_len {
+    // Pengecekan dinamis:
+    if tick % threshold == 0
+      && let Some(ref flag) = halt_flag
+      && flag.load(Ordering::Relaxed)
+    {
+      return Ok(Value::Undefined);
+    }
+    tick += 1;
     unsafe { std::hint::assert_unchecked(ip < bytecode_len) }
     debug_assert!(
       ip < bytecode_len,

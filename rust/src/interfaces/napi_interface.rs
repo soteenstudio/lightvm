@@ -15,6 +15,8 @@ use crate::utils::vmerror::VMError;
 use napi::bindgen_prelude::*;
 use napi::threadsafe_function::ThreadsafeFunctionCallMode;
 use napi_derive::napi;
+use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
 #[napi(js_name = "LightVM")]
 pub struct NodeLightVM {
   inner: LightVM,
@@ -60,6 +62,7 @@ impl NodeLightVM {
         bytecode: Vec::new(),
         listeners: AHashMap::new(),
         caps: caps_set,
+        should_halt: Arc::new(AtomicBool::new(false)),
         state: VmState::Idle,
         _outputs: Vec::new(),
         _last_value: Value::Undefined,
@@ -78,6 +81,11 @@ impl NodeLightVM {
   }
   #[napi]
   pub fn run(&mut self) -> Result<()> {
+    // Kita butuh method baru di interface.rs buat nerima flag,
+    // atau modif run_internal supaya bisa nerima opsi custom.
+    // Cara termudah: oper `self.inner.should_halt` ke dalam options.
+
+    // Pastikan di interface.rs, run_internal nerima hal_flag/options
     self
       .inner
       .run_internal(None)
@@ -121,7 +129,9 @@ impl NodeLightVM {
       "panic" => VmEvent::Panic,
       _ => return Err(Error::from_reason(format!("Unknown event: {}", event_type))),
     };
-    let threadsafe_callback = callback.build_threadsafe_function().build()?;
+    let mut threadsafe_callback = callback.build_threadsafe_function().build()?;
+    let env = unsafe { napi::bindgen_prelude::Env::from_raw(std::ptr::null_mut()) };
+    threadsafe_callback.unref(&env)?;
     self
       .inner
       .on_internal(event, move |payload| {

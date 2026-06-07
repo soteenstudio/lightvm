@@ -19,6 +19,8 @@ use crate::types::{
 use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
 use std::collections::HashSet;
+use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
 use unescape::unescape;
 #[cfg(not(feature = "node"))]
 impl LightVM {
@@ -35,6 +37,7 @@ impl LightVM {
       bytecode: Vec::new(),
       listeners: AHashMap::new(),
       caps: caps_set,
+      should_halt: Arc::new(AtomicBool::new(false)),
       state: VmState::Idle,
       _outputs: Vec::new(),
       _last_value: Value::Undefined,
@@ -117,6 +120,7 @@ impl LightVM {
     let _ = self.on_internal(event, callback);
     self
   }
+
   pub fn inspect(&self) -> serde_json::Value {
     match self.inspect_internal() {
       Ok(json_str) => serde_json::from_str(&json_str).unwrap_or(serde_json::Value::Null),

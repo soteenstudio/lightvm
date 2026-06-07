@@ -21,12 +21,15 @@ use crate::vm::run::run;
 use ahash::AHashMap;
 use smol_str::SmolStr;
 use std::collections::HashSet;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 pub type VmCallback = Box<dyn Fn(String) + Send + Sync>;
 pub type VmEventMap = AHashMap<VmEvent, Vec<VmCallback>>;
 pub struct LightVM {
   pub bytecode: Vec<Instructions>,
   pub listeners: VmEventMap,
   pub caps: HashSet<Capability>,
+  pub should_halt: Arc<AtomicBool>,
   pub state: VmState,
   pub _outputs: Vec<String>,
   pub _last_value: Value,
@@ -127,6 +130,7 @@ impl LightVM {
       args: Vec::new(),
       capture_return: false,
       imports: self._imports.clone(),
+      halt_flag: self.should_halt.clone(),
     };
     run(&bytecode_str, Some(options));
     Ok(())
@@ -168,6 +172,7 @@ impl LightVM {
   #[inline]
   pub fn halt_internal(&mut self) -> Result<(), VMError> {
     self.require(Capability::Unsafe)?;
+    self.should_halt.store(true, Ordering::Relaxed);
     self.state = VmState::Halted;
     self.emit(VmEvent::Halt, serde_json::Value::Null);
     Ok(())
@@ -203,6 +208,7 @@ impl LightVM {
       args,
       capture_return: true,
       imports: self._imports.clone(),
+      halt_flag: self.should_halt.clone(),
     };
     let hasil_run = run(&bytecode_str.clone(), Some(options));
     Ok(hasil_run)
