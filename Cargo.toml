@@ -35,7 +35,7 @@ crate-type = ["rlib", "cdylib"]
 [features]
 default = ["native"]
 node = ["napi", "napi-derive"]
-wasm = ["getrandom", "wasm-bindgen"]
+wasm = ["getrandom/wasm_js", "wasm-bindgen"]
 native = []
 
 [[bench]]
