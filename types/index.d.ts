@@ -26,7 +26,6 @@ export declare enum Capability {
 }
 export declare class LightVM {
     private instance;
-    private listeners;
     constructor(caps?: Capability[]);
     load(source: Instructions[] | string): this;
     run(options?: any): void;
@@ -34,7 +33,6 @@ export declare class LightVM {
     provide(nameOrObj: string | any, value?: any): this;
     halt(): void;
     on(event: VMEvent, fn: Listener): this;
-    private emit;
     inspect(): any;
     embedded(): VMResult;
     tools(): {

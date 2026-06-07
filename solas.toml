@@ -27,13 +27,13 @@ desc = "To get benchmark results from TypeScript code"
 commands = ["node ./scripts/ts-bench.js"]
 [scripts.build]
 desc = "Generating build results from TypeScript source"
-commands = ["node ./esbuild.config.js"]
+commands = ["node ./scripts/build-script.js"]
 [scripts.build-release]
 desc = "Create a build release .tgz file"
-commands = ["node ./scripts/build-script.js --local --silent"]
+commands = ["node ./scripts/build-binary.js --local --silent"]
 [scripts.build-debug]
 desc = "Create a build debug .tgz file"
-commands = ["node ./scripts/build-script.js --local --debug --silent"]
+commands = ["node ./scripts/build-binary.js --local --debug --silent"]
 [scripts.check-deps]
 desc = "Checking installed local dependencies"
 commands = ["node ./scripts/check-deps.js"]
