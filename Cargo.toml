@@ -88,6 +88,9 @@ getrandom = "0.4.2"
 [dev-dependencies]
 criterion = "0.8.2"
 
+[patch.crates-io]
+getrandom = { version = "0.4.2", features = ["js"] }
+
 [profile.release]
 opt-level = 3
 lto = "fat"
