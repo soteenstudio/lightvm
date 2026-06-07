@@ -48,7 +48,6 @@ describe("LightVM Suite", () => {
       const mockHandler = fn();
       
       vm.on('tick', mockHandler);
-      
       expect(typeof vm.on).toBe('function');
     });
   });

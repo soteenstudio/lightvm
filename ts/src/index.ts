@@ -28,7 +28,6 @@ export enum Capability {
 const native = loadNapi();
 export class LightVM {
   private instance: any;
-  private listeners = new Map<VMEvent, Listener[]>();
   constructor(caps: Capability[] = [Capability.Observe]) {
     const numericCaps = caps.map((cap) => {
       switch (cap.toUpperCase()) {
@@ -107,38 +106,27 @@ export class LightVM {
       process.exit(1);
     }
   }
+
   on(event: VMEvent, fn: Listener) {
     try {
-      if (!this.listeners.has(event)) {
-        this.listeners.set(event, []);
-        this.instance.on(event, (payload: string) => {
-          let data;
-          try {
-            data = JSON.parse(payload);
-          } catch {
-            data = payload;
-          }
-          this.emit(event, data);
-        });
-      }
-      this.listeners.get(event)!.push(fn);
+      this.instance.on(event.toLowerCase(), (payload: string) => {
+        let data;
+        try {
+          data = JSON.parse(payload);
+        } catch {
+          data = payload;
+        }
+
+        fn(data);
+      });
+
       return this;
     } catch (err) {
       console.error((err as Error).message);
       process.exit(1);
     }
   }
-  private emit(event: VMEvent, payload?: any) {
-    try {
-      const list = this.listeners.get(event);
-      if (list) {
-        for (const fn of list) fn(payload);
-      }
-    } catch (err) {
-      console.error((err as Error).message);
-      process.exit(1);
-    }
-  }
+
   inspect() {
     try {
       return this.instance.inspect();
