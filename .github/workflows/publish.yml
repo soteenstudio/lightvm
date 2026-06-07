@@ -154,9 +154,11 @@ jobs:
       - name: Build WASM
         if: matrix.platform == 'browser-wasm'
         run: |
+          # Paksa update registry dan lockfile biar fitur JS beneran aktif
+          cargo update
           curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
           wasm-pack build --target web --release
-          ls -F pkg/  # <--- Tambahin ini buat nge-list file
+          ls -F pkg/
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
