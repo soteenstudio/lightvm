@@ -152,12 +152,10 @@ jobs:
           fi
   
       - name: Build WASM
-        if: matrix.platform == 'browser-wasm'
         run: |
           curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
       
-          export RUSTFLAGS='--cfg getrandom_backend="wasm_js"'
-      
+          RUSTFLAGS='--cfg getrandom_backend="wasm_js"' \
           wasm-pack build \
             --target web \
             --release \

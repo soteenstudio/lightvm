@@ -36,6 +36,7 @@ crate-type = ["rlib", "cdylib"]
 default = ["native"]
 node = ["napi", "napi-derive"]
 native = []
+wasm = []
 
 [[bench]]
 name = "add_bench"
