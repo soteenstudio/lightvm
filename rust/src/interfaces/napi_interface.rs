@@ -130,8 +130,11 @@ impl NodeLightVM {
       _ => return Err(Error::from_reason(format!("Unknown event: {}", event_type))),
     };
     let mut threadsafe_callback = callback.build_threadsafe_function().build()?;
-    let env = unsafe { napi::bindgen_prelude::Env::from_raw(std::ptr::null_mut()) };
-    threadsafe_callback.unref(&env)?;
+    #[allow(deprecated)]
+    {
+      let env = napi::bindgen_prelude::Env::from_raw(std::ptr::null_mut());
+      threadsafe_callback.unref(&env)?;
+    }
     self
       .inner
       .on_internal(event, move |payload| {

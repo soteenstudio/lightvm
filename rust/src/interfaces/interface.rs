@@ -281,6 +281,7 @@ mod tests {
       bytecode: Vec::new(),
       listeners: AHashMap::new(),
       caps: caps_set,
+      should_halt: Arc::new(AtomicBool::new(false)),
       state: VmState::Idle,
       _outputs: Vec::new(),
       _last_value: Value::Undefined,
