@@ -42,26 +42,31 @@ wasm = []
 name = "add_bench"
 path = "rust/benches/add_bench.rs"
 harness = false
+required-features = ["native"]
 
 [[bench]]
 name = "assign_bench"
 path = "rust/benches/assign_bench.rs"
 harness = false
+required-features = ["native"]
 
 [[bench]]
 name = "concat_bench"
 path = "rust/benches/concat_bench.rs"
 harness = false
+required-features = ["native"]
 
 [[bench]]
 name = "dead_code_bench"
 path = "rust/benches/dead_code_bench.rs"
 harness = false
+required-features = ["native"]
 
 [[bench]]
 name = "io_bench"
 path = "rust/benches/io_bench.rs"
 harness = false
+required-features = ["native"]
 
 [dependencies]
 napi = { version = "3.9", features = ["napi4", "serde", "serde-json"], optional = true } 
