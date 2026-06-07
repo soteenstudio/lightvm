@@ -35,7 +35,7 @@ crate-type = ["rlib", "cdylib"]
 [features]
 default = ["native"]
 node = ["napi", "napi-derive"]
-wasm = ["getrandom/wasm_js", "wasm-bindgen"]
+wasm = ["wasm-bindgen"]
 native = []
 
 [[bench]]
@@ -84,7 +84,6 @@ num-traits = "0.2"
 unescape = "0.1"
 smallvec = "1.15.1"
 ts-rs = { version = "10.0", features = ["serde_json"] }
-getrandom = { version = "0.4.2", optional = true }
 wasm-bindgen = { version = "0.2.122", optional = true }
 
 [dev-dependencies]
