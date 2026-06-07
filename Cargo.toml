@@ -7,7 +7,25 @@ description = "A capability-based virtual machine designed for secure, predictab
 license = "Apache-2.0"
 repository = "https://github.com/soteenstudio/lightvm"
 readme = "README.md"
-include = ["Cargo.toml", "README.md", "LICENSE", "rust/src/**/*.rs"]
+exclude = [
+  ".github/**/*",
+  ".solas/**/*",
+  "ts/**",
+  "rust/benches/**/*",
+  "node_modules/**/*",
+  "scripts/**/*",
+  "types/**/*",
+  "docs/**/*",
+  ".*",
+  "*.js",
+  "*.md",
+  "*.toml",
+  "*.json",
+  ".cargo_vcs_info.json",
+  "Cargo.toml.orig",
+  "!README.md",
+  "!Cargo.toml"
+]
 
 [lib]
 name = "lightvm"

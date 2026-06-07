@@ -8,3 +8,5 @@ lz4.js
 /.trash/**/*
 /.solas/**/*
 /binaries/**/*
+.cargo_vcs_info.json
+Cargo.toml.orig
