@@ -17,6 +17,11 @@ jobs:
       max-parallel: 4
       matrix:
         include:
+          # --- WASM FAMILY ---
+          - os: ubuntu-latest
+            target: wasm32-unknown-unknown
+            platform: browser-wasm
+
           # --- 64-BIT VARIANTS ---
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
@@ -62,11 +67,6 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-freebsd
             platform: freebsd-x64
-
-          # --- WASM FAMILY ---
-          - os: ubuntu-latest
-            target: wasm32-unknown-unknown
-            platform: browser-wasm
 
     steps:
       - uses: actions/checkout@v4
