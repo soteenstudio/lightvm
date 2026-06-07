@@ -98,21 +98,17 @@ jobs:
         run: |
           echo "ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME" >> $GITHUB_ENV
           
-          # Definisikan path ke folder toolchain LLVM bawaan NDK
           TOOLCHAIN="$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin"
           
           mkdir -p .cargo
           if [ "${{ matrix.platform }}" == "android-arm64" ]; then
             LINKER="aarch64-linux-android33-clang"
-            # Fix: Inject CC env khusus buat compiler cc-rs di target arm64
             echo "CC=$TOOLCHAIN/aarch64-linux-android33-clang" >> $GITHUB_ENV
           else
             LINKER="armv7a-linux-androideabi33-clang"
-            # Fix: Inject CC env khusus buat compiler cc-rs di target arm 32-bit
             echo "CC=$TOOLCHAIN/armv7a-linux-androideabi33-clang" >> $GITHUB_ENV
           fi
           
-          # Fix: Daftarkan juga AR compiler global ke env biar cc-rs ga bingung
           echo "AR=$TOOLCHAIN/llvm-ar" >> $GITHUB_ENV
 
           echo "[target.${{ matrix.target }}]" > .cargo/config.toml
@@ -152,6 +148,7 @@ jobs:
           fi
   
       - name: Build WASM
+        if: matrix.platform == 'browser-wasm'
         run: |
           curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
       
@@ -224,12 +221,9 @@ jobs:
             OS_VAL="${PLATFORM%-*}"
             mkdir -p "publish/$PLATFORM"
             
-            # Handle WASM khusus
             if [[ "$PLATFORM" == "browser-wasm" ]]; then
-                # Copy semua isi folder pkg hasil wasm-pack
                 cp -r "binaries/$ARTIFACT"/* "publish/$PLATFORM/"
             else
-                # Handle binary native lainnya
                 find "binaries/$ARTIFACT" -type f \( -name "*.node" -o -name "*.dll" -o -name "*.so" -o -name "*.dylib" \) -exec cp {} "publish/$PLATFORM/$BIN_NAME" \;
             fi
             
