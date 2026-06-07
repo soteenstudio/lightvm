@@ -289,7 +289,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-crates:
-    needs:build-npm
+    needs: build-npm
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
     steps:
