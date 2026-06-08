@@ -10,15 +10,16 @@
 
 use criterion::{Bencher, Criterion, criterion_group, criterion_main};
 use lightvm::{LightVM, types::capability::Capability};
+use std::time::Duration;
 fn bench_vm_execution(c: &mut Criterion) {
   let mut vm = LightVM::new(vec![Capability::Control, Capability::Observe]);
-  let raw = serde_json::json!([
+  let raw = r#"[
     ["val", "x"],
     ["push", 5],
     ["push", 8],
     ["add", "i16"],
     ["set", "x"]
-  ]);
+  ]"#;
   let optimized_json = LightVM::tools().optimize_bytecode(raw);
   vm.load(optimized_json.clone());
   let mut group = c.benchmark_group("LightVM Execution");
@@ -27,5 +28,15 @@ fn bench_vm_execution(c: &mut Criterion) {
   });
   group.finish();
 }
-criterion_group!(benches, bench_vm_execution);
+fn custom_config() -> Criterion {
+  Criterion::default()
+    .sample_size(300)
+    .measurement_time(Duration::from_secs(15))
+    .warm_up_time(Duration::from_secs(3))
+}
+criterion_group! {
+  name = benches;
+  config = custom_config();
+  targets = bench_vm_execution
+}
 criterion_main!(benches);

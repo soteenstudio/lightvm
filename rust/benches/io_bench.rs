@@ -12,7 +12,7 @@ use criterion::{Bencher, Criterion, criterion_group, criterion_main};
 use lightvm::{LightVM, types::capability::Capability};
 fn bench_vm_execution(c: &mut Criterion) {
   let mut vm = LightVM::new(vec![Capability::Control, Capability::Observe]);
-  let raw = serde_json::json!([["push", "Hello from LightVM!"], ["println"]]);
+  let raw = r#"[["push", "Hello from LightVM!"], ["println"]]"#;
   let optimized_json = LightVM::tools().optimize_bytecode(raw);
   vm.load(optimized_json.clone());
   let mut group = c.benchmark_group("LightVM Execution");

@@ -154,11 +154,11 @@ LightVM uses a strict capability-based security model. You must explicitly grant
     <summary>Rust:</summary>
     
     ```rust
-    let raw = serde_json::json!([
+    let raw = r#"[
       ["push", 5],
       ["val", "x"],
       ["set", "x"]
-    ]);
+    ]"#;
     vm.load(LightVM::tools().optimize_bytecode(raw).clone())
       .run(None))
     ```

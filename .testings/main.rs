@@ -25,7 +25,7 @@ fn main() {
   let optimized_json = LightVM::tools().optimize_bytecode(raw);
   
   // Load bytecode hasil optimasi ke dalam VM
-  vm.load(optimized_json);
+  vm.load(optimized_json.clone());
   
   // Eksekusi VM sekali run
   let res = vm.run(None);
