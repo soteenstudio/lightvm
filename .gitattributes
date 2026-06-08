@@ -6,4 +6,5 @@
 /ts/benchmarks/**    linguist-detectable=false
 /ts/src/generated/** linguist-detectable=false
 /types/**            linguist-detectable=false
+/.testings/**        linguist-detectable=false
 *.d.ts               linguist-documentation=true

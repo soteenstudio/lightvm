@@ -39,6 +39,8 @@
     "test:ts": "node ./scripts/run-tests.js",
     "bench:rust": "cargo bench",
     "bench:ts": "node ./scripts/ts-bench.js",
+    "testing:rust": "solas run .testings/main.rs",
+    "testing:ts": "node .testings/main.js",
     "build": "node ./scripts/build-script.js",
     "build:release": "node ./scripts/build-binary.js --local --silent",
     "build:debug": "node ./scripts/build-binary.js --local --debug --silent",

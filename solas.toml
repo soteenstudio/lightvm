@@ -1,4 +1,3 @@
-edition = "2024"
 target_dir = "rust/src"
 entry_file = "lib.rs"
 
@@ -19,21 +18,32 @@ commands = ["cargo test"]
 [scripts.test-ts]
 desc = "Running unit tests on .ts file$"
 commands = ["node ./scripts/run-tests.js"]
+
 [scripts.bench-rust]
 desc = "To get benchmark results from Rust code"
 commands = ["cargo bench"]
 [scripts.bench-ts]
 desc = "To get benchmark results from TypeScript code"
 commands = ["node ./scripts/ts-bench.js"]
+
+[scripts.testing-rust]
+desc = "Running tests for Rust interfaces"
+commands = ["solas run .testings/main.rs"]
+[scripts.testing-ts]
+desc = "Running tests for TypeScript interfaces"
+commands = ["node .testings/main.js"]
+
 [scripts.build]
 desc = "Generating build results from TypeScript source"
 commands = ["node ./scripts/build-script.js"]
+
 [scripts.build-release]
 desc = "Create a build release .tgz file"
 commands = ["node ./scripts/build-binary.js --local --silent"]
 [scripts.build-debug]
 desc = "Create a build debug .tgz file"
 commands = ["node ./scripts/build-binary.js --local --debug --silent"]
+
 [scripts.check-deps]
 desc = "Checking installed local dependencies"
 commands = ["node ./scripts/check-deps.js"]
