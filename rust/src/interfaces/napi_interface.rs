@@ -81,11 +81,6 @@ impl NodeLightVM {
   }
   #[napi]
   pub fn run(&mut self) -> Result<()> {
-    // Kita butuh method baru di interface.rs buat nerima flag,
-    // atau modif run_internal supaya bisa nerima opsi custom.
-    // Cara termudah: oper `self.inner.should_halt` ke dalam options.
-
-    // Pastikan di interface.rs, run_internal nerima hal_flag/options
     self
       .inner
       .run_internal(None)

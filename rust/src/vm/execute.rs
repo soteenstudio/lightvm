@@ -59,9 +59,7 @@ pub fn execute(
   let bytecode_len = bytecode.len();
   let threshold = if bytecode_len < 100 { 1 } else { 50 };
   let mut tick = 0;
-
   while ip < bytecode_len {
-    // Pengecekan dinamis:
     if tick % threshold == 0
       && let Some(ref flag) = halt_flag
       && flag.load(Ordering::Relaxed)

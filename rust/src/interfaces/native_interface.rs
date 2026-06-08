@@ -120,7 +120,6 @@ impl LightVM {
     let _ = self.on_internal(event, callback);
     self
   }
-
   pub fn inspect(&self) -> serde_json::Value {
     match self.inspect_internal() {
       Ok(json_str) => serde_json::from_str(&json_str).unwrap_or(serde_json::Value::Null),
@@ -144,7 +143,11 @@ impl LightVM {
 pub struct LightVMTools;
 #[cfg(not(feature = "node"))]
 impl LightVMTools {
-  pub fn optimize_bytecode(&self, bytecode: serde_json::Value) -> serde_json::Value {
+  pub fn optimize_bytecode(&self, json_str: &str) -> serde_json::Value {
+    let bytecode: serde_json::Value = serde_json::from_str(json_str).unwrap_or_else(|err| {
+      eprintln!("\nFailed to parse JSON string: {}", err);
+      std::process::exit(1);
+    });
     let opt_str = LightVM::optimize_bytecode_internal(bytecode).unwrap_or_else(|err| {
       eprintln!("\n{}", err);
       std::process::exit(1);
