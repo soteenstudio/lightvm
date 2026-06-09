@@ -17,5 +17,7 @@ pub mod utils;
 pub mod vm;
 #[cfg(feature = "node")]
 pub use crate::interfaces::napi_interface::NodeLightVM;
+#[cfg(feature = "wasm")]
+pub use crate::interfaces::wasm_interface::WasmLightVM;
 #[cfg(not(feature = "node"))]
 pub use interfaces::interface::LightVM;

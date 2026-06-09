@@ -196,12 +196,12 @@ LightVM uses a strict capability-based security model. You must explicitly grant
       "name": "John Doe",
       "force": 2021
     }));
-    let raw = serde_json::json!([
+    let raw = r#"[
       ["get", "name"],
       ["println"],
       ["get", "force"],
       ["println"]
-    ]);
+    ]"#;
     ```
     </details>
     

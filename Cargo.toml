@@ -35,7 +35,7 @@ crate-type = ["rlib", "cdylib"]
 [features]
 default = ["native"]
 node = ["napi", "napi-derive"]
-wasm = ["wasm-bindgen"]
+wasm = ["wasm-bindgen", "serde-wasm-bindgen", "js-sys"]
 native = []
 
 [[bench]]
@@ -84,6 +84,8 @@ unescape = "0.1"
 smallvec = "1.15.1"
 ts-rs = { version = "10.0", features = ["serde_json"] }
 wasm-bindgen = { version = "0.2.122", optional = true }
+serde-wasm-bindgen = { version = "0.6.5", optional = true }
+js-sys = { version = "0.3.100", optional = true }
 
 [dev-dependencies]
 criterion = "0.8.2"
@@ -104,6 +106,9 @@ strip = true
 overflow-checks = false
 debug = false
 rpath = false
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false
 
 [profile.release.package."*"]
 opt-level = 3
