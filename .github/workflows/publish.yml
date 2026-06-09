@@ -197,10 +197,33 @@ jobs:
 
       - name: Publish to NPM
         run: |
-          RAW_VERSION="${{ github.event.release.tag_name }}"
-          VERSION=${RAW_VERSION#v}
+          # 1. Determine Version safely (Release vs Manual vs Latest Release Fallback)
+          VERSION="${{ github.event.inputs.version_override }}"
+          if [ -z "$VERSION" ]; then
+            RAW_VERSION="${{ github.event.release.tag_name }}"
+            VERSION=${RAW_VERSION#v}
+          fi
+          
+          # If still empty (triggered via workflow_dispatch without inputs), fetch the latest release tag via GitHub CLI
+          if [ -z "$VERSION" ]; then
+            echo "Fetch latest release tag from GitHub API..."
+            LATEST_TAG=$(gh release view --json tagName --template '{{.tagName}}' 2>/dev/null || echo "")
+            if [ -n "$LATEST_TAG" ]; then
+              VERSION=${LATEST_TAG#v}
+              echo "Successfully resolved latest release version: $VERSION"
+            else
+              # Ultimate fallback to Cargo.toml if no release exists yet
+              echo "No release found via API. Falling back to Cargo.toml..."
+              VERSION=$(grep '^version =' Cargo.toml | head -n1 | cut -d '"' -f2)
+            fi
+          fi
+
+          echo "Final Publishing Version: $VERSION"
+
+          # 2. Set NPM Tag dynamically
           TAG="latest"
           if [[ "$VERSION" =~ -(proto|alpha|beta|rc) ]]; then TAG="next"; fi
+          echo "Using NPM Tag: $TAG"
           
           PLATFORMS=(
             "binary-linux-x64|linux-x64|index.linux.node|x64"
