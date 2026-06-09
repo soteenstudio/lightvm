@@ -160,7 +160,7 @@ LightVM uses a strict capability-based security model. You must explicitly grant
       ["set", "x"]
     ]"#;
     vm.load(LightVM::tools().optimize_bytecode(raw).clone())
-      .run(None))
+      .run(None);
     ```
     </details>
     
@@ -240,6 +240,7 @@ LightVM uses a strict capability-based security model. You must explicitly grant
     
     ```typescript
     vm.halt();
+    vm.run(); // will not be executed
     console.log("The VM has been terminated.")
     ```
     </details>
@@ -249,6 +250,7 @@ LightVM uses a strict capability-based security model. You must explicitly grant
     
     ```rust
     vm.halt();
+    vm.run(None); // will not be executed
     println!("The VM has been terminated.");
     ```
     </details>
@@ -542,14 +544,18 @@ Special instructions for low-level control of the VM memory footprint in real-ti
 
 ## Supported Architectures
 LightVM supports a wide range of platforms and architectures to ensure maximum operational flexibility. Here's the current compatibility list:
-| OS / Runtime | Architecture | Toolchain | Rust | Node.js |
-|--------------|--------------|-----------|-------|---------|
-| Windows      | x64, ia32    | MSVC      | ✓ | ✓ |
-| Linux        | x64, ia32, arm64 | GNU (glibc) | ✓ | ✓ |
-| Linux (musl) | x64, ia32, arm64 | musl      | ✓ | ✓ |
-| macOS (Darwin) | x64      | Apple Clang | ✓ | ✓ |
-| Android      | arm64, arm   | NDK       | ✓ | ✓ |
-| FreeBSD      | x64          | Clang     | ✓ | ✓ |
+| OS / Runtime | Architecture | Toolchain | Rust | Node.js | Web |
+|--------------|--------------|-----------|-------|---------|-----|
+| Windows      | x64, ia32    | MSVC      | ✓ | ✓ | - |
+| Linux        | x64, ia32, arm64 | GNU (glibc) | ✓ | ✓ | - |
+| Linux (musl) | x64, ia32, arm64 | musl      | ✓ | ✓ | - |
+| macOS (Darwin) | x64      | Apple Clang | ✓ | ✓ | - |
+| Android      | arm64, arm   | NDK       | ✓ | ✓ | - |
+| FreeBSD      | x64          | Clang     | ✓ | ✓ | - |
+| Web / Browser | wasm32 | wasm-pack / wasm-bindgen | - | - | ✓ |
+> [!WARNING]
+> __Nightly Support__: Support for `wasm32` for browsers is still in experimental stage.
+
 ## 📜 License & Changelog
  - This project is distributed using the [Apache-2.0 license](LICENSE).
- - See [CHANGELOG.md](./docs/CHANGELOG.md) for the latest updates and release history.
+ - See [changelogs](./docs/CHANGELOG.md) for the latest updates and release history.
