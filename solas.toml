@@ -29,10 +29,10 @@ commands = ["node ./scripts/ts-bench.js"]
 
 [scripts.testing-rust]
 desc = "Running tests for Rust interfaces"
-commands = ["solas run .testings/main.rs"]
+commands = ["solas run .testings/native.rs"]
 [scripts.testing-ts]
 desc = "Running tests for TypeScript interfaces"
-commands = ["node .testings/main.js"]
+commands = ["node .testings/napi.js"]
 
 [scripts.build]
 desc = "Generating build results from TypeScript source"
