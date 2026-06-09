@@ -173,7 +173,7 @@ jobs:
 
   publish-npm:
     needs: build-npm
-    if: github.event_name == 'release'
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -218,6 +218,9 @@ jobs:
             "binary-browser-wasm|browser-wasm|index.wasm|wasm"
           )
 
+          # Install jq di awal biar bisa dipakai pas nge-generate package.json juga
+          sudo apt-get install -y jq
+
           for item in "${PLATFORMS[@]}"; do
             IFS="|" read -r ARTIFACT PLATFORM BIN_NAME CPU <<< "$item"
             PKG_NAME="@lightvm/core-$PLATFORM"
@@ -226,40 +229,43 @@ jobs:
             
             if [[ "$PLATFORM" == "browser-wasm" ]]; then
                 cp -r "binaries/$ARTIFACT"/* "publish/$PLATFORM/"
+                MAIN_FIELD="index.js" 
+                # Pakai jq buat bikin array JSON biar aman dari syntax error
+                FILES_FIELD=$(jq -nc '["*.wasm", "*.js", "*.d.ts", "README.md", "LICENSE"]')
             else
                 find "binaries/$ARTIFACT" -type f \( -name "*.node" -o -name "*.dll" -o -name "*.so" -o -name "*.dylib" \) -exec cp {} "publish/$PLATFORM/$BIN_NAME" \;
+                MAIN_FIELD="$BIN_NAME"
+                # Pakai argumen jq buat nge-inject $BIN_NAME dengan aman
+                FILES_FIELD=$(jq -nc --arg bin "$BIN_NAME" '[$bin, "README.md", "LICENSE"]')
             fi
             
             cp -f README.md "publish/$PLATFORM/" || true
             cp -f LICENSE "publish/$PLATFORM/" || true
             
-            if [[ "$PLATFORM" == "browser-wasm" ]]; then
-                MAIN_FIELD="index.js" 
-                FILES_FIELD='["*.wasm", "*.js", "*.d.ts", "README.md", "LICENSE"]'
-            else
-                MAIN_FIELD="$BIN_NAME"
-                FILES_FIELD='["'$BIN_NAME'", "README.md", "LICENSE"]'
-            fi
-            
-            cat <<EOF > "publish/$PLATFORM/package.json"
-            {
-              "name": "$PKG_NAME",
-              "version": "$VERSION",
-              "os": ["$OS_VAL"],
-              "cpu": ["$CPU"],
-              "main": "$MAIN_FIELD",
-              "files": $FILES_FIELD,
-              "publishConfig": { "access": "public" },
-              "license": "Apache-2.0"
-            }
-            EOF
+            # Gunakan jq buat bikin package.json daripada pake EOF mentah, jauh lebih safe!
+            jq -n \
+              --arg name "$PKG_NAME" \
+              --arg ver "$VERSION" \
+              --arg os "$OS_VAL" \
+              --arg cpu "$CPU" \
+              --arg main "$MAIN_FIELD" \
+              --argjson files "$FILES_FIELD" \
+              '{
+                name: $name,
+                version: $ver,
+                os: [$os],
+                cpu: [$cpu],
+                main: $main,
+                files: $files,
+                publishConfig: { access: "public" },
+                license: "Apache-2.0"
+              }' > "publish/$PLATFORM/package.json"
 
             cd "publish/$PLATFORM"
             npm publish --tag $TAG --access public || echo "Skip existing"
             cd ../..
           done
 
-          sudo apt-get install -y jq
           OP_DEPS=$(cat <<EOF
           {
             "@lightvm/core-linux-x64": "$VERSION",
