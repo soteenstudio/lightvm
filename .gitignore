@@ -10,3 +10,4 @@ lz4.js
 /binaries/**/*
 .cargo_vcs_info.json
 Cargo.toml.orig
+/pkg/**/*

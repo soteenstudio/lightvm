@@ -67,7 +67,16 @@
       "eslint --fix",
       "prettier --write"
     ],
+    ".testings/**/*.{js,ts}": [
+      "sh -c 'tsc'",
+      "eslint --fix",
+      "prettier --write"
+    ],
     "rust/**/*.rs": [
+      "sh -c 'cargo fmt --'",
+      "sh -c 'cargo clippy --color always -- -D warnings'"
+    ],
+    ".testings/**/*.rs": [
       "sh -c 'cargo fmt --'",
       "sh -c 'cargo clippy --color always -- -D warnings'"
     ]
