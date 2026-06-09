@@ -1,3 +1,14 @@
+## Changelog for v0.1.0-alpha.7
+
+* fix: Fixed undefined tools() bug
+* fix: Fixed a bug in the wasm interface
+* feat: Implement wasm interface and benchmark updates
+* feat(tools): Accept raw json string in optimize_bytecode for better dx
+* refactor(napi): Resolve compilation warnings in event handling
+* refactor: Remove emit function
+* fix: Fixed bug where function on cannot exit
+* perf: Optimize opcode performance by sorting hot and cold opcodes
+* refactor(vm): Optimize instruction parsing and serialization
 ## Changelog for v0.1.0-alpha.6
 
 * fix(vm): Add bounds checking for access_index and optimize array shrink
