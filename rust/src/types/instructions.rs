@@ -226,7 +226,7 @@ impl Instructions {
         "stdin" => Instructions::Stdin,
         "clear_screen" => Instructions::ClearScreen,
         "break" => Instructions::Break(0),
-        "accessindex" => Instructions::AccessIndex,
+        "access_index" => Instructions::AccessIndex,
         "to_string" => Instructions::ToString,
         "to_short" => Instructions::ToShort,
         "to_integer" => Instructions::ToInteger,
