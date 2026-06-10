@@ -119,12 +119,7 @@ impl LightVM {
     }
     self.state = VmState::Running;
     self.emit(VmEvent::Tick, serde_json::json!({ "state": "start" }));
-    let bytecode_str = serde_json::to_string(&self.bytecode).map_err(|e| {
-      VMError::SystemError(smol_str::SmolStr::new(format!(
-        "Failed to stringify bytecode: {}",
-        e
-      )))
-    })?;
+    let bytecode: Vec<Instructions> = self.bytecode.clone();
     let options = RunOptions {
       entry: None,
       args: Vec::new(),
@@ -132,7 +127,10 @@ impl LightVM {
       imports: self._imports.clone(),
       halt_flag: self.should_halt.clone(),
     };
-    run(&bytecode_str, Some(options));
+    let halt_flag = Some(options.halt_flag.clone());
+    let _result = crate::vm::execute::execute(bytecode, Some(options), halt_flag);
+    // TODO: Tangani output _result (Ok/Err) sesuai kebutuhan internal VM lo di sini jika perlu
+    self.state = VmState::Idle;
     Ok(())
   }
   #[inline]
