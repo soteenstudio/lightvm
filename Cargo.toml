@@ -38,33 +38,65 @@ node = ["napi", "napi-derive"]
 wasm = ["wasm-bindgen", "serde-wasm-bindgen", "js-sys"]
 native = []
 
+# Normal Benches
 [[bench]]
 name = "add_bench"
-path = "rust/benches/add_bench.rs"
+path = "rust/benches/normal/add_bench.rs"
 harness = false
 required-features = ["native"]
 
 [[bench]]
 name = "assign_bench"
-path = "rust/benches/assign_bench.rs"
+path = "rust/benches/normal/assign_bench.rs"
 harness = false
 required-features = ["native"]
 
 [[bench]]
 name = "concat_bench"
-path = "rust/benches/concat_bench.rs"
+path = "rust/benches/normal/concat_bench.rs"
 harness = false
 required-features = ["native"]
 
 [[bench]]
 name = "dead_code_bench"
-path = "rust/benches/dead_code_bench.rs"
+path = "rust/benches/normal/dead_code_bench.rs"
 harness = false
 required-features = ["native"]
 
 [[bench]]
 name = "io_bench"
-path = "rust/benches/io_bench.rs"
+path = "rust/benches/normal/io_bench.rs"
+harness = false
+required-features = ["native"]
+
+# Optimize Benches
+[[bench]]
+name = "add_bench_optimize"
+path = "rust/benches/optimize/add_bench.rs"
+harness = false
+required-features = ["native"]
+
+[[bench]]
+name = "assign_bench_optimize"
+path = "rust/benches/optimize/assign_bench.rs"
+harness = false
+required-features = ["native"]
+
+[[bench]]
+name = "concat_bench_optimize"
+path = "rust/benches/optimize/concat_bench.rs"
+harness = false
+required-features = ["native"]
+
+[[bench]]
+name = "dead_code_bench_optimize"
+path = "rust/benches/optimize/dead_code_bench.rs"
+harness = false
+required-features = ["native"]
+
+[[bench]]
+name = "io_bench_optimize"
+path = "rust/benches/optimize/io_bench.rs"
 harness = false
 required-features = ["native"]
 
