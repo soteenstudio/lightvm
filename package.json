@@ -41,7 +41,10 @@
     "bench:ts": "node ./scripts/ts-bench.js",
     "testing:rust": "solas run .testings/native.rs",
     "testing:ts": "node .testings/napi.js",
-    "build": "node ./scripts/build-script.js",
+    "build": "node ./esbuild.config.js",
+    "build:pack": "node ./scripts/build-script.js",
+    "build:wasm": "wasm-pack build --target web -- --features wasm",
+    "build:pack2": "node ./scripts/build-wasm.js",
     "build:release": "node ./scripts/build-binary.js --local --silent",
     "build:debug": "node ./scripts/build-binary.js --local --debug --silent",
     "check:deps": "node ./scripts/check-deps.js",
@@ -49,7 +52,8 @@
     "prettier": "npx prettier ./ts/**/*.ts --write",
     "eslint": "npx eslint ./ts/**/*.ts --fix",
     "prepare": "husky",
-    "cleaner": "node ./scripts/cleaner.js"
+    "cleaner": "node ./scripts/cleaner.js",
+    "server": "node ./scripts/server.js"
   },
   "lint-staged": {
     "ts/src/**/*.{js,ts}": [
@@ -67,7 +71,7 @@
       "eslint --fix",
       "prettier --write"
     ],
-    ".testings/**/*.{js,ts}": [
+    ".testings/**/*.{js,ts,html}": [
       "sh -c 'tsc'",
       "eslint --fix",
       "prettier --write"

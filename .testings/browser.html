@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LightVM WASM Test Bench</title>
+    <style>
+      :root {
+        --bg: #0d1117;
+        --card: #161b22;
+        --border: #30363d;
+        --text: #c9d1d9;
+        --green: #238636;
+        --red: #da3633;
+        --blue: #21262d;
+        --blue-hover: #30363d;
+      }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        padding: 24px;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      h1 {
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 8px;
+        font-size: 1.8rem;
+      }
+      #status {
+        padding: 16px;
+        border-radius: 6px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+      }
+      .success {
+        border-left: 6px solid var(--green) !important;
+      }
+      .error {
+        border-left: 6px solid var(--red) !important;
+      }
+
+      /* Control Panel Buttons */
+      .action-panel {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .btn {
+        background: var(--blue);
+        color: #58a6ff;
+        border: 1px solid var(--border);
+        padding: 10px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: background 0.2s;
+      }
+      .btn:hover {
+        background: var(--blue-hover);
+      }
+      .btn-primary {
+        background: #238636;
+        color: #fff;
+        border-color: rgba(240, 246, 252, 0.1);
+      }
+      .btn-primary:hover {
+        background: #2ea043;
+      }
+
+      /* Console Logger Simulator */
+      .console-box {
+        background: #000;
+        border-radius: 6px;
+        padding: 12px;
+        font-family:
+          'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+        font-size: 0.9rem;
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid var(--border);
+      }
+      .log-entry {
+        margin: 4px 0;
+        color: #8b949e;
+      }
+      .log-info {
+        color: #58a6ff;
+      }
+      .log-success {
+        color: #56d364;
+      }
+      .log-error {
+        color: #f85149;
+        font-weight: bold;
+      }
+      .log-vm {
+        color: #ff9f43;
+        font-weight: bold;
+        background: #22160b;
+        padding: 2px 4px;
+        border-radius: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>⚡ LightVM WASM Test Bench</h1>
+
+    <div id="status">
+      <h3 style="margin: 0; color: #e1b12c">
+        ⠋ Mempersiapkan berkas runtime...
+      </h3>
+      <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #8b949e">
+        Mengecek modul dan jaringan lokal.
+      </p>
+    </div>
+
+    <div class="action-panel">
+      <button class="btn btn-primary" id="run-vm-btn" disabled>
+        ▶ Re-run VM Only
+      </button>
+      <button class="btn" id="reload-workflow-btn">
+        🔄 Hot Reload Workflow
+      </button>
+    </div>
+
+    <h3>📟 Live Output Logs</h3>
+    <div class="console-box" id="console">
+      <div class="log-entry log-info">
+        [SYSTEM] Engine siap, mencoba mengimpor module...
+      </div>
+    </div>
+
+    <script>
+      const statusEl = document.getElementById('status');
+      const consoleEl = document.getElementById('console');
+
+      function printLog(msg, type = 'info') {
+        const div = document.createElement('div');
+        div.className = `log-entry log-${type}`;
+        div.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        consoleEl.appendChild(div);
+        consoleEl.scrollTop = consoleEl.scrollHeight;
+      }
+
+      window.addEventListener('error', function (e) {
+        statusEl.className = 'error';
+        statusEl.innerHTML = `<h3>𐄂 Script Crash / Gagal Load</h3>
+            <p style="color: #f85149; margin: 5px 0;">${e.message || 'Kemungkinan salah path folder import module di dalam tag script.'}</p>`;
+        printLog(`CRITICAL ERROR: ${e.message}`, 'error');
+      });
+    </script>
+
+    <script type="module">
+      const statusEl = document.getElementById('status');
+      const runVmBtn = document.getElementById('run-vm-btn');
+      const reloadWorkflowBtn = document.getElementById('reload-workflow-btn');
+
+      // Buat instance global variabel di scope module biar bisa diakses tombol pemicu luar
+      let globalVm = null;
+
+      // Fungsi utama workflow yang bisa dipanggil kapan aja tanpa refresh halaman
+      async function executeMainWorkflow() {
+        try {
+          runVmBtn.disabled = true;
+          printLog(
+            'Mencoba resolve target dependency @lightvm/core-browser-wasm...',
+          );
+
+          // Mengarah ke root folder node_modules package lu
+          const modulePath =
+            '../node_modules/@lightvm/core-browser-wasm/lightvm.js';
+          const { default: init, LightVM } = await import(modulePath);
+
+          printLog(
+            'Module terdeteksi. Memulai streaming compile berkas WASM...',
+            'info',
+          );
+          statusEl.className = '';
+          statusEl.innerHTML = `<h3>⠋ Sedang Compiling WebAssembly...</h3>`;
+
+          // 1. Eksekusi WebAssembly compile streaming
+          await init();
+
+          printLog(
+            'WASM Bytecode successfully compiled & instantiated!',
+            'success',
+          );
+          statusEl.className = 'success';
+          statusEl.innerHTML =
+            '<h3>✔ WASM Berhasil Dimuat Total!</h3><p style="margin:5px 0 0 0; font-size:0.9rem;">Runtime environment telah dikunci dan siap dieksekusi.</p>';
+
+          // 2. Test alokasi instance class Rust Lu
+          printLog(
+            'Mencoba mengalokasikan memory untuk instance LightVM...',
+            'info',
+          );
+          globalVm = new LightVM([0, 1]);
+
+          printLog('LightVM instance created successfully!', 'success');
+          statusEl.innerHTML += `<div style="margin-top: 10px; font-size: 0.9rem; color: #56d364;">→ Instance LightVM terdeteksi aman di browser!</div>`;
+          console.log('VM Instance:', globalVm);
+
+          // Jalankan sub-test bawaan
+          runVmEngine();
+
+          // Buka akses tombol re-run manual karena globalVm sudah terbentuk
+          runVmBtn.disabled = false;
+        } catch (err) {
+          statusEl.className = 'error';
+          statusEl.innerHTML = `<h3>𐄂 Proses Instansiasi Gagal</h3>
+                <p style="color: #f85149; margin: 5px 0; font-size:0.9rem;"><b>Sebab:</b> ${err.message}</p>
+                <p style="margin:0; font-size:0.8rem; color:#8b949e;">Buka DevTools console terminal untuk meneliti stack trace lengkap.</p>`;
+
+          printLog(`FATAL BINDING: ${err.message}`, 'error');
+          console.error('Test Bench Error Matrix:', err);
+        }
+      }
+
+      // Fungsi khusus buat running / eksekusi mesin virtualnya aja
+      function runVmEngine() {
+        if (!globalVm) return;
+
+        // ==========================================
+        // SUB-TEST BARU: BERKAS EKSEKUSI BYTECODE
+        // ==========================================
+        printLog('Memulai sub-test eksekusi instruksi bytecode...', 'info');
+
+        const raw = [['push', '16'], ['println']];
+
+        // 1. Ambil instance tools bawaan core LightVM
+        const tools = globalVm.tools();
+        printLog('Memproses optimasi mentah via tools.optimizeBytecode()...');
+        const optimized = tools.optimizeBytecode(raw);
+
+        // 2. Load bytecode hasil optimasi ke dalam Virtual Machine
+        globalVm.load(JSON.stringify(optimized));
+        printLog(
+          'Bytecode sukses di-inject ke dalam core register VM.',
+          'success',
+        );
+
+        // 3. Jembatan Interseptor: Bajak console.log bawaan sebentar biar println dari Rust tertangkap di layar
+        const originalConsoleLog = console.log;
+        console.log = function (...args) {
+          originalConsoleLog.apply(console, args);
+          printLog(`[VM OUTPUT] ${args.join(' ')}`, 'vm');
+        };
+
+        // 4. Nyalakan mesin VM
+        printLog('Menjalankan vm.run()...', 'info');
+        globalVm.run();
+        printLog('Eksekusi vm.run() selesai didongkrak.', 'success');
+
+        // Kembalikan fungsi console asli biar gak bocor kemana-mana
+        console.log = originalConsoleLog;
+      }
+
+      // Pasang Event Listener ke tombol UI
+      runVmBtn.addEventListener('click', () => {
+        printLog(
+          '[ACTION] Memicu re-run VM core register secara manual...',
+          'info',
+        );
+        runVmEngine();
+      });
+
+      reloadWorkflowBtn.addEventListener('click', () => {
+        printLog(
+          '[ACTION] Memulai siklus Hot Reload internal workflow...',
+          'info',
+        );
+        executeMainWorkflow();
+      });
+
+      // Eksekusi otomatis pertama kali saat halaman terbuka
+      executeMainWorkflow();
+    </script>
+  </body>
+</html>
