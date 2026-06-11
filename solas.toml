@@ -36,11 +36,16 @@ commands = ["node .testings/napi.js"]
 
 [scripts.build]
 desc = "Generating build results from TypeScript source"
+commands = ["node ./esbuild.config.js"]
+[scripts.build-pack]
+desc = "NPM package creation simulation"
 commands = ["node ./scripts/build-script.js"]
 [scripts.build-wasm]
-desc = "."
+desc = "Generating a WASM build from Rust sources"
 commands = ["wasm-pack build --target web -- --features wasm"]
-
+[scripts.build-pack2]
+desc = "NPM package creation simulation (WASM)"
+commands = ["node ./scripts/build-wasm.js"]
 [scripts.build-release]
 desc = "Create a build release .tgz file"
 commands = ["node ./scripts/build-binary.js --local --silent"]
@@ -66,6 +71,9 @@ commands = ["npx husky"]
 [scripts.cleaner]
 desc = "Delete unused files and folders"
 commands = ["node ./scripts/cleaner.js"]
+[scripts.server]
+desc = "Running the WASM testing server"
+commands = ["node ./scripts/server.js"]
 
 [copyright]
 license = "apache"
