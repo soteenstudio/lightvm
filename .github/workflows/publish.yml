@@ -246,9 +246,33 @@ jobs:
             mkdir -p "publish/$PLATFORM"
             
             if [[ "$PLATFORM" == "browser-wasm" ]]; then
-                cp -r "binaries/$ARTIFACT"/* "publish/$PLATFORM/"
+                # Intip dulu isinya buat memastikan filenya ada lewat logs
+                echo "=== Isi dari binaries/$ARTIFACT ==="
+                ls -la "binaries/$ARTIFACT"
+                
+                # Copy semua isi artifact (termasuk .wasm, .js, .d.ts)
+                cp -r "binaries/$ARTIFACT"/. "publish/$PLATFORM/"
+                
+                # Rename file hasil wasm-pack biar sinkron jadi index.js & index.wasm
+                cd "publish/$PLATFORM"
+                
+                # Cari file .js bawaan wasm-pack dan rename ke index.js
+                WASM_JS_FILE=$(find . -maxdepth 1 -name "*.js" ! -name "index.js" | head -n 1)
+                if [ -n "$WASM_JS_FILE" ]; then
+                    mv "$WASM_JS_FILE" "index.js"
+                fi
+                
+                # Cari file _bg.wasm bawaan wasm-pack dan rename ke index.wasm
+                WASM_BG_FILE=$(find . -maxdepth 1 -name "*_bg.wasm" | head -n 1)
+                if [ -n "$WASM_BG_FILE" ]; then
+                    mv "$WASM_BG_FILE" "index.wasm"
+                fi
+                
+                # Balik ke root directory sebelum lanjutin proses jq dan npm publish
+                cd ../..
+                
                 MAIN_FIELD="index.js" 
-                FILES_FIELD=$(jq -nc '["*.wasm", "*.js", "*.d.ts", "README.md", "LICENSE"]')
+                FILES_FIELD=$(jq -nc '["index.wasm", "index.js", "*.d.ts", "README.md", "LICENSE"]')
             else
                 find "binaries/$ARTIFACT" -type f \( -name "*.node" -o -name "*.dll" -o -name "*.so" -o -name "*.dylib" \) -exec cp {} "publish/$PLATFORM/$BIN_NAME" \;
                 MAIN_FIELD="$BIN_NAME"
@@ -277,36 +301,57 @@ jobs:
               }' > "publish/$PLATFORM/package.json"
 
             cd "publish/$PLATFORM"
-            npm publish --tag $TAG --access public || echo "Skip existing"
+            
+            # --- VALIDASI OTOMATIS BERDASARKAN EVENT TYPE ---
+            if [[ "${{ github.event_name }}" == "release" ]]; then
+              echo "Event Rilisan Terdeteksi: Menjalankan Real Publish ke NPM..."
+              npm publish --tag $TAG --access public || echo "Skip existing"
+            else
+              echo "Event Manual/Test Terdeteksi: Menjalankan Dry-Run (NPM Pack)..."
+              npm pack
+              mkdir -p ../../dist-test
+              mv *.tgz ../../dist-test/
+            fi
+            
             cd ../..
           done
 
-          OP_DEPS=$(cat <<EOF
-          {
-            "@lightvm/core-linux-x64": "$VERSION",
-            "@lightvm/core-linux-arm64": "$VERSION",
-            "@lightvm/core-linux-ia32": "$VERSION",
-            "@lightvm/core-win32-x64": "$VERSION",
-            "@lightvm/core-win32-ia32": "$VERSION",
-            "@lightvm/core-darwin-x64": "$VERSION",
-            "@lightvm/core-android-arm64": "$VERSION",
-            "@lightvm/core-android-arm": "$VERSION",
-            "@lightvm/core-linux-musl-x64": "$VERSION",
-            "@lightvm/core-linux-musl-arm64": "$VERSION",
-            "@lightvm/core-linux-musl-ia32": "$VERSION",
-            "@lightvm/core-freebsd-x64": "$VERSION",
-            "@lightvm/core-browser-wasm": "$VERSION"
-          }
-          EOF
-          )
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            OP_DEPS=$(cat <<-EOF
+            {
+              "@lightvm/core-linux-x64": "$VERSION",
+              "@lightvm/core-linux-arm64": "$VERSION",
+              "@lightvm/core-linux-ia32": "$VERSION",
+              "@lightvm/core-win32-x64": "$VERSION",
+              "@lightvm/core-win32-ia32": "$VERSION",
+              "@lightvm/core-darwin-x64": "$VERSION",
+              "@lightvm/core-android-arm64": "$VERSION",
+              "@lightvm/core-android-arm": "$VERSION",
+              "@lightvm/core-linux-musl-x64": "$VERSION",
+              "@lightvm/core-linux-musl-arm64": "$VERSION",
+              "@lightvm/core-linux-musl-ia32": "$VERSION",
+              "@lightvm/core-freebsd-x64": "$VERSION",
+              "@lightvm/core-browser-wasm": "$VERSION"
+            }
+            EOF
+            )
 
-          jq --arg ver "$VERSION" --argjson deps "$OP_DEPS" \
-            '.version = $ver | .optionalDependencies = $deps' \
-            package.json > temp.json && mv temp.json package.json
-
-          npm publish --access public --tag $TAG
+            jq --arg ver "$VERSION" --argjson deps "$OP_DEPS" \
+              '.version = $ver | .optionalDependencies = $deps' \
+              package.json > temp.json && mv temp.json package.json
+  
+            npm publish --access public --tag $TAG
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Upload Test Tarballs (Only on Manual Run)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-packages-test
+          path: dist-test/
+          retention-days: 3
 
   publish-crates:
     needs: build-npm

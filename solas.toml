@@ -37,6 +37,9 @@ commands = ["node .testings/napi.js"]
 [scripts.build]
 desc = "Generating build results from TypeScript source"
 commands = ["node ./scripts/build-script.js"]
+[scripts.build-wasm]
+desc = "."
+commands = ["wasm-pack build --target web -- --features wasm"]
 
 [scripts.build-release]
 desc = "Create a build release .tgz file"
