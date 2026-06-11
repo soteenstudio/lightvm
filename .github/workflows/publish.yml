@@ -317,24 +317,22 @@ jobs:
           done
 
           if [[ "${{ github.event_name }}" == "release" ]]; then
-            OP_DEPS=$(cat <<-EOF
-            {
-              "@lightvm/core-linux-x64": "$VERSION",
-              "@lightvm/core-linux-arm64": "$VERSION",
-              "@lightvm/core-linux-ia32": "$VERSION",
-              "@lightvm/core-win32-x64": "$VERSION",
-              "@lightvm/core-win32-ia32": "$VERSION",
-              "@lightvm/core-darwin-x64": "$VERSION",
-              "@lightvm/core-android-arm64": "$VERSION",
-              "@lightvm/core-android-arm": "$VERSION",
-              "@lightvm/core-linux-musl-x64": "$VERSION",
-              "@lightvm/core-linux-musl-arm64": "$VERSION",
-              "@lightvm/core-linux-musl-ia32": "$VERSION",
-              "@lightvm/core-freebsd-x64": "$VERSION",
-              "@lightvm/core-browser-wasm": "$VERSION"
-            }
-            EOF
-            )
+            OP_DEPS=$(cat \
+              '{
+                "@lightvm/core-linux-x64": "$VERSION",
+                "@lightvm/core-linux-arm64": "$VERSION",
+                "@lightvm/core-linux-ia32": "$VERSION",
+                "@lightvm/core-win32-x64": "$VERSION",
+                "@lightvm/core-win32-ia32": "$VERSION",
+                "@lightvm/core-darwin-x64": "$VERSION",
+                "@lightvm/core-android-arm64": "$VERSION",
+                "@lightvm/core-android-arm": "$VERSION",
+                "@lightvm/core-linux-musl-x64": "$VERSION",
+                "@lightvm/core-linux-musl-arm64": "$VERSION",
+                "@lightvm/core-linux-musl-ia32": "$VERSION",
+                "@lightvm/core-freebsd-x64": "$VERSION",
+                "@lightvm/core-browser-wasm": "$VERSION"
+              }')
 
             jq --arg ver "$VERSION" --argjson deps "$OP_DEPS" \
               '.version = $ver | .optionalDependencies = $deps' \
