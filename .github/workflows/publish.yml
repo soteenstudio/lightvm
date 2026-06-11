@@ -161,6 +161,7 @@ jobs:
             -- --features wasm
 
       - name: Upload Artifacts
+        if: matrix.platform != 'browser-wasm'
         uses: actions/upload-artifact@v4
         with:
           name: binary-${{ matrix.platform }}
@@ -170,6 +171,13 @@ jobs:
             target/${{ matrix.target }}/release/*.so
             target/${{ matrix.target }}/release/*.dylib
             pkg/*
+
+      - name: Upload WASM Artifacts
+        if: matrix.platform == 'browser-wasm'
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.platform }}
+          path: pkg/ # Mengupload seluruh isi folder pkg secara utuh
 
   publish-npm:
     needs: build-npm
