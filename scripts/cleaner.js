@@ -30,7 +30,7 @@ function cleanProject() {
   console.log(`${s.bold}${s.cyan}🧹 Starting project cleanup...${s.reset}\n`);
   let deletedCount = 0;
 
-  const targetsDir = ['dist', 'binaries', 'pkg'];
+  const targetsDir = ['dist', 'binaries', 'pkg', 'dist-test', 'publish'];
 
   targetsDir.forEach((dirName) => {
     const targetPath = path.join(rootDir, dirName);

@@ -59,6 +59,9 @@ commands = ["node ./scripts/check-deps.js"]
 [scripts.typecheck]
 desc = "Type checking"
 commands = ["tsc"]
+[scripts.html-cleaner]
+desc = "Cleaning up HTML code"
+commands = ["node ./scripts/html-cleaner.js"]
 [scripts.prettier]
 desc = "Formatting code"
 commands = ["npx prettier ./ts/**/*.ts --write"]

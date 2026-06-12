@@ -51,6 +51,7 @@
     "typecheck": "tsc",
     "prettier": "npx prettier ./ts/**/*.ts --write",
     "eslint": "npx eslint ./ts/**/*.ts --fix",
+    "html:cleaner": "node ./scripts/html-cleaner.js",
     "prepare": "husky",
     "cleaner": "node ./scripts/cleaner.js",
     "server": "node ./scripts/server.js"
@@ -72,6 +73,7 @@
       "prettier --write"
     ],
     ".testings/**/*.{js,ts,html}": [
+      "npm run html:cleaner",
       "sh -c 'tsc'",
       "eslint --fix",
       "prettier --write"

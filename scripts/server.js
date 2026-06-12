@@ -58,7 +58,7 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(
-    `\x1b[36m⠋ Server streaming berjalan di:\x1b[0m \x1b[1m\x1b[32mhttp://localhost:${PORT}\x1b[0m`,
+    `\x1b[36m⠋ Server is running on:\x1b[0m \x1b[1m\x1b[32mhttp://localhost:${PORT}\x1b[0m`,
   );
-  console.log(`\x1b[2mTekan Ctrl+C buat matiin server\x1b[0m`);
+  console.log(`\x1b[2mPress Ctrl+C to turn off the server\x1b[0m`);
 });
