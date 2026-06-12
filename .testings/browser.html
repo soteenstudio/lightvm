@@ -45,7 +45,6 @@
         border-left: 6px solid var(--red) !important;
       }
 
-      /* Control Panel Buttons */
       .action-panel {
         display: flex;
         gap: 12px;
@@ -77,7 +76,6 @@
         background: #2ea043;
       }
 
-      /* Console Logger Simulator */
       .console-box {
         background: #000;
         border-radius: 6px;
@@ -165,10 +163,8 @@
       const runVmBtn = document.getElementById('run-vm-btn');
       const reloadWorkflowBtn = document.getElementById('reload-workflow-btn');
 
-      // Buat instance global variabel di scope module biar bisa diakses tombol pemicu luar
       let globalVm = null;
 
-      // Fungsi utama workflow yang bisa dipanggil kapan aja tanpa refresh halaman
       async function executeMainWorkflow() {
         try {
           runVmBtn.disabled = true;
@@ -176,7 +172,6 @@
             'Mencoba resolve target dependency @lightvm/core-browser-wasm...',
           );
 
-          // Mengarah ke root folder node_modules package lu
           const modulePath =
             '../node_modules/@lightvm/core-browser-wasm/lightvm.js';
           const { default: init, LightVM } = await import(modulePath);
@@ -188,7 +183,6 @@
           statusEl.className = '';
           statusEl.innerHTML = `<h3>⠋ Sedang Compiling WebAssembly...</h3>`;
 
-          // 1. Eksekusi WebAssembly compile streaming
           await init();
 
           printLog(
@@ -199,7 +193,6 @@
           statusEl.innerHTML =
             '<h3>✔ WASM Berhasil Dimuat Total!</h3><p style="margin:5px 0 0 0; font-size:0.9rem;">Runtime environment telah dikunci dan siap dieksekusi.</p>';
 
-          // 2. Test alokasi instance class Rust Lu
           printLog(
             'Mencoba mengalokasikan memory untuk instance LightVM...',
             'info',
@@ -210,10 +203,8 @@
           statusEl.innerHTML += `<div style="margin-top: 10px; font-size: 0.9rem; color: #56d364;">→ Instance LightVM terdeteksi aman di browser!</div>`;
           console.log('VM Instance:', globalVm);
 
-          // Jalankan sub-test bawaan
           runVmEngine();
 
-          // Buka akses tombol re-run manual karena globalVm sudah terbentuk
           runVmBtn.disabled = false;
         } catch (err) {
           statusEl.className = 'error';
@@ -226,46 +217,36 @@
         }
       }
 
-      // Fungsi khusus buat running / eksekusi mesin virtualnya aja
       function runVmEngine() {
         if (!globalVm) return;
 
-        // ==========================================
-        // SUB-TEST BARU: BERKAS EKSEKUSI BYTECODE
-        // ==========================================
         printLog('Memulai sub-test eksekusi instruksi bytecode...', 'info');
 
         const raw = [['push', '16'], ['println']];
 
-        // 1. Ambil instance tools bawaan core LightVM
         const tools = globalVm.tools();
         printLog('Memproses optimasi mentah via tools.optimizeBytecode()...');
         const optimized = tools.optimizeBytecode(raw);
 
-        // 2. Load bytecode hasil optimasi ke dalam Virtual Machine
         globalVm.load(JSON.stringify(optimized));
         printLog(
           'Bytecode sukses di-inject ke dalam core register VM.',
           'success',
         );
 
-        // 3. Jembatan Interseptor: Bajak console.log bawaan sebentar biar println dari Rust tertangkap di layar
         const originalConsoleLog = console.log;
         console.log = function (...args) {
           originalConsoleLog.apply(console, args);
           printLog(`[VM OUTPUT] ${args.join(' ')}`, 'vm');
         };
 
-        // 4. Nyalakan mesin VM
         printLog('Menjalankan vm.run()...', 'info');
         globalVm.run();
         printLog('Eksekusi vm.run() selesai didongkrak.', 'success');
 
-        // Kembalikan fungsi console asli biar gak bocor kemana-mana
         console.log = originalConsoleLog;
       }
 
-      // Pasang Event Listener ke tombol UI
       runVmBtn.addEventListener('click', () => {
         printLog(
           '[ACTION] Memicu re-run VM core register secara manual...',
@@ -282,7 +263,6 @@
         executeMainWorkflow();
       });
 
-      // Eksekusi otomatis pertama kali saat halaman terbuka
       executeMainWorkflow();
     </script>
   </body>
