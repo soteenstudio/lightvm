@@ -19,7 +19,9 @@ jobs:
   smart-release:
     if: |
       github.event_name == 'workflow_dispatch' || 
-      (github.event.comment.user.login == 'domloorelease')
+      (github.event.comment.user.login == 'claycuy)
+    env:
+      GH_TOKEN: ${{ secrets.DOMLOO_PAT }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source Code
@@ -30,8 +32,6 @@ jobs:
 
       - name: Deteksi Trigger
         id: deteksi
-        env:
-          GH_TOKEN: ${{ secrets.DOMLOO_PAT }}
         run: |
           if [ "${{ github.event_name }}" == "issue_comment" ]; then
             COMMENT_BODY="${{ github.event.comment.body }}"
@@ -40,8 +40,6 @@ jobs:
           fi
 
       - name: Jalankan Otak Bot Pinter
-        env:
-          GH_TOKEN: ${{ secrets.DOMLOO_PAT }}
         run: |
           echo "=== 1. SEARCHING LATEST TAG & ANCHOR COMMIT ==="
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.1.0-proto.0")
@@ -142,8 +140,6 @@ jobs:
 
       - name: Create Release Branch and Push
         if: env.NEW_VERSION != ''
-        env:
-          GH_TOKEN: ${{ secrets.DOMLOO_PAT }}
         run: |
           git config --global user.name "domloorelease"
           git config --global user.email "domloorelease@gmail.com"
