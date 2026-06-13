@@ -206,7 +206,7 @@ LightVM uses a strict capability-based security model. You must explicitly grant
     </details>
     
 > [!NOTE]
-> __Capability Required__: no spesific capability
+> __Capability Required__: no specific capability
     
 3. ``inspect()`` method:  
   Function to view state, number of instructions, and capability.
@@ -282,7 +282,7 @@ LightVM uses a strict capability-based security model. You must explicitly grant
     </details>
   
 > [!NOTE]
-> __Capability Required__: no spesific capability  
+> __Capability Required__: no specific capability  
 > __Event__: tick, halt, and panic
     
 6. ``export()`` method:  
@@ -303,8 +303,8 @@ LightVM uses a strict capability-based security model. You must explicitly grant
     ```rust
     let mut add = vm.export("add".to_string());
     let args = vec![serde_json::json!(5), serde_json::json!(6)];
-    if let Some(hasil) = add_func(args) {
-        println!("Hasil dari VM: {}", hasil);
+    if let Some(result) = add_func(args) {
+        println!("Result from VM: {}", result);
     }
     ```
     </details>
@@ -407,7 +407,7 @@ LightVM uses a strict capability-based security model. You must explicitly grant
     </ol>
 
 > [!NOTE]
-> __Capability Required__: no spesific capability
+> __Capability Required__: no specific capability
 
 ## References
 ### Supported Primitive Types

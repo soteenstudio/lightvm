@@ -15,7 +15,7 @@ const { VMError } = await importVM();
 
 describe("VMError Class", () => {
   test("VMError: should correctly set properties and format message", () => {
-    const msg = "Terjadi sesuatu yang salah";
+    const msg = "Something went wrong";
     const err = new VMError(msg);
     
     expect(err.code).toBe("LVM500");

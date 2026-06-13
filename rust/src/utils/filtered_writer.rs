@@ -9,7 +9,6 @@
  */
 
 use std::fmt::{self};
-/// Struct pembantu buat nge-filter teks pas lagi ditulis
 pub struct FilteredWriter {
   pub buffer: String,
   pub state: usize,

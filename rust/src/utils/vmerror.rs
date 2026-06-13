@@ -12,23 +12,23 @@ use smol_str::SmolStr;
 use std::fmt;
 #[derive(Debug)]
 pub enum VMError {
-  /// Terjadi saat stack mencapai batas maksimum yang ditentukan InitStack atau default
+  /// Occurs when the stack reaches the maximum limit specified by InitStack or default.
   StackOverflow { ip: usize, limit: usize },
-  /// Terjadi saat opcode mencoba pop data tapi stack kosong
+  /// Occurs when the opcode tries to pop data but the stack is empty.
   StackUnderflow { ip: usize, opcode: &'static str },
-  /// Terjadi saat parser atau executor nemu bytecode ilegal
+  /// Occurs when the parser or executor encounters illegal bytecode.
   InvalidOpcode { ip: usize, code: SmolStr },
-  /// Terjadi saat operasi (misal: Add) dapet tipe data yang gak sinkron
+  /// Occurs when an operation (e.g. Add) encounters an asynchronous data type.
   TypeMismatch {
     ip: usize,
     expected: &'static str,
     found: &'static str,
   },
-  /// Error umum terkait environment atau OS
+  /// Common errors related to the environment or OS
   SystemError(SmolStr),
-  /// Error saat akses index di luar jangkauan (Array/Object)
+  /// Error when accessing index out of range (Array/Object)
   OutOfBounds { ip: usize, index: usize, len: usize },
-  /// Terjadi saat control flow melompat ke IP yang berada di luar panjang bytecode
+  /// Occurs when control flow jumps to an IP that is outside the bytecode length.
   InvalidJumpTarget {
     ip: usize,
     target: usize,
@@ -109,7 +109,7 @@ impl From<VMError> for SmolStr {
   }
 }
 impl VMError {
-  /// Mengembalikan kode error unik untuk dokumentasi (misal: LVM001)
+  /// Returns a unique error code for documentation (e.g., LVM001)
   #[cold]
   fn error_code(&self) -> &'static str {
     match self {

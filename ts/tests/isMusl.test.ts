@@ -26,7 +26,7 @@ describe("isMusl Utility", () => {
   test("isMusl: should handle error gracefully", () => {
     
     const brokenProvider = {
-      getReport: () => { throw new Error("Gagal"); }
+      getReport: () => { throw new Error("Failed"); }
     };
     
     const result = isMusl(brokenProvider);

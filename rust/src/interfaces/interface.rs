@@ -129,7 +129,6 @@ impl LightVM {
     };
     let halt_flag = Some(options.halt_flag.clone());
     let _result = crate::vm::execute::execute(bytecode, Some(options), halt_flag);
-    // TODO: Tangani output _result (Ok/Err) sesuai kebutuhan internal VM lo di sini jika perlu
     self.state = VmState::Idle;
     Ok(())
   }
@@ -208,8 +207,8 @@ impl LightVM {
       imports: self._imports.clone(),
       halt_flag: self.should_halt.clone(),
     };
-    let hasil_run = run(&bytecode_str.clone(), Some(options));
-    Ok(hasil_run)
+    let result_run = run(&bytecode_str.clone(), Some(options));
+    Ok(result_run)
   }
   #[inline]
   pub fn get_outputs_internal(&mut self) -> Result<Vec<String>, VMError> {

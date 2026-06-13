@@ -3,7 +3,7 @@ import headers from 'eslint-plugin-headers';
 const customNoCommentRule = {
   meta: {
     type: 'layout',
-    docs: { description: 'Hapus komentar & beri napas setelah header' },
+    docs: { description: 'Remove comments & give breath after header' },
     fixable: 'code',
   },
   create(context) {
@@ -15,7 +15,7 @@ const customNoCommentRule = {
           if (!(comment.type === 'Block' && comment.value.startsWith('*'))) {
             context.report({
               node: comment,
-              message: 'Komentar dilarang!',
+              message: 'Comments are prohibited!',
               fix(fixer) {
                 return fixer.remove(comment);
               },
@@ -33,7 +33,7 @@ const customNoCommentRule = {
           if (!textBetween.includes('\n\n')) {
             context.report({
               node: firstComment,
-              message: 'Butuh baris kosong setelah header',
+              message: 'Need a blank line after the header',
               fix(fixer) {
                 return fixer.insertTextAfter(firstComment, '\n');
               },

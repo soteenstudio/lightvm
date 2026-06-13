@@ -55,16 +55,14 @@ export function loadNapi() {
           ? '@lightvm/core-android-arm'
           : '';
   } else {
-    throw new VMSystemError(
-      `LightVM: Platform ${platform} ${arch} gak didukung, Clay.`,
-    );
+    throw new VMSystemError(`Platform ${platform} ${arch} is not supported`);
   }
   try {
     cachedNative = require(packageName);
     return cachedNative;
   } catch (err) {
     throw new VMSystemError(
-      `LightVM: Gagal load biner untuk ${packageName}. Pastiin koneksi aman pas install.`,
+      `Failed to load binary for ${packageName}. Please ensure a secure connection during installation.`,
     );
   }
 }
