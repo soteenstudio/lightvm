@@ -24,4 +24,4 @@ jobs:
     steps:
       - name: Panggil Domloo Core Engine
         # Ganti sesuai path username dan nama repo rumah Domloo lu
-        uses: domloorelease/action@main 
+        uses: domloorelease/action/.github/domloo-action@main 
