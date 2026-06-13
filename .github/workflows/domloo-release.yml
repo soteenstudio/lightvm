@@ -149,8 +149,8 @@ jobs:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
           GH_TOKEN: ${{ steps.generate_token.outputs.token }}
         run: |
-          git config --global user.name "domloorelease"
-          git config --global user.email "domloorelease@gmail.com"
+          git config --global user.name "domloo-release[bot]"
+          git config --global user.email "4042690+domloo-release[bot]@users.noreply.github.com"
           
           if [ -f "docs/CHANGELOG.md" ]; then
             cat current_changelog.md docs/CHANGELOG.md > temp_changelog.md && mv temp_changelog.md docs/CHANGELOG.md
