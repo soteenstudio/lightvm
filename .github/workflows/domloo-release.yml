@@ -20,15 +20,20 @@ jobs:
     if: |
       github.event_name == 'workflow_dispatch' || 
       (github.event.comment.user.login == 'claycuy')
-    env:
-      GH_TOKEN: ${{ secrets.DOMLOO_PAT }}
     runs-on: ubuntu-latest
     steps:
+      - name: Generate Token Si Bot
+        id: generate_token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.DOMLOO_APP_ID }}
+          private-key: ${{ secrets.DOMLOO_APP_PRIVATE_KEY }}
+
       - name: Checkout Source Code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.DOMLOO_PAT }}
+          token: ${{ step.generate_token.outputs.token }}
 
       - name: Deteksi Trigger
         id: deteksi
@@ -140,6 +145,9 @@ jobs:
 
       - name: Create Release Branch and Push
         if: env.NEW_VERSION != ''
+        env:
+          GITHUB_TOKEN: ${{ step.generate_token.outputs.token }}
+          GH_TOKEN: ${{ step.generate_token.outputs.token }}
         run: |
           git config --global user.name "domloorelease"
           git config --global user.email "domloorelease@gmail.com"
