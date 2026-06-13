@@ -11,17 +11,14 @@ on:
   pull_request_review_comment:
     types: [created]
 
-permissions:
-  contents: write
-  pull-requests: write
-
 jobs:
   smart-release:
     if: |
       github.event_name == 'workflow_dispatch' || 
       (github.event.comment.user.login == 'claycuy')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Panggil Domloo Core Engine
-        # Ganti sesuai path username dan nama repo rumah Domloo lu
-        uses: domloorelease/action/.github/domloo-action@main 
+    
+    # LANGSUNG MANGGIL DI SINI (Gak perlu runs-on dan steps lagi)
+    uses: domloorelease/action/.github/workflows/release-engine.yml@main
+    
+    # Biar secret di repo domloorelease/action otomatis kebaca otomatis
+    secrets: inherit
