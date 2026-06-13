@@ -19,7 +19,7 @@ jobs:
   smart-release:
     if: |
       github.event_name == 'workflow_dispatch' || 
-      (github.event.comment.user.login == 'claycuy)
+      (github.event.comment.user.login == 'claycuy')
     env:
       GH_TOKEN: ${{ secrets.DOMLOO_PAT }}
     runs-on: ubuntu-latest
