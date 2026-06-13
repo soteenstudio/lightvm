@@ -1,3 +1,7 @@
+## Changelog for v0.1.0-alpha.8
+
+* perf: Optimizing interface performance
+* refactor: Rename accessindex to access_index
 ## Changelog for v0.1.0-alpha.7
 
 * fix: Fixed undefined tools() bug
