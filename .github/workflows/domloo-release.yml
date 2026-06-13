@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ step.generate_token.outputs.token }}
+          token: ${{ steps.generate_token.outputs.token }}
 
       - name: Deteksi Trigger
         id: deteksi
@@ -146,8 +146,8 @@ jobs:
       - name: Create Release Branch and Push
         if: env.NEW_VERSION != ''
         env:
-          GITHUB_TOKEN: ${{ step.generate_token.outputs.token }}
-          GH_TOKEN: ${{ step.generate_token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
         run: |
           git config --global user.name "domloorelease"
           git config --global user.email "domloorelease@gmail.com"
