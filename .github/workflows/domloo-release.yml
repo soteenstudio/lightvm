@@ -18,7 +18,7 @@ jobs:
       (github.event.comment.user.login == 'claycuy')
     
     # LANGSUNG MANGGIL DI SINI (Gak perlu runs-on dan steps lagi)
-    uses: domloorelease/action/.github/workflows/release-engine.yml@main
+    uses: domloorelease/action/.github/workflows/domloo-action.yml@main
     
     # Biar secret di repo domloorelease/action otomatis kebaca otomatis
     secrets: inherit
