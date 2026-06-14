@@ -15,9 +15,11 @@ permissions:
 
 jobs:
   smart-release:
-    if: |
-      github.event_name == 'workflow_dispatch' || 
-      (github.event.comment != null && github.event.comment.user.login == 'claycuy')
+    # Perbaikan sintaks IF agar tidak rawan parsing error
+    if: github.event_name == 'workflow_dispatch' || (github.event.comment != null && github.event.comment.user.login == 'claycuy')
     
     uses: domloorelease/action/.github/workflows/domloo-action.yml@main
+    # Lempar token secara eksplisit ke input Apps lu biar dapet hak akses write
+    with:
+      token: ${{ secrets.GITHUB_TOKEN }}
     secrets: inherit
