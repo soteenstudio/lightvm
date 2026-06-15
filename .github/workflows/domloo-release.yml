@@ -1,25 +1,23 @@
-name: Domloo Release Trigger
-
-concurrency:
-  group: domloo-release-${{ github.ref }}
-  cancel-in-progress: true
+name: Trigger Release
 
 on:
-  workflow_dispatch:
-  issue_comment:
-    types: [created]
-
-permissions:
-  contents: write
-  pull-requests: write
+  push:
+    branches: [main]
 
 jobs:
-  smart-release:
-    # Perbaikan sintaks IF agar tidak rawan parsing error
-    if: github.event_name == 'workflow_dispatch' || (github.event.comment != null && github.event.comment.user.login == 'claycuy')
-    
-    uses: domloorelease/action/.github/workflows/domloo-action.yml@main
-    # Lempar token secara eksplisit ke input Apps lu biar dapet hak akses write
-    with:
-      token: ${{ github.token }}
-    secrets: inherit
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Run Domloo Release
+        uses: domloorelease/action@main # Manggil composite action lu
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }} # Cukup parsing token default repo mereka
