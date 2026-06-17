@@ -114,7 +114,7 @@ half = { version = "2.7.1", features = ["num-traits", "serde", "std"] }
 num-traits = "0.2"
 unescape = "0.1"
 smallvec = "1.15.1"
-ts-rs = { version = "10.0", features = ["serde_json"] }
+ts-rs = { version = "12.0", features = ["serde_json"] }
 wasm-bindgen = { version = "0.2.122", optional = true }
 serde-wasm-bindgen = { version = "0.6.5", optional = true }
 js-sys = { version = "0.3.100", optional = true }
