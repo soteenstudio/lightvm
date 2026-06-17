@@ -317,7 +317,6 @@ jobs:
             else
               echo "Event Manual/Test Terdeteksi: Menjalankan Dry-Run (NPM Pack)..."
               npm pack
-              npm publish --tag $TAG --access public || echo "Skip existing"
               mkdir -p ../../dist-test
               mv *.tgz ../../dist-test/
             fi
@@ -325,7 +324,7 @@ jobs:
             cd ../..
           done
 
-          if [[ "${{ github.event_name }}" == "release" ]]; then
+          if [[ "${{ github.event_name }}" == "release" || "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             jq --arg ver "$VERSION" \
               '.version = $ver | .optionalDependencies = {
                 "@lightvm/core-linux-x64": "$VERSION",
