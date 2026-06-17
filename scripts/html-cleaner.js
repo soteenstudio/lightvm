@@ -32,7 +32,11 @@ console.log(
 if (fs.existsSync(filePath)) {
   let html = fs.readFileSync(filePath, 'utf8');
 
-  html = html.replace(/<!--[\s\S]*?-->/g, '');
+  let previousHtml;
+  do {
+    previousHtml = html;
+    html = html.replace(/<!--[\s\S]*?-->/g, '');
+  } while (html !== previousHtml);
 
   html = html.replace(
     /(<script\b[\s\S]*?>)([\s\S]*?)(<\/script\b[^>]*>)/gi,
