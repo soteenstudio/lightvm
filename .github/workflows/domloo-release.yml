@@ -27,6 +27,6 @@ jobs:
           persist-credentials: false
 
       - name: Run Domloo Release
-        uses: domloorelease/action@main # Manggil composite action lu
+        uses: domlooorgs/release-action@main # Manggil composite action lu
         with:
           token: ${{ secrets.GITHUB_TOKEN }} # Cukup parsing token default repo mereka
