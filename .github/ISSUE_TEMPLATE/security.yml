@@ -1,0 +1,54 @@
+name: Security Report
+description: Report a security vulnerability
+title: "[SECURITY] Short title of the vulnerability"
+labels: [security]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Warning: Security Reporting
+        If you believe you have found a security vulnerability in this project, please report it via [GitHub Security Advisory](https://github.com/soteenstudio/lightvm/security/advisories/new) if possible, as it allows for private communication.
+
+        If you must report it here, please keep the **Proof of Concept (PoC) private or vague** until we have discussed it.
+
+  - type: input
+    id: vulnerability-summary
+    attributes:
+      label: Vulnerability summary
+      placeholder: Briefly explain what is vulnerable
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Potential Impact
+      placeholder: What could an attacker do with this vulnerability?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: List the steps to trigger this vulnerability
+    validations:
+      required: true
+
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Proposed mitigation (optional)
+      placeholder: Any ideas on how to fix this?
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Confirmation
+      options:
+        - label: I am reporting this in good faith and will wait for the maintainer's response before making it public.
+          required: true
