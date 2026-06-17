@@ -25,11 +25,14 @@ pub fn parse_ltc(code: &str) -> Vec<Instructions> {
     .map(|s: &str| s.trim())
     .filter(|s: &&str| !s.is_empty())
     .map(|line: &str| {
-      let mut parts = line.split_whitespace();
-      let op = parts.next().unwrap_or("").to_string();
-      let mut args: Vec<Value> = parts
+      let token_re = Regex::new(r#""([^"\\]|\\.)*"|\S+"#).unwrap();
+      let mut tokens = token_re.find_iter(line).map(|m| m.as_str());
+      let op = tokens.next().unwrap_or("").to_string();
+      let mut args: Vec<Value> = tokens
         .map(|arg: &str| {
-          if let Ok(num) = arg.parse::<f64>() {
+          if arg.starts_with('"') && arg.ends_with('"') && arg.len() >= 2 {
+            Value::from(&arg[1..arg.len() - 1])
+          } else if let Ok(num) = arg.parse::<f64>() {
             Value::from(num)
           } else {
             Value::from(arg)
