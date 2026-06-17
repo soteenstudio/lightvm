@@ -230,6 +230,7 @@ impl LightVM {
     serde_json::to_string(&optimized)
       .map_err(|e| VMError::SystemError(format!("Failed to stringify: {}", e).into()))
   }
+  // TODO: Is there a bug in the following code?
   pub fn parse_ltc_internal(code: String) -> Result<String, VMError> {
     let instructions = crate::utils::loader::parse_ltc(&code);
     serde_json::to_string(&instructions).map_err(|e| {
