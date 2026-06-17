@@ -1,0 +1,10 @@
+language: "en"
+reviews:
+  profile: "chill"
+  request_review_trigger:
+    exclude_labels:
+      - "wip"
+      - "dependencies"
+  ignore_authors:
+    - "dependabot[bot]"
+    - "renovate[bot]"
