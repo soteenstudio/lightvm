@@ -10,9 +10,10 @@
 
 import http from 'http';
 import fs from 'fs';
-import { join, extname } from 'path';
+import { join, extname, resolve, relative } from 'path';
 
 const PORT = 3000;
+const ROOT_DIR = process.cwd();
 
 const MIME_TYPES = {
   '.html': 'text/html',
@@ -23,8 +24,17 @@ const MIME_TYPES = {
 };
 
 const server = http.createServer((req, res) => {
-  let filePath = req.url === '/' ? './.testings/browser.html' : `.${req.url}`;
-  filePath = decodeURIComponent(filePath);
+  const rawPath = req.url === '/' ? '/.testings/browser.html' : (req.url || '/');
+  const pathname = rawPath.split('?')[0].split('#')[0];
+  const decodedPath = decodeURIComponent(pathname);
+  const filePath = resolve(ROOT_DIR, `.${decodedPath}`);
+  const relPath = relative(ROOT_DIR, filePath);
+
+  if (relPath.startsWith('..') || relPath.includes(`..${join('/')}`) || relPath === '' || relPath.startsWith('/')) {
+    res.writeHead(403, { 'Content-Type': 'text/plain' });
+    res.end('403 Forbidden');
+    return;
+  }
 
   const ext = extname(filePath);
   let contentType = MIME_TYPES[ext] || 'application/octet-stream';
