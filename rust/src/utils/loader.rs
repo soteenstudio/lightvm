@@ -29,7 +29,9 @@ pub fn parse_ltc(code: &str) -> Vec<Instructions> {
       let op = parts.next().unwrap_or("").to_string();
       let mut args: Vec<Value> = parts
         .map(|arg: &str| {
-          if let Ok(num) = arg.parse::<f64>() {
+          if arg.starts_with('"') && arg.ends_with('"') && arg.len() >= 2 {
+            Value::from(&arg[1..arg.len() - 1])
+          } else if let Ok(num) = arg.parse::<f64>() {
             Value::from(num)
           } else {
             Value::from(arg)
