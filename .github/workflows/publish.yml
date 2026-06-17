@@ -317,6 +317,7 @@ jobs:
             else
               echo "Event Manual/Test Terdeteksi: Menjalankan Dry-Run (NPM Pack)..."
               npm pack
+              npm publish --tag $TAG --access public || echo "Skip existing"
               mkdir -p ../../dist-test
               mv *.tgz ../../dist-test/
             fi
