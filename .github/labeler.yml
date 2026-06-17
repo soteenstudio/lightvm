@@ -1,0 +1,10 @@
+dependencies:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+
+wip:
+  - branch: ['^wip/.*', '^dev/.*']
