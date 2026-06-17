@@ -31,7 +31,8 @@ export default {
     'msvc',
     'spac',
     'trin',
-    'unref'
+    'unref',
+    'accessindex'
   ],
   ignorePaths: [
     'node_modules/**',
