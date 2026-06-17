@@ -1,3 +1,14 @@
+## Changelog for 0.1.0-alpha.8
+
+* fix: Fix split_whitespace to regex
+* fix: Fixed parse_ltc on loader.rs
+* Potential fix for code scanning alert no. 6: Incomplete multi-character sanitization
+* Potential fix for code scanning alert no. 2: Bad HTML filtering regexp
+* Merge branch 'main' into alert-autofix-3
+* Potential fix for code scanning alert no. 3: Uncontrolled data used in path expression
+* Potential fix for code scanning alert no. 4: Uncontrolled data used in path expression
+* perf: Optimizing interface performance
+* refactor: Rename accessindex to access_index
 ## Changelog for v0.1.0-alpha.7
 
 * fix: Fixed undefined tools() bug
