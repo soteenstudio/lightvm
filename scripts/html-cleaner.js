@@ -35,7 +35,7 @@ if (fs.existsSync(filePath)) {
   html = html.replace(/<!--[\s\S]*?-->/g, '');
 
   html = html.replace(
-    /(<script[\s\S]*?>)([\s\S]*?)(<\/script>)/gi,
+    /(<script\b[\s\S]*?>)([\s\S]*?)(<\/script\b[^>]*>)/gi,
     (match, openTag, scriptContent, closeTag) => {
       const cleanScript = scriptContent
         .replace(/\/\*[\s\S]*?\*\//g, '')
@@ -45,7 +45,7 @@ if (fs.existsSync(filePath)) {
   );
 
   html = html.replace(
-    /(<style[\s\S]*?>)([\s\S]*?)(<\/style>)/gi,
+    /(<style\b[\s\S]*?>)([\s\S]*?)(<\/style\b[^>]*>)/gi,
     (match, openTag, scriptContent, closeTag) => {
       const cleanScript = scriptContent.replace(/\/\*[\s\S]*?\*\//g, '');
       return openTag + cleanScript + closeTag;
