@@ -34,7 +34,6 @@ impl LightVM {
         caps_set.insert(c);
       }
     }
-
     Self {
       bytecode: Vec::new(),
       listeners: AHashMap::new(),
@@ -192,7 +191,7 @@ impl LightVM {
       "halted": true
     })
   }
-  /// Functions used to call utilities  
+  /// Functions used to call utilities
   pub fn tools(&mut self) -> LightVMTools {
     LightVMTools {
       nightly: self.nightly,
