@@ -62,7 +62,7 @@ impl LightVM {
   /// Function to start bytecode execution.
   ///
   /// # Examples
-  /// ```no_run
+  /// ```rust
   /// let raw = r#"[
   ///   ["push", 5],
   ///   ["val", "x"],
@@ -74,6 +74,16 @@ impl LightVM {
   pub fn run(&mut self, options: Option<RunOptions>) {
     let _ = self.run_internal(options);
   }
+  /// Function to export functions in the VM out.
+  ///
+  /// # Examples
+  /// ```rust
+  /// let mut add = vm.export("add".to_string());
+  /// let args = vec![serde_json::json!(5), serde_json::json!(6)];
+  /// if let Some(result) = add_func(args) {
+  ///    println!("Result from VM: {}", result);
+  /// }
+  /// ```
   pub fn export(
     &mut self,
     name: String,
@@ -129,6 +139,14 @@ impl LightVM {
     }
     self
   }
+  /// Function to force/manually stop VM.
+  ///
+  /// # Examples
+  /// ```rust
+  /// vm.halt();
+  /// vm.run(None); // will not be executed
+  /// println!("The VM has been terminated.");
+  /// ```
   pub fn halt(&mut self) {
     let _ = self.halt_internal();
   }
@@ -148,6 +166,13 @@ impl LightVM {
     let _ = self.on_internal(event, callback);
     self
   }
+  /// Function to view state, number of instructions, and capability.
+  ///
+  /// # Examples
+  /// ```rust
+  /// let report = vm.inspect();
+  /// println!("{}", serde_json::to_string_pretty(&report).unwrap());
+  /// ```
   pub fn inspect(&self) -> serde_json::Value {
     match self.inspect_internal() {
       Ok(json_str) => serde_json::from_str(&json_str).unwrap_or(serde_json::Value::Null),
@@ -164,6 +189,7 @@ impl LightVM {
       "halted": true
     })
   }
+  /// Functions used to call utilities  
   pub fn tools() -> LightVMTools {
     LightVMTools
   }
@@ -171,6 +197,14 @@ impl LightVM {
 pub struct LightVMTools;
 #[cfg(not(feature = "node"))]
 impl LightVMTools {
+  /// Optimizes raw JSON bytecode and serializes it to a string
+  ///
+  /// # Examples
+  /// ```rust
+  /// let tools = LightVM::tools();
+  /// let optimized = tools.optimize_bytecode(raw);
+  /// println!(optimized.clone());
+  /// ```
   pub fn optimize_bytecode(&self, json_str: &str) -> serde_json::Value {
     let bytecode: serde_json::Value = serde_json::from_str(json_str).unwrap_or_else(|err| {
       eprintln!("\nFailed to parse JSON string: {}", err);
@@ -186,6 +220,14 @@ impl LightVMTools {
       std::process::exit(1);
     })
   }
+  /// Converts raw JSON bytecode into a readable LTC assembly string
+  ///
+  /// # Examples
+  /// ```rust
+  /// let tools = LightVM::tools();
+  /// let stringify = tools.stringify_ltc(raw);
+  /// println!("{:#}", stringify.clone());
+  /// ```
   pub fn stringify_ltc(&self, json_str: &str) -> String {
     let json: serde_json::Value = match serde_json::from_str(json_str) {
       Ok(v) => v,
@@ -202,6 +244,14 @@ impl LightVMTools {
       }
     }
   }
+  /// Parses LTC code and serializes the instructions to a JSON string
+  ///
+  /// # Examples
+  /// ```rust
+  /// let tools = LightVM::tools();
+  /// let parsed = tools.parse_ltc(raw);
+  /// println!("{:#}", parsed.clone());
+  /// ```
   pub fn parse_ltc(&self, code: String) -> String {
     match LightVM::parse_ltc_internal(code) {
       Ok(text) => text,
@@ -211,6 +261,14 @@ impl LightVMTools {
       }
     }
   }
+  /// Parses an LTC string into a JSON array
+  ///
+  /// # Examples
+  /// ```rust
+  /// let tools = LightVM::tools();
+  /// let json = tools.parse_ltc_array(raw);
+  /// println!("{:#}", json.clone());
+  /// ```
   pub fn parse_ltc_array(&self, code: String) -> serde_json::Value {
     LightVM::parse_ltc_array_internal(code)
   }
