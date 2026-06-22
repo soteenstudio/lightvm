@@ -8,15 +8,23 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+#[doc(hidden)]
 #[allow(clippy::type_complexity)]
 pub mod instructions;
+#[doc(hidden)]
 pub mod interfaces;
+#[doc(hidden)]
 pub mod optimizer;
+#[doc(hidden)]
 pub mod types;
+#[doc(hidden)]
 pub mod utils;
+#[doc(hidden)]
 pub mod vm;
+#[doc(hidden)]
 #[cfg(feature = "node")]
 pub use crate::interfaces::napi_interface::NodeLightVM;
+#[doc(hidden)]
 #[cfg(feature = "wasm")]
 pub use crate::interfaces::wasm_interface::WasmLightVM;
 #[cfg(not(feature = "node"))]
