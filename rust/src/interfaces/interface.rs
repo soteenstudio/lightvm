@@ -16,7 +16,7 @@ use crate::types::{
   vmevent::VmEvent,
   vmstate::VmState,
 };
-use crate::utils::vmerror::VMError;
+use crate::utils::{has_nightly_opcodes::has_nightly_opcodes, vmerror::VMError};
 use crate::vm::run::run;
 use ahash::AHashMap;
 use regex::Regex;
@@ -38,6 +38,7 @@ pub struct LightVM {
   pub functions: AHashMap<SmolStr, FuncMetadata>,
   pub exported: HashSet<SmolStr>,
   pub _imports: AHashMap<SmolStr, Value>,
+  pub nightly: bool,
 }
 impl LightVM {
   #[inline(always)]
@@ -86,6 +87,12 @@ impl LightVM {
     }
   }
   pub fn load_internal(&mut self, source: String) -> Result<(), VMError> {
+    if !self.nightly && has_nightly_opcodes(&source) {
+      return Err(VMError::FeatureRestricted {
+        ip: 0,
+        feature: "Nightly Opcodes (Experimental)",
+      });
+    }
     let trimmed = source.trim();
     if trimmed.starts_with('[') {
       let raw_list: Vec<serde_json::Value> = serde_json::from_str(trimmed).map_err(|e| {
@@ -223,7 +230,17 @@ impl LightVM {
     self._outputs.clear();
     Ok(())
   }
-  pub fn optimize_bytecode_internal(bytecode_raw: serde_json::Value) -> Result<String, VMError> {
+  pub fn optimize_bytecode_internal(
+    &mut self,
+    bytecode_raw: serde_json::Value,
+  ) -> Result<String, VMError> {
+    let json_str = bytecode_raw.to_string();
+    if !self.nightly && has_nightly_opcodes(&json_str) {
+      return Err(VMError::FeatureRestricted {
+        ip: 0,
+        feature: "Nightly Opcodes (Experimental)",
+      });
+    }
     let json_str = bytecode_raw.to_string();
     let raw_list: Vec<serde_json::Value> = serde_json::from_str(&json_str)
       .map_err(|e| VMError::SystemError(format!("Invalid JSON format: {}", e).into()))?;

@@ -34,6 +34,8 @@ pub enum VMError {
     target: usize,
     len: usize,
   },
+  /// Occurs when a nightly/experimental opcode is used but nightly mode is disabled.
+  FeatureRestricted { ip: usize, feature: &'static str },
 }
 impl fmt::Display for VMError {
   #[cold]
@@ -83,6 +85,11 @@ impl fmt::Display for VMError {
         "Invalid jump target {} at [IP: {}]. Bytecode length is only {}. Execution aborted to prevent UB.",
         target, ip, len
       ),
+      VMError::FeatureRestricted { ip, feature } => write!(
+        f,
+        "The feature/opcode '{}' is restricted at [IP: {}]. You need to enable nightly mode in VmConfig to use it.",
+        feature, ip
+      ),
       VMError::SystemError(s) => write!(f, "{}", s),
     }?;
     let ip = match self {
@@ -93,7 +100,8 @@ impl fmt::Display for VMError {
         | VMError::InvalidOpcode { ip, .. }
         | VMError::TypeMismatch { ip, .. }
         | VMError::OutOfBounds { ip, .. }
-        | VMError::InvalidJumpTarget { ip, .. } => ip,
+        | VMError::InvalidJumpTarget { ip, .. }
+        | VMError::FeatureRestricted { ip, .. } => ip,
         _ => &0,
       },
     };
@@ -119,6 +127,7 @@ impl VMError {
       VMError::TypeMismatch { .. } => "LVM004",
       VMError::OutOfBounds { .. } => "LVM005",
       VMError::InvalidJumpTarget { .. } => "LVM006",
+      VMError::FeatureRestricted { .. } => "LVM007",
       VMError::SystemError(_) => "LVM500",
     }
   }

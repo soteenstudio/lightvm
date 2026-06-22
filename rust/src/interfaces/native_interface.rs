@@ -13,6 +13,7 @@ use crate::interfaces::interface::LightVM;
 use crate::types::{
   capability::Capability,
   value::{RunOptions, Value},
+  vmconfig::VmConfig,
   vmevent::VmEvent,
   vmstate::VmState,
 };
@@ -24,15 +25,16 @@ use std::sync::atomic::AtomicBool;
 use unescape::unescape;
 #[cfg(not(feature = "node"))]
 impl LightVM {
-  pub fn new(caps: Vec<Capability>) -> Self {
+  pub fn new(config: VmConfig) -> Self {
     let mut caps_set = HashSet::new();
-    if caps.is_empty() {
+    if config.caps.is_empty() {
       caps_set.insert(Capability::Observe);
     } else {
-      for c in caps {
+      for c in config.caps {
         caps_set.insert(c);
       }
     }
+
     Self {
       bytecode: Vec::new(),
       listeners: AHashMap::new(),
@@ -44,6 +46,7 @@ impl LightVM {
       functions: AHashMap::new(),
       exported: HashSet::new(),
       _imports: AHashMap::new(),
+      nightly: config.nightly,
     }
   }
   /// Function used to load bytecode before execution
@@ -190,11 +193,15 @@ impl LightVM {
     })
   }
   /// Functions used to call utilities  
-  pub fn tools() -> LightVMTools {
-    LightVMTools
+  pub fn tools(&mut self) -> LightVMTools {
+    LightVMTools {
+      nightly: self.nightly,
+    }
   }
 }
-pub struct LightVMTools;
+pub struct LightVMTools {
+  pub nightly: bool,
+}
 #[cfg(not(feature = "node"))]
 impl LightVMTools {
   /// Optimizes raw JSON bytecode and serializes it to a string
@@ -210,10 +217,16 @@ impl LightVMTools {
       eprintln!("\nFailed to parse JSON string: {}", err);
       std::process::exit(1);
     });
-    let opt_str = LightVM::optimize_bytecode_internal(bytecode).unwrap_or_else(|err| {
-      eprintln!("\n{}", err);
-      std::process::exit(1);
-    });
+    let config = crate::types::vmconfig::VmConfig {
+      nightly: self.nightly,
+      ..Default::default()
+    };
+    let opt_str = LightVM::new(config)
+      .optimize_bytecode_internal(bytecode)
+      .unwrap_or_else(|err| {
+        eprintln!("\n{}", err);
+        std::process::exit(1);
+      });
     serde_json::from_str::<serde_json::Value>(&opt_str).unwrap_or_else(|e| {
       let format_err = VMError::SystemError(format!("Internal JSON Parsing Failed: {}", e).into());
       eprintln!("\n{}", format_err);
@@ -296,7 +309,7 @@ mod tests {
   #[test]
   fn tick_event_calls_listener() {
     let mut vm = LightVM::new(vec![]);
-    let called = Arc::new(AtomicBool::new(false));
+    called = Arc::new(AtomicBool::new(false));
     let flag = called.clone();
     vm.on("tick", move |_| {
       flag.store(true, Ordering::SeqCst);
