@@ -158,7 +158,14 @@ impl LightVMTools {
       std::process::exit(1);
     })
   }
-  pub fn stringify_ltc(&self, json: serde_json::Value) -> String {
+  pub fn stringify_ltc(&self, json_str: &str) -> String {
+    let json: serde_json::Value = match serde_json::from_str(json_str) {
+      Ok(v) => v,
+      Err(e) => {
+        eprintln!("Failed to parse JSON: {}", e);
+        std::process::exit(1);
+      }
+    };
     match LightVM::stringify_ltc_internal(json) {
       Ok(text) => unescape(&text).unwrap_or(text),
       Err(e) => {
