@@ -46,6 +46,7 @@ impl LightVM {
       _imports: AHashMap::new(),
     }
   }
+  /// Function used to load bytecode before execution
   pub fn load(&mut self, source: serde_json::Value) -> &mut Self {
     let payload = if source.is_string() {
       source.as_str().unwrap_or("").to_string()
@@ -58,6 +59,18 @@ impl LightVM {
     }
     self
   }
+  /// Function to start bytecode execution.
+  ///
+  /// # Examples
+  /// ```no_run
+  /// let raw = r#"[
+  ///   ["push", 5],
+  ///   ["val", "x"],
+  ///   ["set", "x"]
+  /// ]"#;
+  /// vm.load(LightVM::tools().optimize_bytecode(raw).clone())
+  ///   .run(None);
+  /// ```
   pub fn run(&mut self, options: Option<RunOptions>) {
     let _ = self.run_internal(options);
   }
@@ -90,6 +103,21 @@ impl LightVM {
       }
     })
   }
+  /// Function to inject data/variables into the VM.
+  ///
+  /// # Examples
+  /// ```rust
+  /// vm.provide(serde_json::json!({
+  ///   "name": "John Doe",
+  ///   "force": 2021
+  /// }));
+  /// let raw = r#"[
+  ///   ["get", "name"],
+  ///   ["println"],
+  ///   ["get", "force"],
+  ///   ["println"]
+  /// ]"#;
+  /// ```
   pub fn provide(&mut self, data: serde_json::Value) -> &mut Self {
     if let serde_json::Value::Object(map) = data {
       for (name, val) in map {
