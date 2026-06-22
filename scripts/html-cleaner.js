@@ -29,7 +29,7 @@ console.log(
   `${s.bold}${s.cyan}🧹 Starting HTML comment cleanup...${s.reset}\n`,
 );
 
-if (fs.existsSync(filePath)) {
+try {
   let html = fs.readFileSync(filePath, 'utf8');
 
   let previousHtml;
@@ -61,8 +61,15 @@ if (fs.existsSync(filePath)) {
   console.log(
     `${s.bold}${s.green}✔ Cleanup complete!${s.reset} ${s.dim}Successfully removed comments from ./index.html${s.reset}`,
   );
-} else {
-  console.log(
-    `${s.bold}${s.dim}✨ File index.html not found. Nothing to clean.${s.reset}`,
-  );
+} catch (err) {
+  if (err.code === 'ENOENT') {
+    console.log(
+      `${s.bold}${s.dim}✨ File index.html not found. Nothing to clean.${s.reset}`,
+    );
+  } else {
+    console.error(
+      `${s.bold}\x1b[31m✖ Error processing file:${s.reset}`,
+      err.message,
+    );
+  }
 }
