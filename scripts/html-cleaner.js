@@ -59,17 +59,18 @@ try {
   fs.writeFileSync(filePath, html, 'utf8');
 
   console.log(
-    `${s.bold}${s.green}✔ Cleanup complete!${s.reset} ${s.dim}Successfully removed comments from ./index.html${s.reset}`,
+    `${s.bold}${s.green}✔ Cleanup complete!${s.reset} ${s.dim}Successfully removed comments from ../.testings/browser.html${s.reset}`,
   );
 } catch (err) {
   if (err.code === 'ENOENT') {
     console.log(
-      `${s.bold}${s.dim}✨ File index.html not found. Nothing to clean.${s.reset}`,
+      `${s.bold}${s.dim}✨ File ../.testings/browser.html not found. Nothing to clean.${s.reset}`,
     );
   } else {
     console.error(
       `${s.bold}\x1b[31m✖ Error processing file:${s.reset}`,
       err.message,
     );
+    process.exitCode = 1;
   }
 }
