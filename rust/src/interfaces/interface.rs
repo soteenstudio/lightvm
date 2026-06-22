@@ -239,27 +239,29 @@ impl LightVM {
     let re_ip = RE_IP_INTERNAL.get_or_init(|| Regex::new(r"\s;; IP=(\d+)").unwrap());
     let re_token = RE_TOKEN_INTERNAL.get_or_init(|| Regex::new(r#""([^"\\]|\\.)*"|\S+"#).unwrap());
     let cleaned_code = re_ip.replace_all(&code, "");
-    let array_of_array: Vec<Vec<serde_json::Value>> = cleaned_code
-      .as_ref()
-      .split(';')
-      .map(|s| s.trim())
-      .filter(|s| !s.is_empty())
-      .map(|line| {
-        re_token
-          .find_iter(line)
-          .map(|m| {
-            let arg = m.as_str();
-            if arg.starts_with('"') && arg.ends_with('"') && arg.len() >= 2 {
-              serde_json::Value::from(&arg[1..arg.len() - 1])
-            } else if let Ok(num) = arg.parse::<f64>() {
-              serde_json::Value::from(num)
-            } else {
-              serde_json::Value::from(arg)
-            }
-          })
-          .collect::<Vec<serde_json::Value>>()
-      })
-      .collect();
+    let mut array_of_array: Vec<Vec<serde_json::Value>> = Vec::new();
+    let mut current_line: Vec<serde_json::Value> = Vec::new();
+    for m in re_token.find_iter(&cleaned_code) {
+      let arg = m.as_str();
+      if arg == ";" {
+        if !current_line.is_empty() {
+          array_of_array.push(std::mem::take(&mut current_line));
+        }
+      } else {
+        let val = if arg.starts_with('"') && arg.ends_with('"') && arg.len() >= 2 {
+          serde_json::from_str::<serde_json::Value>(arg)
+            .unwrap_or_else(|_| serde_json::Value::from(&arg[1..arg.len() - 1]))
+        } else if let Ok(num) = arg.parse::<f64>() {
+          serde_json::Value::from(num)
+        } else {
+          serde_json::Value::from(arg)
+        };
+        current_line.push(val);
+      }
+    }
+    if !current_line.is_empty() {
+      array_of_array.push(current_line);
+    }
     serde_json::to_string(&array_of_array).map_err(|e| {
       VMError::SystemError(smol_str::SmolStr::from(format!(
         "Failed to stringify parsed LTC: {}",
