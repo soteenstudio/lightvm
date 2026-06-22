@@ -19,9 +19,11 @@ use crate::types::{
 use crate::utils::vmerror::VMError;
 use crate::vm::run::run;
 use ahash::AHashMap;
+use regex::Regex;
 use smol_str::SmolStr;
 use std::collections::HashSet;
 use std::sync::Arc;
+use std::sync::OnceLock;
 use std::sync::atomic::{AtomicBool, Ordering};
 pub type VmCallback = Box<dyn Fn(String) + Send + Sync>;
 pub type VmEventMap = AHashMap<VmEvent, Vec<VmCallback>>;
@@ -232,9 +234,34 @@ impl LightVM {
   }
   // TODO: Is there a bug in the following code?
   pub fn parse_ltc_internal(code: String) -> Result<String, VMError> {
-    let instructions = crate::utils::loader::parse_ltc(&code);
-    serde_json::to_string(&instructions).map_err(|e| {
-      VMError::SystemError(SmolStr::from(format!(
+    static RE_IP_INTERNAL: OnceLock<Regex> = OnceLock::new();
+    static RE_TOKEN_INTERNAL: OnceLock<Regex> = OnceLock::new();
+    let re_ip = RE_IP_INTERNAL.get_or_init(|| Regex::new(r"\s;; IP=(\d+)").unwrap());
+    let re_token = RE_TOKEN_INTERNAL.get_or_init(|| Regex::new(r#""([^"\\]|\\.)*"|\S+"#).unwrap());
+    let cleaned_code = re_ip.replace_all(&code, "");
+    let array_of_array: Vec<Vec<serde_json::Value>> = cleaned_code
+      .as_ref()
+      .split(';')
+      .map(|s| s.trim())
+      .filter(|s| !s.is_empty())
+      .map(|line| {
+        re_token
+          .find_iter(line)
+          .map(|m| {
+            let arg = m.as_str();
+            if arg.starts_with('"') && arg.ends_with('"') && arg.len() >= 2 {
+              serde_json::Value::from(&arg[1..arg.len() - 1])
+            } else if let Ok(num) = arg.parse::<f64>() {
+              serde_json::Value::from(num)
+            } else {
+              serde_json::Value::from(arg)
+            }
+          })
+          .collect::<Vec<serde_json::Value>>()
+      })
+      .collect();
+    serde_json::to_string(&array_of_array).map_err(|e| {
+      VMError::SystemError(smol_str::SmolStr::from(format!(
         "Failed to stringify parsed LTC: {}",
         e
       )))
