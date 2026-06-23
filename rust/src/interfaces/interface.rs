@@ -41,6 +41,30 @@ pub struct LightVM {
   pub nightly: bool,
 }
 impl LightVM {
+  pub fn new_node(nightly: bool) -> Self {
+    use crate::types::capability::Capability;
+    use crate::types::value::Value;
+    use crate::types::vmstate::VmState;
+    use ahash::AHashMap;
+    use std::collections::HashSet;
+
+    let mut caps_set = HashSet::new();
+    caps_set.insert(Capability::Observe);
+
+    Self {
+      bytecode: Vec::new(),
+      listeners: AHashMap::new(),
+      caps: caps_set,
+      should_halt: Arc::new(AtomicBool::new(false)),
+      state: VmState::Idle,
+      _outputs: Vec::new(),
+      _last_value: Value::Undefined,
+      functions: AHashMap::new(),
+      exported: HashSet::new(),
+      _imports: AHashMap::new(),
+      nightly,
+    }
+  }
   #[inline(always)]
   pub fn require(&self, cap: Capability) -> Result<(), VMError> {
     if !self.caps.contains(&cap) {
@@ -332,6 +356,7 @@ mod tests {
       functions: AHashMap::new(),
       exported: HashSet::new(),
       _imports: AHashMap::new(),
+      nightly: false,
     }
   }
   #[test]

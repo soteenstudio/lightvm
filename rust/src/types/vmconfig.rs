@@ -18,8 +18,10 @@ pub struct VmConfig {
 }
 #[cfg(feature = "node")]
 #[napi(object)]
-#[derive(Default)]
+#[derive(Default, ts_rs::TS)]
+#[ts(export, rename = "VMConfig")]
 pub struct VmNapiConfig {
+  #[ts(rename = "caps")]
   pub caps_raw: Vec<u32>,
   pub nightly: Option<bool>,
 }

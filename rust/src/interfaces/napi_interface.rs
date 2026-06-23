@@ -196,11 +196,9 @@ impl NodeLightVM {
       )));
       Error::from_reason(vm_err.to_string())
     })?;
-    let config = crate::types::vmconfig::VmConfig {
-      nightly: nightly.unwrap_or(false),
-      ..Default::default()
-    };
-    let opt_str = LightVM::new(config)
+    let is_nightly = nightly.unwrap_or(false);
+    let mut vm_instance = LightVM::new_node(is_nightly);
+    let opt_str = vm_instance
       .optimize_bytecode_internal(input_json)
       .map_err(|e| Error::from_reason(e.to_string()))?;
     serde_json::from_str::<serde_json::Value>(&opt_str).map_err(|e| {
