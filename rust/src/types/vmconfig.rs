@@ -9,8 +9,17 @@
  */
 
 use crate::types::capability::Capability;
+#[cfg(feature = "node")]
+use napi_derive::napi;
 #[derive(Default)]
 pub struct VmConfig {
   pub caps: Vec<Capability>,
   pub nightly: bool,
+}
+#[cfg(feature = "node")]
+#[napi(object)]
+#[derive(Default)]
+pub struct VmNapiConfig {
+  pub caps_raw: Vec<u32>,
+  pub nightly: Option<bool>,
 }
