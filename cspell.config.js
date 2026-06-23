@@ -32,7 +32,8 @@ export default {
     'spac',
     'trin',
     'unref',
-    'accessindex'
+    'accessindex',
+    'vmconfig'
   ],
   ignorePaths: [
     'node_modules/**',
