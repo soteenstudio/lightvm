@@ -8,13 +8,14 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use lightvm::{LightVM, types::capability::Capability};  
+use lightvm::{LightVM, types::{vmconfig::VmConfig, capability::Capability}};  
 
 fn main() {
-  // Inisialisasi VM dengan kapabilitas yang dibutuhin
-  let mut vm = LightVM::new(vec![Capability::Control, Capability::Observe]);
+  let mut vm = LightVM::new(VmConfig {
+    caps: vec![Capability::Control, Capability::Observe],
+    nightly: false
+  });
   
-  // Ambil raw JSON dan lakuin optimasi bytecode
   let raw = r#"[
     ["val", "x"],
     ["push", 5],
@@ -22,15 +23,12 @@ fn main() {
     ["get", "x"],
     ["println"]
   ]"#;
-  let optimized_json = LightVM::tools().optimize_bytecode(raw);
+  let optimized_json = vm.tools().optimize_bytecode(raw);
   
-  // Load bytecode hasil optimasi ke dalam VM
-  vm.load(optimized_json.clone());
+  vm.load(optimized_json);
   
-  // Eksekusi VM sekali run
   let res = vm.run(None);
   
-  // Opsional: lu bisa cetak hasil `res` di sini kalau mau mastiin outputnya
   println!("===> Execution finished <===");
   println!("Output: {:?}", res);
 }
