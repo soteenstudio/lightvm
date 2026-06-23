@@ -47,10 +47,8 @@ impl LightVM {
     use crate::types::vmstate::VmState;
     use ahash::AHashMap;
     use std::collections::HashSet;
-
     let mut caps_set = HashSet::new();
     caps_set.insert(Capability::Observe);
-
     Self {
       bytecode: Vec::new(),
       listeners: AHashMap::new(),
