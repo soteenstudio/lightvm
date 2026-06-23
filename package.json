@@ -63,9 +63,6 @@
     "rust",
     "typescript"
   ],
-  "dependencies": {
-    "chalk": "^5.6.2"
-  },
   "devDependencies": {
     "@commitlint/cli": "^21.0.1",
     "@commitlint/config-conventional": "^21.0.1",
