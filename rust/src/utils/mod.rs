@@ -12,6 +12,7 @@ pub mod compute_hot_threshold;
 pub mod fast_format;
 pub mod filtered_writer;
 pub mod format_output;
+pub mod has_nightly_opcodes;
 pub mod loader;
 pub mod map_primitive;
 pub mod marker_formatter;

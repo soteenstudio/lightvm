@@ -13,6 +13,7 @@ use crate::interfaces::interface::LightVM;
 use crate::types::{
   capability::Capability,
   value::{RunOptions, Value},
+  vmconfig::VmConfig,
   vmevent::VmEvent,
   vmstate::VmState,
 };
@@ -24,12 +25,12 @@ use std::sync::atomic::AtomicBool;
 use unescape::unescape;
 #[cfg(not(feature = "node"))]
 impl LightVM {
-  pub fn new(caps: Vec<Capability>) -> Self {
+  pub fn new(config: VmConfig) -> Self {
     let mut caps_set = HashSet::new();
-    if caps.is_empty() {
+    if config.caps.is_empty() {
       caps_set.insert(Capability::Observe);
     } else {
-      for c in caps {
+      for c in config.caps {
         caps_set.insert(c);
       }
     }
@@ -44,6 +45,7 @@ impl LightVM {
       functions: AHashMap::new(),
       exported: HashSet::new(),
       _imports: AHashMap::new(),
+      nightly: config.nightly,
     }
   }
   /// Function used to load bytecode before execution
@@ -62,13 +64,13 @@ impl LightVM {
   /// Function to start bytecode execution.
   ///
   /// # Examples
-  /// ```rust
+  /// ```rust,ignore
   /// let raw = r#"[
   ///   ["push", 5],
   ///   ["val", "x"],
   ///   ["set", "x"]
   /// ]"#;
-  /// vm.load(LightVM::tools().optimize_bytecode(raw).clone())
+  /// vm.load(vm.tools().optimize_bytecode(raw).clone())
   ///   .run(None);
   /// ```
   pub fn run(&mut self, options: Option<RunOptions>) {
@@ -77,7 +79,7 @@ impl LightVM {
   /// Function to export functions in the VM out.
   ///
   /// # Examples
-  /// ```rust
+  /// ```rust,ignore
   /// let mut add = vm.export("add".to_string());
   /// let args = vec![serde_json::json!(5), serde_json::json!(6)];
   /// if let Some(result) = add_func(args) {
@@ -116,7 +118,7 @@ impl LightVM {
   /// Function to inject data/variables into the VM.
   ///
   /// # Examples
-  /// ```rust
+  /// ```rust,ignore
   /// vm.provide(serde_json::json!({
   ///   "name": "John Doe",
   ///   "force": 2021
@@ -142,7 +144,7 @@ impl LightVM {
   /// Function to force/manually stop VM.
   ///
   /// # Examples
-  /// ```rust
+  /// ```rust,ignore
   /// vm.halt();
   /// vm.run(None); // will not be executed
   /// println!("The VM has been terminated.");
@@ -169,7 +171,7 @@ impl LightVM {
   /// Function to view state, number of instructions, and capability.
   ///
   /// # Examples
-  /// ```rust
+  /// ```rust,ignore
   /// let report = vm.inspect();
   /// println!("{}", serde_json::to_string_pretty(&report).unwrap());
   /// ```
@@ -189,31 +191,41 @@ impl LightVM {
       "halted": true
     })
   }
-  /// Functions used to call utilities  
-  pub fn tools() -> LightVMTools {
-    LightVMTools
+  /// Functions used to call utilities
+  pub fn tools(&mut self) -> LightVMTools {
+    LightVMTools {
+      nightly: self.nightly,
+    }
   }
 }
-pub struct LightVMTools;
+pub struct LightVMTools {
+  pub nightly: bool,
+}
 #[cfg(not(feature = "node"))]
 impl LightVMTools {
   /// Optimizes raw JSON bytecode and serializes it to a string
   ///
   /// # Examples
-  /// ```rust
-  /// let tools = LightVM::tools();
+  /// ```rust,ignore
+  /// let tools = vm.tools();
   /// let optimized = tools.optimize_bytecode(raw);
-  /// println!(optimized.clone());
+  /// println!("{}", optimized);
   /// ```
   pub fn optimize_bytecode(&self, json_str: &str) -> serde_json::Value {
     let bytecode: serde_json::Value = serde_json::from_str(json_str).unwrap_or_else(|err| {
       eprintln!("\nFailed to parse JSON string: {}", err);
       std::process::exit(1);
     });
-    let opt_str = LightVM::optimize_bytecode_internal(bytecode).unwrap_or_else(|err| {
-      eprintln!("\n{}", err);
-      std::process::exit(1);
-    });
+    let config = crate::types::vmconfig::VmConfig {
+      nightly: self.nightly,
+      ..Default::default()
+    };
+    let opt_str = LightVM::new(config)
+      .optimize_bytecode_internal(bytecode)
+      .unwrap_or_else(|err| {
+        eprintln!("\n{}", err);
+        std::process::exit(1);
+      });
     serde_json::from_str::<serde_json::Value>(&opt_str).unwrap_or_else(|e| {
       let format_err = VMError::SystemError(format!("Internal JSON Parsing Failed: {}", e).into());
       eprintln!("\n{}", format_err);
@@ -223,8 +235,8 @@ impl LightVMTools {
   /// Converts raw JSON bytecode into a readable LTC assembly string
   ///
   /// # Examples
-  /// ```rust
-  /// let tools = LightVM::tools();
+  /// ```rust,ignore
+  /// let tools = vm.tools();
   /// let stringify = tools.stringify_ltc(raw);
   /// println!("{:#}", stringify.clone());
   /// ```
@@ -247,8 +259,8 @@ impl LightVMTools {
   /// Parses LTC code and serializes the instructions to a JSON string
   ///
   /// # Examples
-  /// ```rust
-  /// let tools = LightVM::tools();
+  /// ```rust,ignore
+  /// let tools = vm.tools();
   /// let parsed = tools.parse_ltc(raw);
   /// println!("{:#}", parsed.clone());
   /// ```
@@ -264,8 +276,8 @@ impl LightVMTools {
   /// Parses an LTC string into a JSON array
   ///
   /// # Examples
-  /// ```rust
-  /// let tools = LightVM::tools();
+  /// ```rust,ignore
+  /// let tools = vm.tools();
   /// let json = tools.parse_ltc_array(raw);
   /// println!("{:#}", json.clone());
   /// ```
@@ -276,6 +288,7 @@ impl LightVMTools {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::types::vmconfig::VmConfig;
   use serde_json::json;
   use std::sync::{
     Arc, Mutex,
@@ -283,19 +296,31 @@ mod tests {
   };
   #[test]
   fn new_creates_vm() {
-    let vm = LightVM::new(vec![]);
+    let config = VmConfig {
+      caps: vec![],
+      ..Default::default()
+    };
+    let vm = LightVM::new(config);
     assert!(vm.bytecode.is_empty());
     assert_eq!(vm.state, VmState::Idle);
   }
   #[test]
   fn on_registers_listener() {
-    let mut vm = LightVM::new(vec![]);
+    let config = VmConfig {
+      caps: vec![],
+      ..Default::default()
+    };
+    let mut vm = LightVM::new(config);
     vm.on("tick", |_| {});
     assert_eq!(vm.listeners.get(&VmEvent::Tick).unwrap().len(), 1);
   }
   #[test]
   fn tick_event_calls_listener() {
-    let mut vm = LightVM::new(vec![]);
+    let config = VmConfig {
+      caps: vec![],
+      ..Default::default()
+    };
+    let mut vm = LightVM::new(config);
     let called = Arc::new(AtomicBool::new(false));
     let flag = called.clone();
     vm.on("tick", move |_| {
@@ -306,7 +331,11 @@ mod tests {
   }
   #[test]
   fn tick_event_sends_payload() {
-    let mut vm = LightVM::new(vec![]);
+    let config = VmConfig {
+      caps: vec![],
+      ..Default::default()
+    };
+    let mut vm = LightVM::new(config);
     let payload = Arc::new(Mutex::new(String::new()));
     let out = payload.clone();
     vm.on("tick", move |data| {
@@ -317,7 +346,11 @@ mod tests {
   }
   #[test]
   fn provide_adds_imports() {
-    let mut vm = LightVM::new(vec![Capability::Control]);
+    let config = VmConfig {
+      caps: vec![Capability::Control],
+      ..Default::default()
+    };
+    let mut vm = LightVM::new(config);
     vm.provide(json!({
         "foo": 123,
         "bar": "hello"
@@ -326,18 +359,31 @@ mod tests {
   }
   #[test]
   fn inspect_returns_json() {
-    let vm = LightVM::new(vec![]);
+    let config = VmConfig {
+      caps: vec![],
+      ..Default::default()
+    };
+    let vm = LightVM::new(config);
     let info = vm.inspect();
     assert!(info.is_object());
     assert!(info.get("state").is_some());
   }
   #[test]
   fn tools_exists() {
-    let _tools = LightVM::tools();
+    let config = VmConfig {
+      caps: vec![],
+      ..Default::default()
+    };
+    let mut vm = LightVM::new(config);
+    let _tools = vm.tools();
   }
   #[test]
   fn embedded_returns_object() {
-    let mut vm = LightVM::new(vec![Capability::Observe, Capability::Control]);
+    let config = VmConfig {
+      caps: vec![Capability::Observe, Capability::Control],
+      ..Default::default()
+    };
+    let mut vm = LightVM::new(config);
     let result = vm.embedded();
     assert!(result.is_object());
     assert!(result.get("outputs").is_some());

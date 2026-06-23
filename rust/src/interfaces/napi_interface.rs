@@ -10,7 +10,7 @@
 
 #![cfg(feature = "node")]
 use crate::interfaces::interface::LightVM;
-use crate::types::capability::Capability;
+use crate::types::{capability::Capability, vmconfig::VmNapiConfig};
 use crate::utils::vmerror::VMError;
 use napi::bindgen_prelude::*;
 use napi::threadsafe_function::ThreadsafeFunctionCallMode;
@@ -24,16 +24,16 @@ pub struct NodeLightVM {
 #[napi]
 impl NodeLightVM {
   #[napi(constructor)]
-  pub fn napi_new(caps_raw: Vec<u32>) -> Result<Self> {
+  pub fn napi_new(config: VmNapiConfig) -> Result<Self> {
     use crate::types::value::Value;
     use crate::types::vmstate::VmState;
     use ahash::AHashMap;
     use std::collections::HashSet;
     let mut caps_set = HashSet::new();
-    if caps_raw.is_empty() {
+    if config.caps_raw.is_empty() {
       caps_set.insert(Capability::Observe);
     } else {
-      for cap_num in caps_raw {
+      for cap_num in config.caps_raw {
         match cap_num {
           0 => {
             caps_set.insert(Capability::Observe);
@@ -69,6 +69,7 @@ impl NodeLightVM {
         functions: AHashMap::new(),
         exported: HashSet::new(),
         _imports: AHashMap::new(),
+        nightly: config.nightly.unwrap_or(false),
       },
     })
   }
@@ -176,7 +177,10 @@ impl NodeLightVM {
     })
   }
   #[napi(js_name = "optimizeBytecode")]
-  pub fn napi_optimize_bytecode(bytecode: serde_json::Value) -> Result<serde_json::Value> {
+  pub fn napi_optimize_bytecode(
+    bytecode: serde_json::Value,
+    nightly: Option<bool>,
+  ) -> Result<serde_json::Value> {
     use crate::utils::vmerror::VMError;
     let input_string = serde_json::to_string(&bytecode).map_err(|e| {
       let vm_err = VMError::SystemError(smol_str::SmolStr::new(format!(
@@ -192,7 +196,10 @@ impl NodeLightVM {
       )));
       Error::from_reason(vm_err.to_string())
     })?;
-    let opt_str = LightVM::optimize_bytecode_internal(input_json)
+    let is_nightly = nightly.unwrap_or(false);
+    let mut vm_instance = LightVM::new_node(is_nightly);
+    let opt_str = vm_instance
+      .optimize_bytecode_internal(input_json)
       .map_err(|e| Error::from_reason(e.to_string()))?;
     serde_json::from_str::<serde_json::Value>(&opt_str).map_err(|e| {
       let vm_err = VMError::SystemError(smol_str::SmolStr::new(format!(

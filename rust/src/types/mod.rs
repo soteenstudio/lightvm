@@ -16,6 +16,7 @@ pub mod stack;
 pub mod usage;
 pub mod value;
 pub mod var_stack;
+pub mod vmconfig;
 pub mod vmevent;
 pub mod vmresult;
 pub mod vmstate;

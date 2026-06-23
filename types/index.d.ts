@@ -8,6 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 import { Instructions } from './generated/Instructions.js';
+import { VMConfig } from './generated/VMConfig.js';
 import { loadNapi } from './utils/loadNapi.js';
 import { isMusl } from './utils/isMusl.js';
 import { VMSystemError as VMError } from './utils/vmerror.js';
@@ -26,8 +27,11 @@ export declare enum Capability {
 }
 export declare class LightVM {
     private instance;
-    constructor(caps?: Capability[]);
-    load(source: Instructions[] | string): this;
+  private config;
+  constructor(config?: Partial<Omit<VMConfig, 'caps'>> & {
+    caps?: (Capability | string | number)[];
+  });
+  load(source: Instructions[] | string): this;
     run(options?: any): void;
     export(name: string): (...args: any[]) => any;
     provide(nameOrObj: string | any, value?: any): this;

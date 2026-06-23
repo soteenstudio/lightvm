@@ -16,7 +16,7 @@ use crate::types::{
   vmevent::VmEvent,
   vmstate::VmState,
 };
-use crate::utils::vmerror::VMError;
+use crate::utils::{has_nightly_opcodes::has_nightly_opcodes, vmerror::VMError};
 use crate::vm::run::run;
 use ahash::AHashMap;
 use regex::Regex;
@@ -38,8 +38,31 @@ pub struct LightVM {
   pub functions: AHashMap<SmolStr, FuncMetadata>,
   pub exported: HashSet<SmolStr>,
   pub _imports: AHashMap<SmolStr, Value>,
+  pub nightly: bool,
 }
 impl LightVM {
+  pub fn new_node(nightly: bool) -> Self {
+    use crate::types::capability::Capability;
+    use crate::types::value::Value;
+    use crate::types::vmstate::VmState;
+    use ahash::AHashMap;
+    use std::collections::HashSet;
+    let mut caps_set = HashSet::new();
+    caps_set.insert(Capability::Observe);
+    Self {
+      bytecode: Vec::new(),
+      listeners: AHashMap::new(),
+      caps: caps_set,
+      should_halt: Arc::new(AtomicBool::new(false)),
+      state: VmState::Idle,
+      _outputs: Vec::new(),
+      _last_value: Value::Undefined,
+      functions: AHashMap::new(),
+      exported: HashSet::new(),
+      _imports: AHashMap::new(),
+      nightly,
+    }
+  }
   #[inline(always)]
   pub fn require(&self, cap: Capability) -> Result<(), VMError> {
     if !self.caps.contains(&cap) {
@@ -87,8 +110,29 @@ impl LightVM {
   }
   pub fn load_internal(&mut self, source: String) -> Result<(), VMError> {
     let trimmed = source.trim();
+    let raw_code: String;
     if trimmed.starts_with('[') {
-      let raw_list: Vec<serde_json::Value> = serde_json::from_str(trimmed).map_err(|e| {
+      raw_code = trimmed.to_string();
+    } else {
+      let path = std::path::Path::new(trimmed);
+      if path.exists() {
+        raw_code = std::fs::read_to_string(path)
+          .map_err(|e| VMError::SystemError(smol_str::SmolStr::new(e.to_string())))?;
+      } else {
+        return Err(VMError::InvalidOpcode {
+          ip: 0,
+          code: smol_str::SmolStr::new("INVALID_SOURCE"),
+        });
+      }
+    }
+    if !self.nightly && has_nightly_opcodes(&raw_code) {
+      return Err(VMError::FeatureRestricted {
+        ip: 0,
+        feature: "Nightly Opcodes (Experimental)",
+      });
+    }
+    if raw_code.starts_with('[') {
+      let raw_list: Vec<serde_json::Value> = serde_json::from_str(&raw_code).map_err(|e| {
         VMError::SystemError(smol_str::SmolStr::new(format!(
           "Failed to parse JSON: {}",
           e
@@ -96,17 +140,7 @@ impl LightVM {
       })?;
       self.bytecode = raw_list.iter().map(Instructions::from_json_array).collect();
     } else {
-      let path = std::path::Path::new(trimmed);
-      if path.exists() {
-        let code = std::fs::read_to_string(path)
-          .map_err(|e| VMError::SystemError(smol_str::SmolStr::new(e.to_string())))?;
-        self.bytecode = crate::utils::loader::parse_ltc(&code);
-      } else {
-        return Err(VMError::InvalidOpcode {
-          ip: 0,
-          code: smol_str::SmolStr::new("INVALID_SOURCE"),
-        });
-      }
+      self.bytecode = crate::utils::loader::parse_ltc(&raw_code);
     }
     self.index_metadata();
     Ok(())
@@ -223,7 +257,17 @@ impl LightVM {
     self._outputs.clear();
     Ok(())
   }
-  pub fn optimize_bytecode_internal(bytecode_raw: serde_json::Value) -> Result<String, VMError> {
+  pub fn optimize_bytecode_internal(
+    &mut self,
+    bytecode_raw: serde_json::Value,
+  ) -> Result<String, VMError> {
+    let json_str = bytecode_raw.to_string();
+    if !self.nightly && has_nightly_opcodes(&json_str) {
+      return Err(VMError::FeatureRestricted {
+        ip: 0,
+        feature: "Nightly Opcodes (Experimental)",
+      });
+    }
     let json_str = bytecode_raw.to_string();
     let raw_list: Vec<serde_json::Value> = serde_json::from_str(&json_str)
       .map_err(|e| VMError::SystemError(format!("Invalid JSON format: {}", e).into()))?;
@@ -315,6 +359,7 @@ mod tests {
       functions: AHashMap::new(),
       exported: HashSet::new(),
       _imports: AHashMap::new(),
+      nightly: false,
     }
   }
   #[test]
