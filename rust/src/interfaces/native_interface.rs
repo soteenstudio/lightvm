@@ -233,11 +233,18 @@ impl LightVMTools {
   /// let optimized = tools.optimize_bytecode(raw);
   /// println!("{}", optimized);
   /// ```
-  pub fn optimize_bytecode(&self, json_str: &str) -> serde_json::Value {
-    let bytecode: serde_json::Value = serde_json::from_str(json_str).unwrap_or_else(|err| {
-      eprintln!("\nFailed to parse JSON string: {}", err);
+  pub fn optimize_bytecode<T: IntoJsonValue>(&self, input: T) -> serde_json::Value {
+    let mut bytecode: serde_json::Value = input.into_json_value().unwrap_or_else(|err| {
+      eprintln!("\nFailed to parse JSON input: {}", err);
       std::process::exit(1);
     });
+    if bytecode.is_string() {
+      let raw_str = bytecode.as_str().unwrap_or("");
+      bytecode = serde_json::from_str(raw_str).unwrap_or_else(|err| {
+        eprintln!("\nFailed to parse JSON string: {}", err);
+        std::process::exit(1);
+      });
+    }
     let config = crate::types::vmconfig::VmConfig {
       nightly: self.nightly,
       ..Default::default()
