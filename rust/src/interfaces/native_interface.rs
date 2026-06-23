@@ -23,6 +23,24 @@ use std::collections::HashSet;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use unescape::unescape;
+pub trait IntoJsonValue {
+  fn into_json_value(self) -> Result<serde_json::Value, serde_json::Error>;
+}
+impl IntoJsonValue for &str {
+  fn into_json_value(self) -> Result<serde_json::Value, serde_json::Error> {
+    serde_json::from_str(self).or_else(|_| Ok(serde_json::Value::String(self.to_string())))
+  }
+}
+impl IntoJsonValue for String {
+  fn into_json_value(self) -> Result<serde_json::Value, serde_json::Error> {
+    serde_json::from_str(&self).or(Ok(serde_json::Value::String(self)))
+  }
+}
+impl IntoJsonValue for serde_json::Value {
+  fn into_json_value(self) -> Result<serde_json::Value, serde_json::Error> {
+    Ok(self)
+  }
+}
 #[cfg(not(feature = "node"))]
 impl LightVM {
   pub fn new(config: VmConfig) -> Self {
@@ -49,11 +67,15 @@ impl LightVM {
     }
   }
   /// Function used to load bytecode before execution
-  pub fn load(&mut self, source: serde_json::Value) -> &mut Self {
-    let payload = if source.is_string() {
-      source.as_str().unwrap_or("").to_string()
+  pub fn load<T: IntoJsonValue>(&mut self, source: T) -> &mut Self {
+    let source_value = source.into_json_value().unwrap_or_else(|err| {
+      eprintln!("Failed to process load input: {}", err);
+      std::process::exit(1);
+    });
+    let payload = if source_value.is_string() {
+      source_value.as_str().unwrap_or("").to_string()
     } else {
-      source.to_string()
+      source_value.to_string()
     };
     if let Err(err) = self.load_internal(payload) {
       eprintln!("{}", err);
