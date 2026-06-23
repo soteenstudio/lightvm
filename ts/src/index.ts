@@ -32,7 +32,7 @@ export class LightVM {
   private config: VMConfig;
 
   constructor(
-    config: Omit<VMConfig, 'caps'> & {
+    config: Partial<Omit<VMConfig, 'caps'>> & {
       caps?: (Capability | string | number)[];
     } = {
       caps: [Capability.Observe],
@@ -61,7 +61,7 @@ export class LightVM {
 
     this.instance = new native.LightVM({
       caps: numericCaps,
-      nightly: config.nightly,
+      nightly: config.nightly ?? false,
     });
   }
   load(source: Instructions[] | string) {
