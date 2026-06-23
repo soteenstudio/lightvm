@@ -9,6 +9,7 @@
  */
 
 import { Instructions } from './generated/Instructions.js';
+import { VMConfig } from './generated/VMConfig.js';
 import { loadNapi } from './utils/loadNapi.js';
 import { isMusl } from './utils/isMusl.js';
 import { VMSystemError as VMError } from './utils/vmerror.js';
@@ -28,8 +29,22 @@ export enum Capability {
 const native = loadNapi();
 export class LightVM {
   private instance: any;
-  constructor(caps: Capability[] = [Capability.Observe]) {
-    const numericCaps = caps.map((cap) => {
+  private config: VMConfig;
+
+  constructor(
+    config: Omit<VMConfig, 'caps'> & {
+      caps?: (Capability | string | number)[];
+    } = {
+      caps: [Capability.Observe],
+      nightly: false,
+    },
+  ) {
+    this.config = config as unknown as VMConfig;
+
+    const capsList = config.caps || [Capability.Observe];
+    const numericCaps = capsList.map((cap) => {
+      if (typeof cap === 'number') return cap;
+
       switch (cap.toUpperCase()) {
         case 'OBSERVE':
           return 0;
@@ -43,7 +58,11 @@ export class LightVM {
           throw new Error(`Unknown capability ${cap}`);
       }
     });
-    this.instance = new native.LightVM(numericCaps);
+
+    this.instance = new native.LightVM({
+      caps: numericCaps,
+      nightly: config.nightly,
+    });
   }
   load(source: Instructions[] | string) {
     try {
@@ -150,10 +169,14 @@ export class LightVM {
     }
   }
   tools() {
+    const currentConfig = this.config;
     return {
       optimizeBytecode: (bytecode: any) => {
         try {
-          return native.LightVM.optimizeBytecode(bytecode);
+          return native.LightVM.optimizeBytecode(
+            bytecode,
+            currentConfig.nightly ?? false,
+          );
         } catch (err) {
           console.error((err as Error).message);
           process.exit(1);
