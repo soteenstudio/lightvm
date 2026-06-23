@@ -14,7 +14,7 @@ static NIGHTLY_OPCODES: &[&str] = &["instantiate", "export"];
 pub fn has_nightly_opcodes(source: &str) -> bool {
   static RE_NIGHTLY: OnceLock<Regex> = OnceLock::new();
   let regex = RE_NIGHTLY.get_or_init(|| {
-    let pattern = format!(r#""({})""#, NIGHTLY_OPCODES.join("|"));
+    let pattern = format!(r#"(?:\[|,\s*\[)\s*"({})""#, NIGHTLY_OPCODES.join("|"));
     Regex::new(&pattern).unwrap()
   });
   regex.is_match(source)

@@ -209,7 +209,7 @@ impl LightVMTools {
   /// ```rust,ignore
   /// let tools = vm.tools();
   /// let optimized = tools.optimize_bytecode(raw);
-  /// println!(optimized.clone());
+  /// println!("{}", optimized);
   /// ```
   pub fn optimize_bytecode(&self, json_str: &str) -> serde_json::Value {
     let bytecode: serde_json::Value = serde_json::from_str(json_str).unwrap_or_else(|err| {
