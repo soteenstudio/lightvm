@@ -17,10 +17,7 @@ fn main() {
   });
   
   let raw = r#"[
-    ["val", "x"],
-    ["push", 5],
-    ["set", "x"],
-    ["get", "x"],
+    ["add", "int"],
     ["println"]
   ]"#;
   let optimized_json = vm.tools().optimize_bytecode(raw);
