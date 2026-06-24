@@ -15,6 +15,7 @@ use napi_derive::napi;
 pub struct VmConfig {
   pub caps: Vec<Capability>,
   pub nightly: bool,
+  pub explain: bool,
 }
 #[cfg(feature = "node")]
 #[napi(object)]
@@ -24,4 +25,5 @@ pub struct VmNapiConfig {
   #[ts(rename = "caps")]
   pub caps_raw: Vec<u32>,
   pub nightly: Option<bool>,
+  pub explain: Option<bool>,
 }

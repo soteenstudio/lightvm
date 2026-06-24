@@ -39,9 +39,10 @@ pub struct LightVM {
   pub exported: HashSet<SmolStr>,
   pub _imports: AHashMap<SmolStr, Value>,
   pub nightly: bool,
+  pub explain: bool,
 }
 impl LightVM {
-  pub fn new_node(nightly: bool) -> Self {
+  pub fn new_node(nightly: bool, explain: bool) -> Self {
     use crate::types::capability::Capability;
     use crate::types::value::Value;
     use crate::types::vmstate::VmState;
@@ -61,6 +62,7 @@ impl LightVM {
       exported: HashSet::new(),
       _imports: AHashMap::new(),
       nightly,
+      explain,
     }
   }
   #[inline(always)]

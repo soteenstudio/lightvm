@@ -64,6 +64,7 @@ impl LightVM {
       exported: HashSet::new(),
       _imports: AHashMap::new(),
       nightly: config.nightly,
+      explain: config.explain,
     }
   }
   /// Function used to load bytecode before execution
