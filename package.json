@@ -1,6 +1,6 @@
 {
   "name": "lightvm",
-  "version": "0.1.0-alpha.8",
+  "version": "0.1.0-alpha.9",
   "description": "A capability-based virtual machine designed for secure, predictable, and optimized bytecode execution.",
   "author": "SoTeen Studio",
   "license": "Apache-2.0",
