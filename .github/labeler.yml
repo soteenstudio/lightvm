@@ -1,10 +1,39 @@
+ci:
+  - changed-files:
+    - '.github/workflows/**/*.yml'
+    - '.github/workflows/**/*.yaml'
+
 dependencies:
   - changed-files:
-    - any-glob-to-any-file:
-      - 'package.json'
-      - 'package-lock.json'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
+    - 'package.json'
+    - 'package-lock.json'
+    - 'Cargo.toml'
+    - 'Cargo.lock'
+
+docs:
+  - changed-files:
+    - '*.md'
+
+generated:
+  - changed-files:
+    - 'ts/src/generated/**/*.ts'
+    - 'types/**/*.d.ts'
+
+maintenance:
+  - changed-files:
+    - 'rust/benches/**/*.rs'
+    - 'ts/benchmarks/**/*.ts'
+    - 'ts/tests/**/*.ts'
+  - branch: ['^chore/.*']
+
+enhancement:
+  - changed-files:
+    - 'rust/**/*.rs'
+    - 'ts/src/**/*.ts'
+  - branch: ["^feat/.*", "^feature/.*"]
+
+bug:
+  - branch: ['^fix/.*', '^bugfix/.*']
 
 wip:
   - branch: ['^wip/.*', '^dev/.*']
