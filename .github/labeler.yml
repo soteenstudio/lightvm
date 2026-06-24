@@ -6,5 +6,15 @@ dependencies:
       - 'Cargo.toml'
       - 'Cargo.lock'
 
+maintenance:
+  - branch: ['^chore']
+
+enhancement:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'rust/**/*.rs'
+      - 'ts/src/**/*.rs'
+  - branch: ["^feat", "^feature"]
+
 wip:
   - branch: ['^wip/.*', '^dev/.*']
