@@ -1,18 +1,20 @@
 ci:
   - changed-files:
-    - '.github/workflows/**/*.yml'
-    - '.github/workflows/**/*.yaml'
+    - any-glob-to-any-file:
+      - '.github/workflows/**/*.yml'
+      - '.github/workflows/**/*.yaml'
 
 dependencies:
   - changed-files:
-    - 'package.json'
-    - 'package-lock.json'
-    - 'Cargo.toml'
-    - 'Cargo.lock'
+    - any-glob-to-any-file:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
 
 docs:
   - changed-files:
-    - '*.md'
+    - any-glob-to-any-file: '*.md'
 
 generated:
   - changed-files:
@@ -21,15 +23,17 @@ generated:
 
 maintenance:
   - changed-files:
-    - 'rust/benches/**/*.rs'
-    - 'ts/benchmarks/**/*.ts'
-    - 'ts/tests/**/*.ts'
+    - any-glob-to-any-file:
+      - 'rust/benches/**/*.rs'
+      - 'ts/benchmarks/**/*.ts'
+      - 'ts/tests/**/*.ts'
   - branch: ['^chore/.*']
 
 enhancement:
   - changed-files:
-    - 'rust/**/*.rs'
-    - 'ts/src/**/*.ts'
+    - any-glob-to-any-file:
+      - 'rust/**/*.rs'
+      - 'ts/src/**/*.ts'
   - branch: ["^feat/.*", "^feature/.*"]
 
 bug:
