@@ -18,8 +18,9 @@ docs:
 
 generated:
   - changed-files:
-    - 'ts/src/generated/**/*.ts'
-    - 'types/**/*.d.ts'
+    - any-glob-to-any-file:
+      - 'ts/src/generated/**/*.ts'
+      - 'types/**/*.d.ts'
 
 maintenance:
   - changed-files:
