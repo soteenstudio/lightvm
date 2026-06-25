@@ -16,6 +16,35 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Filter Significant Changes
+        id: filter_changes
+        run: |
+          # Ambil tag terakhir
+          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          
+          # Ambil semua commit log sejak tag terakhir
+          # Kalau belum ada tag, ambil semua history
+          if [ -n "$PREV_TAG" ]; then
+            LOGS=$(git log $PREV_TAG..HEAD --pretty=format:"%s")
+          else
+            LOGS=$(git log --pretty=format:"%s")
+          fi
+          
+          # Cari apakah ada commit yang diawali "feat" atau "fix"
+          HAS_SIGNIFICANT=$(echo "$LOGS" | grep -E "^(feat|fix)(\(.*\))?:" || echo "")
+          
+          if [ -n "$HAS_SIGNIFICANT" ]; then
+            echo "significant=true" >> $GITHUB_OUTPUT
+            echo "Ada perubahan signifikan, lanjut!"
+          else
+            echo "significant=false" >> $GITHUB_OUTPUT
+            echo "Gak ada feat/fix, skip build."
+          fi
+
+      - name: Stop if not significant
+        if: steps.filter_changes.outputs.significant == 'false'
+        run: exit 0
+
       - name: Check for new commits
         id: check_commit
         run: |
@@ -57,7 +86,6 @@ jobs:
 
       - name: Update Files
         run: |
-          # Pakai jq biar lebih aman buat JSON, sed buat TOML
           VERSION="${{ steps.versioning.outputs.version_clean }}"
           
           # Update Cargo.toml
@@ -67,6 +95,12 @@ jobs:
           if [ -f "package.json" ]; then
             jq --arg ver "$VERSION" '.version = $ver' package.json > temp.json && mv temp.json package.json
           fi
+          
+          # UPDATE LOCKFILE:
+          # Kita jalanin cargo generate-lockfile atau update
+          # Pake --offline kalau lu mau cepat, tapi biar aman pake command ini:
+          rustup toolchain install stable --profile minimal
+          cargo update
 
       - name: Commit and Push
         run: |
