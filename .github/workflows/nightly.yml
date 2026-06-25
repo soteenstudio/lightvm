@@ -2,7 +2,7 @@ name: Nightly Build Trigger
 
 on:
   schedule:
-    - cron: '0 0 */2 * *' # Jalan tiap 2 hari sekali
+    - cron: '0 0 */2 * *'
   workflow_dispatch:
 
 jobs:
@@ -10,57 +10,67 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Biar bisa cek commit terakhir
+          fetch-depth: 0
 
       - name: Check for new commits
         id: check_commit
         run: |
-          # Cek apakah commit terakhir dilakukan oleh github-actions[bot]
-          # Kalau iya, berarti nggak ada perubahan dari manusia, kita set 'skip'
           AUTHOR=$(git log -1 --pretty=%an)
           if [ "$AUTHOR" == "github-actions[bot]" ]; then
             echo "skip=true" >> $GITHUB_OUTPUT
-            echo "Nggak ada commit baru dari user, skip."
           else
             echo "skip=false" >> $GITHUB_OUTPUT
-            echo "Ada commit baru, lanjut."
           fi
 
       - name: Stop if no changes
         if: steps.check_commit.outputs.skip == 'true'
-        run: exit 0 # Keluar dengan sukses tapi nggak ngapa-ngapain
+        run: exit 0
 
       - name: Generate Nightly Version
         id: versioning
         run: |
-          # Coba ambil tag terakhir, kalau gak ada kasih default versi 0.0.0
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
           COMMIT_HASH=$(git rev-parse --short HEAD)
-          
-          NEW_VERSION="${LATEST_TAG}-nightly.${COMMIT_HASH}"
-          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "Creating version: $NEW_VERSION"
+          echo "new_version=${LATEST_TAG}-nightly.${COMMIT_HASH}" >> $GITHUB_OUTPUT
 
-      - name: Update Files and Push Tag
+      - name: Update Files
         run: |
-          # Setup git identity
+          # Pakai jq biar lebih aman buat JSON, sed buat TOML
+          VERSION="${{ steps.versioning.outputs.new_version }}"
+          
+          # Update Cargo.toml
+          sed -i "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
+          
+          # Update package.json
+          if [ -f "package.json" ]; then
+            jq --arg ver "$VERSION" '.version = $ver' package.json > temp.json && mv temp.json package.json
+          fi
+
+      - name: Commit and Push
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Update version di file (sesuaikan lokasi filenya)
-          sed -i "s/^version = \".*\"/version = \"${{ steps.versioning.outputs.new_version }}\"/" Cargo.toml
-          
           git add Cargo.toml
-          git commit -m "chore: nightly release ${{ steps.versioning.outputs.new_version }}"
-          git tag ${{ steps.versioning.outputs.new_version }}
-          git push origin main --tags
+          [ -f "package.json" ] && git add package.json
+          
+          # Cuma commit kalau ada perubahan
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: nightly release ${{ steps.versioning.outputs.new_version }}"
+            git tag ${{ steps.versioning.outputs.new_version }}
+            git push origin main --tags
+          else
+            echo "Gak ada perubahan file, skip push."
+          fi
 
       - name: Trigger Main Release Workflow
+        # Step ini cuma jalan kalau step sebelumnya sukses
         uses: benc-uk/workflow-dispatch@v1
         with:
-          workflow: Build and Publish N-API # Nama workflow kamu
+          workflow: Build and Publish N-API
           token: ${{ secrets.GITHUB_TOKEN }}
           inputs: '{ "version_override": "${{ steps.versioning.outputs.new_version }}" }'
