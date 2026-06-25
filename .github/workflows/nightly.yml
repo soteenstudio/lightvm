@@ -65,19 +65,19 @@ jobs:
           # 1. Ambil tag terakhir
           RAW_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
           
-          # 2. Hapus prefix 'v' kalau ada (buat dapetin base version yang bersih)
+          # 2. Hapus prefix 'v' kalau ada
           CLEAN_VERSION=${RAW_TAG#v}
           
           # 3. Hapus bagian '-nightly.*' kalau ada
           BASE_VERSION=${CLEAN_VERSION%-nightly.*}
           
-          # 4. Ambil hash baru
+          # 4. Ambil hash baru dan tanggal hari ini
           COMMIT_HASH=$(git rev-parse --short HEAD)
+          DATE=$(date +'%Y%m%d') # Format: 20260625
           
-          # 5. Bikin dua versi
-          # VERSION_CLEAN: buat file (0.1.0-nightly.abc)
-          # VERSION_TAG: buat git tag (v0.1.0-nightly.abc)
-          VERSION_CLEAN="${BASE_VERSION}-nightly.${COMMIT_HASH}"
+          # 5. Bikin format versi baru: 0.1.0-alpha.8-nightly.20260625.hash
+          # Kita asumsikan BASE_VERSION udah termasuk "-alpha.8" nya
+          VERSION_CLEAN="${BASE_VERSION}-nightly.${DATE}.${COMMIT_HASH}"
           VERSION_TAG="v${VERSION_CLEAN}"
           
           echo "version_clean=$VERSION_CLEAN" >> $GITHUB_OUTPUT
