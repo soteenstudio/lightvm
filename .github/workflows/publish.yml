@@ -9,6 +9,11 @@ concurrency:
 
 on:
   workflow_dispatch:
+    inputs:
+    version_override:
+      description: 'Manual version override'
+      required: false
+      default: ''
   release:
     types: [published]
 
