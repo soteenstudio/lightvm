@@ -362,7 +362,8 @@ jobs:
 
   publish-crates:
     needs: build-npm
-    if: github.event_name == 'release'
+    # Ubah 'if' nya biar mau jalan pas workflow_dispatch juga
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -372,11 +373,29 @@ jobs:
 
       - name: Sync Assets and Version
         run: |
-          RAW_VERSION="${{ github.event.release.tag_name }}"
-          VERSION=${RAW_VERSION#v}
-          echo "Publishing version: $VERSION"
+          # 1. Coba ambil dari input override dulu
+          VERSION="${{ github.event.inputs.version_override }}"
+          
+          # 2. Kalau kosong, ambil dari tag release
+          if [ -z "$VERSION" ]; then
+            RAW_VERSION="${{ github.event.release.tag_name }}"
+            VERSION=${RAW_VERSION#v}
+          fi
+          
+          # 3. Kalau masih kosong juga, ambil dari Cargo.toml (fallback)
+          if [ -z "$VERSION" ]; then
+            VERSION=$(grep '^version =' Cargo.toml | head -n1 | cut -d '"' -f2)
+          fi
 
+          echo "Publishing version: $VERSION"
           sed -i "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
 
       - name: Publish to Crates.io
-        run: cargo publish --token ${{ secrets.CRATES_IO_TOKEN }} --allow-dirty
+        run: |
+          # Kalau nightly (biasanya mengandung 'nightly'), kita perlu --allow-dirty 
+          # dan mungkin perlu --no-verify kalau tes-nya gagal karena biner belum ada di crates
+          if [[ "${{ github.event.inputs.version_override }}" == *"nightly"* ]]; then
+            cargo publish --token ${{ secrets.CRATES_IO_TOKEN }} --allow-dirty --no-verify
+          else
+            cargo publish --token ${{ secrets.CRATES_IO_TOKEN }} --allow-dirty
+          fi
