@@ -33,9 +33,23 @@ jobs:
       - name: Generate Nightly Version
         id: versioning
         run: |
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
+          # 1. Ambil tag terakhir
+          RAW_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
+          
+          # 2. Hapus prefix 'v' kalau ada (misal: v0.1.0 jadi 0.1.0)
+          CLEAN_VERSION=${RAW_TAG#v}
+          
+          # 3. Hapus bagian '-nightly.*' kalau ada (biar balik ke base version bersih)
+          BASE_VERSION=${CLEAN_VERSION%-nightly.*}
+          
+          # 4. Ambil hash baru
           COMMIT_HASH=$(git rev-parse --short HEAD)
-          echo "new_version=${LATEST_TAG}-nightly.${COMMIT_HASH}" >> $GITHUB_OUTPUT
+          
+          # 5. Gabungin lagi jadi format yang bener (tanpa 'v')
+          NEW_VERSION="${BASE_VERSION}-nightly.${COMMIT_HASH}"
+          
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "Generated version: $NEW_VERSION (from $RAW_TAG)"
 
       - name: Update Files
         run: |
@@ -66,6 +80,25 @@ jobs:
           else
             echo "Gak ada perubahan file, skip push."
           fi
+
+      - name: Create Release
+        run: |
+          # 1. Ambil list commit sejak tag terakhir
+          PREV_TAG=$(git describe --tags --abbrev=0 --exclude="${{ steps.versioning.outputs.new_version }}" 2>/dev/null || echo "")
+          
+          if [ -n "$PREV_TAG" ]; then
+            NOTES=$(git log $PREV_TAG..HEAD --pretty=format:"- %s (%an)")
+          else
+            NOTES="Initial nightly release for version ${{ steps.versioning.outputs.new_version }}"
+          fi
+
+          # 2. Buat release via GitHub CLI
+          gh release create "${{ steps.versioning.outputs.new_version }}" \
+            --title "Nightly Build ${{ steps.versioning.outputs.new_version }}" \
+            --notes "$NOTES" \
+            --prerelease
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Trigger Main Release Workflow
         # Step ini cuma jalan kalau step sebelumnya sukses

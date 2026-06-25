@@ -10,10 +10,10 @@ concurrency:
 on:
   workflow_dispatch:
     inputs:
-    version_override:
-      description: 'Manual version override'
-      required: false
-      default: ''
+      version_override:
+        description: 'Manual version override'
+        required: false
+        default: ''
   release:
     types: [published]
 
@@ -332,25 +332,21 @@ jobs:
           if [[ "${{ github.event_name }}" == "release" || "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             jq --arg ver "$VERSION" \
               '.version = $ver | .optionalDependencies = {
-                "@lightvm/core-linux-x64": "$VERSION",
-                "@lightvm/core-linux-arm64": "$VERSION",
-                "@lightvm/core-linux-ia32": "$VERSION",
-                "@lightvm/core-win32-x64": "$VERSION",
-                "@lightvm/core-win32-ia32": "$VERSION",
-                "@lightvm/core-darwin-x64": "$VERSION",
-                "@lightvm/core-android-arm64": "$VERSION",
-                "@lightvm/core-android-arm": "$VERSION",
-                "@lightvm/core-linux-musl-x64": "$VERSION",
-                "@lightvm/core-linux-musl-arm64": "$VERSION",
-                "@lightvm/core-linux-musl-ia32": "$VERSION",
-                "@lightvm/core-freebsd-x64": "$VERSION",
-                "@lightvm/core-browser-wasm": "$VERSION"
+                "@lightvm/core-linux-x64": $ver,
+                "@lightvm/core-linux-arm64": $ver,
+                "@lightvm/core-linux-ia32": $ver,
+                "@lightvm/core-win32-x64": $ver,
+                "@lightvm/core-win32-ia32": $ver,
+                "@lightvm/core-darwin-x64": $ver,
+                "@lightvm/core-android-arm64": $ver,
+                "@lightvm/core-android-arm": $ver,
+                "@lightvm/core-linux-musl-x64": $ver,
+                "@lightvm/core-linux-musl-arm64": $ver,
+                "@lightvm/core-linux-musl-ia32": $ver,
+                "@lightvm/core-freebsd-x64": $ver,
+                "@lightvm/core-browser-wasm": $ver
               }' package.json > temp.json && mv temp.json package.json
 
-            jq --arg ver "$VERSION" --argjson deps "$OP_DEPS" \
-              '.version = $ver | .optionalDependencies = $deps' \
-              package.json > temp.json && mv temp.json package.json
-  
             npm publish --access public --tag $TAG
           fi
         env:

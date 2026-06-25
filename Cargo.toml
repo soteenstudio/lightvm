@@ -1,10 +1,6 @@
 [package]
 name = "lightvm"
-<<<<<<< Updated upstream
-version = "v0.1.0-alpha.8-nightly.aa66361"
-=======
-version = "v0.1.0-alpha.8-nightly.aa66361"
->>>>>>> Stashed changes
+version = "0.1.0-alpha.8"
 authors = ["SoTeen Studio <soteenstudio@gmail.com>"]
 edition = "2024"
 description = "A capability-based virtual machine designed for secure, predictable, and optimized bytecode execution."
