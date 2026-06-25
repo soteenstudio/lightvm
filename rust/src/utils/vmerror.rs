@@ -41,74 +41,103 @@ impl fmt::Display for VMError {
   #[cold]
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     let red = "\x1b[31;1m";
-    let yellow = "\x1b[33m";
+    let _yellow = "\x1b[33m";
     let cyan = "\x1b[36m";
+    let dark_gray = "\x1b[2;37m";
     let reset = "\x1b[0m";
     let bold = "\x1b[1m";
-    write!(
-      f,
-      "{bold}[LightVM]{reset} {red}Runtime Error {}{reset}: ",
-      self.error_code()
-    )?;
-    match self {
-      VMError::StackOverflow { ip, limit } => write!(
-        f,
-        "Stack limit reached (limit: {}) at [IP: {}]. Potential infinite recursion or unoptimized InitStack.",
-        limit, ip
-      ),
-      VMError::StackUnderflow { ip, opcode } => write!(
-        f,
-        "Attempted to pop from an empty stack during '{}' instruction at [IP: {}].",
-        opcode, ip
-      ),
-      VMError::InvalidOpcode { ip, code } => write!(
-        f,
-        "Illegal instruction '{}' encountered at [IP: {}]. Bytecode may be corrupted.",
-        code, ip
-      ),
-      VMError::TypeMismatch {
-        ip,
-        expected,
-        found,
-      } => write!(
-        f,
-        "Type mismatch at [IP: {}]. Expected type '{}', but found '{}'.",
-        ip, expected, found
-      ),
-      VMError::OutOfBounds { ip, index, len } => write!(
-        f,
-        "Index out of bounds at [IP: {}]. Accessing index {} on a collection of length {}.",
-        ip, index, len
-      ),
-      VMError::InvalidJumpTarget { ip, target, len } => write!(
-        f,
-        "Invalid jump target {} at [IP: {}]. Bytecode length is only {}. Execution aborted to prevent UB.",
-        target, ip, len
-      ),
-      VMError::FeatureRestricted { ip, feature } => write!(
-        f,
-        "The feature/opcode '{}' is restricted at [IP: {}]. You need to enable nightly mode in VmConfig to use it.",
-        feature, ip
-      ),
-      VMError::SystemError(s) => write!(f, "{}", s),
-    }?;
+    let err_type = match self {
+      VMError::StackOverflow { .. } => "StackOverflow",
+      VMError::StackUnderflow { .. } => "StackUnderflow",
+      VMError::InvalidOpcode { .. } => "InvalidOpcode",
+      VMError::TypeMismatch { .. } => "TypeMismatch",
+      VMError::OutOfBounds { .. } => "OutOfBounds",
+      VMError::InvalidJumpTarget { .. } => "InvalidJumpTarget",
+      VMError::FeatureRestricted { .. } => "FeatureRestricted",
+      VMError::SystemError(_) => "SystemError",
+    };
     let ip = match self {
       VMError::SystemError(_) => 0,
-      _ => *match self {
-        VMError::StackOverflow { ip, .. }
-        | VMError::StackUnderflow { ip, .. }
-        | VMError::InvalidOpcode { ip, .. }
-        | VMError::TypeMismatch { ip, .. }
-        | VMError::OutOfBounds { ip, .. }
-        | VMError::InvalidJumpTarget { ip, .. }
-        | VMError::FeatureRestricted { ip, .. } => ip,
-        _ => &0,
-      },
+      VMError::StackOverflow { ip, .. }
+      | VMError::StackUnderflow { ip, .. }
+      | VMError::InvalidOpcode { ip, .. }
+      | VMError::TypeMismatch { ip, .. }
+      | VMError::OutOfBounds { ip, .. }
+      | VMError::InvalidJumpTarget { ip, .. }
+      | VMError::FeatureRestricted { ip, .. } => *ip,
     };
-    write!(
-      f,
-      "\n{yellow}Location: {cyan}instruction_pointer: {ip}{reset}"
-    )
+    write!(f, "{bold}{red}Error[{}]{reset}: ", self.error_code())?;
+    match self {
+      VMError::StackOverflow { limit, .. } => write!(f, "Stack limit reached (limit: {}).", limit),
+      VMError::StackUnderflow { opcode, .. } => write!(
+        f,
+        "Attempted to pop from an empty stack during '{}' instruction.",
+        opcode
+      ),
+      VMError::InvalidOpcode { code, .. } => {
+        write!(f, "Illegal instruction '{}' encountered.", code)
+      }
+      VMError::TypeMismatch {
+        expected, found, ..
+      } => write!(
+        f,
+        "Type mismatch. Expected type '{}', but found '{}'.",
+        expected, found
+      ),
+      VMError::OutOfBounds { index, len, .. } => write!(
+        f,
+        "Index out of bounds. Accessing index {} on a collection of length {}.",
+        index, len
+      ),
+      VMError::InvalidJumpTarget { target, len, .. } => write!(
+        f,
+        "Invalid jump target {} (Bytecode length is {}).",
+        target, len
+      ),
+      VMError::FeatureRestricted { feature, .. } => {
+        write!(f, "The feature/opcode '{}' is restricted.", feature)
+      }
+      VMError::SystemError(s) => write!(f, "{}", s),
+    }?;
+    if !matches!(self, VMError::SystemError(_)) {
+      write!(
+        f,
+        "\n {reset}{cyan}│   {dark_gray}at instruction_pointer: {ip}{reset}"
+      )?;
+      write!(f, "\n {reset}{cyan}│   {dark_gray}error type: {}", err_type)?;
+    }
+    match self {
+      VMError::StackOverflow { .. } => write!(
+        f,
+        "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}potential infinite recursion or unoptimized InitStack.{reset}\n\n"
+      ),
+      VMError::StackUnderflow { .. } => write!(
+        f,
+        "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}stack state is inconsistent; check your push/pop balance.{reset}\n\n"
+      ),
+      VMError::InvalidOpcode { .. } => write!(
+        f,
+        "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}bytecode may be corrupted or version mismatch.{reset}\n\n"
+      ),
+      VMError::TypeMismatch { .. } => write!(
+        f,
+        "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}ensure the data passed to this instruction matches the expected signature.{reset}\n\n"
+      ),
+      VMError::OutOfBounds { len, .. } => write!(
+        f,
+        "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}Verify your index calculation; ensure it is within 0 to {}. Off-by-one errors are common here.{reset}\n\n",
+        len.saturating_sub(1)
+      ),
+      VMError::InvalidJumpTarget { .. } => write!(
+        f,
+        "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}The jump target is out of range. Check for corrupted bytecode or logic errors in your jump instructions.{reset}\n\n"
+      ),
+      VMError::FeatureRestricted { .. } => write!(
+        f,
+        "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}You need to enable nightly mode in VmConfig to use it.{reset}\n\n"
+      ),
+      VMError::SystemError(_) => Ok(()),
+    }
   }
 }
 impl From<VMError> for SmolStr {

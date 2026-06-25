@@ -26,6 +26,6 @@ fn main() {
   
   let res = vm.run(None);
   
-  println!("===> Execution finished <===");
-  println!("Output: {:?}", res);
+  /*println!("===> Execution finished <===");
+  println!("Output: {:?}", res);*/
 }
