@@ -92,10 +92,10 @@ jobs:
           # Ambil log dengan format: type: subject
           LOGS=$(git log $PREV_TAG..HEAD --pretty=format:"%s")
           
-          # Filter berdasarkan tipe
-          FEAT=$(echo "$LOGS" | grep "^feat" | sed 's/^feat: /- /' || echo "")
-          FIX=$(echo "$LOGS" | grep "^fix" | sed 's/^fix: /- /' || echo "")
-          
+          # Tambahin spasi setelah titik dua atau kurung buka
+          FEAT=$(echo "$LOGS" | grep -E "^feat(\(.*\))?: " | sed -E 's/^feat(\(.*\))?: /- /' || echo "")
+          FIX=$(echo "$LOGS" | grep -E "^fix(\(.*\))?: " | sed -E 's/^fix(\(.*\))?: /- /' || echo "")
+
           # Bikin link compare
           COMPARE_LINK="https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${{ steps.versioning.outputs.version_tag }}"
           
