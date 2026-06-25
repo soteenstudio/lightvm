@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2 # Biar bisa cek commit terakhir
+          fetch-depth: 0 # Biar bisa cek commit terakhir
 
       - name: Check for new commits
         id: check_commit
@@ -36,11 +36,10 @@ jobs:
       - name: Generate Nightly Version
         id: versioning
         run: |
-          # Ambil tag terakhir (contoh: 0.1.0-alpha.8)
-          LATEST_TAG=$(git describe --tags --abbrev=0)
+          # Coba ambil tag terakhir, kalau gak ada kasih default versi 0.0.0
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
           COMMIT_HASH=$(git rev-parse --short HEAD)
           
-          # Bikin format baru: 0.1.0-alpha.8-nightly.a1b2c3d
           NEW_VERSION="${LATEST_TAG}-nightly.${COMMIT_HASH}"
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "Creating version: $NEW_VERSION"
