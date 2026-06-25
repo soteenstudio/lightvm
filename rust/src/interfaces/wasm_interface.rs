@@ -10,7 +10,7 @@
 
 #![cfg(feature = "wasm")]
 use crate::interfaces::interface::LightVM;
-use crate::types::capability::Capability;
+use crate::types::{capability::Capability, vmconfig::VmWasmConfig};
 use crate::utils::vmerror::VMError;
 use wasm_bindgen::prelude::*;
 #[wasm_bindgen(js_name = "LightVM")]
@@ -20,7 +20,9 @@ pub struct WasmLightVM {
 #[wasm_bindgen(js_class = "LightVM")]
 impl WasmLightVM {
   #[wasm_bindgen(constructor)]
-  pub fn new(caps_raw: Vec<u32>) -> Result<WasmLightVM, JsValue> {
+  pub fn new(config: JsValue) -> Result<WasmLightVM, JsValue> {
+    let config: VmWasmConfig = serde_wasm_bindgen::from_value(config)
+      .map_err(|e| js_sys::Error::new(&format!("Failed to parse config: {}", e)))?;
     use crate::types::value::Value;
     use crate::types::vmstate::VmState;
     use ahash::AHashMap;
@@ -28,10 +30,10 @@ impl WasmLightVM {
     use std::sync::Arc;
     use std::sync::atomic::AtomicBool;
     let mut caps_set = HashSet::new();
-    if caps_raw.is_empty() {
+    if config.caps.is_empty() {
       caps_set.insert(Capability::Observe);
     } else {
-      for cap_num in caps_raw {
+      for cap_num in config.caps.iter() {
         match cap_num {
           0 => {
             caps_set.insert(Capability::Observe);
@@ -69,6 +71,7 @@ impl WasmLightVM {
         functions: AHashMap::new(),
         exported: HashSet::new(),
         _imports: AHashMap::new(),
+        nightly: config.nightly.unwrap_or(false),
       },
     })
   }
@@ -210,28 +213,15 @@ impl WasmLightVMTools {
   #[wasm_bindgen(js_name = "optimizeBytecode")]
   pub fn optimize_bytecode(&self, bytecode: JsValue) -> Result<JsValue, JsValue> {
     use crate::utils::vmerror::VMError;
-    let input_json_raw: serde_json::Value =
-      serde_wasm_bindgen::from_value(bytecode).map_err(|e| {
-        wasm_bindgen::JsValue::from(js_sys::Error::new(&format!(
-          "Invalid input structure: {}",
-          e
-        )))
-      })?;
-    let input_string = serde_json::to_string(&input_json_raw).map_err(|e| {
-      let vm_err = VMError::SystemError(smol_str::SmolStr::new(format!(
-        "Failed to serialize input: {}",
-        e
-      )));
-      wasm_bindgen::JsValue::from(js_sys::Error::new(&vm_err.to_string()))
-    })?;
-    let input_json: serde_json::Value = serde_json::from_str(&input_string).map_err(|e| {
-      let vm_err = VMError::SystemError(smol_str::SmolStr::new(format!(
+    let input_json: serde_json::Value = serde_wasm_bindgen::from_value(bytecode).map_err(|e| {
+      wasm_bindgen::JsValue::from(js_sys::Error::new(&format!(
         "Invalid input structure: {}",
         e
-      )));
-      wasm_bindgen::JsValue::from(js_sys::Error::new(&vm_err.to_string()))
+      )))
     })?;
-    let opt_str = LightVM::optimize_bytecode_internal(input_json)
+    let mut vm_instance = LightVM::new_node(false);
+    let opt_str = vm_instance
+      .optimize_bytecode_internal(input_json)
       .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))?;
     let res_json: serde_json::Value = serde_json::from_str(&opt_str).map_err(|e| {
       let vm_err = VMError::SystemError(smol_str::SmolStr::new(format!(
@@ -282,3 +272,19 @@ impl RcFnWrapper {
 }
 unsafe impl Send for RcFnWrapper {}
 unsafe impl Sync for RcFnWrapper {}
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use wasm_bindgen::JsValue;
+  #[test]
+  fn test_config_parsing() {
+    let js_obj = serde_wasm_bindgen::to_value(&serde_json::json!({
+        "caps": [0, 2],
+        "nightly": true
+    }))
+    .unwrap();
+    let config: VmWasmConfig = serde_wasm_bindgen::from_value(js_obj).unwrap();
+    assert_eq!(config.caps, vec![0, 2]);
+    assert_eq!(config.nightly, Some(true));
+  }
+}
