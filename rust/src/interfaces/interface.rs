@@ -155,7 +155,12 @@ impl LightVM {
     }
     self.state = VmState::Running;
     self.emit(VmEvent::Tick, serde_json::json!({ "state": "start" }));
-    let bytecode: Vec<Instructions> = self.bytecode.clone();
+    let bytecode_json = serde_json::to_string(&self.bytecode).map_err(|e| {
+      VMError::SystemError(smol_str::SmolStr::new(format!(
+        "Failed to serialize bytecode: {}",
+        e
+      )))
+    })?;
     let options = RunOptions {
       entry: None,
       args: Vec::new(),
@@ -163,8 +168,7 @@ impl LightVM {
       imports: self._imports.clone(),
       halt_flag: self.should_halt.clone(),
     };
-    let halt_flag = Some(options.halt_flag.clone());
-    let _result = crate::vm::execute::execute(bytecode, Some(options), halt_flag);
+    let _result = crate::vm::run::run(&bytecode_json, Some(options));
     self.state = VmState::Idle;
     Ok(())
   }
