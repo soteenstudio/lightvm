@@ -36,25 +36,29 @@ jobs:
           # 1. Ambil tag terakhir
           RAW_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
           
-          # 2. Hapus prefix 'v' kalau ada (misal: v0.1.0 jadi 0.1.0)
+          # 2. Hapus prefix 'v' kalau ada (buat dapetin base version yang bersih)
           CLEAN_VERSION=${RAW_TAG#v}
           
-          # 3. Hapus bagian '-nightly.*' kalau ada (biar balik ke base version bersih)
+          # 3. Hapus bagian '-nightly.*' kalau ada
           BASE_VERSION=${CLEAN_VERSION%-nightly.*}
           
           # 4. Ambil hash baru
           COMMIT_HASH=$(git rev-parse --short HEAD)
           
-          # 5. Gabungin lagi jadi format yang bener (tanpa 'v')
-          NEW_VERSION="${BASE_VERSION}-nightly.${COMMIT_HASH}"
+          # 5. Bikin dua versi
+          # VERSION_CLEAN: buat file (0.1.0-nightly.abc)
+          # VERSION_TAG: buat git tag (v0.1.0-nightly.abc)
+          VERSION_CLEAN="${BASE_VERSION}-nightly.${COMMIT_HASH}"
+          VERSION_TAG="v${VERSION_CLEAN}"
           
-          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "Generated version: $NEW_VERSION (from $RAW_TAG)"
+          echo "version_clean=$VERSION_CLEAN" >> $GITHUB_OUTPUT
+          echo "version_tag=$VERSION_TAG" >> $GITHUB_OUTPUT
+          echo "Generated version: $VERSION_CLEAN (Tag: $VERSION_TAG)"
 
       - name: Update Files
         run: |
           # Pakai jq biar lebih aman buat JSON, sed buat TOML
-          VERSION="${{ steps.versioning.outputs.new_version }}"
+          VERSION="${{ steps.versioning.outputs.version_clean }}"
           
           # Update Cargo.toml
           sed -i "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
@@ -74,8 +78,8 @@ jobs:
           
           # Cuma commit kalau ada perubahan
           if ! git diff --cached --quiet; then
-            git commit -m "chore: nightly release ${{ steps.versioning.outputs.new_version }}"
-            git tag ${{ steps.versioning.outputs.new_version }}
+            git commit -m "chore: nightly release ${{ steps.versioning.outputs.version_clean }}"
+            git tag ${{ steps.versioning.outputs.version_tag }}
             git push origin main --tags
           else
             echo "Gak ada perubahan file, skip push."
@@ -83,19 +87,45 @@ jobs:
 
       - name: Create Release
         run: |
-          # 1. Ambil list commit sejak tag terakhir
-          PREV_TAG=$(git describe --tags --abbrev=0 --exclude="${{ steps.versioning.outputs.new_version }}" 2>/dev/null || echo "")
+          PREV_TAG=$(git describe --tags --abbrev=0 --exclude="${{ steps.versioning.outputs.version_tag }}" 2>/dev/null || echo "")
           
-          if [ -n "$PREV_TAG" ]; then
-            NOTES=$(git log $PREV_TAG..HEAD --pretty=format:"- %s (%an)")
-          else
-            NOTES="Initial nightly release for version ${{ steps.versioning.outputs.new_version }}"
-          fi
+          # Ambil log dengan format: type: subject
+          LOGS=$(git log $PREV_TAG..HEAD --pretty=format:"%s")
+          
+          # Filter berdasarkan tipe
+          FEAT=$(echo "$LOGS" | grep "^feat" | sed 's/^feat: /- /' || echo "")
+          FIX=$(echo "$LOGS" | grep "^fix" | sed 's/^fix: /- /' || echo "")
+          
+          # Bikin link compare
+          COMPARE_LINK="https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${{ steps.versioning.outputs.version_tag }}"
+          
+          # Susun formatnya
+          {
+            echo "## What's Changed"
+            echo "Compare: $COMPARE_LINK"
+            echo ""
+            
+            if [ -n "$FEAT" ]; then
+              echo "### Features"
+              echo "$FEAT"
+              echo ""
+            fi
+            
+            if [ -n "$FIX" ]; then
+              echo "### Fixes"
+              echo "$FIX"
+              echo ""
+            fi
+            
+            if [ -z "$FEAT" ] && [ -z "$FIX" ]; then
+              echo "_No significant changes in this build._"
+            fi
+          } > release_notes.md
 
-          # 2. Buat release via GitHub CLI
-          gh release create "${{ steps.versioning.outputs.new_version }}" \
-            --title "Nightly Build ${{ steps.versioning.outputs.new_version }}" \
-            --notes "$NOTES" \
+          # 2. Buat release pakai file notes
+          gh release create "${{ steps.versioning.outputs.version_tag }}" \
+            --title "Nightly Build ${{ steps.versioning.outputs.version_tag }}" \
+            --notes-file release_notes.md \
             --prerelease
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -106,4 +136,4 @@ jobs:
         with:
           workflow: Build and Publish N-API
           token: ${{ secrets.GITHUB_TOKEN }}
-          inputs: '{ "version_override": "${{ steps.versioning.outputs.new_version }}" }'
+          inputs: '{ "version_override": "${{ steps.versioning.outputs.version_clean }}" }'
