@@ -123,11 +123,20 @@ impl fmt::Display for VMError {
         f,
         "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}ensure the data passed to this instruction matches the expected signature.{reset}\n\n"
       ),
-      VMError::OutOfBounds { len, .. } => write!(
-        f,
-        "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}Verify your index calculation; ensure it is within 0 to {}. Off-by-one errors are common here.{reset}\n\n",
-        len.saturating_sub(1)
-      ),
+      VMError::OutOfBounds { len, .. } => {
+        if *len == 0 {
+          write!(
+            f,
+            "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}collection is empty; no index is valid.{reset}\n\n"
+          )
+        } else {
+          write!(
+            f,
+            "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}Verify your index calculation; ensure it is within 0 to {}. Off-by-one errors are common here.{reset}\n\n",
+            len.saturating_sub(1)
+          )
+        }
+      }
       VMError::InvalidJumpTarget { .. } => write!(
         f,
         "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}The jump target is out of range. Check for corrupted bytecode or logic errors in your jump instructions.{reset}\n\n"
