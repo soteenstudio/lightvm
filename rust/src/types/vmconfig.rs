@@ -25,3 +25,9 @@ pub struct VmNapiConfig {
   pub caps_raw: Vec<u32>,
   pub nightly: Option<bool>,
 }
+#[cfg(feature = "wasm")]
+#[derive(serde::Deserialize)]
+pub struct VmWasmConfig {
+  pub caps: Vec<u32>,
+  pub nightly: Option<bool>,
+}

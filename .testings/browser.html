@@ -197,7 +197,7 @@
             'Mencoba mengalokasikan memory untuk instance LightVM...',
             'info',
           );
-          globalVm = new LightVM([0, 1]);
+          globalVm = new LightVM({ caps: [0, 1], nightly: false });
 
           printLog('LightVM instance created successfully!', 'success');
           statusEl.innerHTML += `<div style="margin-top: 10px; font-size: 0.9rem; color: #56d364;">→ Instance LightVM terdeteksi aman di browser!</div>`;
