@@ -13,12 +13,15 @@ use lightvm::{LightVM, types::{vmconfig::VmConfig, capability::Capability}};
 fn main() {
   let mut vm = LightVM::new(VmConfig {
     caps: vec![Capability::Control, Capability::Observe],
-    nightly: false
+    nightly: false,
+    explain: true,
+    hint: false
   });
   
   let raw = r#"[
     ["add", "int"],
-    ["println"]
+    ["println"],
+    ["instantiate"]
   ]"#;
   let optimized_json = vm.tools().optimize_bytecode(raw);
   

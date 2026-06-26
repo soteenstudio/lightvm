@@ -37,6 +37,8 @@ export class LightVM {
     } = {
       caps: [Capability.Observe],
       nightly: false,
+      explain: false,
+      hint: true,
     },
   ) {
     this.config = config as unknown as VMConfig;
@@ -60,8 +62,10 @@ export class LightVM {
     });
 
     this.instance = new native.LightVM({
-      caps: numericCaps,
+      capsRaw: numericCaps,
       nightly: config.nightly ?? false,
+      explain: config.explain ?? false,
+      hint: config.hint ?? true,
     });
   }
   load(source: Instructions[] | string) {
@@ -176,6 +180,8 @@ export class LightVM {
           return native.LightVM.optimizeBytecode(
             bytecode,
             currentConfig.nightly ?? false,
+            currentConfig.explain ?? false,
+            currentConfig.hint ?? true,
           );
         } catch (err) {
           console.error((err as Error).message);

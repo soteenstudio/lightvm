@@ -72,6 +72,8 @@ impl WasmLightVM {
         exported: HashSet::new(),
         _imports: AHashMap::new(),
         nightly: config.nightly.unwrap_or(false),
+        explain: config.explain.unwrap_or(false),
+        hint: config.hint.unwrap_or(false),
       },
     })
   }
@@ -203,11 +205,19 @@ impl WasmLightVM {
   }
   #[wasm_bindgen]
   pub fn tools(&self) -> WasmLightVMTools {
-    WasmLightVMTools
+    WasmLightVMTools {
+      nightly: self.inner.nightly,
+      explain: self.inner.explain,
+      hint: self.inner.hint,
+    }
   }
 }
 #[wasm_bindgen(js_name = "LightVMTools")]
-pub struct WasmLightVMTools;
+pub struct WasmLightVMTools {
+  pub nightly: bool,
+  pub explain: bool,
+  pub hint: bool,
+}
 #[wasm_bindgen(js_class = "LightVMTools")]
 impl WasmLightVMTools {
   #[wasm_bindgen(js_name = "optimizeBytecode")]
@@ -219,7 +229,7 @@ impl WasmLightVMTools {
         e
       )))
     })?;
-    let mut vm_instance = LightVM::new_node(false);
+    let mut vm_instance = LightVM::new_node(self.nightly, self.explain, self.hint);
     let opt_str = vm_instance
       .optimize_bytecode_internal(input_json)
       .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))?;
