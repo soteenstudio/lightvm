@@ -1,4 +1,4 @@
-name: Nightly Build Trigger
+///////name: Nightly Build Trigger
 
 on:
   schedule:
@@ -119,14 +119,6 @@ jobs:
             echo "Gak ada perubahan file, skip push."
           fi
 
-      - name: Trigger Main Release Workflow
-        # Step ini cuma jalan kalau step sebelumnya sukses
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: Build and Publish N-API
-          token: ${{ secrets.GITHUB_TOKEN }}
-          inputs: '{ "version_override": "${{ steps.versioning.outputs.version_clean }}" }'
-
       - name: Create Release
         run: |
           PREV_TAG=$(git describe --tags --abbrev=0 --exclude="${{ steps.versioning.outputs.version_tag }}" 2>/dev/null || echo "")
@@ -171,3 +163,11 @@ jobs:
             --prerelease
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trigger Main Release Workflow
+        # Step ini cuma jalan kalau step sebelumnya sukses
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Build and Publish N-API
+          token: ${{ secrets.GITHUB_TOKEN }}
+          inputs: '{ "version_override": "${{ steps.versioning.outputs.version_clean }}" }'
