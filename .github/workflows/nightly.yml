@@ -2,7 +2,7 @@ name: Nightly Build Trigger
 
 on:
   schedule:
-    - cron: '0 0 */2 * *'
+    - cron: '35 12 * * *'
   workflow_dispatch:
 
 jobs:
