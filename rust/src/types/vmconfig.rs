@@ -34,4 +34,6 @@ pub struct VmNapiConfig {
 pub struct VmWasmConfig {
   pub caps: Vec<u32>,
   pub nightly: Option<bool>,
+  pub explain: Option<bool>,
+  pub hint: Option<bool>,
 }
