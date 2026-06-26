@@ -70,6 +70,8 @@ impl NodeLightVM {
         exported: HashSet::new(),
         _imports: AHashMap::new(),
         nightly: config.nightly.unwrap_or(false),
+        explain: config.explain.unwrap_or(false),
+        hint: config.hint.unwrap_or(true),
       },
     })
   }
@@ -180,6 +182,8 @@ impl NodeLightVM {
   pub fn napi_optimize_bytecode(
     bytecode: serde_json::Value,
     nightly: Option<bool>,
+    explain: Option<bool>,
+    hint: Option<bool>,
   ) -> Result<serde_json::Value> {
     use crate::utils::vmerror::VMError;
     let input_string = serde_json::to_string(&bytecode).map_err(|e| {
@@ -197,7 +201,9 @@ impl NodeLightVM {
       Error::from_reason(vm_err.to_string())
     })?;
     let is_nightly = nightly.unwrap_or(false);
-    let mut vm_instance = LightVM::new_node(is_nightly);
+    let is_explain = explain.unwrap_or(false);
+    let is_hint = hint.unwrap_or(false);
+    let mut vm_instance = LightVM::new_node(is_nightly, is_explain, is_hint);
     let opt_str = vm_instance
       .optimize_bytecode_internal(input_json)
       .map_err(|e| Error::from_reason(e.to_string()))?;

@@ -32,7 +32,7 @@ desc = "Running tests for Rust interfaces"
 commands = ["solas run .testings/native.rs"]
 [scripts.testing-ts]
 desc = "Running tests for TypeScript interfaces"
-commands = ["node .testings/napi.js"]
+commands = ["node --enable-source-maps .testings/napi.js"]
 
 [scripts.build]
 desc = "Generating build results from TypeScript source"

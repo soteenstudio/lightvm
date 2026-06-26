@@ -219,11 +219,15 @@ impl LightVM {
   pub fn tools(&mut self) -> LightVMTools {
     LightVMTools {
       nightly: self.nightly,
+      explain: self.explain,
+      hint: self.hint,
     }
   }
 }
 pub struct LightVMTools {
   pub nightly: bool,
+  pub explain: bool,
+  pub hint: bool,
 }
 #[cfg(not(feature = "node"))]
 impl LightVMTools {
@@ -249,6 +253,8 @@ impl LightVMTools {
     }
     let config = crate::types::vmconfig::VmConfig {
       nightly: self.nightly,
+      explain: self.explain,
+      hint: self.hint,
       ..Default::default()
     };
     let opt_str = LightVM::new(config)

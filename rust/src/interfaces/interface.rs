@@ -274,6 +274,7 @@ impl LightVM {
     &mut self,
     bytecode_raw: serde_json::Value,
   ) -> Result<String, VMError> {
+    self.set_mode(self.explain, self.hint);
     let json_str = bytecode_raw.to_string();
     if !self.nightly && has_nightly_opcodes(&json_str) {
       return Err(VMError::FeatureRestricted {
@@ -373,6 +374,8 @@ mod tests {
       exported: HashSet::new(),
       _imports: AHashMap::new(),
       nightly: false,
+      explain: false,
+      hint: true,
     }
   }
   #[test]

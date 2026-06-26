@@ -15,12 +15,13 @@ fn main() {
     caps: vec![Capability::Control, Capability::Observe],
     nightly: false,
     explain: true,
-    hint: true
+    hint: false
   });
   
   let raw = r#"[
     ["add", "int"],
-    ["println"]
+    ["println"],
+    ["instantiate"]
   ]"#;
   let optimized_json = vm.tools().optimize_bytecode(raw);
   
