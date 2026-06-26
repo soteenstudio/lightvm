@@ -202,7 +202,7 @@ impl NodeLightVM {
     })?;
     let is_nightly = nightly.unwrap_or(false);
     let is_explain = explain.unwrap_or(false);
-    let is_hint = hint.unwrap_or(false);
+    let is_hint = hint.unwrap_or(true);
     let mut vm_instance = LightVM::new_node(is_nightly, is_explain, is_hint);
     let opt_str = vm_instance
       .optimize_bytecode_internal(input_json)
