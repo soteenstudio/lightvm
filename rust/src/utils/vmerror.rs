@@ -156,10 +156,23 @@ impl fmt::Display for VMError {
       }
     }
     match self {
-      VMError::StackOverflow { .. } => write!(
-        f,
-        "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}potential infinite recursion or unoptimized InitStack.{reset}\n\n"
-      ),
+      VMError::StackOverflow { .. } => {
+        if is_hint {
+          if is_explain {
+            write!(
+              f,
+              "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint (explained):\n    {dark_gray}The execution encountered a stack overflow, likely triggered by either an infinitely recursive function call that never terminates or an InitStack instruction that failed to reserve enough space for the required stack depth, resulting in the runtime exceeding the allocated memory boundaries for the current call frame.{reset}\n\n"
+            )
+          } else {
+            write!(
+              f,
+              "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}Potential infinite recursion or unoptimized InitStack.{reset}\n\n"
+            )
+          }
+        } else {
+          write!(f, "{reset}\n\n")
+        }
+      }
       VMError::StackUnderflow { .. } => {
         if is_hint {
           if is_explain {
@@ -170,43 +183,113 @@ impl fmt::Display for VMError {
           } else {
             write!(
               f,
-              "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}stack state is inconsistent; check your push/pop balance.{reset}\n\n"
+              "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}Stack state is inconsistent; check your push/pop balance.{reset}\n\n"
             )
           }
         } else {
           write!(f, "{reset}\n\n")
         }
       }
-      VMError::InvalidOpcode { .. } => write!(
-        f,
-        "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}bytecode may be corrupted or version mismatch.{reset}\n\n"
-      ),
-      VMError::TypeMismatch { .. } => write!(
-        f,
-        "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}ensure the data passed to this instruction matches the expected signature.{reset}\n\n"
-      ),
-      VMError::OutOfBounds { len, .. } => {
-        if *len == 0 {
-          write!(
-            f,
-            "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}collection is empty; no index is valid.{reset}\n\n"
-          )
+      VMError::InvalidOpcode { .. } => {
+        if is_hint {
+          if is_explain {
+            write!(
+              f,
+              "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint (explained):\n    {dark_gray}The stack is currently unbalanced because more elements were popped than pushed; this indicates that your bytecode logic is attempting to access data that was never placed onto the stack, or the previous instructions failed to maintain the required stack integrity.{reset}\n\n"
+            )
+          } else {
+            write!(
+              f,
+              "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}Bytecode may be corrupted or version mismatch.{reset}\n\n"
+            )
+          }
         } else {
-          write!(
-            f,
-            "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}Verify your index calculation; ensure it is within 0 to {}. Off-by-one errors are common here.{reset}\n\n",
-            len.saturating_sub(1)
-          )
+          write!(f, "{reset}\n\n")
         }
       }
-      VMError::InvalidJumpTarget { .. } => write!(
-        f,
-        "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}The jump target is out of range. Check for corrupted bytecode or logic errors in your jump instructions.{reset}\n\n"
-      ),
-      VMError::FeatureRestricted { .. } => write!(
-        f,
-        "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}You need to enable nightly mode in VmConfig to use it.{reset}\n\n"
-      ),
+      VMError::TypeMismatch { .. } => {
+        if is_hint {
+          if is_explain {
+            write!(
+              f,
+              "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint (explained):\n    {dark_gray}The data structure or value provided to this specific instruction does not adhere to the required type definition or parameter signature, which forces the runtime to halt because it cannot safely proceed with an operation expecting a different format.{reset}\n\n"
+            )
+          } else {
+            write!(
+              f,
+              "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}Ensure the data passed to this instruction matches the expected signature.{reset}\n\n"
+            )
+          }
+        } else {
+          write!(f, "{reset}\n\n")
+        }
+      }
+      VMError::OutOfBounds { len, .. } => {
+        if is_hint {
+          if *len == 0 {
+            if is_explain {
+              write!(
+                f,
+                "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint (explained):\n    {dark_gray}The collection currently being accessed contains no elements, making any attempt to retrieve an index operationally invalid because there is no allocated data at any position to be retrieved.{reset}\n\n"
+              )
+            } else {
+              write!(
+                f,
+                "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}Collection is empty; no index is valid.{reset}\n\n"
+              )
+            }
+          } else {
+            if is_explain {
+              write!(
+                f,
+                "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint (explained):\n    {dark_gray}The requested index falls outside the valid memory boundaries of the collection; you must ensure your index calculation is strictly constrained between zero and the collection's length minus one, as off-by-one errors are the primary cause of this boundary violation.{reset}\n\n"
+              )
+            } else {
+              write!(
+                f,
+                "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}Verify your index calculation; ensure it is within 0 to {}. Off-by-one errors are common here.{reset}\n\n",
+                len.saturating_sub(1)
+              )
+            }
+          }
+        } else {
+          write!(f, "{reset}\n\n")
+        }
+      }
+      VMError::InvalidJumpTarget { .. } => {
+        if is_hint {
+          if is_explain {
+            write!(
+              f,
+              "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint (explained):\n    {dark_gray}The jump operation attempted to redirect the instruction pointer to a memory address that does not exist within the current bytecode bounds, indicating either a critical corruption of the jump offset or a logical error in the flow control mapping.{reset}\n\n"
+            )
+          } else {
+            write!(
+              f,
+              "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}The jump target is out of range. Check for corrupted bytecode or logic errors in your jump instructions.{reset}\n\n"
+            )
+          }
+        } else {
+          write!(f, "{reset}\n\n")
+        }
+      }
+      VMError::FeatureRestricted { .. } => {
+        if is_hint {
+          if is_explain {
+            write!(
+              f,
+              "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint (explained):\n    {dark_gray}The attempt to execute this instruction was blocked because it is classified as an experimental or restricted feature; you must explicitly enable 'nightly mode' within your VmConfig to authorize the runtime to process this opcode.{reset}\n\n"
+            )
+          } else {
+            write!(
+              f,
+              "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}You need to enable nightly mode in VmConfig to use it.{reset}\n\n"
+            )
+          }
+        } else {
+          write!(f, "{reset}\n\n")
+        }
+      }
       VMError::SystemError(_) => Ok(()),
     }
   }
