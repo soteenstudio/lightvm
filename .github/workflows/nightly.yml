@@ -47,6 +47,7 @@ jobs:
 
       - name: Check for new commits
         id: check_commit
+        if: steps.filter_changes.outputs.significant == 'true'
         run: |
           AUTHOR=$(git log -1 --pretty=%an)
           if [ "$AUTHOR" == "github-actions[bot]" ]; then
@@ -61,6 +62,7 @@ jobs:
 
       - name: Generate Nightly Version
         id: versioning
+        if: steps.filter_changes.outputs.significant == 'true'
         run: |
           # 1. Ambil tag terakhir
           RAW_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
@@ -85,6 +87,7 @@ jobs:
           echo "Generated version: $VERSION_CLEAN (Tag: $VERSION_TAG)"
 
       - name: Update Files
+        if: steps.filter_changes.outputs.significant == 'true'
         run: |
           VERSION="${{ steps.versioning.outputs.version_clean }}"
           
@@ -103,6 +106,7 @@ jobs:
           cargo update
 
       - name: Commit and Push
+        if: steps.filter_changes.outputs.significant == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -120,6 +124,7 @@ jobs:
           fi
 
       - name: Create Release
+        if: steps.filter_changes.outputs.significant == 'true'
         run: |
           PREV_TAG=$(git describe --tags --abbrev=0 --exclude="${{ steps.versioning.outputs.version_tag }}" 2>/dev/null || echo "")
           
@@ -168,6 +173,7 @@ jobs:
 
       - name: Trigger Main Release Workflow
         # Step ini cuma jalan kalau step sebelumnya sukses
+        if: steps.filter_changes.outputs.significant == 'true'
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Build and Publish N-API
