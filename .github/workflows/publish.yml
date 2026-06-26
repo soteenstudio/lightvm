@@ -316,16 +316,18 @@ jobs:
             cd "publish/$PLATFORM"
             
             # --- VALIDASI OTOMATIS BERDASARKAN EVENT TYPE ---
-            if [[ "${{ github.event_name }}" == "release" ]]; then
-              echo "Event Rilisan Terdeteksi: Menjalankan Real Publish ke NPM..."
+            # Kita tetap publish jika eventnya adalah 'release'
+            # ATAU jika 'workflow_dispatch' dan version-nya mengandung 'nightly' (biar nightly tetep publish)
+            if [[ "${{ github.event_name }}" == "release" ]] || [[ "${{ github.event_name }}" == "workflow_dispatch" && "$VERSION" == *"nightly"* ]]; then
+              echo "Event Rilisan/Nightly Terdeteksi: Menjalankan Real Publish ke NPM..."
               npm publish --tag $TAG --access public || echo "Skip existing"
             else
-              echo "Event Manual/Test Terdeteksi: Menjalankan Dry-Run (NPM Pack)..."
+              echo "Event Manual (Non-Nightly) Terdeteksi: Menjalankan Dry-Run (NPM Pack)..."
               npm pack
               mkdir -p ../../dist-test
               mv *.tgz ../../dist-test/
             fi
-            
+
             cd ../..
           done
 

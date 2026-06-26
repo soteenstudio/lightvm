@@ -1,4 +1,4 @@
-///////name: Nightly Build Trigger
+name: Nightly Build Trigger
 
 on:
   schedule:
