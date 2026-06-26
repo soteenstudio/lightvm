@@ -154,6 +154,8 @@ jobs:
             if [ -z "$FEAT" ] && [ -z "$FIX" ]; then
               echo "_No significant changes in this build._"
             fi
+            
+            echo "***Nightly Owl has fallen out of bed tonight!***"
           } > release_notes.md
 
           # 2. Buat release pakai file notes
