@@ -13,7 +13,9 @@ use lightvm::{LightVM, types::{vmconfig::VmConfig, capability::Capability}};
 fn main() {
   let mut vm = LightVM::new(VmConfig {
     caps: vec![Capability::Control, Capability::Observe],
-    nightly: false
+    nightly: false,
+    explain: true,
+    hint: true
   });
   
   let raw = r#"[

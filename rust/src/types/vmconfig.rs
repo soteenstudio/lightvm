@@ -15,6 +15,8 @@ use napi_derive::napi;
 pub struct VmConfig {
   pub caps: Vec<Capability>,
   pub nightly: bool,
+  pub explain: bool,
+  pub hint: bool,
 }
 #[cfg(feature = "node")]
 #[napi(object)]

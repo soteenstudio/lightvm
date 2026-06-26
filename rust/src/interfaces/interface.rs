@@ -39,9 +39,11 @@ pub struct LightVM {
   pub exported: HashSet<SmolStr>,
   pub _imports: AHashMap<SmolStr, Value>,
   pub nightly: bool,
+  pub explain: bool,
+  pub hint: bool,
 }
 impl LightVM {
-  pub fn new_node(nightly: bool) -> Self {
+  pub fn new_node(nightly: bool, explain: bool, hint: bool) -> Self {
     use crate::types::capability::Capability;
     use crate::types::value::Value;
     use crate::types::vmstate::VmState;
@@ -61,6 +63,8 @@ impl LightVM {
       exported: HashSet::new(),
       _imports: AHashMap::new(),
       nightly,
+      explain,
+      hint,
     }
   }
   #[inline(always)]
@@ -72,6 +76,10 @@ impl LightVM {
       ))));
     }
     Ok(())
+  }
+  pub fn set_mode(&self, explain: bool, hint: bool) {
+    let mut config = crate::utils::vmerror::get_error_config().lock().unwrap();
+    config.set_value(explain, hint);
   }
   pub fn index_metadata(&mut self) {
     self.functions.clear();
@@ -109,6 +117,7 @@ impl LightVM {
     }
   }
   pub fn load_internal(&mut self, source: String) -> Result<(), VMError> {
+    self.set_mode(self.explain, self.hint);
     let trimmed = source.trim();
     let raw_code: String;
     if trimmed.starts_with('[') {

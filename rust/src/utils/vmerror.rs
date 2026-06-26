@@ -10,6 +10,39 @@
 
 use smol_str::SmolStr;
 use std::fmt;
+use std::sync::Mutex;
+use std::sync::OnceLock;
+pub struct VMErrorContainer {
+  explain: bool,
+  hint: bool,
+}
+impl Default for VMErrorContainer {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+impl VMErrorContainer {
+  pub fn new() -> Self {
+    Self {
+      explain: false,
+      hint: true,
+    }
+  }
+  pub fn get_value(&self) -> VMErrorContainer {
+    VMErrorContainer {
+      explain: self.explain,
+      hint: self.hint,
+    }
+  }
+  pub(crate) fn set_value(&mut self, explain: bool, hint: bool) {
+    self.explain = explain;
+    self.hint = hint;
+  }
+}
+static EXPLAIN_MODE: OnceLock<Mutex<VMErrorContainer>> = OnceLock::new();
+pub fn get_error_config() -> &'static Mutex<VMErrorContainer> {
+  EXPLAIN_MODE.get_or_init(|| Mutex::new(VMErrorContainer::new()))
+}
 #[derive(Debug)]
 pub enum VMError {
   /// Occurs when the stack reaches the maximum limit specified by InitStack or default.
@@ -46,6 +79,9 @@ impl fmt::Display for VMError {
     let dark_gray = "\x1b[2;37m";
     let reset = "\x1b[0m";
     let bold = "\x1b[1m";
+    let config = get_error_config().lock().unwrap().get_value();
+    let is_explain = config.explain;
+    let is_hint = config.hint;
     let err_type = match self {
       VMError::StackOverflow { .. } => "StackOverflow",
       VMError::StackUnderflow { .. } => "StackUnderflow",
@@ -71,11 +107,15 @@ impl fmt::Display for VMError {
       VMError::StackOverflow { limit, .. } => write!(f, "Stack limit reached (limit: {}).", limit),
       VMError::StackUnderflow { opcode, .. } => write!(
         f,
-        "Attempted to pop from an empty stack during '{}' instruction.",
-        opcode
+        "Attempted to pop from an empty stack during {bold}'{}' {reset}instruction.",
+        opcode,
       ),
       VMError::InvalidOpcode { code, .. } => {
-        write!(f, "Illegal instruction '{}' encountered.", code)
+        write!(
+          f,
+          "Illegal instruction {bold}'{}' {reset}encountered.",
+          code
+        )
       }
       VMError::TypeMismatch {
         expected, found, ..
@@ -95,26 +135,48 @@ impl fmt::Display for VMError {
         target, len
       ),
       VMError::FeatureRestricted { feature, .. } => {
-        write!(f, "The feature/opcode '{}' is restricted.", feature)
+        write!(
+          f,
+          "The feature/opcode {bold}'{}' {reset}is restricted.",
+          feature
+        )
       }
       VMError::SystemError(s) => write!(f, "{}", s),
     }?;
     if !matches!(self, VMError::SystemError(_)) {
-      write!(
-        f,
-        "\n {reset}{cyan}│   {dark_gray}at instruction_pointer: {ip}{reset}"
-      )?;
-      write!(f, "\n {reset}{cyan}│   {dark_gray}error type: {}", err_type)?;
+      if is_hint {
+        write!(
+          f,
+          "\n {reset}{cyan}│   {dark_gray}at instruction pointer: {ip}{reset}"
+        )?;
+        write!(f, "\n {reset}{cyan}│   {dark_gray}error type: {}", err_type)?;
+      } else {
+        write!(f, "\n     {dark_gray}at instruction pointer: {ip}{reset}")?;
+        write!(f, "\n     {dark_gray}error type: {}", err_type)?;
+      }
     }
     match self {
       VMError::StackOverflow { .. } => write!(
         f,
         "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}potential infinite recursion or unoptimized InitStack.{reset}\n\n"
       ),
-      VMError::StackUnderflow { .. } => write!(
-        f,
-        "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}stack state is inconsistent; check your push/pop balance.{reset}\n\n"
-      ),
+      VMError::StackUnderflow { .. } => {
+        if is_hint {
+          if is_explain {
+            write!(
+              f,
+              "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint (explained):\n    {dark_gray}The stack is currently unbalanced because more elements were popped than pushed; this indicates that your bytecode logic is attempting to access data that was never placed onto the stack, or the previous instructions failed to maintain the required stack integrity.{reset}\n\n"
+            )
+          } else {
+            write!(
+              f,
+              "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}stack state is inconsistent; check your push/pop balance.{reset}\n\n"
+            )
+          }
+        } else {
+          write!(f, "{reset}\n\n")
+        }
+      }
       VMError::InvalidOpcode { .. } => write!(
         f,
         "\n {reset}{cyan}│\n {cyan}└─ {cyan}hint: {dark_gray}bytecode may be corrupted or version mismatch.{reset}\n\n"
