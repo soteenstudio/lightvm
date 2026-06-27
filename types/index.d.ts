@@ -26,6 +26,7 @@ export declare enum Capability {
     Unsafe = "UNSAFE"
 }
 export declare class LightVM {
+    private native;
     private instance;
     private config;
     constructor(config?: Partial<Omit<VMConfig, 'caps'>> & {

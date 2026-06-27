@@ -17,15 +17,13 @@ import { isMusl } from './isMusl.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 let cachedNative: any = null;
-export function loadNapi() {
+export function loadNapi(explain: boolean, hint: boolean) {
   if (cachedNative) return cachedNative;
   try {
     const localPath = join(__dirname, '../binaries/lightvm.node');
     cachedNative = require(localPath);
     return cachedNative;
-  } catch (err) {
-    console.warn(err);
-  }
+  } catch (err) {}
   const { platform, arch } = process;
   let packageName = '';
   if (platform === 'linux') {
@@ -55,14 +53,18 @@ export function loadNapi() {
           ? '@lightvm/core-android-arm'
           : '';
   } else {
-    throw new VMSystemError(`Platform ${platform} ${arch} is not supported`);
+    const error = new VMSystemError(`Platform ${platform} ${arch} is not supported`);
+    error.print(explain, hint);
+    process.exit(65);
   }
   try {
     cachedNative = require(packageName);
     return cachedNative;
   } catch (err) {
-    throw new VMSystemError(
+    const error = new VMSystemError(
       `Failed to load binary for ${packageName}. Please ensure a secure connection during installation.`,
     );
+    error.print(explain, hint);
+    process.exit(69);
   }
 }

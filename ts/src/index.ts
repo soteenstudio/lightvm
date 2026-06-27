@@ -26,8 +26,8 @@ export enum Capability {
   Debug = 'DEBUG',
   Unsafe = 'UNSAFE',
 }
-const native = loadNapi();
 export class LightVM {
+  private native: any;
   private instance: any;
   private config: VMConfig;
 
@@ -61,7 +61,8 @@ export class LightVM {
       }
     });
 
-    this.instance = new native.LightVM({
+    this.native = loadNapi(config.explain ?? false, config.hint ?? true);
+    this.instance = new this.native.LightVM({
       capsRaw: numericCaps,
       nightly: config.nightly ?? false,
       explain: config.explain ?? false,
@@ -177,7 +178,7 @@ export class LightVM {
     return {
       optimizeBytecode: (bytecode: any) => {
         try {
-          return native.LightVM.optimizeBytecode(
+          return this.native.LightVM.optimizeBytecode(
             bytecode,
             currentConfig.nightly ?? false,
             currentConfig.explain ?? false,
@@ -190,7 +191,7 @@ export class LightVM {
       },
       stringifyLTC: (json: Instructions[]) => {
         try {
-          return native.LightVM.stringifyLtc(json);
+          return this.native.LightVM.stringifyLtc(json);
         } catch (err) {
           console.error((err as Error).message);
           process.exit(1);
@@ -198,7 +199,7 @@ export class LightVM {
       },
       parseLTC: (code: string) => {
         try {
-          return native.LightVM.parseLtc(code);
+          return this.native.LightVM.parseLtc(code);
         } catch (err) {
           console.error((err as Error).message);
           process.exit(1);
@@ -206,7 +207,7 @@ export class LightVM {
       },
       parseLTCArray: (code: string) => {
         try {
-          return native.LightVM.parseLtcArray(code);
+          return this.native.LightVM.parseLtcArray(code);
         } catch (err) {
           console.error((err as Error).message);
           process.exit(1);
