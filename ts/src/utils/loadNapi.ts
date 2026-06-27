@@ -17,15 +17,13 @@ import { isMusl } from './isMusl.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 let cachedNative: any = null;
-export function loadNapi() {
+export function loadNapi(explain: boolean, hint: boolean) {
   if (cachedNative) return cachedNative;
   try {
     const localPath = join(__dirname, '../binaries/lightvm.node');
     cachedNative = require(localPath);
     return cachedNative;
-  } catch (err) {
-    console.warn(err);
-  }
+  } catch (err) {}
   const { platform, arch } = process;
   let packageName = '';
   if (platform === 'linux') {
@@ -55,14 +53,28 @@ export function loadNapi() {
           ? '@lightvm/core-android-arm'
           : '';
   } else {
-    throw new VMSystemError(`Platform ${platform} ${arch} is not supported`);
+    const error = new VMSystemError(
+      `Platform ${platform} ${arch} is not supported`,
+      [
+        "The LightVM engine has not been ported to your current environment; this occurs when the operating system or processor architecture is not included in our prebuilt binary distribution, requiring a custom build from source to enable compatibility.",
+        "Check the official documentation for a list of supported platforms and architectures."
+      ]
+    );
+    error.print(explain, hint);
+    process.exit(65);
   }
   try {
     cachedNative = require(packageName);
     return cachedNative;
   } catch (err) {
-    throw new VMSystemError(
+    const error = new VMSystemError(
       `Failed to load binary for ${packageName}. Please ensure a secure connection during installation.`,
+      [
+        "    The system failed to load the necessary N-API bridge because the prebuilt binary module for your specific platform could not be resolved; this usually indicates a failed package installation, a registry synchronization error, or a platform mismatch between the installed dependencies and your current environment.",
+        `Run 'npm install ${packageName}' to verify your installation.`
+      ]
     );
+    error.print(explain, hint);
+    process.exit(69);
   }
 }

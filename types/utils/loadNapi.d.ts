@@ -7,4 +7,4 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
-export declare function loadNapi(): any;
+export declare function loadNapi(explain: boolean, hint: boolean): any;

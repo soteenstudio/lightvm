@@ -8,7 +8,9 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 export declare class VMSystemError extends Error {
+    readonly detail: string;
     readonly code: string;
     readonly ip: number;
     constructor(detail: string);
+    print(explain: boolean, hint: boolean): void;
 }
