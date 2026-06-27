@@ -8,14 +8,11 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod compute_hot_threshold;
-pub mod fast_format;
-pub mod filtered_writer;
-pub mod format_output;
-pub mod has_nightly_opcodes;
-pub mod loader;
-pub mod map_primitive;
-pub mod marker_formatter;
-pub mod resolve_symbols;
-pub mod type_binding;
-pub mod vmerror;
+pub(crate) mod fast_format;
+pub(crate) mod filtered_writer;
+pub(crate) mod format_output;
+pub(crate) mod has_nightly_opcodes;
+pub(crate) mod loader;
+pub(crate) mod map_primitive;
+pub(crate) mod resolve_symbols;
+pub(crate) mod vmerror;

@@ -9,14 +9,13 @@
  */
 
 pub mod capability;
-pub mod control_flow_signal;
-pub mod instructions;
-pub mod primitive_types;
-pub mod stack;
-pub mod usage;
-pub mod value;
-pub mod var_stack;
+pub(crate) mod control_flow_signal;
+pub(crate) mod instructions;
+pub(crate) mod primitive_types;
+pub(crate) mod stack;
+pub(crate) mod usage;
+pub(crate) mod value;
+pub(crate) mod var_stack;
 pub mod vmconfig;
-pub mod vmevent;
-pub mod vmresult;
-pub mod vmstate;
+pub(crate) mod vmevent;
+pub(crate) mod vmstate;

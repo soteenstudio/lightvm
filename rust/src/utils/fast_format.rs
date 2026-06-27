@@ -8,8 +8,6 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use itoa;
-use ryu;
 use smol_str::SmolStr;
 #[inline]
 pub fn int_to_smol<T: Into<i64>>(n: T) -> SmolStr {

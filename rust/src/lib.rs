@@ -10,17 +10,17 @@
 
 #[doc(hidden)]
 #[allow(clippy::type_complexity)]
-pub mod instructions;
+pub(crate) mod instructions;
 #[doc(hidden)]
-pub mod interfaces;
+pub(crate) mod interfaces;
 #[doc(hidden)]
-pub mod optimizer;
+pub(crate) mod optimizer;
 #[doc(hidden)]
 pub mod types;
 #[doc(hidden)]
-pub mod utils;
+pub(crate) mod utils;
 #[doc(hidden)]
-pub mod vm;
+pub(crate) mod vm;
 #[doc(hidden)]
 #[cfg(feature = "node")]
 pub use crate::interfaces::napi_interface::NodeLightVM;
