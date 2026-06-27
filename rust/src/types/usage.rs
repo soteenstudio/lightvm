@@ -16,14 +16,3 @@ pub struct Usage {
   pub read: HashSet<SmolStr>,
   pub written: HashSet<SmolStr>,
 }
-impl Usage {
-  pub fn new() -> Self {
-    Self::default()
-  }
-  pub fn add_read(&mut self, variable: &str) {
-    self.read.insert(SmolStr::new(variable));
-  }
-  pub fn add_written(&mut self, variable: &str) {
-    self.written.insert(SmolStr::new(variable));
-  }
-}

@@ -19,15 +19,16 @@ fn main() {
   });
   
   let raw = r#"[
+    ["push", 5],
+    ["push", 5],
     ["add", "int"],
-    ["println"],
-    ["instantiate"]
+    ["println"]
   ]"#;
   let optimized_json = vm.tools().optimize_bytecode(raw);
   
   vm.load(optimized_json);
   
-  let res = vm.run(None);
+  let _res = vm.run(None);
   
   /*println!("===> Execution finished <===");
   println!("Output: {:?}", res);*/

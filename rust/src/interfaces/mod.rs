@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod interface;
+pub(crate) mod interface;
 pub mod napi_interface;
 pub mod native_interface;
 pub mod wasm_interface;

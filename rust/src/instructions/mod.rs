@@ -8,12 +8,12 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod collections;
-pub mod comparison;
-pub mod control_flow;
-pub mod conversion;
-pub mod io;
-pub mod logic;
-pub mod math;
-pub mod metadata;
-pub mod stack;
+pub(crate) mod collections;
+pub(crate) mod comparison;
+pub(crate) mod control_flow;
+pub(crate) mod conversion;
+pub(crate) mod io;
+pub(crate) mod logic;
+pub(crate) mod math;
+pub(crate) mod metadata;
+pub(crate) mod stack;

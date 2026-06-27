@@ -8,10 +8,10 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod dispatch;
-pub mod execute;
-pub mod inject_args;
-pub mod prepare_vm;
-pub mod run;
-pub mod validate_bytecode;
-pub mod validate_vars;
+pub(crate) mod dispatch;
+pub(crate) mod execute;
+pub(crate) mod inject_args;
+pub(crate) mod prepare_vm;
+pub(crate) mod run;
+pub(crate) mod validate_bytecode;
+pub(crate) mod validate_vars;
