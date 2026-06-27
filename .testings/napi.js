@@ -4,7 +4,7 @@ function main() {
   const vm = new LightVM({
     caps: [Capability.Observe, Capability.Control],
     nightly: false,
-    explain: false,
+    explain: true,
     hint: true,
   });
   const raw = [['push', 5], ['add', 'int'], ['println'], ['instantiate']];

@@ -53,7 +53,13 @@ export function loadNapi(explain: boolean, hint: boolean) {
           ? '@lightvm/core-android-arm'
           : '';
   } else {
-    const error = new VMSystemError(`Platform ${platform} ${arch} is not supported`);
+    const error = new VMSystemError(
+      `Platform ${platform} ${arch} is not supported`,
+      [
+        "The LightVM engine has not been ported to your current environment; this occurs when the operating system or processor architecture is not included in our prebuilt binary distribution, requiring a custom build from source to enable compatibility.",
+        "Check the official documentation for a list of supported platforms and architectures."
+      ]
+    );
     error.print(explain, hint);
     process.exit(65);
   }
@@ -63,6 +69,10 @@ export function loadNapi(explain: boolean, hint: boolean) {
   } catch (err) {
     const error = new VMSystemError(
       `Failed to load binary for ${packageName}. Please ensure a secure connection during installation.`,
+      [
+        "    The system failed to load the necessary N-API bridge because the prebuilt binary module for your specific platform could not be resolved; this usually indicates a failed package installation, a registry synchronization error, or a platform mismatch between the installed dependencies and your current environment.",
+        `Run 'npm install ${packageName}' to verify your installation.`
+      ]
     );
     error.print(explain, hint);
     process.exit(69);
