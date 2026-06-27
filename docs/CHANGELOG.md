@@ -1,3 +1,13 @@
+## Changelog for 0.1.0-nightly.20260626.67761b1-alpha.1
+
+### 🐛 Bug Fixes
+* fix: Crate security issue (#98)
+* chore: Fix nightly build
+
+### 🧹 Maintenance
+* chore(deps-dev): bump @commitlint/cli from 21.0.2 to 21.1.0 (#86)
+* fix(napi): Inconsistency of error messages (#97)
+
 ## Changelog for 0.1.0-alpha.8
 
 * fix: Fix split_whitespace to regex
