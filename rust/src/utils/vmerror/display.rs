@@ -22,7 +22,10 @@ impl fmt::Display for VMError {
     let dark_gray = "\x1b[2;37m";
     let reset = "\x1b[0m";
     let bold = "\x1b[1m";
-    let config = get_error_config().lock().unwrap().get_value();
+    let config = match get_error_config().lock() {
+      Ok(guard) => guard.get_value(),
+      Err(poisoned) => poisoned.into_inner().get_value(),
+    };
     let is_explain = config.explain;
     let is_hint = config.hint;
     let err_type = match self {
