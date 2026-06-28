@@ -149,7 +149,10 @@ impl LightVM {
           e
         )))
       })?;
-      self.bytecode = raw_list.iter().map(Instructions::from_json_array).collect();
+      self.bytecode = raw_list
+        .iter()
+        .map(Instructions::from_json_array)
+        .collect::<Result<Vec<Instructions>, VMError>>()?;
     } else {
       self.bytecode = crate::utils::loader::parse_ltc(&raw_code);
     }
@@ -287,8 +290,14 @@ impl LightVM {
     let json_str = bytecode_raw.to_string();
     let raw_list: Vec<serde_json::Value> = serde_json::from_str(&json_str)
       .map_err(|e| VMError::SystemError(format!("Invalid JSON format: {}", e).into()))?;
-    let bytecode: Vec<Instructions> = raw_list.iter().map(Instructions::from_json_array).collect();
-    let optimized = optimize_bytecode::optimize_bytecode(bytecode);
+    let bytecode: Result<Vec<Instructions>, VMError> = raw_list
+      .iter()
+      .map(Instructions::from_json_array)
+      .collect::<Result<Vec<Instructions>, VMError>>();
+    let optimized = match bytecode {
+      Ok(b) => optimize_bytecode::optimize_bytecode(b),
+      Err(e) => return Err(e),
+    };
     serde_json::to_string(&optimized)
       .map_err(|e| VMError::SystemError(format!("Failed to stringify: {}", e).into()))
   }
@@ -333,13 +342,17 @@ impl LightVM {
     let instructions = crate::utils::loader::parse_ltc_to_vec(&code);
     serde_json::to_value(&instructions).unwrap_or(serde_json::Value::Array(vec![]))
   }
-  pub fn stringify_ltc_internal(bytecode_raw: serde_json::Value) -> Result<String, String> {
+  pub fn stringify_ltc_internal(bytecode_raw: serde_json::Value) -> Result<String, VMError> {
     let json_str = bytecode_raw.to_string();
-    let raw_list: Vec<serde_json::Value> =
-      serde_json::from_str(&json_str).map_err(|e| format!("Invalid JSON format: {}", e))?;
-    let instructions: Vec<Instructions> =
-      raw_list.iter().map(Instructions::from_json_array).collect();
-    Ok(crate::utils::loader::stringify_ltc(instructions))
+    let raw_list: Vec<serde_json::Value> = serde_json::from_str(&json_str)
+      .map_err(|e| VMError::SystemError(format!("Invalid JSON format: {}", e).into()))?;
+    let instructions: Result<Vec<Instructions>, VMError> = Ok(
+      raw_list
+        .iter()
+        .map(Instructions::from_json_array)
+        .collect::<Result<Vec<Instructions>, VMError>>(),
+    )?;
+    Ok(crate::utils::loader::stringify_ltc(instructions?))
   }
 }
 #[cfg(test)]
