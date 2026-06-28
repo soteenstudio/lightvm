@@ -33,7 +33,11 @@ pub fn run(bytecode_json: &str, options: Option<RunOptions>) -> String {
     Ok(bytecode) => execute_and_log(bytecode, options),
     Err(err) => {
       eprintln!("\n{}", err);
-      format!(r#"{{"status": "error", "message": {:?}}}"#, err)
+      serde_json::json!({
+        "status": "error",
+        "message": format!("{:?}", err)
+      })
+      .to_string()
     }
   }
 }
