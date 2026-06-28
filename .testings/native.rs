@@ -19,8 +19,7 @@ fn main() {
   });
   
   let raw = r#"[
-    ["add", "int"],
-    ["println"]
+    ["get"]
   ]"#;
   let optimized_json = vm.tools().optimize_bytecode(raw);
   

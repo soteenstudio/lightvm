@@ -10,6 +10,7 @@
 
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
 use crate::utils::map_primitive::map_primitive;
+use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
 use half::f16;
 use serde::{Deserialize, Serialize};
@@ -206,69 +207,75 @@ impl Instructions {
     vec!["Unknown".into()]
   }
   #[inline]
-  pub fn from_json_array(item: &JsonValue) -> Self {
+  pub fn from_json_array(item: &JsonValue) -> Result<Instructions, VMError> {
     if item.is_null() {
-      return Instructions::Stop;
+      return Ok(Instructions::Stop);
     }
     if let Some(s) = item.as_str() {
       return match s {
-        "init_stack" => Instructions::InitStack(16),
-        "stop" => Instructions::Stop,
-        "return" => Instructions::Return,
-        "and" => Instructions::And,
-        "or" => Instructions::Or,
-        "xor" => Instructions::Xor,
-        "not" => Instructions::Not,
-        "print" => Instructions::Print,
-        "println" => Instructions::Println,
-        "stdout" => Instructions::Stdout,
-        "stdoutln" => Instructions::Stdoutln,
-        "stdin" => Instructions::Stdin,
-        "clear_screen" => Instructions::ClearScreen,
-        "break" => Instructions::Break(0),
-        "access_index" => Instructions::AccessIndex,
-        "to_string" => Instructions::ToString,
-        "to_short" => Instructions::ToShort,
-        "to_integer" => Instructions::ToInteger,
-        "to_long" => Instructions::ToLong,
-        "to_octa" => Instructions::ToOcta,
-        "to_half" => Instructions::ToHalf,
-        "to_float" => Instructions::ToFloat,
-        "to_double" => Instructions::ToDouble,
-        "typeof" => Instructions::TypeOf,
-        "inspect_obj" => Instructions::InspectObj,
-        "inspect_arr" => Instructions::InspectArr,
-        "length" => Instructions::Length,
-        "concat" => Instructions::Concat,
-        "dup" => Instructions::Dup,
-        "swap" => Instructions::Swap,
-        "truncate" => Instructions::Truncate,
-        "shrink" => Instructions::Shrink,
-        "make_obj" => Instructions::MakeObj(0),
-        "make_array" => Instructions::MakeArray(0),
-        _ => Instructions::Stop,
+        "init_stack" => Ok(Instructions::InitStack(16)),
+        "stop" => Ok(Instructions::Stop),
+        "return" => Ok(Instructions::Return),
+        "and" => Ok(Instructions::And),
+        "or" => Ok(Instructions::Or),
+        "xor" => Ok(Instructions::Xor),
+        "not" => Ok(Instructions::Not),
+        "print" => Ok(Instructions::Print),
+        "println" => Ok(Instructions::Println),
+        "stdout" => Ok(Instructions::Stdout),
+        "stdoutln" => Ok(Instructions::Stdoutln),
+        "stdin" => Ok(Instructions::Stdin),
+        "clear_screen" => Ok(Instructions::ClearScreen),
+        "break" => Ok(Instructions::Break(0)),
+        "access_index" => Ok(Instructions::AccessIndex),
+        "to_string" => Ok(Instructions::ToString),
+        "to_short" => Ok(Instructions::ToShort),
+        "to_integer" => Ok(Instructions::ToInteger),
+        "to_long" => Ok(Instructions::ToLong),
+        "to_octa" => Ok(Instructions::ToOcta),
+        "to_half" => Ok(Instructions::ToHalf),
+        "to_float" => Ok(Instructions::ToFloat),
+        "to_double" => Ok(Instructions::ToDouble),
+        "typeof" => Ok(Instructions::TypeOf),
+        "inspect_obj" => Ok(Instructions::InspectObj),
+        "inspect_arr" => Ok(Instructions::InspectArr),
+        "length" => Ok(Instructions::Length),
+        "concat" => Ok(Instructions::Concat),
+        "dup" => Ok(Instructions::Dup),
+        "swap" => Ok(Instructions::Swap),
+        "truncate" => Ok(Instructions::Truncate),
+        "shrink" => Ok(Instructions::Shrink),
+        "make_obj" => Ok(Instructions::MakeObj(0)),
+        "make_array" => Ok(Instructions::MakeArray(0)),
+        _ => Err(VMError::InvalidOpcode {
+          ip: 0,
+          code: "UNKNOWN_OPCODE".into(),
+        }),
       };
     }
     if item.is_object() {
-      return Instructions::deserialize(item).unwrap_or(Instructions::Stop);
+      return Ok(Instructions::deserialize(item).unwrap_or(Instructions::Stop));
     }
     let arr = match item.as_array() {
       Some(a) => a,
-      None => return Instructions::Stop,
+      None => return Ok(Instructions::Stop),
     };
-    let op = arr[0].as_str().expect("Opcode must be a string");
+    let op = arr[0].as_str().ok_or_else(|| VMError::InvalidOpcode {
+      ip: 0,
+      code: "OPCODE_NOT_STRING".into(),
+    })?;
     let op_bytes = op.as_bytes();
     let arg1 = arr.get(1);
     let arg2 = arr.get(2);
     match op_bytes {
       b"init_stack" => {
         let size = arg1.and_then(|v| v.as_u64()).unwrap_or(16) as u32;
-        Instructions::InitStack(size)
+        Ok(Instructions::InitStack(size))
       }
       b"push" => {
         let val = match arg1 {
           Some(v) => v,
-          None => return Instructions::Stop,
+          None => return Ok(Instructions::Stop),
         };
         let value_internal = if let Some(n) = val.as_i64() {
           if n >= i16::MIN as i64 && n <= i16::MAX as i64 {
@@ -307,66 +314,84 @@ impl Instructions {
         } else {
           Value::Undefined
         };
-        Instructions::Push(value_internal)
+        Ok(Instructions::Push(value_internal))
       }
-      b"add" => Instructions::Add(map_primitive(arg1)),
-      b"sub" => Instructions::Sub(map_primitive(arg1)),
-      b"mul" => Instructions::Mul(map_primitive(arg1)),
-      b"div" => Instructions::Div(map_primitive(arg1)),
-      b"mod" => Instructions::Mod(map_primitive(arg1)),
-      b"shl" => Instructions::Shl(map_primitive(arg1)),
-      b"shr" => Instructions::Shr(map_primitive(arg1)),
-      b"ror" => Instructions::Ror(map_primitive(arg1)),
-      b"rol" => Instructions::Rol(map_primitive(arg1)),
-      b"sin" => Instructions::Sin(map_primitive(arg1)),
-      b"cos" => Instructions::Cos(map_primitive(arg1)),
-      b"tan" => Instructions::Tan(map_primitive(arg1)),
-      b"neg" => Instructions::Neg(map_primitive(arg1)),
-      b"pow" => Instructions::Pow(map_primitive(arg1)),
-      b"powi" => Instructions::Powi(map_primitive(arg1)),
-      b"powf" => Instructions::Powf(map_primitive(arg1)),
-      b"gt" => Instructions::Gt(map_primitive(arg1)),
-      b"lt" => Instructions::Lt(map_primitive(arg1)),
-      b"ge" => Instructions::Ge(map_primitive(arg1)),
-      b"le" => Instructions::Le(map_primitive(arg1)),
-      b"eq" => Instructions::Eq(map_primitive(arg1)),
-      b"neq" => Instructions::Neq(map_primitive(arg1)),
-      b"and" => Instructions::And,
-      b"or" => Instructions::Or,
-      b"xor" => Instructions::Xor,
-      b"not" => Instructions::Not,
-      b"set" => Instructions::Set(SmolStr::new(
-        arg1.and_then(|v| v.as_str()).expect("Need string"),
-      )),
-      b"get" => Instructions::Get(SmolStr::new(
-        arg1.and_then(|v| v.as_str()).expect("Need string"),
-      )),
-      b"val" => Instructions::Val(SmolStr::new(
-        arg1.and_then(|v| v.as_str()).expect("Need string"),
-      )),
+      b"add" => Ok(Instructions::Add(map_primitive(arg1))),
+      b"sub" => Ok(Instructions::Sub(map_primitive(arg1))),
+      b"mul" => Ok(Instructions::Mul(map_primitive(arg1))),
+      b"div" => Ok(Instructions::Div(map_primitive(arg1))),
+      b"mod" => Ok(Instructions::Mod(map_primitive(arg1))),
+      b"shl" => Ok(Instructions::Shl(map_primitive(arg1))),
+      b"shr" => Ok(Instructions::Shr(map_primitive(arg1))),
+      b"ror" => Ok(Instructions::Ror(map_primitive(arg1))),
+      b"rol" => Ok(Instructions::Rol(map_primitive(arg1))),
+      b"sin" => Ok(Instructions::Sin(map_primitive(arg1))),
+      b"cos" => Ok(Instructions::Cos(map_primitive(arg1))),
+      b"tan" => Ok(Instructions::Tan(map_primitive(arg1))),
+      b"neg" => Ok(Instructions::Neg(map_primitive(arg1))),
+      b"pow" => Ok(Instructions::Pow(map_primitive(arg1))),
+      b"powi" => Ok(Instructions::Powi(map_primitive(arg1))),
+      b"powf" => Ok(Instructions::Powf(map_primitive(arg1))),
+      b"gt" => Ok(Instructions::Gt(map_primitive(arg1))),
+      b"lt" => Ok(Instructions::Lt(map_primitive(arg1))),
+      b"ge" => Ok(Instructions::Ge(map_primitive(arg1))),
+      b"le" => Ok(Instructions::Le(map_primitive(arg1))),
+      b"eq" => Ok(Instructions::Eq(map_primitive(arg1))),
+      b"neq" => Ok(Instructions::Neq(map_primitive(arg1))),
+      b"and" => Ok(Instructions::And),
+      b"or" => Ok(Instructions::Or),
+      b"xor" => Ok(Instructions::Xor),
+      b"not" => Ok(Instructions::Not),
+      b"set" => {
+        let s = arg1
+          .and_then(|v| v.as_str())
+          .ok_or(VMError::InvalidOpcode {
+            ip: 0,
+            code: "SET_MISSING_ARG".into(),
+          })?;
+        Ok(Instructions::Set(SmolStr::new(s)))
+      }
+      b"get" => {
+        let s = arg1
+          .and_then(|v| v.as_str())
+          .ok_or(VMError::InvalidOpcode {
+            ip: 0,
+            code: "GET_MISSING_ARG".into(),
+          })?;
+        Ok(Instructions::Set(SmolStr::new(s)))
+      }
+      b"val" => {
+        let s = arg1
+          .and_then(|v| v.as_str())
+          .ok_or(VMError::InvalidOpcode {
+            ip: 0,
+            code: "VAL_MISSING_ARG".into(),
+          })?;
+        Ok(Instructions::Set(SmolStr::new(s)))
+      }
       b"access" => {
         let prop = arg1
           .and_then(|v| v.as_str())
           .expect("Access property must be a string");
-        Instructions::Access(SmolStr::new(prop))
+        Ok(Instructions::Access(SmolStr::new(prop)))
       }
-      b"print" => Instructions::Print,
-      b"println" => Instructions::Println,
-      b"stdout" => Instructions::Stdout,
-      b"stdoutln" => Instructions::Stdoutln,
-      b"stdin" => Instructions::Stdin,
-      b"clear_screen" => Instructions::ClearScreen,
+      b"print" => Ok(Instructions::Print),
+      b"println" => Ok(Instructions::Println),
+      b"stdout" => Ok(Instructions::Stdout),
+      b"stdoutln" => Ok(Instructions::Stdoutln),
+      b"stdin" => Ok(Instructions::Stdin),
+      b"clear_screen" => Ok(Instructions::ClearScreen),
       b"if_false" => {
         let target = arg1
           .and_then(|v| v.as_u64())
           .expect("IF_FALSE jump target must be a number") as usize;
-        Instructions::IfFalse(target)
+        Ok(Instructions::IfFalse(target))
       }
       b"jump" => {
         let target = arg1
           .and_then(|v| v.as_u64())
           .expect("Target jump must be a number") as usize;
-        Instructions::Jump(target)
+        Ok(Instructions::Jump(target))
       }
       b"inc" => {
         let s = arg1.and_then(|v| v.as_str()).expect("Expected string");
@@ -378,7 +403,7 @@ impl Instructions {
           Some("oct") => PrimitiveTypes::Oct,
           _ => PrimitiveTypes::Dbl,
         };
-        Instructions::Inc(SmolStr::new(s), num_type)
+        Ok(Instructions::Inc(SmolStr::new(s), num_type))
       }
       b"dec" => {
         let s = arg1.and_then(|v| v.as_str()).expect("Expected string");
@@ -389,7 +414,7 @@ impl Instructions {
           Some("dbl") => PrimitiveTypes::Dbl,
           _ => PrimitiveTypes::Int,
         };
-        Instructions::Dec(SmolStr::new(s), num_type)
+        Ok(Instructions::Dec(SmolStr::new(s), num_type))
       }
       b"func" => {
         let name = SmolStr::new(arg1.and_then(|v| v.as_str()).unwrap_or(""));
@@ -413,48 +438,48 @@ impl Instructions {
             names.push(SmolStr::new(s));
           }
         }
-        Instructions::Func(name, params, start, end, names)
+        Ok(Instructions::Func(name, params, start, end, names))
       }
       b"make_obj" => {
         let count = arg1
           .and_then(|v| v.as_u64())
           .expect("MakeObj count must be a number") as u32;
-        Instructions::MakeObj(count)
+        Ok(Instructions::MakeObj(count))
       }
       b"make_array" => {
         let count = arg1
           .and_then(|v| v.as_u64())
           .expect("MakeArray count must be a number") as u32;
-        Instructions::MakeArray(count)
+        Ok(Instructions::MakeArray(count))
       }
-      b"to_string" => Instructions::ToString,
-      b"to_short" => Instructions::ToShort,
-      b"to_integer" => Instructions::ToInteger,
-      b"to_long" => Instructions::ToLong,
-      b"to_octa" => Instructions::ToOcta,
-      b"to_half" => Instructions::ToHalf,
-      b"to_float" => Instructions::ToFloat,
-      b"to_double" => Instructions::ToDouble,
-      b"dup" => Instructions::Dup,
-      b"swap" => Instructions::Swap,
-      b"truncate" => Instructions::Truncate,
-      b"shrink" => Instructions::Shrink,
-      b"length" => Instructions::Length,
-      b"typeof" => Instructions::TypeOf,
-      b"inspect_obj" => Instructions::InspectObj,
-      b"inspect_arr" => Instructions::InspectArr,
+      b"to_string" => Ok(Instructions::ToString),
+      b"to_short" => Ok(Instructions::ToShort),
+      b"to_integer" => Ok(Instructions::ToInteger),
+      b"to_long" => Ok(Instructions::ToLong),
+      b"to_octa" => Ok(Instructions::ToOcta),
+      b"to_half" => Ok(Instructions::ToHalf),
+      b"to_float" => Ok(Instructions::ToFloat),
+      b"to_double" => Ok(Instructions::ToDouble),
+      b"dup" => Ok(Instructions::Dup),
+      b"swap" => Ok(Instructions::Swap),
+      b"truncate" => Ok(Instructions::Truncate),
+      b"shrink" => Ok(Instructions::Shrink),
+      b"length" => Ok(Instructions::Length),
+      b"typeof" => Ok(Instructions::TypeOf),
+      b"inspect_obj" => Ok(Instructions::InspectObj),
+      b"inspect_arr" => Ok(Instructions::InspectArr),
       b"instantiate" => {
         let class_name = arg1
           .and_then(|v| v.as_str())
           .expect("ClassName must be string");
         let argc = arg2.and_then(|v| v.as_u64()).unwrap_or(0) as u32;
-        Instructions::Instantiate(SmolStr::new(class_name), argc)
+        Ok(Instructions::Instantiate(SmolStr::new(class_name), argc))
       }
       b"set_prop" => {
         let prop = arg1
           .and_then(|v| v.as_str())
           .expect("set_prop property must be a string");
-        Instructions::SetProp(SmolStr::new(prop))
+        Ok(Instructions::SetProp(SmolStr::new(prop)))
       }
       b"import" => {
         let module_name = arg1
@@ -463,25 +488,30 @@ impl Instructions {
         let idx = arg2
           .and_then(|v| v.as_u64())
           .expect("Import alias index must be a number") as usize;
-        Instructions::Import(SmolStr::new(module_name), idx)
+        Ok(Instructions::Import(SmolStr::new(module_name), idx))
       }
       b"break" => {
         let target = arg1.and_then(|v| v.as_u64()).unwrap_or(0) as usize;
-        Instructions::Jump(target)
+        Ok(Instructions::Jump(target))
       }
-      b"access_index" => Instructions::AccessIndex,
-      b"export" => Instructions::Export(arg1.and_then(|v| v.as_str()).unwrap_or("stop").into()),
-      b"return" => Instructions::Return,
+      b"access_index" => Ok(Instructions::AccessIndex),
+      b"export" => Ok(Instructions::Export(
+        arg1.and_then(|v| v.as_str()).unwrap_or("stop").into(),
+      )),
+      b"return" => Ok(Instructions::Return),
       b"call" => {
         let s = arg1.and_then(|v| v.as_str()).unwrap_or("stop");
         let argc = arg2
           .and_then(|v| v.as_u64())
           .expect("Argc must be a number") as u32;
-        Instructions::Call(SmolStr::new(s), argc)
+        Ok(Instructions::Call(SmolStr::new(s), argc))
       }
-      b"concat" => Instructions::Concat,
-      b"stop" => Instructions::Stop,
-      _ => Instructions::Nop,
+      b"concat" => Ok(Instructions::Concat),
+      b"stop" => Ok(Instructions::Stop),
+      _ => Err(VMError::InvalidOpcode {
+        ip: 0,
+        code: "UNKNOWN_OPCODE".into(),
+      }),
     }
   }
 }
