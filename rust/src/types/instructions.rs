@@ -254,7 +254,10 @@ impl Instructions {
       };
     }
     if item.is_object() {
-      return Ok(Instructions::deserialize(item).unwrap_or(Instructions::Stop));
+      return Instructions::deserialize(item).map_err(|_| VMError::InvalidOpcode {
+        ip: 0,
+        code: "DESERIALIZE_FAILED".into(),
+      });
     }
     let arr = match item.as_array() {
       Some(a) => a,
@@ -372,7 +375,10 @@ impl Instructions {
       b"access" => {
         let prop = arg1
           .and_then(|v| v.as_str())
-          .expect("Access property must be a string");
+          .ok_or(VMError::InvalidOpcode {
+            ip: 0,
+            code: "ACCESS_MISSING_ARG".into(),
+          })?;
         Ok(Instructions::Access(SmolStr::new(prop)))
       }
       b"print" => Ok(Instructions::Print),
@@ -384,17 +390,28 @@ impl Instructions {
       b"if_false" => {
         let target = arg1
           .and_then(|v| v.as_u64())
-          .expect("IF_FALSE jump target must be a number") as usize;
+          .ok_or(VMError::InvalidOpcode {
+            ip: 0,
+            code: "IF_FALSE_MISSING_TARGET".into(),
+          })? as usize;
         Ok(Instructions::IfFalse(target))
       }
       b"jump" => {
         let target = arg1
           .and_then(|v| v.as_u64())
-          .expect("Target jump must be a number") as usize;
+          .ok_or(VMError::InvalidOpcode {
+            ip: 0,
+            code: "JUMP_MISSING_TARGET".into(),
+          })? as usize;
         Ok(Instructions::Jump(target))
       }
       b"inc" => {
-        let s = arg1.and_then(|v| v.as_str()).expect("Expected string");
+        let s = arg1
+          .and_then(|v| v.as_str())
+          .ok_or(VMError::InvalidOpcode {
+            ip: 0,
+            code: "INC_MISSING_VAR".into(),
+          })?;
         let num_type = match arg2.and_then(|v| v.as_str()) {
           Some("int") => PrimitiveTypes::Int,
           Some("flt") => PrimitiveTypes::Flt,
@@ -406,7 +423,12 @@ impl Instructions {
         Ok(Instructions::Inc(SmolStr::new(s), num_type))
       }
       b"dec" => {
-        let s = arg1.and_then(|v| v.as_str()).expect("Expected string");
+        let s = arg1
+          .and_then(|v| v.as_str())
+          .ok_or(VMError::InvalidOpcode {
+            ip: 0,
+            code: "DEC_MISSING_VAR".into(),
+          })?;
         let num_type = match arg2.and_then(|v| v.as_str()) {
           Some("int") => PrimitiveTypes::Int,
           Some("flt") => PrimitiveTypes::Flt,
@@ -443,13 +465,19 @@ impl Instructions {
       b"make_obj" => {
         let count = arg1
           .and_then(|v| v.as_u64())
-          .expect("MakeObj count must be a number") as u32;
+          .ok_or(VMError::InvalidOpcode {
+            ip: 0,
+            code: "COUNT_MISSING_OR_INVALID".into(),
+          })? as u32;
         Ok(Instructions::MakeObj(count))
       }
       b"make_array" => {
         let count = arg1
           .and_then(|v| v.as_u64())
-          .expect("MakeArray count must be a number") as u32;
+          .ok_or(VMError::InvalidOpcode {
+            ip: 0,
+            code: "COUNT_MISSING_OR_INVALID".into(),
+          })? as u32;
         Ok(Instructions::MakeArray(count))
       }
       b"to_string" => Ok(Instructions::ToString),
@@ -471,14 +499,20 @@ impl Instructions {
       b"instantiate" => {
         let class_name = arg1
           .and_then(|v| v.as_str())
-          .expect("ClassName must be string");
+          .ok_or(VMError::InvalidOpcode {
+            ip: 0,
+            code: "INSTANTIATE_MISSING_NAME".into(),
+          })?;
         let argc = arg2.and_then(|v| v.as_u64()).unwrap_or(0) as u32;
         Ok(Instructions::Instantiate(SmolStr::new(class_name), argc))
       }
       b"set_prop" => {
         let prop = arg1
           .and_then(|v| v.as_str())
-          .expect("set_prop property must be a string");
+          .ok_or(VMError::InvalidOpcode {
+            ip: 0,
+            code: "SET_PROP_MISSING_NAME".into(),
+          })?;
         Ok(Instructions::SetProp(SmolStr::new(prop)))
       }
       b"import" => {
@@ -503,7 +537,10 @@ impl Instructions {
         let s = arg1.and_then(|v| v.as_str()).unwrap_or("stop");
         let argc = arg2
           .and_then(|v| v.as_u64())
-          .expect("Argc must be a number") as u32;
+          .ok_or(VMError::InvalidOpcode {
+            ip: 0,
+            code: "CALL_MISSING_ARGC".into(),
+          })? as u32;
         Ok(Instructions::Call(SmolStr::new(s), argc))
       }
       b"concat" => Ok(Instructions::Concat),
