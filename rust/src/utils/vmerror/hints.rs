@@ -27,7 +27,7 @@ pub fn get_hint(err: &VMError) -> Option<Hint> {
     VMError::InvalidOpcode { .. } => Some(Hint {
       short: Cow::Borrowed("Bytecode may be corrupted or version mismatch."),
       long: Cow::Borrowed(
-        "The stack is currently unbalanced because more elements were popped than pushed; this indicates that your bytecode logic is attempting to access data that was never placed onto the stack, or the previous instructions failed to maintain the required stack integrity.",
+        "The runtime encountered an opcode that is not recognized for the current bytecode format. This usually means the bytecode is corrupted, was generated for a different VM version, or the instruction stream became misaligned.",
       ),
     }),
     VMError::TypeMismatch { .. } => Some(Hint {
