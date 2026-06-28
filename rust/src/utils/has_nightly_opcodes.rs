@@ -10,7 +10,7 @@
 
 use regex::Regex;
 use std::sync::OnceLock;
-static NIGHTLY_OPCODES: &[&str] = &["instantiate", "export"];
+static NIGHTLY_OPCODES: &[&str] = &["instantiate", "import", "export"];
 pub fn has_nightly_opcodes(source: &str) -> bool {
   static RE_NIGHTLY: OnceLock<Regex> = OnceLock::new();
   let regex = RE_NIGHTLY.get_or_init(|| {
