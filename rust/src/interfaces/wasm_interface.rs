@@ -50,7 +50,7 @@ impl WasmLightVM {
           _ => {
             let vm_err = VMError::InvalidOpcode {
               ip: 0,
-              code: smol_str::SmolStr::new(format!("UNKNOWN_CAPABILITY:{}", cap_num)),
+              code: smol_str::SmolStr::from(format!("UNKNOWN_CAPABILITY:{}", cap_num)),
             };
             return Err(wasm_bindgen::JsValue::from(js_sys::Error::new(
               &vm_err.to_string(),
@@ -190,7 +190,7 @@ impl WasmLightVM {
       .call_exported_internal(name, serde_args)
       .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))?;
     let res_json: serde_json::Value = serde_json::from_str(&raw_result).map_err(|e| {
-      let vm_err = VMError::SystemError(smol_str::SmolStr::new(format!(
+      let vm_err = VMError::SystemError(smol_str::SmolStr::from(format!(
         "Failed to parse export return value: {}",
         e
       )));
@@ -234,7 +234,7 @@ impl WasmLightVMTools {
       .optimize_bytecode_internal(input_json)
       .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))?;
     let res_json: serde_json::Value = serde_json::from_str(&opt_str).map_err(|e| {
-      let vm_err = VMError::SystemError(smol_str::SmolStr::new(format!(
+      let vm_err = VMError::SystemError(smol_str::SmolStr::from(format!(
         "Internal JSON Parsing Failed: {}",
         e
       )));
@@ -257,7 +257,7 @@ impl WasmLightVMTools {
       )))
     })?;
     LightVM::stringify_ltc_internal(serde_json).map_err(|e| {
-      let vm_err = VMError::SystemError(smol_str::SmolStr::new(e));
+      let vm_err = VMError::SystemError(smol_str::SmolStr::from(e));
       wasm_bindgen::JsValue::from(js_sys::Error::new(&vm_err.to_string()))
     })
   }
