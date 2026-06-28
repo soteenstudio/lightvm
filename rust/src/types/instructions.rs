@@ -358,7 +358,7 @@ impl Instructions {
             ip: 0,
             code: "GET_MISSING_ARG".into(),
           })?;
-        Ok(Instructions::Set(SmolStr::new(s)))
+        Ok(Instructions::Get(SmolStr::new(s)))
       }
       b"val" => {
         let s = arg1
@@ -367,7 +367,7 @@ impl Instructions {
             ip: 0,
             code: "VAL_MISSING_ARG".into(),
           })?;
-        Ok(Instructions::Set(SmolStr::new(s)))
+        Ok(Instructions::Val(SmolStr::new(s)))
       }
       b"access" => {
         let prop = arg1
