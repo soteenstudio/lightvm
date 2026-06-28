@@ -78,7 +78,9 @@ impl LightVM {
     Ok(())
   }
   pub fn set_mode(&self, explain: bool, hint: bool) {
-    let mut config = crate::utils::vmerror::get_error_config().lock().unwrap();
+    let mut config = crate::utils::vmerror::config::get_error_config()
+      .lock()
+      .unwrap();
     config.set_value(explain, hint);
   }
   pub fn index_metadata(&mut self) {
