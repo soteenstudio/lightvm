@@ -288,15 +288,16 @@ unsafe impl Sync for RcFnWrapper {}
 #[cfg(test)]
 mod tests {
   use super::*;
-  use wasm_bindgen::JsValue;
   #[test]
   fn test_config_parsing() {
-    let js_obj = serde_wasm_bindgen::to_value(&serde_json::json!({
+    let json_data = serde_json::json!({
         "caps": [0, 2],
-        "nightly": true
-    }))
-    .unwrap();
-    let config: VmWasmConfig = serde_wasm_bindgen::from_value(js_obj).unwrap();
+        "nightly": true,
+        "backtrace": false,
+        "explain": false,
+        "hint": true
+    });
+    let config: VmWasmConfig = serde_json::from_value(json_data).unwrap();
     assert_eq!(config.caps, vec![0, 2]);
     assert_eq!(config.nightly, Some(true));
   }

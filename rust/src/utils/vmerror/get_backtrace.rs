@@ -11,26 +11,21 @@
 use crate::utils::vmerror::colors::*;
 use backtrace::Backtrace;
 use std::cell::RefCell;
-
 thread_local! {
-  static CAPTURED_BACKTRACE: RefCell<Option<Backtrace>> = RefCell::new(None);
+  static CAPTURED_BACKTRACE: RefCell<Option<Backtrace>> = const { RefCell::new(None) };
 }
-
 pub fn capture_backtrace() {
   CAPTURED_BACKTRACE.with(|bt| {
-    // Only capture if not already captured (first error in this execution)
     if bt.borrow().is_none() {
       *bt.borrow_mut() = Some(Backtrace::new());
     }
   });
 }
-
 pub fn clear_backtrace() {
   CAPTURED_BACKTRACE.with(|bt| {
     *bt.borrow_mut() = None;
   });
 }
-
 pub fn get_backtrace() -> String {
   CAPTURED_BACKTRACE.with(|bt| {
     let bt_opt = bt.borrow();
@@ -39,7 +34,11 @@ pub fn get_backtrace() -> String {
       let target_crate = "lightvm";
       bt_str
         .lines()
-        .filter(|line| line.contains(target_crate) && !line.contains("get_backtrace") && !line.contains("capture_backtrace"))
+        .filter(|line| {
+          line.contains(target_crate)
+            && !line.contains("get_backtrace")
+            && !line.contains("capture_backtrace")
+        })
         .enumerate()
         .take(5)
         .map(|(i, line)| {

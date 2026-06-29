@@ -221,7 +221,7 @@ impl NodeLightVM {
   #[napi(js_name = "stringifyLtc")]
   pub fn napi_stringify_ltc(json: serde_json::Value) -> Result<String> {
     LightVM::stringify_ltc_internal(json).map_err(|e| {
-      let vm_err = VMError::SystemError(smol_str::SmolStr::new(e));
+      let vm_err = VMError::SystemError(smol_str::SmolStr::new(e.to_string()));
       Error::from_reason(vm_err.to_string())
     })
   }
