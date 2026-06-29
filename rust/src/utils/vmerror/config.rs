@@ -11,6 +11,7 @@
 use std::sync::Mutex;
 use std::sync::OnceLock;
 pub struct VMErrorContainer {
+  pub backtrace: bool,
   pub explain: bool,
   pub hint: bool,
 }
@@ -22,17 +23,20 @@ impl Default for VMErrorContainer {
 impl VMErrorContainer {
   pub fn new() -> Self {
     Self {
+      backtrace: false,
       explain: false,
       hint: true,
     }
   }
   pub fn get_value(&self) -> VMErrorContainer {
     VMErrorContainer {
+      backtrace: self.backtrace,
       explain: self.explain,
       hint: self.hint,
     }
   }
-  pub(crate) fn set_value(&mut self, explain: bool, hint: bool) {
+  pub(crate) fn set_value(&mut self, backtrace: bool, explain: bool, hint: bool) {
+    self.backtrace = backtrace;
     self.explain = explain;
     self.hint = hint;
   }

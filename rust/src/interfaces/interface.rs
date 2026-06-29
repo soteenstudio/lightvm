@@ -39,11 +39,12 @@ pub struct LightVM {
   pub exported: HashSet<SmolStr>,
   pub _imports: AHashMap<SmolStr, Value>,
   pub nightly: bool,
+  pub backtrace: bool,
   pub explain: bool,
   pub hint: bool,
 }
 impl LightVM {
-  pub fn new_node(nightly: bool, explain: bool, hint: bool) -> Self {
+  pub fn new_node(nightly: bool, backtrace: bool, explain: bool, hint: bool) -> Self {
     use crate::types::capability::Capability;
     use crate::types::value::Value;
     use crate::types::vmstate::VmState;
@@ -63,6 +64,7 @@ impl LightVM {
       exported: HashSet::new(),
       _imports: AHashMap::new(),
       nightly,
+      backtrace,
       explain,
       hint,
     }
@@ -77,11 +79,11 @@ impl LightVM {
     }
     Ok(())
   }
-  pub fn set_mode(&self, explain: bool, hint: bool) {
+  pub fn set_mode(&self, backtrace: bool, explain: bool, hint: bool) {
     let mut config = crate::utils::vmerror::config::get_error_config()
       .lock()
       .unwrap();
-    config.set_value(explain, hint);
+    config.set_value(backtrace, explain, hint);
   }
   pub fn index_metadata(&mut self) {
     self.functions.clear();
@@ -119,7 +121,7 @@ impl LightVM {
     }
   }
   pub fn load_internal(&mut self, source: String) -> Result<(), VMError> {
-    self.set_mode(self.explain, self.hint);
+    self.set_mode(self.backtrace, self.explain, self.hint);
     let trimmed = source.trim();
     let raw_code: String;
     if trimmed.starts_with('[') {
@@ -279,7 +281,7 @@ impl LightVM {
     &mut self,
     bytecode_raw: serde_json::Value,
   ) -> Result<String, VMError> {
-    self.set_mode(self.explain, self.hint);
+    self.set_mode(self.backtrace, self.explain, self.hint);
     let json_str = bytecode_raw.to_string();
     if !self.nightly && has_nightly_opcodes(&json_str) {
       return Err(VMError::FeatureRestricted {

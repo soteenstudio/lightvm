@@ -70,6 +70,7 @@ impl NodeLightVM {
         exported: HashSet::new(),
         _imports: AHashMap::new(),
         nightly: config.nightly.unwrap_or(false),
+        backtrace: config.backtrace.unwrap_or(false),
         explain: config.explain.unwrap_or(false),
         hint: config.hint.unwrap_or(true),
       },
