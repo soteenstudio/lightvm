@@ -9,7 +9,7 @@
  */
 
 use crate::utils::vmerror::colors::*;
-use crate::utils::vmerror::config::get_error_config;
+use crate::utils::vmerror::config::get_thread_or_global_config;
 use crate::utils::vmerror::error::VMError;
 use crate::utils::vmerror::get_backtrace::get_backtrace;
 use crate::utils::vmerror::hints::get_hint;
@@ -18,10 +18,7 @@ use std::fmt;
 impl fmt::Display for VMError {
   #[cold]
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    let config = match get_error_config().lock() {
-      Ok(guard) => guard.get_value(),
-      Err(poisoned) => poisoned.into_inner().get_value(),
-    };
+    let config = get_thread_or_global_config();
     let is_backtrace = config.backtrace;
     let is_explain = config.explain;
     let is_hint = config.hint;
@@ -56,7 +53,7 @@ impl fmt::Display for VMError {
       VMError::InvalidOpcode { code, .. } => {
         write!(
           f,
-          "Illegal instruction {BOLD}'{}' {RESET}encounteRED.",
+          "Illegal instruction {BOLD}'{}' {RESET}encountered.",
           code
         )
       }
@@ -122,7 +119,7 @@ impl fmt::Display for VMError {
           "\n {RESET}{CYAN}│\n {CYAN}└─ {CYAN}{section}{DARK_GRAY}{text}{RESET}\n\n"
         )?
       } else {
-        let _ = write!(f, "{RESET}\n\n");
+        write!(f, "{RESET}\n\n")?;
       }
     }
     Ok(())

@@ -80,10 +80,7 @@ impl LightVM {
     Ok(())
   }
   pub fn set_mode(&self, backtrace: bool, explain: bool, hint: bool) {
-    let mut config = crate::utils::vmerror::config::get_error_config()
-      .lock()
-      .unwrap();
-    config.set_value(backtrace, explain, hint);
+    crate::utils::vmerror::config::set_thread_error_config(backtrace, explain, hint);
   }
   pub fn index_metadata(&mut self) {
     self.functions.clear();
@@ -122,6 +119,10 @@ impl LightVM {
   }
   pub fn load_internal(&mut self, source: String) -> Result<(), VMError> {
     self.set_mode(self.backtrace, self.explain, self.hint);
+    crate::utils::vmerror::get_backtrace::clear_backtrace();
+    if self.backtrace {
+      crate::utils::vmerror::get_backtrace::capture_backtrace();
+    }
     let trimmed = source.trim();
     let raw_code: String;
     if trimmed.starts_with('[') {
@@ -162,6 +163,11 @@ impl LightVM {
     Ok(())
   }
   pub fn run_internal(&mut self, _options: Option<RunOptions>) -> Result<(), VMError> {
+    self.set_mode(self.backtrace, self.explain, self.hint);
+    crate::utils::vmerror::get_backtrace::clear_backtrace();
+    if self.backtrace {
+      crate::utils::vmerror::get_backtrace::capture_backtrace();
+    }
     self.require(Capability::Control)?;
     if self.bytecode.is_empty() {
       return Err(VMError::InvalidOpcode {
@@ -282,6 +288,10 @@ impl LightVM {
     bytecode_raw: serde_json::Value,
   ) -> Result<String, VMError> {
     self.set_mode(self.backtrace, self.explain, self.hint);
+    crate::utils::vmerror::get_backtrace::clear_backtrace();
+    if self.backtrace {
+      crate::utils::vmerror::get_backtrace::capture_backtrace();
+    }
     let json_str = bytecode_raw.to_string();
     if !self.nightly && has_nightly_opcodes(&json_str) {
       return Err(VMError::FeatureRestricted {
@@ -391,6 +401,7 @@ mod tests {
       exported: HashSet::new(),
       _imports: AHashMap::new(),
       nightly: false,
+      backtrace: false,
       explain: false,
       hint: true,
     }
