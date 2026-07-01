@@ -70,6 +70,7 @@ impl NodeLightVM {
         exported: HashSet::new(),
         _imports: AHashMap::new(),
         nightly: config.nightly.unwrap_or(false),
+        backtrace: config.backtrace.unwrap_or(false),
         explain: config.explain.unwrap_or(false),
         hint: config.hint.unwrap_or(true),
       },
@@ -182,6 +183,7 @@ impl NodeLightVM {
   pub fn napi_optimize_bytecode(
     bytecode: serde_json::Value,
     nightly: Option<bool>,
+    backtrace: Option<bool>,
     explain: Option<bool>,
     hint: Option<bool>,
   ) -> Result<serde_json::Value> {
@@ -201,9 +203,10 @@ impl NodeLightVM {
       Error::from_reason(vm_err.to_string())
     })?;
     let is_nightly = nightly.unwrap_or(false);
+    let is_backtrace = backtrace.unwrap_or(false);
     let is_explain = explain.unwrap_or(false);
     let is_hint = hint.unwrap_or(true);
-    let mut vm_instance = LightVM::new_node(is_nightly, is_explain, is_hint);
+    let mut vm_instance = LightVM::new_node(is_nightly, is_backtrace, is_explain, is_hint);
     let opt_str = vm_instance
       .optimize_bytecode_internal(input_json)
       .map_err(|e| Error::from_reason(e.to_string()))?;
@@ -218,7 +221,7 @@ impl NodeLightVM {
   #[napi(js_name = "stringifyLtc")]
   pub fn napi_stringify_ltc(json: serde_json::Value) -> Result<String> {
     LightVM::stringify_ltc_internal(json).map_err(|e| {
-      let vm_err = VMError::SystemError(smol_str::SmolStr::new(e));
+      let vm_err = VMError::SystemError(smol_str::SmolStr::new(e.to_string()));
       Error::from_reason(vm_err.to_string())
     })
   }

@@ -8,24 +8,18 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::utils::vmerror::config::get_error_config;
+use crate::utils::vmerror::colors::*;
+use crate::utils::vmerror::config::get_thread_or_global_config;
 use crate::utils::vmerror::error::VMError;
+use crate::utils::vmerror::get_backtrace::get_backtrace;
 use crate::utils::vmerror::hints::get_hint;
 use smol_str::SmolStr;
 use std::fmt;
 impl fmt::Display for VMError {
   #[cold]
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    let red = "\x1b[31;1m";
-    let _yellow = "\x1b[33m";
-    let cyan = "\x1b[36m";
-    let dark_gray = "\x1b[2;37m";
-    let reset = "\x1b[0m";
-    let bold = "\x1b[1m";
-    let config = match get_error_config().lock() {
-      Ok(guard) => guard.get_value(),
-      Err(poisoned) => poisoned.into_inner().get_value(),
-    };
+    let config = get_thread_or_global_config();
+    let is_backtrace = config.backtrace;
     let is_explain = config.explain;
     let is_hint = config.hint;
     let err_type = match self {
@@ -48,18 +42,18 @@ impl fmt::Display for VMError {
       | VMError::InvalidJumpTarget { ip, .. }
       | VMError::FeatureRestricted { ip, .. } => *ip,
     };
-    write!(f, "{bold}{red}Error[{}]{reset}: ", self.error_code())?;
+    write!(f, "{BOLD}{RED}Error[{}]{RESET}: ", self.error_code())?;
     match self {
       VMError::StackOverflow { limit, .. } => write!(f, "Stack limit reached (limit: {}).", limit),
       VMError::StackUnderflow { opcode, .. } => write!(
         f,
-        "Attempted to pop from an empty stack during {bold}'{}' {reset}instruction.",
+        "Attempted to pop from an empty stack during {BOLD}'{}' {RESET}instruction.",
         opcode,
       ),
       VMError::InvalidOpcode { code, .. } => {
         write!(
           f,
-          "Illegal instruction {bold}'{}' {reset}encountered.",
+          "Illegal instruction {BOLD}'{}' {RESET}encountered.",
           code
         )
       }
@@ -83,7 +77,7 @@ impl fmt::Display for VMError {
       VMError::FeatureRestricted { feature, .. } => {
         write!(
           f,
-          "The feature/opcode {bold}'{}' {reset}is restricted.",
+          "The feature/opcode {BOLD}'{}' {RESET}is restricted.",
           feature
         )
       }
@@ -93,13 +87,20 @@ impl fmt::Display for VMError {
       if is_hint {
         write!(
           f,
-          "\n {reset}{cyan}│   {dark_gray}at instruction pointer: {ip}{reset}"
+          "\n {RESET}{CYAN}│   {DARK_GRAY}at instruction pointer: {ip}{RESET}"
         )?;
-        write!(f, "\n {reset}{cyan}│   {dark_gray}error type: {}", err_type)?;
+        write!(f, "\n {RESET}{CYAN}│   {DARK_GRAY}error type: {}", err_type)?;
       } else {
-        write!(f, "\n     {dark_gray}at instruction pointer: {ip}{reset}")?;
-        write!(f, "\n     {dark_gray}error type: {}", err_type)?;
+        write!(f, "\n     {DARK_GRAY}at instruction pointer: {ip}{RESET}")?;
+        write!(f, "\n     {DARK_GRAY}error type: {}", err_type)?;
       }
+    }
+    if is_backtrace {
+      let backtrace = get_backtrace();
+      write!(
+        f,
+        "\n {RESET}{CYAN}│   {DARK_GRAY}internal backtrace:\n{backtrace}{RESET}"
+      )?;
     }
     if let Some(hint_data) = get_hint(self) {
       if is_hint {
@@ -115,10 +116,10 @@ impl fmt::Display for VMError {
         };
         write!(
           f,
-          "\n {reset}{cyan}│\n {cyan}└─ {cyan}{section}{dark_gray}{text}{reset}\n\n"
+          "\n {RESET}{CYAN}│\n {CYAN}└─ {CYAN}{section}{DARK_GRAY}{text}{RESET}\n\n"
         )?
       } else {
-        let _ = write!(f, "{reset}\n\n");
+        write!(f, "{RESET}\n\n")?;
       }
     }
     Ok(())

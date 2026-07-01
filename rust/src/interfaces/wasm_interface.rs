@@ -72,6 +72,7 @@ impl WasmLightVM {
         exported: HashSet::new(),
         _imports: AHashMap::new(),
         nightly: config.nightly.unwrap_or(false),
+        backtrace: config.backtrace.unwrap_or(false),
         explain: config.explain.unwrap_or(false),
         hint: config.hint.unwrap_or(false),
       },
@@ -207,6 +208,7 @@ impl WasmLightVM {
   pub fn tools(&self) -> WasmLightVMTools {
     WasmLightVMTools {
       nightly: self.inner.nightly,
+      backtrace: self.inner.backtrace,
       explain: self.inner.explain,
       hint: self.inner.hint,
     }
@@ -215,6 +217,7 @@ impl WasmLightVM {
 #[wasm_bindgen(js_name = "LightVMTools")]
 pub struct WasmLightVMTools {
   pub nightly: bool,
+  pub backtrace: bool,
   pub explain: bool,
   pub hint: bool,
 }
@@ -229,7 +232,7 @@ impl WasmLightVMTools {
         e
       )))
     })?;
-    let mut vm_instance = LightVM::new_node(self.nightly, self.explain, self.hint);
+    let mut vm_instance = LightVM::new_node(self.nightly, self.backtrace, self.explain, self.hint);
     let opt_str = vm_instance
       .optimize_bytecode_internal(input_json)
       .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))?;
@@ -285,15 +288,16 @@ unsafe impl Sync for RcFnWrapper {}
 #[cfg(test)]
 mod tests {
   use super::*;
-  use wasm_bindgen::JsValue;
   #[test]
   fn test_config_parsing() {
-    let js_obj = serde_wasm_bindgen::to_value(&serde_json::json!({
+    let json_data = serde_json::json!({
         "caps": [0, 2],
-        "nightly": true
-    }))
-    .unwrap();
-    let config: VmWasmConfig = serde_wasm_bindgen::from_value(js_obj).unwrap();
+        "nightly": true,
+        "backtrace": false,
+        "explain": false,
+        "hint": true
+    });
+    let config: VmWasmConfig = serde_json::from_value(json_data).unwrap();
     assert_eq!(config.caps, vec![0, 2]);
     assert_eq!(config.nightly, Some(true));
   }

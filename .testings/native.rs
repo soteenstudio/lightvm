@@ -14,7 +14,8 @@ fn main() {
   let mut vm = LightVM::new(VmConfig {
     caps: vec![Capability::Control, Capability::Observe],
     nightly: false,
-    explain: false,
+    backtrace: true,
+    explain: true,
     hint: true
   });
   

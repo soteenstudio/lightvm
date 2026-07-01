@@ -64,6 +64,7 @@ impl LightVM {
       exported: HashSet::new(),
       _imports: AHashMap::new(),
       nightly: config.nightly,
+      backtrace: config.backtrace,
       explain: config.explain,
       hint: config.hint,
     }
@@ -219,6 +220,7 @@ impl LightVM {
   pub fn tools(&mut self) -> LightVMTools {
     LightVMTools {
       nightly: self.nightly,
+      backtrace: self.backtrace,
       explain: self.explain,
       hint: self.hint,
     }
@@ -226,6 +228,7 @@ impl LightVM {
 }
 pub struct LightVMTools {
   pub nightly: bool,
+  pub backtrace: bool,
   pub explain: bool,
   pub hint: bool,
 }
@@ -253,6 +256,7 @@ impl LightVMTools {
     }
     let config = crate::types::vmconfig::VmConfig {
       nightly: self.nightly,
+      backtrace: self.backtrace,
       explain: self.explain,
       hint: self.hint,
       ..Default::default()
