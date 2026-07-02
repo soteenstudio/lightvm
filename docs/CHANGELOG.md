@@ -1,3 +1,15 @@
+## Changelog for 0.1.0-nightly.20260701.305f0b7-alpha.1
+
+### 🐛 Bug Fixes
+* fix: Backtrace options and VMError handling (#111)
+
+### 🧹 Maintenance
+* chore(deps-dev): bump @commitlint/cli from 21.1.0 to 21.2.0 (#110)
+* chore(deps-dev): bump @types/node from 26.0.1 to 26.1.0 (#112)
+* chore(deps): bump napi from 3.9.4 to 3.10.0 (#113)
+* chore(deps): bump napi-derive from 3.5.7 to 3.5.8 (#114)
+* chore: Update cargo.lock
+
 ## Changelog for 0.1.0-alpha.8
 
 * fix: Fix split_whitespace to regex
