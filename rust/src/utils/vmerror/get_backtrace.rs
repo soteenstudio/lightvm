@@ -30,26 +30,33 @@ pub fn get_backtrace() -> String {
   CAPTURED_BACKTRACE.with(|bt| {
     let bt_opt = bt.borrow();
     if let Some(backtrace) = bt_opt.as_ref() {
-      let bt_str = format!("{:?}", backtrace);
-      let target_crate = "lightvm";
-      bt_str
-        .lines()
-        .filter(|line| {
-          line.contains(target_crate)
-            && !line.contains("get_backtrace")
-            && !line.contains("capture_backtrace")
-        })
-        .enumerate()
-        .take(5)
-        .map(|(i, line)| {
-          let parts: Vec<&str> = line.split_whitespace().collect();
-          let func_name = parts.last().unwrap_or(&"unknown");
-          format!(" {RESET}{CYAN}│   {DARK_GRAY}{}: {}", i + 1, func_name)
-        })
-        .collect::<Vec<_>>()
-        .join("\n")
+      let mut trace = String::new();
+      let mut count = 0;
+      let mut resolved_bt = backtrace.clone();
+      resolved_bt.resolve();
+      for frame in resolved_bt.frames() {
+        for symbol in frame.symbols() {
+          if let Some(name) = symbol.name() {
+            let name_str = name.as_str().unwrap_or("unknown");
+            if name_str.contains("lightvm")
+               && !name_str.contains("get_backtrace")
+               && !name_str.contains("capture_backtrace")
+            {
+              count += 1;
+              if count <= 5 {
+                trace.push_str(&format!(" {RESET}{CYAN}│   {DARK_GRAY}{}: {}\n", count, name_str));
+              }
+            }
+          }
+        }
+      }
+      if count == 0 {
+        format!(" {RESET}{CYAN}│   {DARK_GRAY}1: vmerror::backtrace_unavailable\n {RESET}{CYAN}│   {DARK_GRAY}2: vmerror::no_symbol_found_or_stack_truncated{RESET}")
+      } else {
+        trace.trim_end().to_string()
+      }
     } else {
-      String::new()
+      format!(" {RESET}{CYAN}│   {DARK_GRAY}1: vmerror::backtrace_unavailable\n {RESET}{CYAN}│   {DARK_GRAY}2: vmerror::empty_stack_snapshot{RESET}")
     }
   })
 }

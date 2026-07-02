@@ -65,6 +65,7 @@ export class LightVM {
     this.instance = new this.native.LightVM({
       capsRaw: numericCaps,
       nightly: config.nightly ?? false,
+      backtrace: config.backtrace ?? false,
       explain: config.explain ?? false,
       hint: config.hint ?? true,
     });
@@ -181,6 +182,7 @@ export class LightVM {
           return this.native.LightVM.optimizeBytecode(
             bytecode,
             currentConfig.nightly ?? false,
+            currentConfig.backtrace ?? false,
             currentConfig.explain ?? false,
             currentConfig.hint ?? true,
           );

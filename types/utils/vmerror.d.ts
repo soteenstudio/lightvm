@@ -9,8 +9,9 @@
  */
 export declare class VMSystemError extends Error {
     readonly detail: string;
+    hintDetails: string[];
     readonly code: string;
     readonly ip: number;
-    constructor(detail: string);
+    constructor(detail: string, hintDetails: string[]);
     print(explain: boolean, hint: boolean): void;
 }
