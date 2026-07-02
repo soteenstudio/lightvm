@@ -35,7 +35,7 @@
     "./types"
   ],
   "scripts": {
-    "test:rust": "nodr ./scripts/test-rust.js",
+    "test:rust": "node ./scripts/test-rust.js",
     "test:ts": "node ./scripts/run-tests.js",
     "bench:rust": "cargo bench",
     "bench:ts": "node ./scripts/ts-bench.js",
