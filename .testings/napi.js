@@ -4,6 +4,7 @@ function main() {
   const vm = new LightVM({
     caps: [Capability.Observe, Capability.Control],
     nightly: false,
+    backtrace: true,
     explain: true,
     hint: true,
   });
