@@ -85,13 +85,12 @@ jobs:
         run: cargo clippy -- -D warnings
 
       - name: Run Rust Tests
-        run: |
-          cargo test --locked
-          cargo test --features node --locked
-          cargo test --features wasm --locked
+        run: npm run test:rust
 
-      - name: Run Typecheck
-        run: npm run typecheck
+      - name: Run Typecheck & Tests
+        run: |
+          npm run typecheck
+          npm run test:ts
 
       - name: Final Build Check (TypeScript)
         run: npm run build
