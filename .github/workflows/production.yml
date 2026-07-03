@@ -1,0 +1,93 @@
+name: Production Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versi rilis (contoh: 1.1.0)'
+        required: true
+
+jobs:
+  production-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate Version & Check Tag
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          # Cek apakah tag sudah ada
+          if git rev-parse "v$VERSION" >/dev/null 2>&1; then
+            echo "Error: Versi $VERSION sudah ada tag-nya! Ganti versi dulu."
+            exit 1
+          fi
+          
+          # Cek apakah file sudah terupdate versinya (pakai package.json sebagai acuan)
+          FILE_VERSION=$(jq -r .version package.json)
+          if [ "$FILE_VERSION" != "$VERSION" ]; then
+            echo "Error: Versi di package.json ($FILE_VERSION) tidak sama dengan input ($VERSION)."
+            exit 1
+          fi
+
+      - name: Generate Release Notes
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          
+          # 1. Cari tag stable terakhir (yang bukan nightly)
+          LAST_STABLE=$(git tag --sort=-creatordate | grep -v "nightly" | head -n 1 || echo "")
+          
+          # 2. Ambil semua tag nightly, lalu sort pakai -V (Version Sort)
+          # Kita filter yang lebih baru dari LAST_STABLE
+          # Asumsi: LAST_STABLE (misal v0.1.0-alpha.8) tidak mengandung "nightly"
+          
+          NIGHTLIES=$(git tag | grep "nightly" | sort -V)
+          
+          # Filter nightly yang muncul SETELAH stable terakhir
+          # Kalau belum ada stable, ambil semua
+          if [ -n "$LAST_STABLE" ]; then
+             # Kita filter nightly yang secara versi lebih besar dari last stable
+             # Karena tag nightly biasanya punya format: v0.1.0-alpha.8-nightly.xxx
+             FINAL_NIGHTLIES=$(echo "$NIGHTLIES" | awk -v last="$LAST_STABLE" '$0 > last')
+          else
+             FINAL_NIGHTLIES="$NIGHTLIES"
+          fi
+          
+          {
+            echo "Release based on Changelogs:"
+            if [ -n "$FINAL_NIGHTLIES" ]; then
+              echo "$FINAL_NIGHTLIES" | sed 's/^/* /'
+            else
+              echo "* No previous nightly builds."
+            fi
+            echo ""
+            echo "***Lion Owl caught in apple net!***"
+          } > release_notes.md
+
+      - name: Create Release
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Tagging
+          git tag "v$VERSION"
+          git push origin "v$VERSION"
+          
+          # Create Release
+          gh release create "v$VERSION" \
+            --title "Release $VERSION" \
+            --notes-file release_notes.md
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trigger Build and Publish
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Build and Publish N-API
+          token: ${{ secrets.GITHUB_TOKEN }}
+          inputs: '{ "version_override": "${{ github.event.inputs.version }}" }'

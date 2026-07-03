@@ -16,6 +16,32 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check if Production Workflow ran today
+        id: check_prod
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Ambil tanggal hari ini (UTC)
+          TODAY=$(date -u +'%Y-%m-%d')
+          
+          # Cari run terakhir dari workflow 'production.yml' (sesuaikan nama filenya)
+          # Kita cek apakah ada yg jalan hari ini
+          RUNS=$(gh run list --workflow production.yml --limit 1 --json createdAt --jq '.[0].createdAt')
+          
+          if [[ "$RUNS" == "$TODAY"* ]]; then
+            echo "Prod sudah jalan hari ini: $RUNS"
+            echo "should_skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "Prod belum jalan hari ini."
+            echo "should_skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Stop if Prod already ran
+        if: steps.check_prod.outputs.should_skip == 'true'
+        run: |
+          echo "Prod sudah jalan, nightly cabut dulu ya. Bye!"
+          exit 0
+
       - name: Filter Significant Changes
         id: filter_changes
         run: |
