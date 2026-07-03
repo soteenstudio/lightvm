@@ -20,45 +20,17 @@ jobs:
         id: check_prod
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          TODAY=$(date -u +'%Y-%m-%d')
-          
-          RUNS=$(gh run list --workflow production.yml --limit 1 --json createdAt --jq '.[0].createdAt')
-          
-          if [[ "$RUNS" == "$TODAY"* ]]; then
-            echo "Prod sudah jalan hari ini: $RUNS"
-            echo "should_skip=true" >> $GITHUB_OUTPUT
-          else
-            echo "Prod belum jalan hari ini."
-            echo "should_skip=false" >> $GITHUB_OUTPUT
-          fi
+        run: bash .github/scripts/nightly/production_workflow.sh
 
       - name: Stop if Prod already ran
         if: steps.check_prod.outputs.should_skip == 'true'
         run: |
-          echo "Prod sudah jalan, nightly cabut dulu ya. Bye!"
+          echo "Production is underway, so let's pull out the night shift first. Bye!"
           exit 0
 
       - name: Filter Significant Changes
         id: filter_changes
-        run: |
-          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          
-          if [ -n "$PREV_TAG" ]; then
-            LOGS=$(git log $PREV_TAG..HEAD --pretty=format:"%s")
-          else
-            LOGS=$(git log --pretty=format:"%s")
-          fi
-          
-          HAS_SIGNIFICANT=$(echo "$LOGS" | grep -E "^(feat|fix)(\(.*\))?:" || echo "")
-          
-          if [ -n "$HAS_SIGNIFICANT" ]; then
-            echo "significant=true" >> $GITHUB_OUTPUT
-            echo "Ada perubahan signifikan, lanjut!"
-          else
-            echo "significant=false" >> $GITHUB_OUTPUT
-            echo "Gak ada feat/fix, skip build."
-          fi
+        run: bash .githuh/scripts/nightly/filter_significant.sh
 
       - name: Stop if not significant
         if: steps.filter_changes.outputs.significant == 'false'
@@ -82,94 +54,19 @@ jobs:
       - name: Generate Nightly Version
         id: versioning
         if: steps.filter_changes.outputs.significant == 'true'
-        run: |
-          RAW_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
-          
-          CLEAN_VERSION=${RAW_TAG#v}
-          
-          BASE_VERSION=${CLEAN_VERSION%-nightly.*}
-          
-          COMMIT_HASH=$(git rev-parse --short HEAD)
-          DATE=$(date +'%Y%m%d') # Format: 20260625
-          
-          VERSION_CLEAN="${BASE_VERSION}-nightly.${DATE}.${COMMIT_HASH}"
-          VERSION_TAG="v${VERSION_CLEAN}"
-          
-          echo "version_clean=$VERSION_CLEAN" >> $GITHUB_OUTPUT
-          echo "version_tag=$VERSION_TAG" >> $GITHUB_OUTPUT
-          echo "Generated version: $VERSION_CLEAN (Tag: $VERSION_TAG)"
+        run: bash .github/scripts/nightly/generate_version.sh
 
       - name: Update Files
         if: steps.filter_changes.outputs.significant == 'true'
-        run: |
-          VERSION="${{ steps.versioning.outputs.version_clean }}"
-          
-          sed -i "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
-          
-          if [ -f "package.json" ]; then
-            jq --arg ver "$VERSION" '.version = $ver' package.json > temp.json && mv temp.json package.json
-          fi
-          
-          rustup toolchain install stable --profile minimal
-          cargo update
+        run: bash .github/scripts/nightly/update_files.sh
 
       - name: Commit and Push
         if: steps.filter_changes.outputs.significant == 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          git add Cargo.toml
-          [ -f "package.json" ] && git add package.json
-          
-          if ! git diff --cached --quiet; then
-            git commit -m "chore: nightly release ${{ steps.versioning.outputs.version_clean }}"
-            git tag ${{ steps.versioning.outputs.version_tag }}
-            git push origin main --tags
-          else
-            echo "Gak ada perubahan file, skip push."
-          fi
+        run: bash .github/scripts/nightly/commit_push.sh
 
       - name: Create Release
         if: steps.filter_changes.outputs.significant == 'true'
-        run: |
-          PREV_TAG=$(git describe --tags --abbrev=0 --exclude="${{ steps.versioning.outputs.version_tag }}" 2>/dev/null || echo "")
-          
-          LOGS=$(git log $PREV_TAG..HEAD --pretty=format:"%s")
-          
-          FEAT=$(echo "$LOGS" | grep -E "^feat(\(.*\))?: " | sed -E 's/^feat(\(.*\))?: /- /' || echo "")
-          FIX=$(echo "$LOGS" | grep -E "^fix(\(.*\))?: " | sed -E 's/^fix(\(.*\))?: /- /' || echo "")
-
-          COMPARE_LINK="https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${{ steps.versioning.outputs.version_tag }}"
-          
-          {
-            echo "## What's Changed"
-            echo "Compare: $COMPARE_LINK"
-            echo ""
-            
-            if [ -n "$FEAT" ]; then
-              echo "### Features"
-              echo "$FEAT"
-              echo ""
-            fi
-            
-            if [ -n "$FIX" ]; then
-              echo "### Fixes"
-              echo "$FIX"
-              echo ""
-            fi
-            
-            if [ -z "$FEAT" ] && [ -z "$FIX" ]; then
-              echo "_No significant changes in this build._"
-            fi
-            
-            echo "***Nightly Owl has fallen out of bed tonight!***"
-          } > release_notes.md
-
-          gh release create "${{ steps.versioning.outputs.version_tag }}" \
-            --title "Nightly Build ${{ steps.versioning.outputs.version_tag }}" \
-            --notes-file release_notes.md \
-            --prerelease
+        run: bash .github/scripts/nightly/create_release.sh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
