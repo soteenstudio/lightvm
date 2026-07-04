@@ -43,5 +43,5 @@ jobs:
           if ! git diff --cached --quiet; then
             git commit -m "chore: sync lock files"
             # Push ke branch yang memicu workflow ini
-            git push origin HEAD:${GITHUB_HEAD_NAME}
+            git push origin HEAD:${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}
           fi
