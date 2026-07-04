@@ -25,7 +25,7 @@ jobs:
       # Sinkronisasi NPM
       - name: Sync package-lock.json
         run: |
-          npm install --package-lock-only
+          npm install --package-lock-only --ignore-scripts
           
       # Sinkronisasi Cargo
       - name: Sync Cargo.lock
