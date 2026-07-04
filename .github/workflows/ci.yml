@@ -59,7 +59,7 @@ jobs:
           cargo fmt --check
 
       - name: Deep Code Audit (Junk & Header)
-        run: bash .github/scripts/nightly/deep_audit.sh
+        run: bash .github/scripts/ci/deep_audit.sh
 
       - name: Rust Security & Quality (Clippy)
         run: cargo clippy -- -D warnings
