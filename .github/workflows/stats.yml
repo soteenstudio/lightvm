@@ -14,18 +14,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch and Update Gist
-        run: |
-          CLONES=$(curl -s -H "Authorization: token ${{ secrets.LIGHTVM_PAT }}" \
-            "https://api.github.com/repos/${{ github.repository }}/traffic/clones" \
-            | jq '.count // 0')
-
-          TRAFFIC_DATA=$(curl -s -H "Authorization: token ${{ secrets.LIGHTVM_PAT }}" \
-            "https://api.github.com/repos/${{ github.repository }}/traffic/views")
-
-          TOTAL_VIEWS=$(echo $TRAFFIC_DATA | jq '.count // 0')
-          UNIQUE_VISITORS=$(echo $TRAFFIC_DATA | jq '.uniques // 0')
-
-          curl -s -X PATCH -H "Authorization: token ${{ secrets.LIGHTVM_PAT }}" \
-            -H "Content-Type: application/json" \
-            -d "{\"files\":{\"stats.json\":{\"content\":\"{\\\"clones\\\": $CLONES, \\\"total_views\\\": $TOTAL_VIEWS, \\\"unique_visitors\\\": $UNIQUE_VISITORS}\"}}}" \
-            "https://api.github.com/gists/${{ secrets.GIST_ID }}"
+        run: bash .github/scripts/stats/fetch_update_gish.sh
