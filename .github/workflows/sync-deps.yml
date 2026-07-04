@@ -40,15 +40,21 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
-          # 1. Pastikan kita punya perubahan terbaru dari remote
+          # 1. Bersihkan dulu (stash) perubahan apa pun yang ada sebelum pull
+          git stash
+          
+          # 2. Pastikan kita punya perubahan terbaru dari remote
           git fetch origin
           
-          # 2. Rebase biar commit kamu ditaruh di atas perubahan terbaru
+          # 3. Rebase biar commit kamu ditaruh di atas perubahan terbaru
           git pull --rebase origin ${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}
+          
+          # 4. Balikin lagi perubahan stash tadi
+          git stash pop || echo "No stash to pop"
           
           git add package-lock.json Cargo.lock
           if ! git diff --cached --quiet; then
             git commit -m "chore: sync lock files"
-            # 3. Baru push
+            # 5. Baru push
             git push origin HEAD:${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}
           fi
