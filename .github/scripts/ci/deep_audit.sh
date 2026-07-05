@@ -12,7 +12,7 @@ if [ -n "$MISSING_COPYRIGHT" ]; then
   exit 1
 fi
 
-JUNK_CHECK=$(echo "$FILES" | xargs awk 'NR==1 && /^\/\/ [A-Za-z0-9_-]+\.(ts|rs)$/ {print FILENAME}')
+JUNK_CHECK=$(echo "$FILES" | xargs awk 'FNR==1 && /^\/\/ [A-Za-z0-9_-]+\.(ts|rs)$/ {print FILENAME}')
 if [ -n "$JUNK_CHECK" ]; then
   echo "The first line is just the file name (Junk):"
   echo "$JUNK_CHECK"
