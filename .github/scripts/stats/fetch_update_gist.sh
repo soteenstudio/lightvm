@@ -1,12 +1,12 @@
-CLONES=$(curl -s -H "Authorization: token $LIGHTVM_PAT" \
+CLONES=$(curl -s --fail -H "Authorization: token $LIGHTVM_PAT" \
 "https://api.github.com/repos/$GITHUB_REPOSITORY/traffic/clones" \
 | jq '.count // 0')
 
-TRAFFIC_DATA=$(curl -s -H "Authorization: token $LIGHTVM_PAT" \
+TRAFFIC_DATA=$(curl -s --fail -H "Authorization: token $LIGHTVM_PAT" \
 "https://api.github.com/repos/$GITHUB_REPOSITORY/traffic/views")
 
-TOTAL_VIEWS=$(echo $TRAFFIC_DATA | jq '.count // 0')
-UNIQUE_VISITORS=$(echo $TRAFFIC_DATA | jq '.uniques // 0')
+TOTAL_VIEWS=$(echo "$TRAFFIC_DATA" | jq '.count // 0')
+UNIQUE_VISITORS=$(echo "$TRAFFIC_DATA" | jq '.uniques // 0')
 
 curl -s --fail -X PATCH -H "Authorization: token $LIGHTVM_PAT" \
 -H "Content-Type: application/json" \
