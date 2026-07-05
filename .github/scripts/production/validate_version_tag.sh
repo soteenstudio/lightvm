@@ -1,5 +1,4 @@
-VERSION="${{ github.event.inputs.version }}"
-if git rev-parse "v$VERSION" >/dev/null 2>&1; then
+if git rev-parse "refs/tags/v$VERSION" >/dev/null 2>&1; then
   echo "Error: Versi $VERSION sudah ada tag-nya! Ganti versi dulu."
   exit 1
 fi
