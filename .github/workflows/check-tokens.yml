@@ -38,7 +38,7 @@ jobs:
         if: steps.check_npm.outputs.status != 'valid' || steps.check_crates.outputs.status != 'valid'
         uses: actions/github-script@v7
         with:
-          script: bash .github/scripts/tokens/create_issue.sh
+          script: node .github/scripts/tokens/create_issue.js
 
       - name: Force Workflow Failure
         if: steps.check_npm.outputs.status != 'valid' || steps.check_crates.outputs.status != 'valid'
