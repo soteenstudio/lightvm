@@ -37,7 +37,7 @@ console.log(
   `${s.bold}${s.green}✔${s.reset} ${s.bold}Rust build success!${s.reset}\n`,
 );
 
-const rootDir = path.resolve(__dirname, '..');
+const rootDir = path.resolve(__dirname, '../..');
 const binariesDir = path.join(rootDir, 'binaries');
 const sourcePath = path.join(rootDir, 'target/release/liblightvm.so');
 const destPath = path.join(binariesDir, 'lightvm.node');
