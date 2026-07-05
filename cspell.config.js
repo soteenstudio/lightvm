@@ -34,7 +34,9 @@ export default {
     'unref',
     'accessindex',
     'vmconfig',
-    'claycuy'
+    'claycuy',
+    'creatordate',
+    'nightlies'
   ],
   ignorePaths: [
     'node_modules/**',

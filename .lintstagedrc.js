@@ -1,5 +1,5 @@
 export default {
-  "*.{js,ts,rs,md}": "npm run cspell",
+  "*.{js,ts,rs,md,sh,yml}": "npm run cspell",
   "{ts/src,ts/tests,scripts}**/*.{js,ts}": [
     () => "npm run typecheck",
     "eslint --fix",

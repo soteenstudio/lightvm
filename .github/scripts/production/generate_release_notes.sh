@@ -5,7 +5,7 @@ LAST_STABLE=$(git tag --sort=-creatordate | grep -v "nightly" | head -n 1 || ech
 NIGHTLIES=$(git tag | grep "nightly" | sort -V)
 
 if [ -n "$LAST_STABLE" ]; then
-   FINAL_NIGHTLIES=$(echo "$NIGHTLIES" | awk -v last="$LAST_STABLE" '$0 > last')
+   FINAL_NIGHTLIES=$(echo -e "$NIGHTLIES\n$LAST_STABLE" | sort -V | sed -n "/$LAST_STABLE/,\$p" | grep -v "$LAST_STABLE")
 else
    FINAL_NIGHTLIES="$NIGHTLIES"
 fi
