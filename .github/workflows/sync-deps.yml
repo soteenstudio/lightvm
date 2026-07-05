@@ -38,19 +38,10 @@ jobs:
       - name: Commit changes
         run: |
           git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git config --global user.email 'github-actions[bot]`@users.noreply.github.com`'
           
-          # 1. Bersihkan dulu (stash) perubahan apa pun yang ada sebelum pull
-          git stash
-          
-          # 2. Pastikan kita punya perubahan terbaru dari remote
           git fetch origin
-          
-          # 3. Rebase biar commit kamu ditaruh di atas perubahan terbaru
-          git pull --rebase origin ${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}
-          
-          # 4. Balikin lagi perubahan stash tadi
-          git stash pop || echo "No stash to pop"
+          git pull --rebase --autostash origin ${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}
           
           git add package-lock.json Cargo.lock
           if ! git diff --cached --quiet; then
