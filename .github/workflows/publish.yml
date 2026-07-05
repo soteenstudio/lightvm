@@ -119,6 +119,9 @@ jobs:
           contains(matrix.platform, 'musl') || 
           contains(matrix.platform, 'arm64') ||
           matrix.platform == 'linux-ia32'
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          TARGET: ${{ matrix.target }}
         run: bash .github/scripts/publish/build_release.sh
       - name: Build WASM
         if: matrix.platform == 'browser-wasm'
