@@ -14,4 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch and Update Gist
+        env:
+          LIGHTVM_PAT: ${{ secrets.LIGHTVM_PAT }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GIST_ID: ${{ secrets.GIST_ID }}
         run: bash .github/scripts/stats/fetch_update_gist.sh
+
