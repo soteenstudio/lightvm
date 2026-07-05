@@ -67,7 +67,7 @@ jobs:
       - name: Run Rust Tests
         run: |
           npm run test:rust
-          node ./scripts/fix-imports.js 
+          npm run fix:imports
 
       - name: Run Typecheck & Tests
         run: |
