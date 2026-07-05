@@ -56,7 +56,8 @@
     "fix:imports": "node ./scripts/utils/fix-imports.js",
     "prepare": "husky",
     "cleaner": "node ./scripts/utils/cleaner.js",
-    "server": "node ./scripts/utils/server.js"
+    "server": "node ./scripts/utils/server.js",
+    "sync:agents": "node ./scripts/utils/sync-agents.js"
   },
   "keywords": [
     "lightvm",
