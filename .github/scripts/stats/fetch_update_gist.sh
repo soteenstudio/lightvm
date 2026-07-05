@@ -8,7 +8,7 @@ TRAFFIC_DATA=$(curl -s -H "Authorization: token ${{ secrets.LIGHTVM_PAT }}" \
 TOTAL_VIEWS=$(echo $TRAFFIC_DATA | jq '.count // 0')
 UNIQUE_VISITORS=$(echo $TRAFFIC_DATA | jq '.uniques // 0')
 
-curl -s -X PATCH -H "Authorization: token ${{ secrets.LIGHTVM_PAT }}" \
+curl -s --fail -X PATCH -H "Authorization: token ${{ secrets.LIGHTVM_PAT }}" \
 -H "Content-Type: application/json" \
 -d "{\"files\":{\"stats.json\":{\"content\":\"{\\\"clones\\\": $CLONES, \\\"total_views\\\": $TOTAL_VIEWS, \\\"unique_visitors\\\": $UNIQUE_VISITORS}\"}}}" \
 "https://api.github.com/gists/${{ secrets.GIST_ID }}"
