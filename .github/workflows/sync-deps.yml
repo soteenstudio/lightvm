@@ -7,8 +7,9 @@ on:
 jobs:
   sync:
     if: |
+      github.event.issue.pull_request != null &&
       contains(github.event.comment.body, 'fix-lockfile') &&
-      github.event.comment.user.login == 'claycuy' 
+      github.event.comment.user.login == 'claycuy'
     runs-on: ubuntu-latest
     permissions:
       contents: write
