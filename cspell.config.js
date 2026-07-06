@@ -36,7 +36,9 @@ export default {
     'vmconfig',
     'claycuy',
     'creatordate',
-    'nightlies'
+    'nightlies',
+    'dtolnay',
+    'autostash'
   ],
   ignorePaths: [
     'node_modules/**',
