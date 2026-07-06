@@ -1,16 +1,18 @@
 name: Sync Lock Files
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  issue_comment:
+    types: [created]
 
 jobs:
   sync:
+    if: |
+      contains(github.event.comment.body, 'fix-lockfile') &&
+      github.event.comment.user.login == 'claycuy' 
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -24,17 +26,14 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
-      # Sinkronisasi NPM
       - name: Sync package-lock.json
         run: |
           npm install --package-lock-only --ignore-scripts
           
-      # Sinkronisasi Cargo
       - name: Sync Cargo.lock
         run: |
           cargo generate-lockfile
 
-      # Commit kalau ada perubahan
       - name: Commit changes
         run: |
           git config --global user.name 'github-actions[bot]'
@@ -46,6 +45,5 @@ jobs:
           git add package-lock.json Cargo.lock
           if ! git diff --cached --quiet; then
             git commit -m "chore: sync lock files"
-            # 5. Baru push
             git push origin HEAD:${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}
           fi
