@@ -1,0 +1,38 @@
+name: Production Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versi rilis (contoh: 1.1.0)'
+        required: true
+
+jobs:
+  production-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate Version & Check Tag
+        run: bash .github/scripts/production/validate_version_tag.sh "${{ github.event.inputs.version }}"
+
+
+      - name: Generate Release Notes
+        run: bash .github/scripts/production/generate_release_notes.sh
+
+      - name: Create Release
+        run: bash .github/scripts/production/create_release.sh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trigger Build and Publish
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Build and Publish N-API
+          token: ${{ secrets.GITHUB_TOKEN }}
+          inputs: '{ "version_override": "${{ github.event.inputs.version }}" }'

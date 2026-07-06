@@ -1,0 +1,50 @@
+name: Sync Lock Files
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  sync:
+    if: |
+      github.event.issue.pull_request != null &&
+      contains(github.event.comment.body, 'fix-lockfile') &&
+      github.event.comment.user.login == 'claycuy'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Sync package-lock.json
+        run: |
+          npm install --package-lock-only --ignore-scripts
+          
+      - name: Sync Cargo.lock
+        run: |
+          cargo generate-lockfile
+
+      - name: Commit changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]`@users.noreply.github.com`'
+          
+          git fetch origin
+          git pull --rebase --autostash origin ${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}
+          
+          git add package-lock.json Cargo.lock
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: sync lock files"
+            git push origin HEAD:${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}
+          fi

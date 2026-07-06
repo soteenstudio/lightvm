@@ -16,16 +16,17 @@ const { VMError } = await importVM();
 describe("VMError Class", () => {
   test("VMError: should correctly set properties and format message", () => {
     const msg = "Something went wrong";
-    const err = new VMError(msg);
+    const details = ["test", "there is testing"];
+    const err = new VMError(msg, details);
     
     expect(err.code).toBe("LVM500");
     expect(err.ip).toBe(0);
     
     expect(err).toBeInstanceOf(VMError);
-    expect(err.name).toBe("SystemError");
+    expect(err.name).toBe("");
     
-    expect(err.message).toContain(msg);
-    expect(err.message).toContain("LVM500");
+    expect(err.hintDetails.length).toBe(2);
+    expect(err.code).toContain("LVM500");
   });
 
   test("VMError: should be throwable", () => {

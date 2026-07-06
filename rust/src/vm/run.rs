@@ -41,3 +41,20 @@ pub fn run(bytecode_json: &str, options: Option<RunOptions>) -> String {
     }
   }
 }
+#[cfg(test)]
+mod tests {
+  use super::*;
+  #[test]
+  fn test_run_with_valid_json() {
+    let json = r#"[["PushInt32", 10], ["Stop"]]"#;
+    let result = run(json, None);
+    assert!(result.contains("10") || result.contains("status"));
+  }
+  #[test]
+  fn test_run_with_invalid_instruction() {
+    let json = r#"[["random nonsense", 0]]"#;
+    let result = run(json, None);
+    assert!(result.contains("error"));
+    assert!(result.contains("message"));
+  }
+}

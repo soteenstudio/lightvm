@@ -33,7 +33,12 @@ export default {
     'trin',
     'unref',
     'accessindex',
-    'vmconfig'
+    'vmconfig',
+    'claycuy',
+    'creatordate',
+    'nightlies',
+    'dtolnay',
+    'autostash'
   ],
   ignorePaths: [
     'node_modules/**',

@@ -205,3 +205,36 @@ pub fn execute(
   }
   Ok(Value::Undefined)
 }
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::types::{instructions::Instructions, value::Value};
+  use std::sync::Arc;
+  use std::sync::atomic::AtomicBool;
+  #[test]
+  fn test_execute_basic_math_and_return() {
+    let bytecode = vec![
+      Instructions::PushInt32(5),
+      Instructions::PushInt32(10),
+      Instructions::Add(crate::types::primitive_types::PrimitiveTypes::Int),
+      Instructions::Stop,
+    ];
+    let halt_flag = Arc::new(AtomicBool::new(false));
+    let options = crate::types::value::RunOptions {
+      capture_return: true,
+      ..Default::default()
+    };
+    let result = execute(bytecode, Some(options), Some(halt_flag));
+    assert!(result.is_ok());
+  }
+  #[test]
+  fn test_halt_flag_behavior() {
+    let bytecode = vec![Instructions::Jump(0)];
+    let halt_flag = Arc::new(AtomicBool::new(false));
+    let flag_clone = halt_flag.clone();
+    flag_clone.store(true, std::sync::atomic::Ordering::Relaxed);
+    let result = execute(bytecode, None, Some(halt_flag));
+    assert!(result.is_ok());
+    assert_eq!(result.unwrap(), Value::Undefined);
+  }
+}

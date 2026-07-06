@@ -556,6 +556,7 @@ LightVM supports a wide range of platforms and architectures to ensure maximum o
 > [!WARNING]
 > __Nightly Support__: Support for `wasm32` for browsers is still in experimental stage.
 
-## 📜 License & Changelog
+## License & Changelog
  - This project is distributed using the [Apache-2.0 license](LICENSE).
+ - See [credits](./CREDITS.md) for information regarding the project's origin and originality.
  - See [changelogs](./docs/CHANGELOG.md) for the latest updates and release history.

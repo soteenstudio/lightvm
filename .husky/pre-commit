@@ -1,5 +1,5 @@
 npm run check:deps
 npm run cleaner
-node ./scripts/fix-imports.js
+npm run fix:imports
 git add ./ts/src/generated
 npx lint-staged

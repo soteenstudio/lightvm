@@ -1,5 +1,5 @@
 export default {
-  "*.{js,ts,rs,md}": "npm run cspell",
+  "*.{js,ts,rs,md,sh,yml}": "npm run cspell",
   "{ts/src,ts/tests,scripts}**/*.{js,ts}": [
     () => "npm run typecheck",
     "eslint --fix",
@@ -13,7 +13,8 @@ export default {
   ],
   "rust/**/*.rs": [
     "sh -c 'cargo fmt --'",
-    "sh -c 'cargo clippy --color always -- -D warnings'"
+    "sh -c 'cargo clippy --color always -- -D warnings'",
+    "sh -c 'cargo test --features node --no-run'"
   ],
   ".testings/**/*.rs": [
     "sh -c 'cargo fmt --'",
