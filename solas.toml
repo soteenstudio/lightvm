@@ -13,20 +13,24 @@ desc = "Checking code performance"
 commands = ["clean", "header", "track"]
 
 # Commands for developers
+# =======================
+# test scripts
 [scripts.test-rust]
 desc = "Running unit tests on .rs files"
-commands = ["cargo test"]
+commands = ["node ./scripts/test/test-rust.js"]
 [scripts.test-ts]
 desc = "Running unit tests on .ts file$"
-commands = ["node ./scripts/run-tests.js"]
+commands = ["node ./scripts/test/test-ts.js"]
 
+# bench scripts
 [scripts.bench-rust]
 desc = "To get benchmark results from Rust code"
 commands = ["cargo bench"]
 [scripts.bench-ts]
 desc = "To get benchmark results from TypeScript code"
-commands = ["node ./scripts/ts-bench.js"]
+commands = ["node ./scripts/bench/ts-bench.js"]
 
+# testing scripts
 [scripts.testing-rust]
 desc = "Running tests for Rust interfaces"
 commands = ["solas run .testings/native.rs"]
@@ -34,34 +38,36 @@ commands = ["solas run .testings/native.rs"]
 desc = "Running tests for TypeScript interfaces"
 commands = ["node --enable-source-maps .testings/napi.js"]
 
+# build scripts
 [scripts.build]
 desc = "Generating build results from TypeScript source"
 commands = ["node ./esbuild.config.js"]
 [scripts.build-pack]
 desc = "NPM package creation simulation"
-commands = ["node ./scripts/build-script.js"]
+commands = ["node ./scripts/build/build-script.js"]
 [scripts.build-wasm]
 desc = "Generating a WASM build from Rust sources"
 commands = ["wasm-pack build --target web -- --features wasm"]
 [scripts.build-pack2]
 desc = "NPM package creation simulation (WASM)"
-commands = ["node ./scripts/build-wasm.js"]
+commands = ["node ./scripts/build/build-wasm.js"]
 [scripts.build-release]
 desc = "Create a build release .tgz file"
-commands = ["node ./scripts/build-binary.js --local --silent"]
+commands = ["node ./scripts/build/build-binary.js --local --silent"]
 [scripts.build-debug]
 desc = "Create a build debug .tgz file"
-commands = ["node ./scripts/build-binary.js --local --debug --silent"]
+commands = ["node ./scripts/build/build-binary.js --local --debug --silent"]
 
+# utils scripts
 [scripts.check-deps]
 desc = "Checking installed local dependencies"
-commands = ["node ./scripts/check-deps.js"]
+commands = ["node ./scripts/utils/check-deps.js"]
 [scripts.typecheck]
 desc = "Type checking"
 commands = ["tsc"]
 [scripts.html-cleaner]
 desc = "Cleaning up HTML code"
-commands = ["node ./scripts/html-cleaner.js"]
+commands = ["node ./scripts/utils/html-cleaner.js"]
 [scripts.prettier]
 desc = "Formatting code"
 commands = ["npx prettier ./ts/**/*.ts --write"]
@@ -73,10 +79,10 @@ desc = "Prepare Husky"
 commands = ["npx husky"]
 [scripts.cleaner]
 desc = "Delete unused files and folders"
-commands = ["node ./scripts/cleaner.js"]
+commands = ["node ./scripts/utils/cleaner.js"]
 [scripts.server]
 desc = "Running the WASM testing server"
-commands = ["node ./scripts/server.js"]
+commands = ["node ./scripts/utils/server.js"]
 
 [copyright]
 license = "apache"
