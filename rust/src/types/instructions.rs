@@ -552,3 +552,23 @@ impl Instructions {
     }
   }
 }
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use serde_json::json;
+  #[test]
+  fn test_instruction_round_trip() {
+    let json_input = json!(["push", 123]);
+    let instr = Instructions::from_json_array(&json_input).unwrap();
+    match instr {
+      Instructions::Push(Value::Int16(_)) => assert!(true),
+      _ => panic!("Wrong data type!"),
+    }
+  }
+  #[test]
+  fn test_unknown_opcode_handling() {
+    let json_input = json!(["random_nonsense", 1]);
+    let result = Instructions::from_json_array(&json_input);
+    assert!(result.is_err());
+  }
+}
