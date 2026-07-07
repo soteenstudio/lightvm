@@ -13,6 +13,7 @@ use crate::interfaces::interface::LightVM;
 use crate::types::{
   capability::Capability,
   error_options::ErrorOptions,
+  runtime_config::RuntimeConfig,
   value::{RunOptions, Value},
   vmconfig::VmConfig,
   vmevent::VmEvent,
@@ -64,7 +65,7 @@ impl LightVM {
       functions: AHashMap::new(),
       exported: HashSet::new(),
       _imports: AHashMap::new(),
-      nightly: config.error_options.nightly,
+      nightly: config.runtime_config.nightly,
       backtrace: config.error_options.backtrace,
       explain: config.error_options.explain,
       hint: config.error_options.hint,
@@ -256,8 +257,10 @@ impl LightVMTools {
       });
     }
     let config = crate::types::vmconfig::VmConfig {
-      error_options: ErrorOptions {
+      runtime_config: RuntimeConfig {
         nightly: self.nightly,
+      },
+      error_options: ErrorOptions {
         backtrace: self.backtrace,
         explain: self.explain,
         hint: self.hint,

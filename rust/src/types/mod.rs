@@ -13,6 +13,7 @@ pub(crate) mod control_flow_signal;
 pub mod error_options;
 pub(crate) mod instructions;
 pub(crate) mod primitive_types;
+pub mod runtime_config;
 pub(crate) mod stack;
 pub(crate) mod usage;
 pub(crate) mod value;

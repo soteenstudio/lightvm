@@ -10,11 +10,13 @@
 
 use crate::types::capability::Capability;
 use crate::types::error_options::ErrorOptions;
+use crate::types::runtime_config::RuntimeConfig;
 #[cfg(feature = "node")]
 use napi_derive::napi;
 #[derive(Default)]
 pub struct VmConfig {
   pub caps: Vec<Capability>,
+  pub runtime_config: RuntimeConfig,
   pub error_options: ErrorOptions,
 }
 #[cfg(feature = "node")]

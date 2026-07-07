@@ -8,13 +8,15 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use lightvm::{LightVM, types::{vmconfig::VmConfig, error_options::ErrorOptions, capability::Capability}};  
+use lightvm::{LightVM, types::{vmconfig::VmConfig, runtime_config::RuntimeConfig, error_options::ErrorOptions, capability::Capability}};  
 
 fn main() {
   let mut vm = LightVM::new(VmConfig {
     caps: vec![Capability::Control, Capability::Observe],
-    error_options: ErrorOptions {
+    runtime_config: RuntimeConfig {
       nightly: false,
+    },
+    error_options: ErrorOptions {
       backtrace: false,
       explain: false,
       hint: false
