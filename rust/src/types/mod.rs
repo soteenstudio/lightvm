@@ -10,6 +10,7 @@
 
 pub mod capability;
 pub(crate) mod control_flow_signal;
+pub mod error_options;
 pub(crate) mod instructions;
 pub(crate) mod primitive_types;
 pub(crate) mod stack;

@@ -9,15 +9,13 @@
  */
 
 use crate::types::capability::Capability;
+use crate::types::error_options::ErrorOptions;
 #[cfg(feature = "node")]
 use napi_derive::napi;
 #[derive(Default)]
 pub struct VmConfig {
   pub caps: Vec<Capability>,
-  pub nightly: bool,
-  pub backtrace: bool,
-  pub explain: bool,
-  pub hint: bool,
+  pub error_options: ErrorOptions,
 }
 #[cfg(feature = "node")]
 #[napi(object)]

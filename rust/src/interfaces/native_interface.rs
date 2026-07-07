@@ -12,6 +12,7 @@
 use crate::interfaces::interface::LightVM;
 use crate::types::{
   capability::Capability,
+  error_options::ErrorOptions,
   value::{RunOptions, Value},
   vmconfig::VmConfig,
   vmevent::VmEvent,
@@ -63,10 +64,10 @@ impl LightVM {
       functions: AHashMap::new(),
       exported: HashSet::new(),
       _imports: AHashMap::new(),
-      nightly: config.nightly,
-      backtrace: config.backtrace,
-      explain: config.explain,
-      hint: config.hint,
+      nightly: config.error_options.nightly,
+      backtrace: config.error_options.backtrace,
+      explain: config.error_options.explain,
+      hint: config.error_options.hint,
     }
   }
   /// Function used to load bytecode before execution
@@ -255,10 +256,12 @@ impl LightVMTools {
       });
     }
     let config = crate::types::vmconfig::VmConfig {
-      nightly: self.nightly,
-      backtrace: self.backtrace,
-      explain: self.explain,
-      hint: self.hint,
+      error_options: ErrorOptions {
+        nightly: self.nightly,
+        backtrace: self.backtrace,
+        explain: self.explain,
+        hint: self.hint,
+      },
       ..Default::default()
     };
     let opt_str = LightVM::new(config)
