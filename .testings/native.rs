@@ -8,23 +8,17 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use lightvm::{LightVM, types::{vmconfig::VmConfig, runtime_config::RuntimeConfig, error_options::ErrorOptions, capability::Capability}};  
+use lightvm::{LightVM, types::{vmconfig::VmConfig, capability::Capability}};  
 
 fn main() {
   let mut vm = LightVM::new(VmConfig {
     caps: vec![Capability::Control, Capability::Observe],
-    runtime_config: RuntimeConfig {
-      nightly: false,
-    },
-    error_options: ErrorOptions {
-      backtrace: false,
-      explain: false,
-      hint: false
-    }
-  });
+    ..Default::default()
+  }).with_nightly(true).with_hint(true).with_explain(true);
   
   let raw = r#"[
-    ["get"]
+    ["get"],
+    ["instantiate"]
   ]"#;
   let optimized_json = vm.tools().optimize_bytecode(raw);
   

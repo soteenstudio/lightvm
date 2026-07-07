@@ -16,8 +16,8 @@ use napi_derive::napi;
 #[derive(Default)]
 pub struct VmConfig {
   pub caps: Vec<Capability>,
-  pub runtime_config: RuntimeConfig,
-  pub error_options: ErrorOptions,
+  pub runtime_config: Option<RuntimeConfig>,
+  pub error_options: Option<ErrorOptions>,
 }
 #[cfg(feature = "node")]
 #[napi(object)]

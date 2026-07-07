@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct ErrorOptions {
   pub backtrace: bool,
   pub explain: bool,

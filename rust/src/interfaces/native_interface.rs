@@ -45,7 +45,10 @@ impl IntoJsonValue for serde_json::Value {
 }
 #[cfg(not(feature = "node"))]
 impl LightVM {
-  pub fn new(config: VmConfig) -> Self {
+  pub fn new<C: Into<VmConfig>>(config: C) -> Self {
+    let config: VmConfig = config.into();
+    let runtime_config: RuntimeConfig = config.runtime_config.unwrap_or_default();
+    let error_options: ErrorOptions = config.error_options.unwrap_or_default();
     let mut caps_set = HashSet::new();
     if config.caps.is_empty() {
       caps_set.insert(Capability::Observe);
@@ -65,11 +68,27 @@ impl LightVM {
       functions: AHashMap::new(),
       exported: HashSet::new(),
       _imports: AHashMap::new(),
-      nightly: config.runtime_config.nightly,
-      backtrace: config.error_options.backtrace,
-      explain: config.error_options.explain,
-      hint: config.error_options.hint,
+      nightly: runtime_config.nightly,
+      backtrace: error_options.backtrace,
+      explain: error_options.explain,
+      hint: error_options.hint,
     }
+  }
+  pub fn with_nightly(mut self, enabled: bool) -> Self {
+    self.nightly = enabled;
+    self
+  }
+  pub fn with_backtrace(mut self, enabled: bool) -> Self {
+    self.backtrace = enabled;
+    self
+  }
+  pub fn with_explain(mut self, enabled: bool) -> Self {
+    self.explain = enabled;
+    self
+  }
+  pub fn with_hint(mut self, enabled: bool) -> Self {
+    self.hint = enabled;
+    self
   }
   /// Function used to load bytecode before execution
   pub fn load<T: IntoJsonValue>(&mut self, source: T) -> &mut Self {
@@ -109,7 +128,7 @@ impl LightVM {
   /// ```rust,ignore
   /// let mut add = vm.export("add".to_string());
   /// let args = vec![serde_json::json!(5), serde_json::json!(6)];
-  /// if let Some(result) = add_func(args) {
+  /// if letSome(result) = add_func(args) {
   ///    println!("Result from VM: {}", result);
   /// }
   /// ```
@@ -257,14 +276,14 @@ impl LightVMTools {
       });
     }
     let config = crate::types::vmconfig::VmConfig {
-      runtime_config: RuntimeConfig {
+      runtime_config: Some(RuntimeConfig {
         nightly: self.nightly,
-      },
-      error_options: ErrorOptions {
+      }),
+      error_options: Some(ErrorOptions {
         backtrace: self.backtrace,
         explain: self.explain,
         hint: self.hint,
-      },
+      }),
       ..Default::default()
     };
     let opt_str = LightVM::new(config)
