@@ -10,6 +10,10 @@
 
 use crate::types::capability::Capability;
 use crate::types::error_options::ErrorOptions;
+#[cfg(feature = "node")]
+use crate::types::js_error_options::JSErrorOptions;
+#[cfg(feature = "node")]
+use crate::types::js_runtime_config::JSRuntimeConfig;
 use crate::types::runtime_config::RuntimeConfig;
 #[cfg(feature = "node")]
 use napi_derive::napi;
@@ -26,10 +30,8 @@ pub struct VmConfig {
 pub struct VmNapiConfig {
   #[ts(rename = "caps")]
   pub caps_raw: Vec<u32>,
-  pub nightly: Option<bool>,
-  pub backtrace: Option<bool>,
-  pub explain: Option<bool>,
-  pub hint: Option<bool>,
+  pub error_options: Option<JSErrorOptions>,
+  pub runtime_config: Option<JSRuntimeConfig>,
 }
 #[cfg(feature = "wasm")]
 #[derive(serde::Deserialize)]
