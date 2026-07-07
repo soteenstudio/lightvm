@@ -1,6 +1,6 @@
 npm run check:deps
 npm run cleaner
-cargo test --features node --no-run
+cargo test --features node
 npm run fix:imports
 git add ./ts/src/generated
 npx lint-staged
