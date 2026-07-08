@@ -34,13 +34,23 @@ jobs:
       - name: Commit changes
         run: |
           git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]`@users.noreply.github.com`'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
           git fetch origin
-          git pull --rebase --autostash origin ${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}
+          git pull --rebase origin ${GITHUB_HEAD_REF:-$GITHUB_REF_NAME} || {
+            echo "Rebase conflict detected, proceeding to fix lockfiles..."
+          }
+          
+          npm install --package-lock-only --ignore-scripts
+          cargo generate-lockfile
           
           git add package-lock.json Cargo.lock
-          if ! git diff --cached --quiet; then
-            git commit -m "chore: sync lock files"
+          
+          if git rebase --continue 2>/dev/null; then
+             echo "Rebase continued."
+          fi
+          
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git commit -m "chore: sync lock files (both side merge)"
             git push origin HEAD:${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}
           fi

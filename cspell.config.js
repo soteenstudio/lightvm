@@ -38,7 +38,8 @@ export default {
     'creatordate',
     'nightlies',
     'dtolnay',
-    'autostash'
+    'autostash',
+    'lockfiles'
   ],
   ignorePaths: [
     'node_modules/**',
