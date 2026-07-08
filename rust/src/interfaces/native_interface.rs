@@ -128,7 +128,7 @@ impl LightVM {
   /// ```rust,ignore
   /// let mut add = vm.export("add".to_string());
   /// let args = vec![serde_json::json!(5), serde_json::json!(6)];
-  /// if letSome(result) = add_func(args) {
+  /// if let Some(result) = add(args) {
   ///    println!("Result from VM: {}", result);
   /// }
   /// ```
