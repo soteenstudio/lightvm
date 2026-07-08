@@ -14,7 +14,7 @@ fn main() {
   let mut vm = LightVM::new(VmConfig {
     caps: vec![Capability::Control, Capability::Observe],
     ..Default::default()
-  }).with_nightly(true).with_hint(true).with_explain(true);
+  });
   
   let raw = r#"[
     ["get"],

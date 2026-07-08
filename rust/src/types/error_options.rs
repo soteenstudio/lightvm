@@ -8,9 +8,18 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-#[derive(Default, Debug)]
+#[derive(Debug, Clone)]
 pub struct ErrorOptions {
   pub backtrace: bool,
   pub explain: bool,
   pub hint: bool,
+}
+impl Default for ErrorOptions {
+  fn default() -> Self {
+    Self {
+      backtrace: false,
+      explain: false,
+      hint: true,
+    }
+  }
 }

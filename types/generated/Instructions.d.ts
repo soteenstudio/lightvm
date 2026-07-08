@@ -1,5 +1,5 @@
-import type { PrimitiveTypes } from './PrimitiveTypes.js';
-import type { Value } from './Value.js';
+import type { PrimitiveTypes } from "./PrimitiveTypes";
+import type { Value } from "./Value";
 export type Instructions = {
     "init_stack": number;
 } | {
