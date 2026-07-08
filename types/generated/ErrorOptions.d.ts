@@ -1,5 +1,5 @@
 export type ErrorOptions = {
-    backtrace: boolean;
-    explain: boolean;
-    hint: boolean;
+    backtrace: boolean | null;
+    explain: boolean | null;
+    hint: boolean | null;
 };

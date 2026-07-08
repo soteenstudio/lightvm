@@ -15,10 +15,7 @@ use napi_derive::napi;
 #[derive(Default, ts_rs::TS)]
 #[ts(export, rename = "ErrorOptions")]
 pub struct JSErrorOptions {
-  #[ts(type = "boolean")]
   pub backtrace: Option<bool>,
-  #[ts(type = "boolean")]
   pub explain: Option<bool>,
-  #[ts(type = "boolean")]
   pub hint: Option<bool>,
 }

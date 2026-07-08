@@ -1,3 +1,3 @@
 export type RuntimeConfig = {
-    nightly: boolean;
+    nightly: boolean | null;
 };

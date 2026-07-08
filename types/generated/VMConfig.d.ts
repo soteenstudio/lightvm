@@ -1,5 +1,5 @@
-import type { ErrorOptions } from "./ErrorOptions";
-import type { RuntimeConfig } from "./RuntimeConfig";
+import type { ErrorOptions } from './ErrorOptions.js';
+import type { RuntimeConfig } from './RuntimeConfig.js';
 export type VMConfig = {
     caps: Array<number>;
     errorOptions: ErrorOptions | null;
