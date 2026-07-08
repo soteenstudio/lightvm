@@ -36,12 +36,29 @@ export class LightVM {
       caps?: (Capability | string | number)[];
     } = {
       caps: [Capability.Observe],
-      nightly: false,
-      explain: false,
-      hint: true,
+      runtimeConfig: {
+        nightly: false,
+      },
+      errorOptions: {
+        backtrace: false,
+        explain: false,
+        hint: true,
+      },
     },
   ) {
-    this.config = config as unknown as VMConfig;
+    this.config = {
+      caps: config.caps ?? [Capability.Observe],
+      runtimeConfig: {
+        nightly: config.runtimeConfig?.nightly ?? false,
+      },
+      errorOptions: {
+        backtrace: config?.errorOptions?.backtrace ?? false,
+        explain: config?.errorOptions?.explain ?? false,
+        hint: config?.errorOptions?.hint ?? true,
+      },
+    } as VMConfig;
+    const runtimeConfig = config?.runtimeConfig;
+    const errorOptions = config?.errorOptions;
 
     const capsList = config.caps || [Capability.Observe];
     const numericCaps = capsList.map((cap) => {
@@ -61,14 +78,49 @@ export class LightVM {
       }
     });
 
-    this.native = loadNapi(config.explain ?? false, config.hint ?? true);
+    this.native = loadNapi(
+      errorOptions?.explain ?? false,
+      errorOptions?.hint ?? true,
+    );
     this.instance = new this.native.LightVM({
       capsRaw: numericCaps,
-      nightly: config.nightly ?? false,
-      backtrace: config.backtrace ?? false,
-      explain: config.explain ?? false,
-      hint: config.hint ?? true,
+      runtimeConfig: {
+        nightly: runtimeConfig?.nightly ?? false,
+      },
+      errorOptions: {
+        backtrace: errorOptions?.backtrace ?? false,
+        explain: errorOptions?.explain ?? false,
+        hint: errorOptions?.hint ?? true,
+      },
     });
+  }
+  withNightly(enabled: boolean) {
+    this.instance.withNightly(enabled);
+    if (this.config.runtimeConfig) {
+      this.config.runtimeConfig.nightly = enabled;
+    }
+    return this;
+  }
+  withBacktrace(enabled: boolean) {
+    this.instance.withBacktrace(enabled);
+    if (this.config.errorOptions) {
+      this.config.errorOptions.backtrace = enabled;
+    }
+    return this;
+  }
+  withExplain(enabled: boolean) {
+    this.instance.withExplain(enabled);
+    if (this.config.errorOptions) {
+      this.config.errorOptions.explain = enabled;
+    }
+    return this;
+  }
+  withHint(enabled: boolean) {
+    this.instance.withHint(enabled);
+    if (this.config.errorOptions) {
+      this.config.errorOptions.hint = enabled;
+    }
+    return this;
   }
   load(source: Instructions[] | string) {
     try {
@@ -175,16 +227,17 @@ export class LightVM {
     }
   }
   tools() {
-    const currentConfig = this.config;
+    const runtimeConfig = this.config?.runtimeConfig;
+    const errorOptions = this.config?.errorOptions;
     return {
       optimizeBytecode: (bytecode: any) => {
         try {
           return this.native.LightVM.optimizeBytecode(
             bytecode,
-            currentConfig.nightly ?? false,
-            currentConfig.backtrace ?? false,
-            currentConfig.explain ?? false,
-            currentConfig.hint ?? true,
+            runtimeConfig?.nightly ?? false,
+            errorOptions?.backtrace ?? false,
+            errorOptions?.explain ?? false,
+            errorOptions?.hint ?? true,
           );
         } catch (err) {
           console.error((err as Error).message);

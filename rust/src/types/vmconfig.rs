@@ -30,7 +30,9 @@ pub struct VmConfig {
 pub struct VmNapiConfig {
   #[ts(rename = "caps")]
   pub caps_raw: Vec<u32>,
+  #[ts(rename = "errorOptions")]
   pub error_options: Option<JSErrorOptions>,
+  #[ts(rename = "runtimeConfig")]
   pub runtime_config: Option<JSRuntimeConfig>,
 }
 #[cfg(feature = "wasm")]

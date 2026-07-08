@@ -84,6 +84,21 @@ impl NodeLightVM {
     Ok(())
   }
   #[napi]
+  pub fn with_backtrace(&mut self, enabled: bool) -> Result<()> {
+    self.inner.backtrace = enabled;
+    Ok(())
+  }
+  #[napi]
+  pub fn with_explain(&mut self, enabled: bool) -> Result<()> {
+    self.inner.explain = enabled;
+    Ok(())
+  }
+  #[napi]
+  pub fn with_hint(&mut self, enabled: bool) -> Result<()> {
+    self.inner.hint = enabled;
+    Ok(())
+  }
+  #[napi]
   pub fn load(&mut self, source: String) -> Result<()> {
     self
       .inner
