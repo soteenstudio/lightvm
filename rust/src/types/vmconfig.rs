@@ -15,8 +15,14 @@ use crate::types::js_error_options::JSErrorOptions;
 #[cfg(feature = "node")]
 use crate::types::js_runtime_config::JSRuntimeConfig;
 use crate::types::runtime_config::RuntimeConfig;
+#[cfg(feature = "wasm")]
+use crate::types::wasm_error_options::WASMErrorOptions;
+#[cfg(feature = "wasm")]
+use crate::types::wasm_runtime_config::WASMRuntimeConfig;
 #[cfg(feature = "node")]
 use napi_derive::napi;
+#[cfg(feature = "wasm")]
+use wasm_bindgen::prelude::*;
 #[derive(Default)]
 pub struct VmConfig {
   pub caps: Vec<Capability>,
@@ -39,8 +45,6 @@ pub struct VmNapiConfig {
 #[derive(serde::Deserialize)]
 pub struct VmWasmConfig {
   pub caps: Vec<u32>,
-  pub nightly: Option<bool>,
-  pub backtrace: Option<bool>,
-  pub explain: Option<bool>,
-  pub hint: Option<bool>,
+  pub runtime_config: Option<WASMRuntimeConfig>,
+  pub error_options: Option<WASMErrorOptions>,
 }

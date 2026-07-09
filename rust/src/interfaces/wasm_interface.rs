@@ -23,6 +23,8 @@ impl WasmLightVM {
   pub fn new(config: JsValue) -> Result<WasmLightVM, JsValue> {
     let config: VmWasmConfig = serde_wasm_bindgen::from_value(config)
       .map_err(|e| js_sys::Error::new(&format!("Failed to parse config: {}", e)))?;
+    let runtime_config = config.runtime_config.unwrap_or_default();
+    let error_options = config.error_options.unwrap_or_default();
     use crate::types::value::Value;
     use crate::types::vmstate::VmState;
     use ahash::AHashMap;
@@ -71,10 +73,10 @@ impl WasmLightVM {
         functions: AHashMap::new(),
         exported: HashSet::new(),
         _imports: AHashMap::new(),
-        nightly: config.nightly.unwrap_or(false),
-        backtrace: config.backtrace.unwrap_or(false),
-        explain: config.explain.unwrap_or(false),
-        hint: config.hint.unwrap_or(false),
+        nightly: runtime_config.nightly.unwrap_or(false),
+        backtrace: error_options.backtrace.unwrap_or(false),
+        explain: error_options.explain.unwrap_or(false),
+        hint: error_options.hint.unwrap_or(false),
       },
     })
   }

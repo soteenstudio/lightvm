@@ -11,3 +11,4 @@ lz4.js
 .cargo_vcs_info.json
 Cargo.toml.orig
 /pkg/**/*
+sweep.timestamp
