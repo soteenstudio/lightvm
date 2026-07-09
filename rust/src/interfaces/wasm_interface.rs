@@ -80,6 +80,22 @@ impl WasmLightVM {
       },
     })
   }
+  #[wasm_bindgen(js_name = "withNightly")]
+  pub fn with_nightly(&mut self, enabled: bool) {
+    self.inner.nightly = enabled;
+  }
+  #[wasm_bindgen(js_name = "withBacktrace")]
+  pub fn with_backtrace(&mut self, enabled: bool) {
+    self.inner.backtrace = enabled;
+  }
+  #[wasm_bindgen(js_name = "withExplain")]
+  pub fn with_explain(&mut self, enabled: bool) {
+    self.inner.explain = enabled;
+  }
+  #[wasm_bindgen(js_name = "withHint")]
+  pub fn with_hint(&mut self, enabled: bool) {
+    self.inner.hint = enabled;
+  }
   #[wasm_bindgen]
   pub fn load(&mut self, source: String) -> Result<(), JsValue> {
     self
