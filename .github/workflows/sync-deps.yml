@@ -36,21 +36,16 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
-          git fetch origin
-          git pull --rebase origin ${GITHUB_HEAD_REF:-$GITHUB_REF_NAME} || {
-            echo "Rebase conflict detected, proceeding to fix lockfiles..."
-          }
+          git pull --rebase origin ${GITHUB_HEAD_REF:-$GITHUB_REF_NAME} || git rebase --abort
           
           npm install --package-lock-only --ignore-scripts
           cargo generate-lockfile
           
-          git add package-lock.json Cargo.lock
-          
-          if git rebase --continue 2>/dev/null; then
-             echo "Rebase continued."
-          fi
-          
           if [[ -n "$(git status --porcelain)" ]]; then
-            git commit -m "chore: sync lock files (both side merge)"
-            git push origin HEAD:${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}
+            git add package-lock.json Cargo.lock
+            git commit -m "chore: sync lock files (automated)"
+            
+            git push origin HEAD:${GITHUB_HEAD_REF:-$GITHUB_REF_NAME} --force-with-lease
+          else
+            echo "No changes to sync."
           fi
