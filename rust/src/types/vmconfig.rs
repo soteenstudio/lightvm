@@ -43,6 +43,7 @@ pub struct VmNapiConfig {
 }
 #[cfg(feature = "wasm")]
 #[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct VmWasmConfig {
   pub caps: Vec<u32>,
   pub runtime_config: Option<WASMRuntimeConfig>,
