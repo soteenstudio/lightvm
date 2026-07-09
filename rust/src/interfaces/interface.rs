@@ -306,10 +306,7 @@ impl LightVM {
       .iter()
       .map(Instructions::from_json_array)
       .collect::<Result<Vec<Instructions>, VMError>>();
-    let optimized = match bytecode {
-      Ok(b) => optimize_bytecode::optimize_bytecode(b),
-      Err(e) => return Err(e),
-    };
+    let optimized = optimize_bytecode::optimize_bytecode(bytecode?);
     serde_json::to_string(&optimized)
       .map_err(|e| VMError::SystemError(format!("Failed to stringify: {}", e).into()))
   }
