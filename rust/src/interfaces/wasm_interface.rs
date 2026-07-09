@@ -76,7 +76,7 @@ impl WasmLightVM {
         nightly: runtime_config.nightly.unwrap_or(false),
         backtrace: error_options.backtrace.unwrap_or(false),
         explain: error_options.explain.unwrap_or(false),
-        hint: error_options.hint.unwrap_or(false),
+        hint: error_options.hint.unwrap_or(true),
       },
     })
   }
