@@ -315,10 +315,14 @@ mod tests {
     });
     let config: VmWasmConfig = serde_json::from_value(json_data).unwrap();
     assert_eq!(config.caps, vec![0, 2]);
-    let mut vm = WasmLightVM::new(serde_wasm_bindgen::to_value(&config).unwrap()).unwrap();
-    vm.with_nightly(true);
-    assert_eq!(vm.inner.nightly, true);
-    vm.with_hint(false);
-    assert_eq!(vm.inner.hint, false);
+    #[cfg(target_arch = "wasm32")]
+    {
+      let mut vm = WasmLightVM::new(serde_wasm_bindgen::to_value(&config).unwrap()).unwrap();
+      vm.with_nightly(true);
+      assert_eq!(vm.inner.nightly, true);
+      vm.with_hint(false);
+      assert_eq!(vm.inner.hint, false);
+    }
+    assert_eq!(config.runtime_config.unwrap().nightly, Some(true));
   }
 }
