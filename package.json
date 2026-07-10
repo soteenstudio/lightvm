@@ -59,7 +59,7 @@
     "server": "node ./scripts/utils/server.js",
     "sync:agents": "node ./scripts/utils/sync-agents.js",
     "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
+    "docs:build": "node ./scripts/utils/fetch-stats.js && vitepress build docs",
     "docs:preview": "vitepress preview docs"
   },
   "keywords": [
@@ -84,6 +84,7 @@
     "tinybench": "^6.0.2",
     "tsx": "^4.22.3",
     "unitry": "^0.1.0-alpha.1",
-    "vitepress": "^1.6.4"
+    "vitepress": "^1.6.4",
+    "vue": "^3.5.39"
   }
 }
