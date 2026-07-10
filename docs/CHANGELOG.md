@@ -1,3 +1,19 @@
+## Changelog for 0.1.0-nightly.20260702.4e8db80-alpha.1
+
+### 🚀 Features
+* feat: Category and Fluent config (#122)
+
+### 🐛 Bug Fixes
+* chore: Fix wasm interface
+
+### 🧹 Maintenance
+* chore(deps-dev): bump @commitlint/cli from 21.2.0 to 21.2.1 (#124)
+* chore(deps-dev): bump @types/node from 26.1.0 to 26.1.1 (#123)
+* chore: sync lock files
+* chore(deps-dev): bump @typescript-eslint/parser from 8.62.1 to 8.63.0 (#121)
+* chore(deps-dev): bump tsx from 4.22.4 to 4.23.0 (#118)
+* chore: Add tests and typecheck step (#116)
+
 ## Changelog for 0.1.0-alpha.8
 
 * fix: Fix split_whitespace to regex
