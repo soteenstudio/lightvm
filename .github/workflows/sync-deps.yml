@@ -1,15 +1,11 @@
 name: Sync Lock Files
 
 on:
-  issue_comment:
-    types: [created]
+  pull_request:
+    branches: [main]
 
 jobs:
   sync:
-    if: |
-      github.event.issue.pull_request != null &&
-      contains(github.event.comment.body, 'fix-lockfile') &&
-      github.event.comment.user.login == 'claycuy'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -37,14 +33,23 @@ jobs:
 
       - name: Commit changes
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]`@users.noreply.github.com`'
-          
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      
           git fetch origin
-          git pull --rebase --autostash origin ${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}
-          
+      
+          git reset --hard "origin/${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
+      
+          npm install --package-lock-only --ignore-scripts
+          cargo generate-lockfile
+      
           git add package-lock.json Cargo.lock
-          if ! git diff --cached --quiet; then
-            git commit -m "chore: sync lock files"
-            git push origin HEAD:${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}
+      
+          if git diff --cached --quiet; then
+            echo "No changes to sync."
+            exit 0
           fi
+      
+          git commit -m "chore: sync lock files"
+      
+          git push --force-with-lease origin HEAD:"${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"

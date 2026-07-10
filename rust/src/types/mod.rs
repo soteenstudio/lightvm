@@ -10,8 +10,12 @@
 
 pub mod capability;
 pub(crate) mod control_flow_signal;
+pub mod error_options;
 pub(crate) mod instructions;
+pub(crate) mod js_error_options;
+pub(crate) mod js_runtime_config;
 pub(crate) mod primitive_types;
+pub mod runtime_config;
 pub(crate) mod stack;
 pub(crate) mod usage;
 pub(crate) mod value;
@@ -19,3 +23,5 @@ pub(crate) mod var_stack;
 pub mod vmconfig;
 pub(crate) mod vmevent;
 pub(crate) mod vmstate;
+pub(crate) mod wasm_error_options;
+pub(crate) mod wasm_runtime_config;

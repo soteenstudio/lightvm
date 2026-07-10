@@ -25,6 +25,8 @@ pub struct NodeLightVM {
 impl NodeLightVM {
   #[napi(constructor)]
   pub fn napi_new(config: VmNapiConfig) -> Result<Self> {
+    let runtime_config = config.runtime_config.unwrap_or_default();
+    let error_options = config.error_options.unwrap_or_default();
     use crate::types::value::Value;
     use crate::types::vmstate::VmState;
     use ahash::AHashMap;
@@ -69,12 +71,32 @@ impl NodeLightVM {
         functions: AHashMap::new(),
         exported: HashSet::new(),
         _imports: AHashMap::new(),
-        nightly: config.nightly.unwrap_or(false),
-        backtrace: config.backtrace.unwrap_or(false),
-        explain: config.explain.unwrap_or(false),
-        hint: config.hint.unwrap_or(true),
+        nightly: runtime_config.nightly.unwrap_or(false),
+        backtrace: error_options.backtrace.unwrap_or(false),
+        explain: error_options.explain.unwrap_or(false),
+        hint: error_options.hint.unwrap_or(true),
       },
     })
+  }
+  #[napi]
+  pub fn with_nightly(&mut self, enabled: bool) -> Result<()> {
+    self.inner.nightly = enabled;
+    Ok(())
+  }
+  #[napi]
+  pub fn with_backtrace(&mut self, enabled: bool) -> Result<()> {
+    self.inner.backtrace = enabled;
+    Ok(())
+  }
+  #[napi]
+  pub fn with_explain(&mut self, enabled: bool) -> Result<()> {
+    self.inner.explain = enabled;
+    Ok(())
+  }
+  #[napi]
+  pub fn with_hint(&mut self, enabled: bool) -> Result<()> {
+    self.inner.hint = enabled;
+    Ok(())
   }
   #[napi]
   pub fn load(&mut self, source: String) -> Result<()> {

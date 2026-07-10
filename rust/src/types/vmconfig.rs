@@ -9,15 +9,25 @@
  */
 
 use crate::types::capability::Capability;
+use crate::types::error_options::ErrorOptions;
+#[cfg(feature = "node")]
+use crate::types::js_error_options::JSErrorOptions;
+#[cfg(feature = "node")]
+use crate::types::js_runtime_config::JSRuntimeConfig;
+use crate::types::runtime_config::RuntimeConfig;
+#[cfg(feature = "wasm")]
+use crate::types::wasm_error_options::WASMErrorOptions;
+#[cfg(feature = "wasm")]
+use crate::types::wasm_runtime_config::WASMRuntimeConfig;
 #[cfg(feature = "node")]
 use napi_derive::napi;
+#[cfg(feature = "wasm")]
+use wasm_bindgen::prelude::*;
 #[derive(Default)]
 pub struct VmConfig {
   pub caps: Vec<Capability>,
-  pub nightly: bool,
-  pub backtrace: bool,
-  pub explain: bool,
-  pub hint: bool,
+  pub runtime_config: Option<RuntimeConfig>,
+  pub error_options: Option<ErrorOptions>,
 }
 #[cfg(feature = "node")]
 #[napi(object)]
@@ -26,17 +36,16 @@ pub struct VmConfig {
 pub struct VmNapiConfig {
   #[ts(rename = "caps")]
   pub caps_raw: Vec<u32>,
-  pub nightly: Option<bool>,
-  pub backtrace: Option<bool>,
-  pub explain: Option<bool>,
-  pub hint: Option<bool>,
+  #[ts(rename = "errorOptions")]
+  pub error_options: Option<JSErrorOptions>,
+  #[ts(rename = "runtimeConfig")]
+  pub runtime_config: Option<JSRuntimeConfig>,
 }
 #[cfg(feature = "wasm")]
 #[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct VmWasmConfig {
   pub caps: Vec<u32>,
-  pub nightly: Option<bool>,
-  pub backtrace: Option<bool>,
-  pub explain: Option<bool>,
-  pub hint: Option<bool>,
+  pub runtime_config: Option<WASMRuntimeConfig>,
+  pub error_options: Option<WASMErrorOptions>,
 }

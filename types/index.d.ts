@@ -32,6 +32,10 @@ export declare class LightVM {
     constructor(config?: Partial<Omit<VMConfig, 'caps'>> & {
         caps?: (Capability | string | number)[];
     });
+    withNightly(enabled: boolean): this;
+    withBacktrace(enabled: boolean): this;
+    withExplain(enabled: boolean): this;
+    withHint(enabled: boolean): this;
     load(source: Instructions[] | string): this;
     run(options?: any): void;
     export(name: string): (...args: any[]) => any;
