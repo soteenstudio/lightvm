@@ -22,7 +22,7 @@ use crate::types::wasm_runtime_config::WASMRuntimeConfig;
 #[cfg(feature = "node")]
 use napi_derive::napi;
 #[cfg(feature = "wasm")]
-use wasm_bindgen::prelude::*;
+use serde::{Deserialize, Serialize};
 #[derive(Default)]
 pub struct VmConfig {
   pub caps: Vec<Capability>,
@@ -42,7 +42,7 @@ pub struct VmNapiConfig {
   pub runtime_config: Option<JSRuntimeConfig>,
 }
 #[cfg(feature = "wasm")]
-#[derive(serde::Deserialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct VmWasmConfig {
   pub caps: Vec<u32>,

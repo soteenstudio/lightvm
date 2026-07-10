@@ -9,7 +9,9 @@
  */
 
 #[cfg(feature = "wasm")]
-#[derive(Default, serde::Deserialize)]
+use serde::{Deserialize, Serialize};
+#[cfg(feature = "wasm")]
+#[derive(Default, Serialize, Deserialize)]
 pub struct WASMRuntimeConfig {
   pub nightly: Option<bool>,
 }
