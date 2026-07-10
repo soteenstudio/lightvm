@@ -23,3 +23,4 @@ features:
     details: Security is managed through a strict Capability system. Every VM access and operation must have permissions explicitly defined by the host from the outset.
 ---
 
+<HeroStats />
