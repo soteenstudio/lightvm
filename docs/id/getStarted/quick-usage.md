@@ -4,7 +4,7 @@ LightVM initialization is **very flexible** and allows you to configure the **ca
 ## Using TypeScript
 For **TypeScript-based** projects, you can configure a VM instance with an intuitive builder pattern before accessing the main `tools` interface.
 
-```ts:line-numbers
+```ts
 import { LightVM, Capability } from 'lightvm';
 
 const vm = new LightVM({ caps: [Capability.Observe, Capability.Control] })
@@ -19,7 +19,7 @@ const tools = vm.tools();
 ## Using Rust
 For **Rust** users, configuration is done through `VmConfig`. You can declaratively set VM capabilities before executing bytecode.
 
-```rust:line-numbers
+```rust
 use lightvm::LightVM;
 use lightvm::types::{vmconfig::VmConfig, capability::Capability};
 

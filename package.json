@@ -51,7 +51,7 @@
     "typecheck": "tsc",
     "prettier": "npx prettier ./ts/**/*.ts --write",
     "eslint": "npx eslint ./ts/**/*.ts --fix",
-    "cspell": "cspell lint \"**/*.{js,ts,rs,md}\" --gitignore --quiet --no-summary",
+    "cspell": "cspell lint \"**/*.{js,ts,rs,md}\" --gitignore --quiet --no-summary --exclude \"docs/**\"",
     "html:cleaner": "node ./scripts/utils/html-cleaner.js",
     "fix:imports": "node ./scripts/utils/fix-imports.js",
     "prepare": "husky",
@@ -86,5 +86,10 @@
     "unitry": "^0.1.0-alpha.1",
     "vitepress": "^1.6.4",
     "vue": "^3.5.39"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^7.3.0",
+    "@fortawesome/free-solid-svg-icons": "^7.3.0",
+    "@fortawesome/vue-fontawesome": "^3.3.1"
   }
 }

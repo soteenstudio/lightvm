@@ -1,0 +1,51 @@
+div[class*="language-"] {
+  margin: 20px 0 !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+div[class*="language-"] pre {
+  padding: 16px !important;
+}
+
+div[class*="language-"] > code, 
+div[class*="language-"] > pre {
+  border-radius: 12px !important;
+}
+
+.custom-sidebar-top {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--vp-c-divider);
+  margin-bottom: 16px;
+}
+
+.sidebar-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.version-text {
+  margin: 0 !important;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--vp-c-text-2);
+  /* Logic pemotongan teks */
+  white-space: nowrap;      /* Mencegah teks turun ke bawah */
+  overflow: hidden;         /* Menyembunyikan bagian yang meluap */
+  text-overflow: ellipsis;  /* Menambahkan titik-titik (...) */
+  
+  /* Beri batasan lebar agar dia tidak menabrak tombol link */
+  max-width: 60%;           
+}
+
+.release-link {
+  font-size: 0.7rem;
+  color: var(--vp-c-brand);
+  text-decoration: none;
+  transition: opacity 0.25s;
+}
+
+.release-link:hover {
+  opacity: 0.7;
+}

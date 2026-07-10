@@ -1,5 +1,8 @@
 export default {
-  "*.{js,ts,rs,md,sh,yml}": "npm run cspell",
+  "*.{js,ts,rs,md,sh,yml}": (filenames) => {
+    const filtered = filenames.filter(file => !file.includes('docs/'));
+    return filtered.length ? `npm run cspell ${filtered.join(' ')}` : [];
+  },
   "{ts/src,ts/tests,scripts}**/*.{js,ts}": [
     () => "npm run typecheck",
     "eslint --fix",

@@ -3,9 +3,9 @@
 layout: home
 
 hero:
-  name: "LightVM Documentation"
+  name: "LightVM"
   text: "A capability-based virtual machine designed for secure, predictable, and optimized bytecode execution."
-  tagline: My great project tagline
+  tagline: Minimalist Execution. Maximal Security.
   actions:
     - theme: brand
       text: Get Started
