@@ -41,6 +41,12 @@
 </p>
 
 A capability-based virtual machine designed for __secure__, __predictable__, and __optimized bytecode execution__.
+
+> [!WARNING]
+> This documentation is based on the `alpha.9` nightly build.
+> 
+> Refer to the [alpha.8 documentation](https://github.com/soteenstudio/lightvm/tree/v0.1.0-alpha.8) for more details.
+
 ## The Philosophy: Deterministic & Lean
 LightVM is built with a focus on execution transparency and resource efficiency:
  * __Zero Magic (Deterministic)__: Instruction execution is linear and completely predictable. The VM operates explicitly, executing instructions exactly as they are defined.
@@ -102,9 +108,16 @@ cargo add lightvm@0.1.0-alpha.6
 ```typescript
 import { LightVM, Capability } from 'lightvm';
 
-const caps = [Capability.Control, Capability.Observe];
+const vm = new LightVM({ caps: [Capability.Observe, Capability.Control] })
+  .withNightly(false) // To allow nightly features (default: false)
+  .withBacktrace(false) // To display backtrace details in error messages (default: false)
+  .withExplain(false) // To display a more detailed hint in the error message (default: false)
+  .withHint(true); // To display a hint on error messages (default: true)
 
-const vm = new LightVM(caps);
+/** * Get the tools interface. 
+ * Store this as a constant to reuse it for all upcoming tasks.
+ */
+const tools = vm.tools();
 ```
 </details>
 
@@ -113,12 +126,22 @@ const vm = new LightVM(caps);
 
 ```rust
 use lightvm::LightVM;
-use lightvm::types::capability::Capability;
+use lightvm::types::{vmconfig::VmConfig, capability::Capability};
 
 fn main() {
-    let caps = vec![Capability::Control, Capability::Observe];
-    
-    let mut vm = LightVM::new(caps);
+  let mut vm = LightVM::new(VmConfig {
+    caps: vec![Capability::Control, Capability::Observe],
+    ..Default::default()
+  })
+  .with_nightly(false) // To allow nightly features (default: false)
+  .with_backtrace(false) // To display backtrace details in error messages (default: false)
+  .with_explain(false) // To display a more detailed hint in the error message (default: false)
+  .with_hint(true); // To display a hint on error messages (default: true)
+  
+  /* * Get the tools interface. 
+   * Store this as a constant to reuse it for all upcoming tasks.
+   */
+  let tools = vm.tools();
 }
 ```
 </details>
@@ -145,7 +168,7 @@ LightVM uses a strict capability-based security model. You must explicitly grant
       ["val", "x"],
       ["set", "x"]
     ];
-    vm.load(vm.tools().optimizeBytecode(raw))
+    vm.load(tools.optimizeBytecode(raw))
       .run();
     ```
     </details>  
@@ -159,7 +182,7 @@ LightVM uses a strict capability-based security model. You must explicitly grant
       ["val", "x"],
       ["set", "x"]
     ]"#;
-    vm.load(LightVM::tools().optimize_bytecode(raw).clone())
+    vm.load(tools.optimize_bytecode(raw).clone())
       .run(None);
     ```
     </details>
@@ -321,7 +344,6 @@ LightVM uses a strict capability-based security model. You must explicitly grant
       <summary>TypeScript:</summary>
       
       ```typescript
-      const tools = vm.tools();
       const optimized = tools.optimizeBytecode(raw);
       console.log(optimized);
       ```
@@ -331,7 +353,6 @@ LightVM uses a strict capability-based security model. You must explicitly grant
       <summary>Rust:</summary>
       
       ```rust
-      let tools = LightVM::tools();
       let optimized = tools.optimize_bytecode(raw);
       println!(optimized.clone());
       ```
@@ -343,7 +364,7 @@ LightVM uses a strict capability-based security model. You must explicitly grant
       <summary>TypeScript:</summary>
       
       ```typescript
-      const tools = vm.tools().tools;
+      const tools = tools.tools;
       const stringify = tools.stringifyLTC(raw);
       console.log(stringify);
       ```
@@ -353,7 +374,6 @@ LightVM uses a strict capability-based security model. You must explicitly grant
       <summary>Rust:</summary>
       
       ```rust
-      let tools = LightVM::tools();
       let stringify = tools.stringify_ltc(raw);
       println!("{:#}", stringify.clone());
       ```
@@ -365,7 +385,6 @@ LightVM uses a strict capability-based security model. You must explicitly grant
       <summary>TypeScript:</summary>
       
       ```typescript
-      const tools = vm.tools();
       const parsed = tools.parseLTC(raw);
       console.log(parsed.clone());
       ```
@@ -375,7 +394,6 @@ LightVM uses a strict capability-based security model. You must explicitly grant
       <summary>Rust:</summary>
       
       ```rust
-      let tools = LightVM::tools();
       let parsed = tools.parse_ltc(raw);
       println!("{:#}", parsed.clone());
       ```
@@ -387,7 +405,6 @@ LightVM uses a strict capability-based security model. You must explicitly grant
       <summary>TypeScript:</summary>
       
       ```typescript
-      const tools = vm.tools();
       const json = tools.parseLTCArray(raw);
       console.log(json.clone());
       ```
@@ -397,7 +414,6 @@ LightVM uses a strict capability-based security model. You must explicitly grant
       <summary>Rust:</summary>
       
       ```rust
-      let tools = LightVM::tools();
       let json = tools.parse_ltc_array(raw);
       println!("{:#}", json.clone());
       ```

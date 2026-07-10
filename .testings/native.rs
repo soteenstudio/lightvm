@@ -14,8 +14,9 @@ fn main() {
   let mut vm = LightVM::new(VmConfig {
     caps: vec![Capability::Control, Capability::Observe],
     ..Default::default()
-  });
+  }).with_nightly(false).with_backtrace(false).with_explain(false).with_hint(true);
   
+  let tools = vm.tools();
   let raw = r#"[
     ["get"],
     ["instantiate"]
