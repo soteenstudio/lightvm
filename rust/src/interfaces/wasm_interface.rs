@@ -310,13 +310,12 @@ mod tests {
   fn test_config_parsing() {
     let json_data = serde_json::json!({
         "caps": [0, 2],
-        "nightly": true,
-        "backtrace": false,
-        "explain": false,
-        "hint": true
+        "runtimeConfig": { "nightly": true },
+        "errorOptions": { "hint": true }
     });
     let config: VmWasmConfig = serde_json::from_value(json_data).unwrap();
     assert_eq!(config.caps, vec![0, 2]);
+    let mut vm = WasmLightVM::new(serde_wasm_bindgen::to_value(&config).unwrap()).unwrap();
     vm.with_nightly(true);
     assert_eq!(vm.inner.nightly, true);
     vm.with_hint(false);
