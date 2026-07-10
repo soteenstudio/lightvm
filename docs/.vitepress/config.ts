@@ -19,6 +19,24 @@ export default defineConfig({
           { text: 'Installation', link: '/getStarted/installation' },
           { text: 'Quick Usage', link: '/getStarted/quick-usage' }
         ]
+      },
+      {
+        text: 'Method Functions',
+        items: [
+          { text: 'Run Method', link: '/methodFunctions/run-method' },
+          { text: 'Provide Method', link: '/methodFunctions/provide-method' },
+          { text: 'Inspect Method', link: '/methodFunctions/inspect-method' },
+          { text: 'Halt Method', link: '/methodFunctions/halt-method' },
+          { text: 'On Method', link: '/methodFunctions/on-method' },
+          { text: 'Export Method', link: '/methodFunctions/export-method' },
+          {
+            text: 'Tools Method',
+            collapsed: true,
+            items: [
+              { text: 'Optimize Bytecode', link: 'methodFunctions/optimize-bytecode' }
+            ]
+          },
+        ]
       }
     ],
 
