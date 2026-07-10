@@ -317,6 +317,9 @@ mod tests {
     });
     let config: VmWasmConfig = serde_json::from_value(json_data).unwrap();
     assert_eq!(config.caps, vec![0, 2]);
-    assert_eq!(config.nightly, Some(true));
+    vm.with_nightly(true);
+    assert_eq!(vm.inner.nightly, true);
+    vm.with_hint(false);
+    assert_eq!(vm.inner.hint, false);
   }
 }
