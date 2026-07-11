@@ -64,7 +64,7 @@ async function run() {
       updatedAt: new Date().toISOString()
     };
 
-    const outputDir = path.join(__dirname, '../../docs');
+    const outputDir = path.join(__dirname, '../../docs/data');
     fs.mkdirSync(outputDir, { recursive: true });
 
     fs.writeFileSync(
@@ -77,7 +77,7 @@ async function run() {
     console.error(err);
 
     fs.writeFileSync(
-      path.join(__dirname, '../../docs/stats.json'),
+      path.join(__dirname, '../../docs/data/stats.json'),
       JSON.stringify({
         weekly: '0.0',
         allTime: '0.0'
