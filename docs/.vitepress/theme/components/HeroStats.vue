@@ -9,7 +9,7 @@
 
 <script setup>
 import { useData } from 'vitepress';
-import stats from '../../../public/stats.json';
+import stats from '../../../data/stats.json';
 
 const { lang } = useData();
 
