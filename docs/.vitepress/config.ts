@@ -13,14 +13,15 @@ export default defineConfig({
   description: "A capability-based virtual machine designed for secure, predictable, and optimized bytecode execution.",
 
   head: [
-    // Tambahkan di dalam head di config.js
+    ['meta', { name: 'theme-color', content: '#ffffff', media: '(prefers-color-scheme: light)' }],
+    ['meta', { name: 'theme-color', content: '#16141C', media: '(prefers-color-scheme: dark)' }],
     ['script', { type: 'application/ld+json' }, JSON.stringify({
       "@context": "https://schema.org",
       "@type": "SoftwareSourceCode",
       "name": "LightVM",
       "description": "A capability-based virtual machine designed for secure, predictable, and optimized bytecode execution.",
       "codeRepository": "https://github.com/soteenstudio/lightvm",
-      "programmingLanguage": "Rust", // Atau bahasa utama VM-mu
+      "programmingLanguage": "Rust",
       "author": {
         "@type": "Person",
         "name": "Claycuy"
@@ -33,17 +34,14 @@ export default defineConfig({
   },
 
   transformPageData(pageData) {
-    // 1. Tambahkan safety check: kalau content gak ada, langsung return
     if (!pageData.content) {
       return;
     }
 
-    // 2. Tetap cek apakah ini halaman home
     if (pageData.relativePath === 'index.md' || pageData.frontmatter.layout === 'home') {
       return;
     }
 
-    // 3. Sekarang split aman dilakukan karena kita udah tau pageData.content itu ada
     const lines = pageData.content.split('\n').filter(line => line.trim() !== '');
 
     if (lines.length >= 2 && !pageData.frontmatter.description) {
