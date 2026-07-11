@@ -39,7 +39,8 @@ export default {
     'nightlies',
     'dtolnay',
     'autostash',
-    'lockfiles'
+    'lockfiles',
+    'benc'
   ],
   ignorePaths: [
     'node_modules/**',

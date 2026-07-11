@@ -10,7 +10,7 @@ import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons'
 library.add(faArrowUpRightFromSquare)
 
 export default {
-  ...DefaultTheme,
+  extends: DefaultTheme,
   enhanceApp({ app }) {
     app.component('HeroStats', HeroStats)
     app.component('font-awesome-icon', FontAwesomeIcon)
