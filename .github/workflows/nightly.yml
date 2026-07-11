@@ -74,6 +74,8 @@ jobs:
         run: bash .github/scripts/nightly/create_release.sh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION_VAL: ${{ steps.versioning.outputs.version_clean }}
+          REPOSITORY: ${{ github.repository }}
 
       - name: Trigger Main Release Workflow
         if: steps.filter_changes.outputs.significant == 'true'

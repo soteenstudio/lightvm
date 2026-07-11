@@ -1,11 +1,11 @@
-PREV_TAG=$(git describe --tags --abbrev=0 --exclude="${{ steps.versioning.outputs.version_tag }}" 2>/dev/null || echo "")
+PREV_TAG=$(git describe --tags --abbrev=0 --exclude="$VERSION_VAL" 2>/dev/null || echo "")
 
 LOGS=$(git log $PREV_TAG..HEAD --pretty=format:"%s")
 
 FEAT=$(echo "$LOGS" | grep -E "^feat(\(.*\))?: " | sed -E 's/^feat(\(.*\))?: /- /' || echo "")
 FIX=$(echo "$LOGS" | grep -E "^fix(\(.*\))?: " | sed -E 's/^fix(\(.*\))?: /- /' || echo "")
 
-COMPARE_LINK="https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${{ steps.versioning.outputs.version_tag }}"
+COMPARE_LINK="https://github.com/$REPOSITORY/compare/${PREV_TAG}...$VERSION_VAL"
 
 {
   echo "## What's Changed"
@@ -32,7 +32,7 @@ COMPARE_LINK="https://github.com/${{ github.repository }}/compare/${PREV_TAG}...
   echo "***Nightly Owl has fallen out of bed tonight!***"
 } > release_notes.md
 
-gh release create "${{ steps.versioning.outputs.version_tag }}" \
-  --title "Nightly Build ${{ steps.versioning.outputs.version_tag }}" \
+gh release create "$VERSION_VAL" \
+  --title "Nightly Build $VERSION_VAL" \
   --notes-file release_notes.md \
   --prerelease
