@@ -30,7 +30,7 @@ jobs:
 
       - name: Filter Significant Changes
         id: filter_changes
-        run: bash .githuh/scripts/nightly/filter_significant.sh
+        run: bash .github/scripts/nightly/filter_significant.sh
 
       - name: Stop if not significant
         if: steps.filter_changes.outputs.significant == 'false'
