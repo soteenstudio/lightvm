@@ -65,6 +65,8 @@ jobs:
 
       - name: Commit and Push
         if: steps.filter_changes.outputs.significant == 'true'
+        env:
+          VERSION_VAL: ${{ steps.versioning.outputs.version_clean }}
         run: bash .github/scripts/nightly/commit_push.sh
 
       - name: Create Release

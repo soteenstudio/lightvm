@@ -6,7 +6,7 @@ git add Cargo.toml
 
 if ! git diff --cached --quiet; then
   git commit -m "chore: nightly release ${{ steps.versioning.outputs.version_clean }}"
-  git tag ${{ steps.versioning.outputs.version_tag }}
+  git tag "$VERSION_VAL"
   git push origin main --tags
 else
   echo "No file changes, skip push."
