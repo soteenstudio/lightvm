@@ -74,7 +74,8 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/soteenstudio/lightvm' }
+      { icon: 'github', link: 'https://github.com/soteenstudio/lightvm' },
+      { icon: 'instagram', link: 'https;//instagram.com/soteenstudio' }
     ],
   }
 })

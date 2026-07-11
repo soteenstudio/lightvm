@@ -21,6 +21,13 @@ export const idId = defineConfig({
           { text: 'Kebijakan Keamanan', link: 'https://github.com/soteenstudio/lightvm/blob/main/.github/SECURITY.md' },
           { text: 'Rilis', link: 'https://github.com/soteenstudio/lightvm/releases' }
         ]
+      },
+      {
+        text: 'Dukungan',
+        items: [
+          { text: 'Masalah', link: 'https://github.com/soteenstudio/lightvm/issues' },
+          { text: 'Diskusi', link: 'https://github.com/soteenstudio/lightvm/discussions' }
+        ]
       }
     ],
 

@@ -21,6 +21,13 @@ export const enUs = defineConfig({
           { text: 'Security Policy', link: 'https://github.com/soteenstudio/lightvm/blob/main/.github/SECURITY.md' },
           { text: 'Releases', link: 'https://github.com/soteenstudio/lightvm/releases' }
         ]
+      },
+      {
+        text: 'Support',
+        items: [
+          { text: 'Issues', link: 'https://github.com/soteenstudio/lightvm/issues' },
+          { text: 'Discussions', link: 'https://github.com/soteenstudio/lightvm/discussions' }
+        ]
       }
     ],
 
