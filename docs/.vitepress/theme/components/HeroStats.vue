@@ -1,16 +1,33 @@
 <template>
   <div class="hero-stats">
-    <p v-if="loading">Syncing stats...</p>
-    <p v-else-if="error">Stats unavailable</p>
-    <p v-else> 
-      {{ stats.weekly }}k weekly downloads | 
-      {{ stats.allTime }}k all-time downloads
+    <p> 
+      {{ stats.weekly }}k {{ t('weekly') }} | 
+      {{ stats.allTime }}k {{ t('allTime') }}
     </p>
   </div>
 </template>
 
 <script setup>
+import { useData } from 'vitepress';
 import stats from '../../../stats.json';
+
+const { lang } = useData();
+
+const translations = {
+  en: {
+    weekly: 'weekly downloads',
+    allTime: 'all-time downloads'
+  },
+  id: {
+    weekly: 'unduhan mingguan',
+    allTime: 'unduhan total'
+  }
+};
+
+const t = (key) => {
+  const currentLang = lang.value || 'en';
+  return translations[currentLang][key] || translations['en'][key];
+};
 </script>
 
 <style scoped>
