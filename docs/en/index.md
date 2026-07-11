@@ -30,10 +30,10 @@ hero:
   actions:
     - theme: brand
       text: Get Started
-      link: /en/getStarted/installation
+      link: /getStarted/installation
     - theme: alt
       text: API References
-      link: /en/api-references
+      link: /api-references
 
 features:
   - title: Zero Magic (Deterministic)
