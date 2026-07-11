@@ -1,56 +1,42 @@
-# Quick Usage
-LightVM initialization is **very flexible** and allows you to configure the **capabilities** and **debugging features** according to your application needs.
+# Penggunaan Cepat
+Inisialisasi LightVM **sangat fleksibel** dan memungkinkan Anda untuk mengkonfigurasi **kapabilitas** dan fitur **debugging sesuai** dengan kebutuhan aplikasi Anda.
 
-## Using TypeScript
-For **TypeScript-based** projects, you can configure a VM instance with an intuitive builder pattern before accessing the main `tools` interface.
+## Menggunakan TypeScript
+Untuk proyek berbasis **TypeScript**, Anda dapat mengkonfigurasi instance VM dengan pola builder yang intuitif sebelum mengakses antarmuka `tools` utama.
 
-```ts
-import { LightVM, Capability } from 'lightvm';
+::: code-group
 
-const vm = new LightVM({ caps: [Capability.Observe, Capability.Control] })
-  .withNightly(false) // To allow nightly features (default: false)
-  .withBacktrace(false) // To display backtrace details in error messages (default: false)
-  .withExplain(false) // To display a more detailed hint in the error message (default: false)
-  .withHint(true); // To display a hint on error messages (default: true)
+<<< @/examples/getStarted/builderPattern.ts{ts:line-numbers}[Builder Pattern]
 
-const tools = vm.tools();
-```
+<<< @/examples/getStarted/objectPattern.ts{ts:line-numbers}[Object Pattern]
 
-## Using Rust
-For **Rust** users, configuration is done through `VmConfig`. You can declaratively set VM capabilities before executing bytecode.
-
-```rust
-use lightvm::LightVM;
-use lightvm::types::{vmconfig::VmConfig, capability::Capability};
-
-fn main() {
-  let mut vm = LightVM::new(VmConfig {
-    caps: vec![Capability::Control, Capability::Observe],
-    ..Default::default()
-  })
-  .with_nightly(false) // To allow nightly features (default: false)
-  .with_backtrace(false) // To display backtrace details in error messages (default: false)
-  .with_explain(false) // To display a more detailed hint in the error message (default: false)
-  .with_hint(true); // To display a hint on error messages (default: true)
-  
-  let tools = vm.tools();
-}
-```
-
-::: tip
-Get the tools interface. Store this as a constant to reuse it for all upcoming tasks.
 :::
 
-## Capabilities
-The security and behavior of `LightVM` are managed through a robust capability system. Use the following table to understand which permissions are required for your specific use case:
+## Menggunakan Rust
+Bagi pengguna **Rust**, konfigurasi dilakukan melalui `VmConfig`. Anda dapat mengatur kemampuan VM secara deklaratif sebelum mengeksekusi bytecode.
 
-| Capability | Level | Description |
+::: code-group
+
+<<< @/examples/getStarted/builder_pattern.rs{rust:line-numbers}[Builder Pattern]
+
+<<< @/examples/getStarted/object_pattern.rs{rust:line-numbers}[Object Pattern]
+
+:::
+
+::: tip
+Dapatkan antarmuka alat. Simpan ini sebagai konstanta agar dapat digunakan kembali untuk semua tugas yang akan datang.
+:::
+
+## Kapabilitas
+Keamanan dan perilaku `LightVM` dikelola melalui sistem kapabilitas yang tangguh. Gunakan tabel berikut untuk memahami izin apa yang diperlukan untuk kasus penggunaan spesifik Anda:
+
+| Kapabilitas | Level | Deskripsi |
 |------------|-------|-------------|
-| Control | Low | Grants permission to start/stop execution and export functions. |
-| Observe | Medium | Allows the host to inspect internal states, variable stacks, and metrics. |
-| Debug | High | Opens access to verbose internal logs and hidden states for troubleshooting. |
-| Unsafe | Critical | Removes safety guards, allowing manual halts and raw memory/process access. |
+| `Control` | Rendah | Memberikan izin untuk memulai/menghentikan eksekusi dan fungsi ekspor. |
+| `Observe` | Sedang | Memungkinkan host untuk memeriksa status internal, tumpukan variabel, dan metrik. |
+| `Debug` | Tinggi | Membuka akses ke log internal yang detail dan status tersembunyi untuk keperluan pemecahan masalah. |
+| `Unsafe` | Kritis | Menghilangkan pengaman, memungkinkan penghentian manual dan akses langsung ke memori/proses. |
 
-::: warning Security Notice
-Always adhere to the **Principle of Least Privilege**. Only enable the specific capabilities required for your application to ensure a secure and predictable execution environment.
+::: warning Pemberitahuan Keamanan
+Selalu patuhi **Prinsip Hak Akses Minimal**. Aktifkan hanya kemampuan spesifik yang dibutuhkan aplikasi Anda untuk memastikan lingkungan eksekusi yang aman dan dapat diprediksi.
 :::

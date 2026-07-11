@@ -1,6 +1,27 @@
 ---
 # https://vitepress.dev/reference/default-theme-home-page
 layout: home
+lang: en-US
+
+head:
+  - - meta
+    - name: description
+      content: "LightVM is a capability-based virtual machine designed for safe, predictive, and efficient bytecode execution with a minimal memory footprint."
+  - - meta
+    - name: keywords
+      content: "LightVM, bytecode execution, virtual machine, security, systems programming, capability-based"
+  - - meta
+    - property: og:title
+      content: "LightVM | Secure & Optimized Bytecode VM"
+  - - meta
+    - property: og:description
+      content: "Minimalist execution for maximal security. Explore LightVM documentation."
+  - - meta
+    - property: og:url
+      content: "https://lightvm.vercel.app/"
+
+title: Main Documentation
+description: A capability-based virtual machine designed for secure, predictable, and optimized bytecode execution.
 
 hero:
   name: "LightVM"
@@ -9,10 +30,10 @@ hero:
   actions:
     - theme: brand
       text: Get Started
-      link: /getStarted/installation
+      link: /en/getStarted/installation
     - theme: alt
       text: API References
-      link: /api-references
+      link: /en/api-references
 
 features:
   - title: Zero Magic (Deterministic)

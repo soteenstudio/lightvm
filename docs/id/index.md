@@ -1,6 +1,27 @@
 ---
 # https://vitepress.dev/reference/default-theme-home-page
 layout: home
+lang: id-ID
+
+head:
+  - - meta
+    - name: description
+      content: "LightVM adalah mesin virtual berbasis kapabilitas yang dirancang untuk eksekusi bytecode yang aman, prediktif, dan efisien dengan penggunaan memori minimal."
+  - - meta
+    - name: keywords
+      content: "LightVM, eksekusi bytecode, virtual machine, keamanan, pemrograman sistem, berbasis kapabilitas"
+  - - meta
+    - property: og:title
+      content: "LightVM | VM Bytecode yang Aman & Teroptimasi"
+  - - meta
+    - property: og:description
+      content: "Eksekusi minimalis untuk keamanan maksimal. Jelajahi dokumentasi LightVM."
+  - - meta
+    - property: og:url
+      content: "https://lightvm.vercel.app/id/"
+
+title: Dokumentasi Utama
+description: Mesin virtual berbasis kapabilitas yang dirancang untuk eksekusi bytecode yang aman, prediktif, dan efisien.
 
 hero:
   name: "LightVM"

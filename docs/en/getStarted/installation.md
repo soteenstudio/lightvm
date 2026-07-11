@@ -1,8 +1,8 @@
-# Instalasi
-Pilih salah satu metode instalasi di bawah ini sesuai dengan lingkungan proyek Anda:
+# Installation
+Choose one of the installation methods below according to your project environment:
 
-## Dengan NPM
-Gunakan metode ini jika Anda sedang membangun proyek berbasis **TypeScript/Node.js**.
+## With NPM
+Use this method if you are building a **TypeScript/Node.js** based project.
 
 ::: code-group
 
@@ -14,8 +14,8 @@ Gunakan metode ini jika Anda sedang membangun proyek berbasis **TypeScript/Node.
 
 :::
 
-## Dengan Yarn
-Alternatif bagi Anda yang lebih suka menggunakan **Yarn** sebagai pengelola paket.
+## With Yarn
+An alternative for those of you who prefer to use **Yarn** as a package manager.
 
 ::: code-group
 
@@ -27,13 +27,13 @@ Alternatif bagi Anda yang lebih suka menggunakan **Yarn** sebagai pengelola pake
 
 :::
 
-## Dengan Cargo
-Jika Anda menggunakan **Rust**, gunakan **Cargo** untuk mengintegrasikan **LightVM** secara native.
+## With Cargo
+If you're using **Rust**, use **Cargo** to integrate **LightVM** natively.
 
 ::: code-group
 
 <<< @/examples/installation/cargo-latest.sh{sh:line-numbers}[Latest]
 
-<<< @/examples/installation/cargo-specific.sh{sh:line-numbers}[Versi Spesifik]
+<<< @/examples/installation/cargo-specific.sh{sh:line-numbers}[Specific Version]
 
 :::

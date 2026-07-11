@@ -1,3 +1,20 @@
+.vp-code-group {
+  margin: 20px 0 !important;
+  border-radius: 12px !important;
+  overflow: hidden; /* Memotong sudut tajam dari blok kode di dalamnya */
+}
+
+/* 2. Bersihkan margin bawaan blok kode di DALAM Code Group agar tidak double */
+.vp-code-group div[class*="language-"] {
+  margin: 0 !important;
+  border-radius: 0 !important; /* Menyerahkan border-radius ke pembungkus utama (.vp-code-group) */
+}
+
+/* Memberi jarak/margin kiri pada seluruh barisan nama file di Code Group */
+.vp-code-group label {
+  padding-left: 12px !important; /* Gunakan padding agar area klik tab tidak terpotong */
+}
+
 div[class*="language-"] {
   margin: 20px 0 !important;
   border-radius: 12px !important;
