@@ -2,7 +2,7 @@
 Choose one of the installation methods below according to your project environment:
 
 ## With NPM
-Use this method if you are building a **TypeScript/Node.js** based project.
+Use this method if you are building a **TypeScript/Node.js-based** project.
 
 ::: code-group
 
