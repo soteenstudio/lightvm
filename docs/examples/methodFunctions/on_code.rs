@@ -1,3 +1,3 @@
 vm.on("halt", |payload| {
-  println!("Halted: ", payload);
+  println!("Halted: {:?}", payload);
 });
