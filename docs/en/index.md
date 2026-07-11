@@ -30,7 +30,7 @@ hero:
   actions:
     - theme: brand
       text: Get Started
-      link: /getStarted/installation
+      link: /get-started/installation
     - theme: alt
       text: API References
       link: /api-references

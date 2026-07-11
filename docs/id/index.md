@@ -30,7 +30,7 @@ hero:
   actions:
     - theme: brand
       text: Memulai
-      link: /id/getStarted/installation
+      link: /id/get-started/installation
     - theme: alt
       text: Referensi API
       link: /id/api-references
