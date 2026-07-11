@@ -59,6 +59,8 @@ jobs:
 
       - name: Update Files
         if: steps.filter_changes.outputs.significant == 'true'
+        env:
+          VERSION_VAL: ${{ steps.versioning.outputs.version_clean }}
         run: bash .github/scripts/nightly/update_files.sh
 
       - name: Commit and Push

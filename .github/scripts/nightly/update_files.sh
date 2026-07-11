@@ -1,4 +1,4 @@
-VERSION="${{ steps.versioning.outputs.version_clean }}"
+VERSION="$VERSION_VAL"
 
 sed -i "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
 
