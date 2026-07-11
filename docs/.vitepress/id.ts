@@ -72,7 +72,9 @@ export const idId = defineConfig({
             collapsed: true,
             items: [
               { text: 'Metode Optimize Bytecode', link: '/id/method-functions/optimize-bytecode' },
-              { text: 'Metode Stringify', link: '/id/method-functions/optimize-bytecode' }
+              { text: 'Metode Stringify', link: '/id/method-functions/stringify-method' },
+              { text: 'Metode Parse', link: '/id/method-functions/parse-method' },
+              { text: 'Metode Parse Array', link: '/id/method-functions/parse-array-method' }
             ]
           },
         ]
