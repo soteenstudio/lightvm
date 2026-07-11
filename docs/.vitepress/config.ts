@@ -12,6 +12,8 @@ export default defineConfig({
   titleTemplate: ":title | LightVM Docs",
   description: "A capability-based virtual machine designed for secure, predictable, and optimized bytecode execution.",
 
+  cleanUrls: true,
+
   head: [
     ['meta', { name: 'theme-color', content: '#ffffff', media: '(prefers-color-scheme: light)' }],
     ['meta', { name: 'theme-color', content: '#16141C', media: '(prefers-color-scheme: dark)' }],
