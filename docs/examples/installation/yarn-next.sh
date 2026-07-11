@@ -1,1 +1,1 @@
-yarn install lightvm@next
+yarn add lightvm@next
