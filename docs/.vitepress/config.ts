@@ -7,7 +7,7 @@ export default defineConfig({
   rewrites: {
     'en/:rest*': ':rest*'
   },
-  
+
   title: "LightVM",
   titleTemplate: ":title | LightVM Docs",
   description: "A capability-based virtual machine designed for secure, predictable, and optimized bytecode execution.",

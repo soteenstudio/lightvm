@@ -11,7 +11,7 @@ export const enUs = defineConfig({
     
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Get Started', link: '/getStarted/installation' },
+      { text: 'Get Started', link: '/get-started/installation' },
       { text: 'API References', link: '/api-references' },
       {
         text: 'About',
@@ -46,26 +46,26 @@ export const enUs = defineConfig({
         text: 'Get Started',
         collapsed: false,
         items: [
-          { text: 'Installation', link: '/getStarted/installation' },
-          { text: 'Quick Usage', link: '/getStarted/quick-usage' }
+          { text: 'Installation', link: '/get-started/installation' },
+          { text: 'Quick Usage', link: '/get-started/quick-usage' }
         ]
       },
       {
         text: 'Method Functions',
         collapsed: false,
         items: [
-          { text: 'Run Method', link: '/methodFunctions/run-method' },
-          { text: 'Provide Method', link: '/methodFunctions/provide-method' },
-          { text: 'Inspect Method', link: '/methodFunctions/inspect-method' },
-          { text: 'Halt Method', link: '/methodFunctions/halt-method' },
-          { text: 'On Method', link: '/methodFunctions/on-method' },
-          { text: 'Export Method', link: '/methodFunctions/export-method' },
+          { text: 'Run Method', link: '/method-functions/run-method' },
+          { text: 'Provide Method', link: '/method-functions/provide-method' },
+          { text: 'Inspect Method', link: '/method-functions/inspect-method' },
+          { text: 'Halt Method', link: '/method-functions/halt-method' },
+          { text: 'On Method', link: '/method-functions/on-method' },
+          { text: 'Export Method', link: '/method-functions/export-method' },
           {
             text: 'Tools Method',
             collapsed: true,
             items: [
-              { text: 'Optimize Bytecode Method', link: '/methodFunctions/optimize-bytecode' },
-              { text: 'Stringify Method', link: '/methodFunctions/optimize-bytecode' }
+              { text: 'Optimize Bytecode Method', link: '/method-functions/optimize-bytecode' },
+              { text: 'Stringify Method', link: '/method-functions/optimize-bytecode' }
             ]
           },
         ]
