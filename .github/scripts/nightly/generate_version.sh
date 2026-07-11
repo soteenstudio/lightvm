@@ -1,3 +1,5 @@
+set -x
+
 RAW_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
 
 CLEAN_VERSION=${RAW_TAG#v}
