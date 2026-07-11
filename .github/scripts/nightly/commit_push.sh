@@ -5,7 +5,7 @@ git add Cargo.toml
 [ -f "package.json" ] && git add package.json
 
 if ! git diff --cached --quiet; then
-  git commit -m "chore: nightly release ${{ steps.versioning.outputs.version_clean }}"
+  git commit -m "chore: nightly release $VERSION_VAL"
   git tag "$VERSION_VAL"
   git push origin main --tags
 else
