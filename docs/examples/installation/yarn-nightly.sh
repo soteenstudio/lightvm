@@ -1,1 +1,1 @@
-yarn install lightvm@nightly
+yarn add lightvm@nightly

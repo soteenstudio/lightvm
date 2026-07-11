@@ -1,1 +1,1 @@
-yarn install lightvm
+yarn add lightvm
