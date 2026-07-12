@@ -330,8 +330,8 @@ impl LightVMTools {
   /// let parsed = tools.parse_ltc(raw);
   /// println!("{:#}", parsed.clone());
   /// ```
-  pub fn parse_ltc(&self, code: String) -> String {
-    match LightVM::parse_ltc_internal(code) {
+  pub fn parse_ltc(&self, code: &str) -> String {
+    match LightVM::parse_ltc_internal(code.to_string()) {
       Ok(text) => text,
       Err(e) => {
         eprintln!("{}", e);
