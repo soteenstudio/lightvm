@@ -40,7 +40,9 @@ export default {
     'dtolnay',
     'autostash',
     'lockfiles',
-    'benc'
+    'benc',
+    'armv',
+    'androideabi'
   ],
   ignorePaths: [
     'node_modules/**',

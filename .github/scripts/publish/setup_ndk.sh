@@ -1,3 +1,6 @@
+export PATH="$TOOLCHAIN:$PATH"
+export LD="$TOOLCHAIN/ld.lld"
+
 echo "ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME" >> $GITHUB_ENV
 
 TOOLCHAIN="$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin"
