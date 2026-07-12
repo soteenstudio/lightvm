@@ -306,11 +306,11 @@ impl LightVMTools {
   /// let stringify = tools.stringify_ltc(raw);
   /// println!("{:#}", stringify.clone());
   /// ```
-  pub fn stringify_ltc(&self, json_str: &str) -> String {
-    let json: serde_json::Value = match serde_json::from_str(json_str) {
+  pub fn stringify_ltc<T: IntoJsonValue>(&self, input: T) -> String {
+    let json = match input.into_json_value() {
       Ok(v) => v,
       Err(e) => {
-        eprintln!("Failed to parse JSON: {}", e);
+        eprintln!("Failed to parse/convert input: {}", e);
         std::process::exit(1);
       }
     };
