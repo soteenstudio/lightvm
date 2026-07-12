@@ -9,9 +9,6 @@
  */
 
 #[doc(hidden)]
-pub mod prelude {
-  pub use crate::interfaces::native_interface::IntoJsonValue;
-}
 #[allow(clippy::type_complexity)]
 pub(crate) mod instructions;
 #[doc(hidden)]
