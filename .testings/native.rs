@@ -17,10 +17,11 @@ fn main() {
   }).with_nightly(false).with_backtrace(false).with_explain(false).with_hint(true);
   
   let tools = vm.tools();
-  let raw = serde_json::json!([
-    ["get"],
-    ["instantiate"]
-  ]);
+  let raw = r#"[
+    ["push", 5],
+    ["println"]
+  ]"#;
+  println!("{}", vm.tools().stringify_ltc(raw));
   let optimized_json = vm.tools().optimize_bytecode(raw);
   
   vm.load(optimized_json);

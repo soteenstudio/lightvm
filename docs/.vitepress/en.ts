@@ -71,10 +71,10 @@ export const enUs = defineConfig({
             text: 'Tools Method',
             collapsed: true,
             items: [
-              { text: 'Optimize Bytecode Method', link: '/method-functions/optimize-bytecode-method' },
-              { text: 'Stringify Method', link: '/method-functions/stringify-method' },
-              { text: 'Parse Method', link: '/method-functions/parse-method' },
-              { text: 'Parse Array Method', link: '/method-functions/parse-array-method' }
+              { text: 'Optimize Bytecode Method', link: '/method-functions/tools-method/optimize-bytecode-method' },
+              { text: 'Stringify Method', link: '/method-functions/tools-method/stringify-method' },
+              { text: 'Parse Method', link: '/method-functions/tools-method/parse-method' },
+              { text: 'Parse Array Method', link: '/method-functions/tools-method/parse-array-method' }
             ]
           },
         ]
