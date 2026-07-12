@@ -16,16 +16,17 @@ fn main() {
     ..Default::default()
   }).with_nightly(false).with_backtrace(false).with_explain(false).with_hint(true);
   
-  let tools = vm.tools();
-  let raw = serde_json::json!([
-    ["get"],
-    ["instantiate"]
-  ]);
-  let optimized_json = vm.tools().optimize_bytecode(raw);
+  let raw = r#"[
+    ["push", 5],
+    ["println"]
+  ]"#;
+  let str = "push 5; ;; IP=0\npush 5; ;; IP=1\nadd Int; ;; IP=2\nprintln; ;; IP=3";
+  println!("{}", vm.tools().parse_ltc(str));
+  /*let optimized_json = vm.tools().optimize_bytecode(raw);
   
   vm.load(optimized_json);
   
-  let _res = vm.run(None);
+  let _res = vm.run(None);*/
   
   /*println!("===> Execution finished <===");
   println!("Output: {:?}", res);*/
