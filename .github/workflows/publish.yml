@@ -20,6 +20,8 @@ on:
 jobs:
   build-npm:
     runs-on: ${{ matrix.os }}
+    env:
+      ANDROID_NDK_LATEST_HOME: /usr/local/lib/android/sdk/ndk/27.0.11718014
     strategy:
       fail-fast: false
       max-parallel: 4
@@ -150,7 +152,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: binary-${{ matrix.platform }}
-          path: pkg/ # Mengupload seluruh isi folder pkg secara utuh
+          path: pkg/
 
   publish-npm:
     needs: build-npm

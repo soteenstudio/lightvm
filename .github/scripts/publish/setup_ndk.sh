@@ -1,5 +1,9 @@
-export PATH="$TOOLCHAIN:$PATH"
-export LD="$TOOLCHAIN/ld.lld"
+if [ -z "$ANDROID_NDK_LATEST_HOME" ]; then
+  export ANDROID_NDK_LATEST_HOME=$(ls -d /usr/local/lib/android/sdk/ndk/* | tail -1)
+fi
+
+NDK_PATH=${ANDROID_NDK_LATEST_HOME}
+TOOLCHAIN="$NDK_PATH/toolchains/llvm/prebuilt/linux-x86_64/bin"
 
 echo "ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME" >> $GITHUB_ENV
 
