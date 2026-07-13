@@ -1,13 +1,13 @@
 # Tipe Primitif
-LightVM requires explicit type definitions for certain instructions to maintain deterministic execution and peak performance.
+LightVM memerlukan definisi tipe eksplisit untuk instruksi tertentu guna mempertahankan eksekusi deterministik dan kinerja puncak.
 
-| Type | Aliases | Reference | Target Value Type |
+| Tipe | Alias | Referensi | Jenis Nilai Target |
 |------|---------|-----------|-------------------|
-| sht | i16 | Short | 16-bit Integer (Int16) |
-| int | i32 | Integer | 32-bit Integer (Int32) |
-| lng | i64 | Long | 64-bit Integer (Int64) |
-| oct | i128 | Octa | 128-bit Integer (Int128) |
-| hlf | f16 | Half | 16-bit Floating Point (Float16) |
-| flt | f32 | Float | 32-bit Floating Point (Float32) |
-| dbl | f64 | Double | 64-bit Floating Point (Float64) |
-| str | - | String | String / Text data |
+| `sht` | `i16` | Short | Bilangan bulat 16-bit (Int16) |
+| `int` | `i32` | Integer | Bilangan bulat 32-bit (Int32) |
+| `lng` | `i64` | Long | Bilangan bulat 64-bit (Int64) |
+| `oct` | `i128` | Octa | Bilangan bulat 128-bit (Int128) |
+| `hlf` | `f16` | Half | Bilangan Titik Mengambang 16-bit (Float16) |
+| `flt` | `f32` | Float | Bilangan Titik Mengambang 32-bit (Float32) |
+| `dbl` | `f64` | Double | Bilangan Titik Mengambang 64-bit (Float64) |
+| `str` | - | String | Data string/teks |

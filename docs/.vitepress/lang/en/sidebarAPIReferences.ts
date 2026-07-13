@@ -55,7 +55,7 @@ export const sidebarAPIReferences = [
     items: [
       {
         text: 'Stack & Variable Management',
-        link: '/api-references/instructions-set/stack-variable-management',
+        link: '/api-references/instruction-set/stack-variable-management',
       },
     ],
   },
