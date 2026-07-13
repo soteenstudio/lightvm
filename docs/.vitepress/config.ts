@@ -55,7 +55,7 @@ export default defineConfig({
   lastUpdated: true,
   locales: {
     root: {
-      label: 'English',
+      label: 'English (US)',
       lang: 'en-US',
       ...enUs
     },
