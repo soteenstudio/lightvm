@@ -19,10 +19,10 @@ export declare const baseConfig: {
         next: string;
     };
     lastUpdated: {
-        text: string;
-        formatOptions: {
-            dateStyle: string;
-            timeStyle: string;
+        readonly text: "Last updated";
+        readonly formatOptions: {
+            readonly dateStyle: "short";
+            readonly timeStyle: "short";
         };
     };
     footer: {

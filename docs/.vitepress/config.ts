@@ -55,7 +55,7 @@ export default defineConfig({
     hostname: 'https://lightvm.vercel.app',
   },
 
-  transformPageData(pageData) {
+  transformPageData(pageData: any) {
     if (!pageData.content) {
       return;
     }
@@ -67,9 +67,9 @@ export default defineConfig({
       return;
     }
 
-    const lines = pageData.content
+    const lines = (pageData.content as string)
       .split('\n')
-      .filter((line) => line.trim() !== '');
+      .filter((line: string) => line.trim() !== '');
 
     if (lines.length >= 2 && !pageData.frontmatter.description) {
       const desc = lines[1].replace(/[#*`]/g, '').trim();

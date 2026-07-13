@@ -29,7 +29,7 @@ export const baseConfig = {
       dateStyle: 'short',
       timeStyle: 'short',
     },
-  },
+  } as const,
 
   footer: {
     message: 'Dirilis di bawah Lisensi Apache-2.0.',

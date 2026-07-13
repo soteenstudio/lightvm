@@ -29,7 +29,7 @@ export const baseConfig = {
       dateStyle: 'short',
       timeStyle: 'short',
     },
-  },
+  } as const,
 
   footer: {
     message: 'Released under the Apache-2.0 License.',
