@@ -14,7 +14,7 @@
     "skipLibCheck": true,
     "declaration": true,
     "emitDeclarationOnly": true,
-    "declarationDir": "./types"
+    "declarationDir": "./docs/types"
   },
   "include": ["./docs/.vitepress/**/*"],
   "exclude": ["tests", "./docs/types/**/*", "./docs/examples/**/*"]
