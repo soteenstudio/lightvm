@@ -49,7 +49,7 @@
     "build:debug": "node ./scripts/build/build-binary.js --local --debug --silent",
     "check:deps": "node ./scripts/utils/check-deps.js",
     "typecheck": "tsc",
-    "prettier": "npx prettier ./ts/**/*.ts --write",
+    "prettier": "npx prettier \"./ts/**/*.ts\" \"./docs/**/*.md\" \"./docs/**/*.ts\" --write",
     "eslint": "npx eslint ./ts/**/*.ts --fix",
     "cspell": "cspell lint \"**/*.{js,ts,rs,md}\" --gitignore --quiet --no-summary --exclude \"docs/**\"",
     "html:cleaner": "node ./scripts/utils/html-cleaner.js",

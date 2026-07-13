@@ -1,3 +1,3 @@
-vm.on("halt", (payload) => {
-  console.log("Halted: ", payload);
+vm.on('halt', (payload) => {
+  console.log('Halted: ', payload);
 });

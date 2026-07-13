@@ -3,7 +3,7 @@ export default {
     const filtered = filenames.filter(file => !file.includes('docs/'));
     return filtered.length ? `npm run cspell ${filtered.join(' ')}` : [];
   },
-  "{ts/src,ts/tests,scripts}**/*.{js,ts}": [
+  "{ts/src,ts/tests,scripts,docs}**/*.{js,ts}": [
     () => "npm run typecheck",
     "eslint --fix",
     "prettier --write"

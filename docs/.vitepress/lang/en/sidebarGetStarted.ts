@@ -5,9 +5,15 @@ export const sidebarGetStarted = [
     items: [
       { text: 'Installation', link: '/get-started/installation' },
       { text: 'Quick Usage', link: '/get-started/quick-usage' },
-      { text: 'Supported Architectures', link: '/get-started/supported-architectures' }
-    ]
+      {
+        text: 'Supported Architectures',
+        link: '/get-started/supported-architectures',
+      },
+    ],
   },
-  { text: 'API References', link: '/api-references/method-functions/run-method' },
-  { text: 'Concepts', link: '/concepts/what-is' }
+  {
+    text: 'API References',
+    link: '/api-references/method-functions/run-method',
+  },
+  { text: 'Concepts', link: '/concepts/what-is' },
 ];

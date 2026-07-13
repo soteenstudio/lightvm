@@ -1,2 +1,2 @@
 const report = vm.inspect();
-console.log(report)
+console.log(report);
