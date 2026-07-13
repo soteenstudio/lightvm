@@ -48,7 +48,7 @@
     "build:release": "node ./scripts/build/build-binary.js --local --silent",
     "build:debug": "node ./scripts/build/build-binary.js --local --debug --silent",
     "check:deps": "node ./scripts/utils/check-deps.js",
-    "typecheck": "tsc",
+    "typecheck": "npx tsc -p tsconfig.json",
     "prettier": "npx prettier \"./ts/**/*.ts\" \"./docs/**/*.md\" \"./docs/**/*.ts\" --write",
     "eslint": "npx eslint ./ts/**/*.ts --fix",
     "cspell": "cspell lint \"**/*.{js,ts,rs,md}\" --gitignore --quiet --no-summary --exclude \"docs/**\"",
@@ -60,7 +60,8 @@
     "sync:agents": "node ./scripts/utils/sync-agents.js",
     "docs:dev": "vitepress dev docs",
     "docs:build": "node ./scripts/utils/fetch-stats.js && vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "docs:typecheck": "npx tsc -p tsconfig.docs.json"
   },
   "keywords": [
     "lightvm",
@@ -83,6 +84,7 @@
     "prettier": "3.9.5",
     "tinybench": "^6.0.2",
     "tsx": "^4.22.3",
+    "typescript": "^6.0.3",
     "unitry": "^0.1.0-alpha.1",
     "vitepress": "^1.6.4",
     "vue": "^3.5.39"

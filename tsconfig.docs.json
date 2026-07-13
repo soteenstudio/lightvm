@@ -5,10 +5,10 @@
     "lib": ["es5", "es6", "es7", "es2022", "dom"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "rootDir": "./ts/src",
-    "typeRoots": ["./ts/types", "./node_modules/@types"],
+    "rootDir": "./docs/.vitepress",
+    "typeRoots": ["./docs/types", "./node_modules/@types"],
     "sourceMap": true,
-    "outDir": "./dist",
+    "outDir": "./docs/dist",
     "esModuleInterop": true,
     "strict": true,
     "skipLibCheck": true,
@@ -16,6 +16,6 @@
     "emitDeclarationOnly": true,
     "declarationDir": "./types"
   },
-  "include": ["./ts/src/**/*"],
-  "exclude": ["tests", "./ts/types/**/*"]
+  "include": ["./docs/.vitepress/**/*"],
+  "exclude": ["tests", "./docs/types/**/*", "./docs/examples/**/*"]
 }
