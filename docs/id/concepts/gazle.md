@@ -1,18 +1,18 @@
-# Gazle
-**Gazle** is a built-in optimizer that comes with **LightVM** to perform optimizations before your bytecode is executed through a multi-pass optimization method to ensure maximum performance and minimal footprint.
+# Gazle (Pengoptimal)
+**Gazle** adalah pengoptimal bawaan yang disertakan dengan **LightVM** untuk melakukan pengoptimalan sebelum bytecode Anda dieksekusi melalui metode pengoptimalan multi-pass untuk memastikan kinerja maksimum dan meminimalkan
 
-## How Gazle Works
-Gazle employs a specialized transformation pipeline to refine your bytecode. It processes the instruction stream through multiple passes, systematically identifying and eliminating inefficiencies before the VM runtime even begins.
+## Cara Kerja Gazle
+Gazle menggunakan alur transformasi khusus untuk menyempurnakan bytecode Anda. Ia memproses aliran instruksi melalui beberapa tahapan, secara sistematis mengidentifikasi dan menghilangkan ketidakefisienan sebelum.
 
- * __Constant Folding__: Pre-calculates math and logic operations (e.g., `add`, `sub`, `xor`, `concat`) if the values are known at compile-time.
- * __Conversion & Metadata Folding__: Pre-evaluates type casting (e.g., `to_integer`, `to_string`) and metadata checks like TypeOf to eliminate redundant runtime work.
- * __Strength Reduction__: Replaces "heavy" operations with lighter ones, such as converting multiplication by powers of two into bitwise Shl (Shift Left).
- * __Dead Store Elimination__: Analyzes variable usage and automatically removes Push, Set, or Inc operations that don't contribute to the final program state.
- * __Dead Loop Elimination__: Identifies and prunes "pure" loops that have no side effects (no I/O, calls, or returns), preventing unnecessary CPU cycles.
- * __Redundant Load Elimination__: Detects consecutive attempts to load identical values or variables onto the stack and replaces redundant operations with a high-performance Dup instruction to minimize memory access overhead.
- * __Jump Optimization__: Detects and removes redundant Jump instructions that point to the very next line of code.
- * __Jump Threading__: Optimizes control flow by collapsing chains of redirection, where a jump leads directly to another jump, ensuring the instruction pointer bypasses intermediate hops to reach the final destination immediately.
+ * **Pelipatan Konstanta**: Melakukan pra-hitung operasi matematika dan logika (misalnya, `add`, `sub`, `xor`, `concat`) jika nilainya diketahui pada saat kompilasi.
+ * **Konversi & Pelipatan Metadata**: Melakukan pra-evaluasi konversi tipe (misalnya, `to_integer`, `to_string`) dan pemeriksaan metadata seperti `type_of` untuk menghilangkan pekerjaan runtime yang berlebihan.
+ * **Pengurangan Kekuatan**: Menggantikan operasi "berat" dengan operasi yang lebih ringan, seperti mengubah perkalian dengan pangkat dua menjadi `shl` (Shift Left) bitwise.
+ * **Penghapusan Penyimpanan yang Tidak Berguna**: Menganalisis penggunaan variabel dan secara otomatis menghapus operasi `push`, `set`, atau `inc` yang tidak berkontribusi pada keadaan program akhir.
+ * **Penghapusan Loop Mati**: Mengidentifikasi dan memangkas loop "murni" yang tidak memiliki efek samping (tidak ada I/O, panggilan, atau pengembalian), sehingga mencegah siklus CPU yang tidak perlu.
+ * **Penghapusan Pemuatan Berlebihan**: Mendeteksi upaya berulang untuk memuat nilai atau variabel identik ke dalam tumpukan dan mengganti operasi yang berlebihan dengan instruksi `dup` berkinerja tinggi untuk meminimalkan 
+ * **Optimasi Lompatan**: Mendeteksi dan menghapus instruksi Lompatan yang berlebihan yang mengarah ke baris kode berikutnya.
+ * **Jump Threading**: Mengoptimalkan alur kontrol dengan meruntuhkan rantai pengalihan, di mana sebuah lompatan mengarah langsung ke lompatan lain, memastikan penunjuk instruksi melewati lompatan perantara untuk mencapai tujuan.
 
 ::: info
-You can find how to use Gazle on the [Optimize Bytecode Method](../api-references/method-functions/tools-method/optimize-bytecode-method) page.
+Anda dapat menemukan cara menggunakan Gazle di halaman [Metode Optimize Bytecode](../api-references/method-functions/tools-method/optimize-bytecode-method).
 :::

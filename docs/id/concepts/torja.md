@@ -1,13 +1,11 @@
-# Torja
-Torja is the core Symbol Resolver of LightVM. It acts as a bridge between high-level bytecode—which uses human-readable names for variables and functions—and the high-performance execution engine that relies on memory-efficient numerical indices.
+# Torja (Penyelesai Simbol)
+Torja adalah Penyelesai Simbol inti dari LightVM. Ia bertindak sebagai jembatan antara bytecode tingkat tinggi—yang menggunakan nama-nama yang mudah dibaca manusia untuk variabel dan fungsi—dan mesin eksekusi berperforma tinggi yang mengandalkan indeks numerik yang efisien memori.
 
-## How Torja Works
-Before your bytecode reaches the execution phase, Torja performs a crucial pass to resolve all symbolic references into fixed-position indices.
+## Cara Kerja Torja
+Sebelum bytecode Anda mencapai fase eksekusi, Torja melakukan proses krusial untuk menyelesaikan semua referensi simbolik menjadi indeks posisi tetap.
 
- * __Symbol Mapping__: Scans through all imports and dynamic instructions to map every unique variable or function name to a stable integer index.
- * __Dynamic Resolution__: If a variable or function is encountered for the first time during the resolution pass, Torja dynamically assigns a new index, ensuring a unique ID for every symbol throughout the lifecycle of the program.
- * __Instruction Specialization__: It transforms generic, name-based instructions (e.g., `get`, `set`, `inc`) into their specialized index-based counterparts (`get_idx`, `set_idx`, `inc_idx`). This minimizes runtime lookups and significantly reduces CPU overhead during execution.
- * __Value Promotion__: During the symbol pass, Torja also optimizes Push instructions by promoting generic Value types into specialized, type-specific opcodes (e.g., `push_int16`, `push_float64`, `push_string`), ensuring the VM knows the exact data size and type immediately.
- * __Functional Scope Tracking__: Torja identifies function parameters and scoped identifiers, ensuring that all local symbols are correctly tracked within the symbol table and prepared for the VM's stack-based architecture.
-
-
+ * **Pemetaan Simbol**: Memindai semua impor dan instruksi dinamis untuk memetakan setiap nama variabel atau fungsi yang unik ke indeks integer yang stabil.
+ * **Resolusi Dinamis**: Jika sebuah variabel atau fungsi ditemui untuk pertama kalinya selama proses resolusi, Torja secara dinamis memberikan indeks baru, memastikan ID unik untuk setiap simbol selama siklus hidup program.
+ * **Spesialisasi Instruksi**: Ia mengubah instruksi berbasis nama yang generik (contoh: `get`, `set`, `inc`) menjadi padanannya yang berbasis indeks (contoh: `get_idx`, `set_idx`, `inc_idx`). Ini meminimalkan pencarian saat runtime dan secara signifikan mengurangi beban kerja CPU selama eksekusi.
+ * **Promosi Nilai**: Selama proses simbol, Torja juga mengoptimalkan instruksi `push` dengan mempromosikan tipe Nilai generik menjadi opcode khusus tipe data (contoh: `push_int16`, `push_float64`, `push_string`), memastikan VM mengetahui ukuran dan tipe data yang tepat secara langsung.
+ * **Pelacakan Cakupan Fungsional**: Torja mengidentifikasi parameter fungsi dan pengenal cakupan, memastikan bahwa semua simbol lokal dilacak dengan benar di dalam tabel simbol dan disiapkan untuk arsitektur berbasis stack milik VM.

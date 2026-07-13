@@ -36,7 +36,7 @@ hero:
       link: /id/api-references/method-functions/run-method
 
 features:
-  - title: Sihir Nol (Deterministik)
+  - title: Zero Magic (Deterministik)
     details: Eksekusi instruksi bersifat linier dan sepenuhnya dapat diprediksi. VM beroperasi secara eksplisit, mengeksekusi instruksi tepat seperti yang didefinisikan.
   - title: Sadar akan Sumber Daya
     details: Dirancang dengan jejak memori minimal melalui penggunaan struktur data yang dioptimalkan seperti SmolStr dan ahash untuk manajemen metadata yang cepat.
