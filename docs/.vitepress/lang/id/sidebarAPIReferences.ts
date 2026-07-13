@@ -51,7 +51,7 @@ export const sidebarAPIReferences = [
       },
     ],
   },
-  { text: 'Tipe Primitif', link: '/id/id/api-references/primitive-types' },
+  { text: 'Tipe Primitif', link: '/id/api-references/primitive-types' },
   {
     text: 'Set Instruksi',
     collapsed: false,
