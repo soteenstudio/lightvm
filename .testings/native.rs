@@ -20,7 +20,12 @@ fn main() {
     ["push", 5],
     ["println"]
   ]"#;
-  let str = "push 5; ;; IP=0\npush 5; ;; IP=1\nadd Int; ;; IP=2\nprintln; ;; IP=3";
+  let str = r#"
+  push 5; ;; IP=0
+  push 5; ;; IP=1
+  add Int; ;; IP=2
+  println; ;; IP=3
+  "#;
   println!("{}", vm.tools().parse_ltc(str));
   /*let optimized_json = vm.tools().optimize_bytecode(raw);
   
