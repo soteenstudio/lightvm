@@ -18,6 +18,6 @@ These instructions provide the necessary operations for numerical and logical ca
 | `not`       | -          | val1, val2 | Bitwise __NOT__ (Inversion) operation on a single value |
 | `pow` | type | val1, val2 | General power operation (x^y) |
 | `powi` | type | val1, val2 | Power with integer exponent |
-| `powf` | type | val1, val2 | Power with floating point exponent |
+| `powf` | type | val1, val2 | Power with floating-point exponent |
 | `sin` / `cos` | type | val1, val2 | Sine or Cosine trigonometric operation |
 | `tan` | type | val1, val2 | Tangent trigonometric operation |
