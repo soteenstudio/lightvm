@@ -113,6 +113,14 @@ jobs:
         with:
           ndk-version: r27
 
+      - name: Build Release (Standard)
+        if: |
+          matrix.platform == 'linux-x64' || 
+          matrix.platform == 'win32-x64' || 
+          matrix.platform == 'win32-ia32' || 
+          matrix.platform == 'darwin-x64'
+        run: cargo build --release --target ${{ matrix.target }}
+
       - name: Install Linker
         if: |
           contains(matrix.platform, 'android') || 
