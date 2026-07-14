@@ -71,6 +71,10 @@ export const sidebarAPIReferences = [
       {
         text: 'Struktur Data & Metadata',
         link: '/id/api-references/instruction-set/data-structures-metadata'
+      },
+      {
+        text: 'Konversi Tipe (Konversi)',
+        link: '/id/api-references/instruction-set/type-casting'
       }
     ],
   },

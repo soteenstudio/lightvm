@@ -1,6 +1,15 @@
 import { defineConfig } from 'vitepress';
 import { enUs } from './en.js';
 import { idId } from './id.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Mendapatkan direktori file saat ini
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Membaca file SVG
+const donationSvg = fs.readFileSync(path.resolve(__dirname, '../public/assets/donation-box.svg'), 'utf-8');
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -101,6 +110,14 @@ export default defineConfig({
     socialLinks: [
       { icon: 'github', link: 'https://github.com/soteenstudio/lightvm' },
       { icon: 'instagram', link: 'https://instagram.com/soteenstudio' },
+{
+  icon: {
+    svg: donationSvg,
+  },
+  link: 'https://trakteer.id/soteen_studio/tip?quantity=1',
+  ariaLabel: 'trakteer'
+}
+
     ],
   },
 });
