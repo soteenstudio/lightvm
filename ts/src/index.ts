@@ -13,7 +13,6 @@ import { VMConfig } from './generated/VMConfig.js';
 import { loadNapi } from './utils/loadNapi.js';
 import { isMusl } from './utils/isMusl.js';
 import { VMSystemError as VMError } from './utils/vmerror.js';
-export type VMEvent = 'Tick' | 'Halt' | 'Panic';
 export type Listener = (payload?: any) => void;
 export interface VMResult {
   value: any;
@@ -25,6 +24,11 @@ export enum Capability {
   Control = 'CONTROL',
   Debug = 'DEBUG',
   Unsafe = 'UNSAFE',
+}
+export enum VMEvent {
+  Tick = 0,
+  Halt = 1,
+  Panic = 2,
 }
 export class LightVM {
   private native: any;
@@ -186,7 +190,7 @@ export class LightVM {
 
   on(event: VMEvent, fn: Listener) {
     try {
-      this.instance.on(event.toLowerCase(), (payload: string) => {
+      this.instance.on(event, (payload: string) => {
         let data;
         try {
           data = JSON.parse(payload);
