@@ -196,6 +196,9 @@ jobs:
         run: bash .github/scripts/publish/publish_npm.sh
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          INPUT_VERSION: ${{ github.event.inputs.version_override }}
+          INPUT_RAW_VERSION: ${{ github.event.release.tag_name }}
+          EVENT_NAME: ${{ github.event_name }}
 
       - name: Upload Test Tarballs (Only on Manual Run)
         if: github.event_name == 'workflow_dispatch'
@@ -220,3 +223,6 @@ jobs:
 
       - name: Publish to Crates.io
         run: bash .github/scripts/publish/publish_crates.sh
+        env:
+          INPUT_VERSION: {{ github.event.inputs.version_override }}
+          TOKEN: ${{ secrets.CRATES_IO_TOKEN }}

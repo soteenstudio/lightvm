@@ -1,6 +1,6 @@
-VERSION="${{ github.event.inputs.version_override }}"
+VERSION="$INPUT_VERSION"
 if [ -z "$VERSION" ]; then
-  RAW_VERSION="${{ github.event.release.tag_name }}"
+  RAW_VERSION="$INPUT_RAW_VERSION"
   VERSION=${RAW_VERSION#v}
 fi
 
@@ -47,7 +47,7 @@ for item in "${PLATFORMS[@]}"; do
   mkdir -p "publish/$PLATFORM"
   
   if [[ "$PLATFORM" == "browser-wasm" ]]; then
-      echo "=== Isi dari binaries/$ARTIFACT ==="
+      echo "=== Contents of binaries/$ARTIFACT ==="
       ls -la "binaries/$ARTIFACT"
       
       cp -r "binaries/$ARTIFACT"/. "publish/$PLATFORM/"
@@ -97,11 +97,11 @@ for item in "${PLATFORMS[@]}"; do
 
   cd "publish/$PLATFORM"
   
-  if [[ "${{ github.event_name }}" == "release" ]] || [[ "${{ github.event_name }}" == "workflow_dispatch" && "$VERSION" == *"nightly"* ]]; then
-    echo "Event Rilisan/Nightly Terdeteksi: Menjalankan Real Publish ke NPM..."
+  if [[ "$EVENT_NAME" == "release" ]] || [[ "$EVENT_NAME" == "workflow_dispatch" && "$VERSION" == *"nightly"* ]]; then
+    echo "Nightly Release Event Detected: Running Real Publish to NPM..."
     npm publish --tag $TAG --access public || echo "Skip existing"
   else
-    echo "Event Manual (Non-Nightly) Terdeteksi: Menjalankan Dry-Run (NPM Pack)..."
+    echo "Manual (Non-Nightly) Event Detected: Running Dry-Run (NPM Pack)..."
     npm pack
     mkdir -p ../../dist-test
     mv *.tgz ../../dist-test/
@@ -110,7 +110,7 @@ for item in "${PLATFORMS[@]}"; do
   cd ../..
 done
 
-if [[ "${{ github.event_name }}" == "release" || "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+if [[ "$EVENT_NAME" == "release" || "$EVENT_NAME" == "workflow_dispatch" ]]; then
   jq --arg ver "$VERSION" \
     '.version = $ver | .optionalDependencies = {
       "@lightvm/core-linux-x64": $ver,

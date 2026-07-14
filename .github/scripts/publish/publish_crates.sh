@@ -1,5 +1,5 @@
-if [[ "${{ github.event.inputs.version_override }}" == *"nightly"* ]]; then
-  cargo publish --token ${{ secrets.CRATES_IO_TOKEN }} --allow-dirty --no-verify
+if [[ "$INPUT_VERSION" == *"nightly"* ]]; then
+  cargo publish --token "$TOKEN" --allow-dirty --no-verify
 else
-  cargo publish --token ${{ secrets.CRATES_IO_TOKEN }} --allow-dirty
+  cargo publish --token "$TOKEN" --allow-dirty
 fi
