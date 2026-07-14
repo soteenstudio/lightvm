@@ -110,13 +110,13 @@ export default defineConfig({
     socialLinks: [
       { icon: 'github', link: 'https://github.com/soteenstudio/lightvm' },
       { icon: 'instagram', link: 'https://instagram.com/soteenstudio' },
-{
-  icon: {
-    svg: donationSvg,
-  },
-  link: 'https://trakteer.id/soteen_studio/tip?quantity=1',
-  ariaLabel: 'trakteer'
-}
+      {
+        icon: {
+          svg: donationSvg,
+        },
+        link: 'https://trakteer.id/soteen_studio/tip?quantity=1',
+        ariaLabel: 'trakteer',
+      }
 
     ],
   },
