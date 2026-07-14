@@ -42,7 +42,8 @@ export default {
     'lockfiles',
     'benc',
     'armv',
-    'androideabi'
+    'androideabi',
+    'rustflags'
   ],
   ignorePaths: [
     'node_modules/**',
