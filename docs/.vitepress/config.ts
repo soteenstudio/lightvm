@@ -104,7 +104,12 @@ export default defineConfig({
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     search: {
-      provider: 'local',
+      provider: 'algolia',
+      options: {
+        appId: '7KAJIG4S68',
+        apiKey: '113fdb221f76b5367d9bd85a868f1958',
+        indexName: 'Yoush',
+      }
     },
 
     socialLinks: [
