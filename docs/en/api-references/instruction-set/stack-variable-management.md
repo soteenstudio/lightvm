@@ -1,5 +1,5 @@
 # Stack & Variable Management
-The following table details the core operations for stack manipulation and variable lifecycle management. These instructions are fundamental to LightVM's stack-based architecture, governing how data is stored, retrieved, and organized during execution.
+These instructions detail the core operations for stack manipulation and variable lifecycle management. They are fundamental to LightVM's stack-based architecture, governing how data is stored, retrieved, and organized during execution.
 
 | Opcode | Arguments | Operands (stack) | Description |
 |--------|-----------|------------------|-------------|
