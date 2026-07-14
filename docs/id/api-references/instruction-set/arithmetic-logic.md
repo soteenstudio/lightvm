@@ -13,9 +13,9 @@ Instruksi-instruksi ini menyediakan operasi yang diperlukan untuk perhitungan nu
 | `eq` / `neq` | type | val1, val2 | Sama Dengan atau Tidak Sama Dengan |
 | `shl` / `shr` | type | val1, val2 | Operasi bitwise Shift Left atau Shift Right berdasarkan tipe data |
 | `rol` / `ror` | type | val1, val2 | Operasi bitwise __Circular__ Shift Left atau Right (Rotate) berdasarkan tipe data |
-| `and` / `or` | - | val1, val2 | Operasi logika Boolean (``&&`` / ``\ | \ | ``) |
+| `and` / `or` | - | val1, val2 | Operasi logika Boolean (`&&` / `||`) |
 | `xor` | - | val1, val2 | Operasi bitwise __Exclusive OR__ antara dua nilai |
-| `not` | - | val1, val2 | Operasi bitwise __NOT__ (Inversi) pada satu nilai |
+| `not` | - | val | Operasi bitwise __NOT__ (Inversi) pada satu nilai |
 | `pow` | type | val1, val2 | Operasi pangkat umum (x^y) |
 | `powi` | type | val1, val2 | Pangkat dengan eksponen integer |
 | `powf` | type | val1, val2 | Pangkat dengan eksponen floating point |
