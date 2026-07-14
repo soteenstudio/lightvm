@@ -44,7 +44,8 @@ export default {
     'armv',
     'androideabi',
     'rustflags',
-    'nttld'
+    'nttld',
+    'argjson'
   ],
   ignorePaths: [
     'node_modules/**',
