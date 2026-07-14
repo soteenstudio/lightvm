@@ -98,6 +98,16 @@ export class LightVM {
       },
     });
   }
+
+  private wrap<T>(fn: () => T): T {
+    try {
+      return fn();
+    } catch (err) {
+      console.error((err as Error).message);
+      process.exit(1);
+    }
+  }
+
   withNightly(enabled: boolean) {
     this.instance.withNightly(enabled);
     if (this.config.runtimeConfig) {

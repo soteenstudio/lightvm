@@ -12,12 +12,12 @@ use crate::types::vmevent::VmEvent;
 pub trait IntoVmEvent {
   fn to_vm_event(self) -> VmEvent;
 }
-impl IntoVmEvent for &str {
+impl IntoVmEvent for u32 {
   fn to_vm_event(self) -> VmEvent {
     match self {
-      "tick" => VmEvent::Tick,
-      "halt" => VmEvent::Halt,
-      "panic" => VmEvent::Panic,
+      0 => VmEvent::Tick,
+      1 => VmEvent::Halt,
+      2 => VmEvent::Panic,
       _ => {
         eprintln!("Unknown event: {}", self);
         std::process::exit(1);
