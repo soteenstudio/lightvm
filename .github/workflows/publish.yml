@@ -103,6 +103,10 @@ jobs:
           toolchain: stable
           targets: ${{ matrix.target }}
 
+      - name: Install cargo-ndk
+        if: contains(matrix.platform, 'android')
+        run: cargo install cargo-ndk
+
       - name: Setup Android NDK
         if: contains(matrix.platform, 'android')
         run: bash .github/scripts/publish/setup_ndk.sh
