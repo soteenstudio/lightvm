@@ -109,14 +109,9 @@ jobs:
 
       - name: Setup Android NDK
         if: contains(matrix.platform, 'android')
-        run: bash .github/scripts/publish/setup_ndk.sh
-      - name: Build Release (Standard)
-        if: |
-          matrix.platform == 'linux-x64' || 
-          matrix.platform == 'win32-x64' || 
-          matrix.platform == 'win32-ia32' || 
-          matrix.platform == 'darwin-x64'
-        run: cargo build --release --target ${{ matrix.target }}
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r27
 
       - name: Install Linker
         if: |

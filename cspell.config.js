@@ -43,7 +43,8 @@ export default {
     'benc',
     'armv',
     'androideabi',
-    'rustflags'
+    'rustflags',
+    'nttld'
   ],
   ignorePaths: [
     'node_modules/**',
