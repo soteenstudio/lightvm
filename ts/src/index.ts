@@ -20,10 +20,10 @@ export interface VMResult {
   halted: boolean;
 }
 export enum Capability {
-  Observe = 'OBSERVE',
-  Control = 'CONTROL',
-  Debug = 'DEBUG',
-  Unsafe = 'UNSAFE',
+  Observe = 0,
+  Control = 1,
+  Debug = 2,
+  Unsafe = 3,
 }
 export enum VMEvent {
   Tick = 0,
@@ -35,67 +35,33 @@ export class LightVM {
   private instance: any;
   private config: VMConfig;
 
-  constructor(
-    config: Partial<Omit<VMConfig, 'caps'>> & {
-      caps?: (Capability | string | number)[];
-    } = {
-      caps: [Capability.Observe],
-      runtimeConfig: {
-        nightly: false,
-      },
-      errorOptions: {
-        backtrace: false,
-        explain: false,
-        hint: true,
-      },
-    },
-  ) {
+  private static readonly DEFAULTS: VMConfig = {
+    caps: [Capability.Observe],
+    runtimeConfig: { nightly: false },
+    errorOptions: { backtrace: false, explain: false, hint: true },
+  };
+
+  constructor(config: Partial<VMConfig> & { caps?: Capability[] } = {}) {
     this.config = {
-      caps: config.caps ?? [Capability.Observe],
+      caps: config.caps ?? LightVM.DEFAULTS.caps,
       runtimeConfig: {
-        nightly: config.runtimeConfig?.nightly ?? false,
+        ...LightVM.DEFAULTS.runtimeConfig,
+        ...config.runtimeConfig,
       },
       errorOptions: {
-        backtrace: config?.errorOptions?.backtrace ?? false,
-        explain: config?.errorOptions?.explain ?? false,
-        hint: config?.errorOptions?.hint ?? true,
+        ...LightVM.DEFAULTS.errorOptions,
+        ...config.errorOptions,
       },
     } as VMConfig;
-    const runtimeConfig = config?.runtimeConfig;
-    const errorOptions = config?.errorOptions;
-
-    const capsList = config.caps || [Capability.Observe];
-    const numericCaps = capsList.map((cap) => {
-      if (typeof cap === 'number') return cap;
-
-      switch (cap.toUpperCase()) {
-        case 'OBSERVE':
-          return 0;
-        case 'CONTROL':
-          return 1;
-        case 'DEBUG':
-          return 2;
-        case 'UNSAFE':
-          return 3;
-        default:
-          throw new Error(`Unknown capability ${cap}`);
-      }
-    });
 
     this.native = loadNapi(
-      errorOptions?.explain ?? false,
-      errorOptions?.hint ?? true,
+      this.config.errorOptions?.explain ?? false,
+      this.config.errorOptions?.hint ?? true,
     );
     this.instance = new this.native.LightVM({
-      capsRaw: numericCaps,
-      runtimeConfig: {
-        nightly: runtimeConfig?.nightly ?? false,
-      },
-      errorOptions: {
-        backtrace: errorOptions?.backtrace ?? false,
-        explain: errorOptions?.explain ?? false,
-        hint: errorOptions?.hint ?? true,
-      },
+      capsRaw: this.config.caps,
+      runtimeConfig: this.config.runtimeConfig,
+      errorOptions: this.config.errorOptions,
     });
   }
 
