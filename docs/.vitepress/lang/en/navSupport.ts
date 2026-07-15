@@ -6,5 +6,9 @@ export const navSupport = {
       text: 'Discussions',
       link: 'https://github.com/soteenstudio/lightvm/discussions',
     },
+    {
+      text: 'Forum',
+      link: '/forum'
+    }
   ],
 };

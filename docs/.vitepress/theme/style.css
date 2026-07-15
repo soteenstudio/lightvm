@@ -74,3 +74,7 @@ div[class*="language-"] > pre {
 .release-link:hover {
   opacity: 0.7;
 }
+
+.giscus-frame {
+  min-height: 80px !important;
+}
