@@ -69,8 +69,7 @@ export class LightVM {
     try {
       return fn();
     } catch (err) {
-      console.error((err as Error).message);
-      process.exit(1);
+      throw err instanceof Error ? err : new Error(String(err));
     }
   }
 
