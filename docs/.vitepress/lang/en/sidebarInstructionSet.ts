@@ -25,6 +25,18 @@ export const sidebarInstructionSet = {
     {
       text: 'Objects & OOP',
       link: '/api-references/instruction-set/objects-oop'
+    },
+    {
+      text: 'Module & Export System',
+      link: '/api-references/instruction-set/module-export-system'
+    },
+    {
+      text: 'Basic I/O & Loop Control',
+      link: '/api-references/instruction-set/basic-io-loop-control'
+    },
+    {
+      text: 'Advanced Stack & Memory Management',
+      link: '/api-references/instruction-set/advanced-stack-memory-management'
     }
   ],
 };

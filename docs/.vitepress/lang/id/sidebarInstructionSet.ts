@@ -21,6 +21,22 @@ export const sidebarInstructionSet = {
     {
       text: 'Konversi Tipe (Konversi)',
       link: '/id/api-references/instruction-set/type-casting'
+    },
+    {
+      text: 'Objek & OOP',
+      link: '/id/api-references/instruction-set/objects-oop'
+    },
+    {
+      text: 'Sistem Modul & Ekspor',
+      link: '/id/api-references/instruction-set/module-export-system'
+    },
+    {
+      text: 'I/O Dasar & Kontrol Perulangan',
+      link: '/id/api-references/instruction-set/basic-io-loop-control'
+    },
+    {
+      text: 'Manajemen Memori & Stack Lanjutan',
+      link: '/id/api-references/instruction-set/advanced-stack-memory-management'
     }
   ],
 };
