@@ -174,12 +174,7 @@ export class LightVM {
     return this;
   }
   halt() {
-    try {
-      this.instance.halt();
-    } catch (err) {
-      console.error((err as Error).message);
-      process.exit(1);
-    }
+    this.wrap(() => this.instance.halt());
   }
 
   on(event: VMEvent, fn: Listener) {
@@ -229,42 +224,24 @@ export class LightVM {
     const errorOptions = this.config?.errorOptions;
     return {
       optimizeBytecode: (bytecode: any) => {
-        try {
-          return this.native.LightVM.optimizeBytecode(
+        return this.wrap(
+          this.native.LightVM.optimizeBytecode(
             bytecode,
             runtimeConfig?.nightly ?? false,
             errorOptions?.backtrace ?? false,
             errorOptions?.explain ?? false,
             errorOptions?.hint ?? true,
-          );
-        } catch (err) {
-          console.error((err as Error).message);
-          process.exit(1);
-        }
+          ),
+        );
       },
       stringifyLTC: (json: Instructions[]) => {
-        try {
-          return this.native.LightVM.stringifyLtc(json);
-        } catch (err) {
-          console.error((err as Error).message);
-          process.exit(1);
-        }
+        return this.wrap(this.native.LightVM.stringifyLtc(json));
       },
       parseLTC: (code: string) => {
-        try {
-          return this.native.LightVM.parseLtc(code);
-        } catch (err) {
-          console.error((err as Error).message);
-          process.exit(1);
-        }
+        return this.wrap(this.native.LightVM.parseLtc(code));
       },
       parseLTCArray: (code: string) => {
-        try {
-          return this.native.LightVM.parseLtcArray(code);
-        } catch (err) {
-          console.error((err as Error).message);
-          process.exit(1);
-        }
+        return this.wrap(this.native.LightVM.parseLtcArray(code));
       },
     };
   }
