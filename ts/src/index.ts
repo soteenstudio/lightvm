@@ -108,6 +108,14 @@ export class LightVM {
     }
   }
 
+  private parseSafe(payload: string): any {
+    try {
+      return JSON.parse(payload);
+    } catch {
+      return payload;
+    }
+  }
+
   withNightly(enabled: boolean) {
     this.instance.withNightly(enabled);
     if (this.config.runtimeConfig) {
@@ -183,17 +191,9 @@ export class LightVM {
   }
 
   on(event: VMEvent, fn: Listener) {
-    this.wrap(() => {
-      this.instance.on(event, (payload: string) => {
-        let data;
-        try {
-          data = JSON.parse(payload);
-        } catch {
-          data = payload;
-        }
-        fn(data);
-      });
-    });
+    this.wrap(() =>
+      this.instance.on(event, (payload: string) => fn(this.parseSafe(payload))),
+    );
     return this;
   }
 
@@ -221,7 +221,7 @@ export class LightVM {
     const errorOptions = this.config?.errorOptions;
     return {
       optimizeBytecode: (bytecode: any) => {
-        return this.wrap(
+        return this.wrap(() =>
           this.native.LightVM.optimizeBytecode(
             bytecode,
             runtimeConfig?.nightly ?? false,
