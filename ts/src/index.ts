@@ -115,6 +115,7 @@ export class LightVM {
     }
     return this;
   }
+
   withBacktrace(enabled: boolean) {
     this.instance.withBacktrace(enabled);
     if (this.config.errorOptions) {
@@ -122,6 +123,7 @@ export class LightVM {
     }
     return this;
   }
+
   withExplain(enabled: boolean) {
     this.instance.withExplain(enabled);
     if (this.config.errorOptions) {
@@ -129,6 +131,7 @@ export class LightVM {
     }
     return this;
   }
+
   withHint(enabled: boolean) {
     this.instance.withHint(enabled);
     if (this.config.errorOptions) {
@@ -136,6 +139,7 @@ export class LightVM {
     }
     return this;
   }
+
   load(source: Instructions[] | string) {
     const payload =
       typeof source === 'string' ? source : JSON.stringify(source);
@@ -173,12 +177,13 @@ export class LightVM {
     }
     return this;
   }
+
   halt() {
     this.wrap(() => this.instance.halt());
   }
 
   on(event: VMEvent, fn: Listener) {
-    try {
+    this.wrap(() => {
       this.instance.on(event, (payload: string) => {
         let data;
         try {
@@ -186,25 +191,16 @@ export class LightVM {
         } catch {
           data = payload;
         }
-
         fn(data);
       });
-
-      return this;
-    } catch (err) {
-      console.error((err as Error).message);
-      process.exit(1);
-    }
+    });
+    return this;
   }
 
   inspect() {
-    try {
-      return this.instance.inspect();
-    } catch (err) {
-      console.error((err as Error).message);
-      process.exit(1);
-    }
+    return this.wrap(() => this.instance.inspect());
   }
+
   embedded(): VMResult {
     try {
       this.instance.clear_outputs();
@@ -219,6 +215,7 @@ export class LightVM {
       process.exit(1);
     }
   }
+
   tools() {
     const runtimeConfig = this.config?.runtimeConfig;
     const errorOptions = this.config?.errorOptions;
@@ -235,13 +232,13 @@ export class LightVM {
         );
       },
       stringifyLTC: (json: Instructions[]) => {
-        return this.wrap(this.native.LightVM.stringifyLtc(json));
+        return this.wrap(() => this.native.LightVM.stringifyLtc(json));
       },
       parseLTC: (code: string) => {
-        return this.wrap(this.native.LightVM.parseLtc(code));
+        return this.wrap(() => this.native.LightVM.parseLtc(code));
       },
       parseLTCArray: (code: string) => {
-        return this.wrap(this.native.LightVM.parseLtcArray(code));
+        return this.wrap(() => this.native.LightVM.parseLtcArray(code));
       },
     };
   }

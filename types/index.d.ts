@@ -50,7 +50,7 @@ export declare class LightVM {
     inspect(): any;
     embedded(): VMResult;
     tools(): {
-        optimizeBytecode: (bytecode: any) => any;
+        optimizeBytecode: (bytecode: any) => unknown;
         stringifyLTC: (json: Instructions[]) => any;
         parseLTC: (code: string) => any;
         parseLTCArray: (code: string) => any;
