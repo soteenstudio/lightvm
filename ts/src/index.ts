@@ -137,48 +137,32 @@ export class LightVM {
     return this;
   }
   load(source: Instructions[] | string) {
-    try {
-      let payload: string;
-      if (typeof source === 'string') {
-        if (source.trim().startsWith('[')) {
-          payload = source;
-        } else {
-          payload = source;
-        }
-      } else {
-        payload = JSON.stringify(source);
-      }
-      this.instance.load(payload);
-      return this;
-    } catch (err) {
-      console.error((err as Error).message);
-      process.exit(1);
-    }
+    const payload =
+      typeof source === 'string' ? source : JSON.stringify(source);
+
+    this.wrap(() => this.instance.load(payload));
+    return this;
   }
+
   run(options: any = {}) {
-    try {
-      this.instance.run(options);
-    } catch (err) {
-      console.error((err as Error).message);
-      process.exit(1);
-    }
+    this.wrap(() => this.instance.run(options));
   }
+
   export(name: string) {
-    try {
-      return (...args: any[]) => {
+    return (...args: any[]) => {
+      return this.wrap(() => {
         const rawResult = this.instance.callExported(
           name,
           JSON.stringify(args),
         );
         const parsed = JSON.parse(rawResult);
+
         if (!parsed || parsed === 'Undefined') return undefined;
         return typeof parsed === 'object' ? Object.values(parsed)[0] : parsed;
-      };
-    } catch (err) {
-      console.error((err as Error).message);
-      process.exit(1);
-    }
+      });
+    };
   }
+
   provide(nameOrObj: string | any, value?: any) {
     if (typeof nameOrObj === 'object') {
       for (const [key, val] of Object.entries(nameOrObj)) {
