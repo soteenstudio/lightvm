@@ -82,12 +82,14 @@
     "eslint-plugin-headers": "^1.3.4",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.5",
+    "mermaid": "^11.16.0",
     "prettier": "3.9.5",
     "tinybench": "^6.0.2",
     "tsx": "^4.22.3",
     "typescript": "^6.0.3",
     "unitry": "^0.1.0-alpha.1",
     "vitepress": "^1.6.4",
+    "vitepress-plugin-mermaid": "^2.0.17",
     "vue": "^3.5.39"
   },
   "dependencies": {
