@@ -82,13 +82,13 @@ export class LightVM {
     }
   }
 
-  private updateConfig(key: keyof VMConfig, subKey: string, value: boolean) {
-    this.instance[`with${subKey.charAt(0).toUpperCase() + subKey.slice(1)}`](
-      value,
-    );
-    if (this.config[key]) {
-      (this.config[key] as any)[subKey] = value;
-    }
+  private updateConfig(
+    key: 'runtimeConfig' | 'errorOptions',
+    sub: string,
+    val: boolean,
+  ) {
+    this.instance[`with${sub[0].toUpperCase() + sub.slice(1)}`](val);
+    (this.config[key] as any)[sub] = val;
     return this;
   }
 
@@ -162,7 +162,7 @@ export class LightVM {
   }
 
   embedded(): VMResult {
-    try {
+    return this.wrap(() => {
       this.instance.clear_outputs();
       this.instance.run({});
       return {
@@ -170,10 +170,7 @@ export class LightVM {
         outputs: this.instance.get_outputs(),
         halted: true,
       };
-    } catch (err) {
-      console.error((err as Error).message);
-      process.exit(1);
-    }
+    });
   }
 
   tools() {

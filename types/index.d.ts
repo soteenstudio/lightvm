@@ -19,10 +19,10 @@ export interface VMResult {
     halted: boolean;
 }
 export declare enum Capability {
-    Observe = "OBSERVE",
-    Control = "CONTROL",
-    Debug = "DEBUG",
-    Unsafe = "UNSAFE"
+    Observe = 0,
+    Control = 1,
+    Debug = 2,
+    Unsafe = 3
 }
 export declare enum VMEvent {
     Tick = 0,
@@ -33,10 +33,13 @@ export declare class LightVM {
     private native;
     private instance;
     private config;
-    constructor(config?: Partial<Omit<VMConfig, 'caps'>> & {
-        caps?: (Capability | string | number)[];
+    private static readonly DEFAULTS;
+    constructor(config?: Partial<VMConfig> & {
+        caps?: Capability[];
     });
     private wrap;
+    private parseSafe;
+    private updateConfig;
     withNightly(enabled: boolean): this;
     withBacktrace(enabled: boolean): this;
     withExplain(enabled: boolean): this;
@@ -50,7 +53,7 @@ export declare class LightVM {
     inspect(): any;
     embedded(): VMResult;
     tools(): {
-        optimizeBytecode: (bytecode: any) => unknown;
+        optimizeBytecode: (bytecode: any) => any;
         stringifyLTC: (json: Instructions[]) => any;
         parseLTC: (code: string) => any;
         parseLTCArray: (code: string) => any;
