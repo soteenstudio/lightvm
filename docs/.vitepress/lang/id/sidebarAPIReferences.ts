@@ -1,5 +1,5 @@
 import { sidebarMethodFunctions } from './sidebarMethodFunctions.js';
-import { sidebarMethodFunctions } from './sidebarInstructionSet.js';
+import { sidebarInstructionSet } from './sidebarInstructionSet.js';
 
 export const sidebarAPIReferences = [
   sidebarMethodFunctions,
