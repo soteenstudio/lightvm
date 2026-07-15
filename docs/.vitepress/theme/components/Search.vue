@@ -7,9 +7,11 @@ const props = defineProps<{
 
 const loading = ref(false)
 
-const discussions = ref<
+const comments = ref<
   {
-    title: string
+    id: string
+    author: string
+    preview: string
     url: string
   }[]
 >([])
@@ -18,7 +20,7 @@ watch(
   () => props.query,
   async (query) => {
     if (!query.trim()) {
-      discussions.value = []
+      comments.value = []
       return
     }
 
@@ -29,7 +31,7 @@ watch(
         `/api/search?q=${encodeURIComponent(query)}`
       )
 
-      discussions.value = await res.json()
+      comments.value = await res.json()
     } finally {
       loading.value = false
     }
@@ -47,15 +49,19 @@ watch(
 
   <ul v-else>
     <li
-      v-for="discussion in discussions"
-      :key="discussion.url"
+      v-for="comment in comments"
+      :key="comment.id"
     >
       <a
-        :href="discussion.url"
+        :href="comment.url"
         target="_blank"
       >
-        {{ discussion.title }}
+        {{ comment.preview }}
       </a>
+
+      <small>
+        — {{ comment.author }}
+      </small>
     </li>
   </ul>
 </template>
