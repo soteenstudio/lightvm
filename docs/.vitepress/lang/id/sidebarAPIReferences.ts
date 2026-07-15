@@ -3,6 +3,6 @@ import { sidebarInstructionSet } from './sidebarInstructionSet.js';
 
 export const sidebarAPIReferences = [
   sidebarMethodFunctions,
-  { text: 'Tipe Primitif', link: '/id/api-references/primitive-types' },
+  { text: 'Tipe Primitif', link: '/id/api-reference/primitive-types' },
   sidebarInstructionSet,
 ];

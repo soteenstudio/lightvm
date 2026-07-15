@@ -13,7 +13,7 @@ export const sidebarGetStarted = [
   },
   {
     text: 'API References',
-    link: '/api-references/method-functions/run-method',
+    link: '/api-reference/method-functions/run-method',
   },
   { text: 'Concepts', link: '/concepts/what-is' },
 ];

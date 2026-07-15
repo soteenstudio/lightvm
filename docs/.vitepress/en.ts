@@ -16,8 +16,8 @@ export const enUs = defineConfig({
       { text: 'Home', link: '/' },
       { text: 'Get Started', link: '/get-started/installation' },
       {
-        text: 'API References',
-        link: '/api-references/method-functions/run-method',
+        text: 'API Reference',
+        link: '/api-reference/method-functions/run-method',
       },
       { text: 'Concepts', link: '/concepts/what-is' },
       navAbout,
@@ -26,7 +26,7 @@ export const enUs = defineConfig({
 
     sidebar: {
       '/get-started/': sidebarGetStarted,
-      '/api-references/': sidebarAPIReferences,
+      '/api-reference/': sidebarAPIReferences,
       '/concepts/': sidebarConcepts,
     },
   },
