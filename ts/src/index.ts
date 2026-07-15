@@ -82,36 +82,30 @@ export class LightVM {
     }
   }
 
-  withNightly(enabled: boolean) {
-    this.instance.withNightly(enabled);
-    if (this.config.runtimeConfig) {
-      this.config.runtimeConfig.nightly = enabled;
+  private updateConfig(key: keyof VMConfig, subKey: string, value: boolean) {
+    this.instance[`with${subKey.charAt(0).toUpperCase() + subKey.slice(1)}`](
+      value,
+    );
+    if (this.config[key]) {
+      (this.config[key] as any)[subKey] = value;
     }
     return this;
+  }
+
+  withNightly(enabled: boolean) {
+    return this.updateConfig('runtimeConfig', 'nightly', enabled);
   }
 
   withBacktrace(enabled: boolean) {
-    this.instance.withBacktrace(enabled);
-    if (this.config.errorOptions) {
-      this.config.errorOptions.backtrace = enabled;
-    }
-    return this;
+    return this.updateConfig('errorOptions', 'backtrace', enabled);
   }
 
   withExplain(enabled: boolean) {
-    this.instance.withExplain(enabled);
-    if (this.config.errorOptions) {
-      this.config.errorOptions.explain = enabled;
-    }
-    return this;
+    return this.updateConfig('errorOptions', 'explain', enabled);
   }
 
   withHint(enabled: boolean) {
-    this.instance.withHint(enabled);
-    if (this.config.errorOptions) {
-      this.config.errorOptions.hint = enabled;
-    }
-    return this;
+    return this.updateConfig('errorOptions', 'hint', enabled);
   }
 
   load(source: Instructions[] | string) {
