@@ -8,13 +8,13 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-#[cfg(all(not(feature = "node"), not(feature = "wasm")))]
+#[cfg(not(feature = "node"))]
 use crate::types::vmevent::VmEvent;
-#[cfg(all(not(feature = "node"), not(feature = "wasm")))]
+#[cfg(not(feature = "node"))]
 pub trait IntoVmEvent {
   fn to_vm_event(self) -> VmEvent;
 }
-#[cfg(all(not(feature = "node"), not(feature = "wasm")))]
+#[cfg(not(feature = "node"))]
 impl IntoVmEvent for u32 {
   fn to_vm_event(self) -> VmEvent {
     match self {
@@ -28,7 +28,7 @@ impl IntoVmEvent for u32 {
     }
   }
 }
-#[cfg(all(not(feature = "node"), not(feature = "wasm")))]
+#[cfg(not(feature = "node"))]
 impl IntoVmEvent for VmEvent {
   fn to_vm_event(self) -> VmEvent {
     self
