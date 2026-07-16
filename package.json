@@ -84,12 +84,10 @@
     "prettier": "3.9.5",
     "tinybench": "^6.0.2",
     "tsx": "^4.22.3",
-    "typescript": "^7.0.2",
+    "typescript": "^6.0.3",
     "unitry": "^0.1.0-alpha.1",
     "vitepress": "^1.6.4",
-    "vue": "^3.5.39"
-  },
-  "dependencies": {
+    "vue": "^3.5.39",
     "@fortawesome/fontawesome-svg-core": "^7.3.0",
     "@fortawesome/free-solid-svg-icons": "^7.3.0",
     "@fortawesome/vue-fontawesome": "^3.3.1"
