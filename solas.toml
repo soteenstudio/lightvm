@@ -39,24 +39,12 @@ desc = "Running tests for TypeScript interfaces"
 commands = ["node --enable-source-maps .testings/napi.js"]
 
 # build scripts
-[scripts.build]
-desc = "Generating build results from TypeScript source"
-commands = ["node ./esbuild.config.js"]
-[scripts.build-pack]
-desc = "NPM package creation simulation"
-commands = ["node ./scripts/build/build-script.js"]
+[scripts.build-npm]
+desc = "Build NPM simulation package"
+commands = ["node ./scripts/build/build-npm.js --local"]
 [scripts.build-wasm]
-desc = "Generating a WASM build from Rust sources"
-commands = ["wasm-pack build --target web -- --features wasm"]
-[scripts.build-pack2]
-desc = "NPM package creation simulation (WASM)"
+desc = "Build NPM simulation package (WASM)"
 commands = ["node ./scripts/build/build-wasm.js"]
-[scripts.build-release]
-desc = "Create a build release .tgz file"
-commands = ["node ./scripts/build/build-binary.js --local --silent"]
-[scripts.build-debug]
-desc = "Create a build debug .tgz file"
-commands = ["node ./scripts/build/build-binary.js --local --debug --silent"]
 
 # utils scripts
 [scripts.check-deps]
