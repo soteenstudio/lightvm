@@ -14,5 +14,5 @@ Gazle menggunakan alur transformasi khusus untuk menyempurnakan bytecode Anda. I
  * **Jump Threading**: Mengoptimalkan alur kontrol dengan meruntuhkan rantai pengalihan, di mana sebuah lompatan mengarah langsung ke lompatan lain, memastikan penunjuk instruksi melewati lompatan perantara untuk mencapai tujuan.
 
 ::: info
-Anda dapat menemukan cara menggunakan Gazle di halaman [Metode Optimize Bytecode](../api-references/method-functions/tools-method/optimize-bytecode-method).
+Anda dapat menemukan cara menggunakan Gazle di halaman [Metode Optimize Bytecode](../api-reference/method-functions/tools-method/optimize-bytecode-method).
 :::
