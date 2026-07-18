@@ -1,5 +1,5 @@
 # Arithmetic & Logic
-These instructions provide the necessary operations for numerical and logical calculations. Note that for optimization, these instructions require a [Primitive Types](/api-references/primitive-types) (`sht`, `hlf`, `int`, `flt`, `lng`, `dbl`, `oct`) to prevent the VM from guessing the data type during execution.
+These instructions provide the necessary operations for numerical and logical calculations. Note that for optimization, these instructions require a [Primitive Types](/api-reference/primitive-types) (`sht`, `hlf`, `int`, `flt`, `lng`, `dbl`, `oct`) to prevent the VM from guessing the data type during execution.
 
 | Opcode    | Arguments  | Operands (stack) | Description |
 |-----------|------------|------------------|-------------|

@@ -1,5 +1,5 @@
 # Aritmatika & Logika
-Instruksi-instruksi ini menyediakan operasi yang diperlukan untuk perhitungan numerik dan logika. Catatan: untuk optimalisasi, instruksi-instruksi ini memerlukan [Tipe Primitif](/id/api-references/primitive-types) (`sht`, `hlf`, `int`, `flt`, `lng`, `dbl`, `oct`) untuk mencegah VM menebak tipe data selama eksekusi.
+Instruksi-instruksi ini menyediakan operasi yang diperlukan untuk perhitungan numerik dan logika. Catatan: untuk optimalisasi, instruksi-instruksi ini memerlukan [Tipe Primitif](/id/api-reference/primitive-types) (`sht`, `hlf`, `int`, `flt`, `lng`, `dbl`, `oct`) untuk mencegah VM menebak tipe data selama eksekusi.
 
 | Kode Operasi | Argumen | Operan (stack) | Deskripsi |
 | :--- | :--- | :--- | :--- |
