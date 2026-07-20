@@ -14,5 +14,5 @@ Gazle employs a specialized transformation pipeline to refine your bytecode. It 
  * **Jump Threading**: Optimizes control flow by collapsing chains of redirection, where a jump leads directly to another jump, ensuring the instruction pointer bypasses intermediate hops to reach the final destination immediately.
 
 ::: info
-You can find how to use Gazle on the [Optimize Bytecode Method](../api-references/method-functions/tools-method/optimize-bytecode-method) page.
+You can find how to use Gazle on the [Optimize Bytecode Method](../api-reference/method-functions/tools-method/optimize-bytecode-method) page.
 :::

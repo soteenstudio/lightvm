@@ -1,7 +1,7 @@
-# Manajemen Stack & Variabel
-Tabel berikut merinci operasi inti untuk manipulasi stack dan manajemen siklus hidup variabel. Instruksi-instruksi ini merupakan dasar dari arsitektur berbasis stack pada LightVM, yang mengatur bagaimana data disimpan, diambil, dan disusun selama eksekusi berlangsung.
+# Stack & Variable Management
+These instructions detail the core operations for stack manipulation and variable lifecycle management. They are fundamental to LightVM's stack-based architecture, governing how data is stored, retrieved, and organized during execution.
 
-| Kode Operasi | Argumen | Operand (stack) | Deskripsi |
+| Opcode | Arguments | Operands (stack) | Description |
 |--------|-----------|------------------|-------------|
 | `push`   | value     | - |Inserting data into the stack |
 | `val`    | name      | - | Declaring a new variable |

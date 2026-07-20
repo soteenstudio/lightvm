@@ -17,17 +17,19 @@ export const idId = defineConfig({
       { text: 'Memulai', link: '/id/get-started/installation' },
       {
         text: 'Referensi API',
-        link: '/id/api-references/method-functions/run-method',
+        link: '/id/api-reference/method-functions/run-method',
       },
       { text: 'Konsep', link: '/id/concepts/what-is' },
+      { text: 'Tingkat Dukungan', link: '/id/support-levels' },
       navAbout,
       navSupport,
     ],
 
     sidebar: {
       '/id/get-started/': sidebarGetStarted,
-      '/id/api-references/': sidebarAPIReferences,
+      '/id/api-reference/': sidebarAPIReferences,
       '/id/concepts/': sidebarConcepts,
+      '/id/support-levels': sidebarGetStarted,
     },
   },
 });

@@ -45,7 +45,8 @@ export default {
     'androideabi',
     'rustflags',
     'nttld',
-    'argjson'
+    'argjson',
+    'soteenstudio'
   ],
   ignorePaths: [
     'node_modules/**',
