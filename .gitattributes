@@ -1,14 +1,13 @@
-# Pakai ini untuk semua file yang mau lu sembunyiin
-*.config.js          linguist-generated=true
-*.js                 linguist-generated=true
-.prettierrc          linguist-generated=true
-rust/benches/**      linguist-generated=true
-ts/tests/**          linguist-generated=true
-ts/benchmarks/**     linguist-generated=true
-ts/src/generated/**  linguist-generated=true
-types/**             linguist-generated=true
-.testings/**         linguist-generated=true
-docs/**              linguist-generated=true
-api/**               linguist-generated=true
-*.sh                 linguist-generated=true
-*.d.ts               linguist-generated=true
+*.config.js          linguist-detectable=false
+*.js                 linguist-detectable=false
+.prettierrc          linguist-detectable=false
+rust/benches/**      linguist-detectable=false
+ts/tests/**          linguist-detectable=false
+ts/benchmarks/**     linguist-detectable=false
+ts/src/generated/**  linguist-detectable=false
+types/**             linguist-detectable=false
+.testings/**         linguist-detectable=false
+docs/**              linguist-detectable=false
+api/**               linguist-detectable=false
+*.sh                 linguist-detectable=false
+*.d.ts               linguist-detectable=false

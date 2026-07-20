@@ -11,7 +11,7 @@ query SearchForumComments(
       comments(first: 100) {
         nodes {
           id
-          body
+          body 
           url
           author {
             login
