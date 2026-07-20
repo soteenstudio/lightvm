@@ -10,3 +10,4 @@
 /docs/**             linguist-detectable=false
 /api/**              linguist-detectable=false
 *.sh                 linguist-detectable=false
+*.d.ts               linguist-detectable=false
