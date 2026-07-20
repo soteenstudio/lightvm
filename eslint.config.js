@@ -23,7 +23,7 @@ const customNoCommentRule = {
           }
         });
         const firstComment = sourceCode.getAllComments()[0];
-        if (firstComment && firstComment.value.includes('Copyright 2026')) {
+        if (firstComment && firstComment.value.includes('Copyright 2025-2026')) {
           const tokenAfter = sourceCode.getTokenAfter(firstComment);
           const range = [firstComment.range[1], tokenAfter.range[0]];
           const textBetween = sourceCode

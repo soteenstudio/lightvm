@@ -74,5 +74,5 @@ commands = ["node ./scripts/utils/server.js"]
 
 [copyright]
 license = "apache"
-year = "2026"
+year = "2025-2026"
 owner = "SoTeen Studio"
