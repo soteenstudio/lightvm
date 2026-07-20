@@ -41,15 +41,17 @@ const logger = {
   error: (msg, detail) => console.error(`\n${s.bold}${s.red}𐄂 ${msg}${s.reset}`, detail || ''),
 };
 
+let originalPkgContent = null;
 function modifyPackageJson(mode) {
-  const pkg = JSON.parse(fs.readFileSync(PKG_PATH, 'utf-8'));
   if (mode === 'local') {
+    originalPkgContent = fs.readFileSync(PKG_PATH, 'utf-8');
+    const pkg = JSON.parse(originalPkgContent);
     pkg.name = 'lightvm-test';
+    pkg.files = pkg.files || [];
     if (!pkg.files.includes('binaries')) pkg.files.push('binaries');
     fs.writeFileSync(PKG_PATH, JSON.stringify(pkg, null, 2));
-  } else {
-    const orig = JSON.parse(fs.readFileSync(PKG_PATH.replace('package.json', 'package.json.bak'), 'utf-8'));
-    fs.writeFileSync(PKG_PATH, JSON.stringify(orig, null, 2));
+  } else if (originalPkgContent) {
+    fs.writeFileSync(PKG_PATH, originalPkgContent);
   }
 }
 
