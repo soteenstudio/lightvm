@@ -37,3 +37,5 @@ If you're using **Rust**, use **Cargo** to integrate **LightVM** natively.
 <<< @/examples/installation/cargo-specific.sh{sh:line-numbers}[Specific Version]
 
 :::
+
+<Giscus />

@@ -33,7 +33,7 @@ hero:
       link: /id/get-started/installation
     - theme: alt
       text: Referensi API
-      link: /id/api-references/method-functions/run-method
+      link: /id/api-reference/method-functions/run-method
 
 features:
   - title: Zero Magic (Deterministik)

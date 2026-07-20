@@ -2,3 +2,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://lightvm.vercel.app/sitemap.xml
+# Algolia-Crawler-Verif: EA8D81D6202359D1
