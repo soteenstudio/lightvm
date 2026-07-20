@@ -9,4 +9,4 @@
 /.testings/**        linguist-detectable=false
 /docs/**/*.ts        linguist-detectable=false
 *.sh                 linguist-detectable=false
-*.d.ts               linguist-documentation=true
+/typs/**/*.d.ts               linguist-documentation=true
