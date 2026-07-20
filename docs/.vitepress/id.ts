@@ -20,6 +20,7 @@ export const idId = defineConfig({
         link: '/id/api-reference/method-functions/run-method',
       },
       { text: 'Konsep', link: '/id/concepts/what-is' },
+      { text: 'Tingkat Dukungan', link: '/id/support-levels' },
       navAbout,
       navSupport,
     ],
@@ -28,6 +29,7 @@ export const idId = defineConfig({
       '/id/get-started/': sidebarGetStarted,
       '/id/api-reference/': sidebarAPIReferences,
       '/id/concepts/': sidebarConcepts,
+      '/id/support-levels': sidebarGetStarted,
     },
   },
 });
