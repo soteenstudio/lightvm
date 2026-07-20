@@ -31,7 +31,14 @@ watch(
         `/api/search?q=${encodeURIComponent(query)}`
       )
 
-      comments.value = await res.json()
+      if (!res.ok) {
+        throw new Error(`Search failed: ${res.status}`)
+      }
+
+      discussions.value = await res.json()
+    } catch (e) {
+      console.error(e)
+      discussions.value = []
     } finally {
       loading.value = false
     }
