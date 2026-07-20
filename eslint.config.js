@@ -1,5 +1,8 @@
 import tsParser from '@typescript-eslint/parser';
 import headers from 'eslint-plugin-headers';
+
+const year = '2025-2026';
+
 const customNoCommentRule = {
   meta: {
     type: 'layout',
@@ -23,7 +26,7 @@ const customNoCommentRule = {
           }
         });
         const firstComment = sourceCode.getAllComments()[0];
-        if (firstComment && firstComment.value.includes('Copyright 2025-2026')) {
+        if (firstComment && firstComment.value.includes(`Copyright ${year}`)) {
           const tokenAfter = sourceCode.getTokenAfter(firstComment);
           const range = [firstComment.range[1], tokenAfter.range[0]];
           const textBetween = sourceCode
@@ -44,6 +47,7 @@ const customNoCommentRule = {
     };
   },
 };
+
 export default [
   {
     files: ['ts/src/**/*.{js,ts}', 'ts/tests/**/*.{js,ts}', 'scripts/**/*.{js,ts}'],
@@ -76,7 +80,7 @@ export default [
         'error',
         {
           source: 'string',
-          content: `Copyright 2026 SoTeen Studio\n\nLicensed under the Apache License, Version 2.0 (the "License");\nyou may not use this file except in compliance with the License.\nYou may obtain a copy of the License at\n\n    http://www.apache.org/licenses/LICENSE-2.0`,
+          content: `Copyright ${year} SoTeen Studio\n\nLicensed under the Apache License, Version 2.0 (the "License");\nyou may not use this file except in compliance with the License.\nYou may obtain a copy of the License at\n\n    http://www.apache.org/licenses/LICENSE-2.0`,
         },
       ],
     },
