@@ -1,4 +1,4 @@
-FILES=$(find . -type d \( -name "target" -o -name "node_modules" -o -name "dist" -o -name "generated" -o -name "docs" \) -prune -o -type f \( \( -name "*.ts" -o -name "*.rs" \) ! -name "*.sh" \) -print)
+FILES=$(find . -type d \( -name "target" -o -name "node_modules" -o -name "dist" -o -name "generated" -o -name "docs" -o -name "api" \) -prune -o -type f \( \( -name "*.ts" -o -name "*.rs" \) ! -name "*.sh" \) -print)
 
 if [ -z "$FILES" ]; then
   echo "There are no files to check."
