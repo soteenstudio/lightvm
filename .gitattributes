@@ -7,7 +7,6 @@
 /ts/src/generated/** linguist-detectable=false
 /types/**            linguist-detectable=false
 /.testings/**        linguist-detectable=false
-/docs/types/**       linguist-detectable=false
-/docs/.vitepress/**  linguist-detectable=false
+/docs/**/*.ts        linguist-detectable=false
 *.sh                 linguist-detectable=false
 *.d.ts               linguist-documentation=true
