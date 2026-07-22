@@ -11,6 +11,8 @@
 #![cfg(not(feature = "node"))]
 use crate::interfaces::interface::LightVM;
 use crate::traits::{json_value_trait::IntoJsonValue, vmevent_trait::IntoVmEvent};
+#[cfg(not(feature = "native"))]
+use crate::types::vmevent::VmEvent;
 use crate::types::{
   capability::Capability,
   error_options::ErrorOptions,
@@ -352,7 +354,7 @@ mod tests {
       ..Default::default()
     };
     let mut vm = LightVM::new(config);
-    vm.on("tick", |_| {});
+    vm.on(VmEvent::Tick, |_| {});
     assert_eq!(vm.listeners.get(&VmEvent::Tick).unwrap().len(), 1);
   }
   #[test]
@@ -364,7 +366,7 @@ mod tests {
     let mut vm = LightVM::new(config);
     let called = Arc::new(AtomicBool::new(false));
     let flag = called.clone();
-    vm.on("tick", move |_| {
+    vm.on(VmEvent::Tick, move |_| {
       flag.store(true, Ordering::SeqCst);
     });
     vm.emit(VmEvent::Tick, json!({"state":"start"}));
@@ -379,7 +381,7 @@ mod tests {
     let mut vm = LightVM::new(config);
     let payload = Arc::new(Mutex::new(String::new()));
     let out = payload.clone();
-    vm.on("tick", move |data| {
+    vm.on(VmEvent::Tick, move |data| {
       *out.lock().unwrap() = data;
     });
     vm.emit(VmEvent::Tick, json!({"hello":"world"}));
