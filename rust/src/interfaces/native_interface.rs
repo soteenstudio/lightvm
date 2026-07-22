@@ -11,7 +11,7 @@
 #![cfg(not(feature = "node"))]
 use crate::interfaces::interface::LightVM;
 use crate::traits::{json_value_trait::IntoJsonValue, vmevent_trait::IntoVmEvent};
-#[cfg(not(feature = "native"))]
+#[allow(unused_imports)]
 use crate::types::vmevent::VmEvent;
 use crate::types::{
   capability::Capability,
