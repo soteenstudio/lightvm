@@ -14,4 +14,3 @@ Cargo.toml.orig
 sweep.timestamp
 /docs/.vitepress/cache
 /docs/.vitepress/dist
-*.bak

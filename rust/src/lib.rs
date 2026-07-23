@@ -16,8 +16,6 @@ pub(crate) mod interfaces;
 #[doc(hidden)]
 pub(crate) mod optimizer;
 #[doc(hidden)]
-pub(crate) mod traits;
-#[doc(hidden)]
 pub mod types;
 #[doc(hidden)]
 pub(crate) mod utils;

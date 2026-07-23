@@ -134,7 +134,7 @@ opt-level = 3
 lto = "fat"
 codegen-units = 1
 panic = "abort"
-incremental = true
+incremental = false
 strip = true
 overflow-checks = false
 debug = false
@@ -146,7 +146,7 @@ wasm-opt = false
 [profile.release.package."*"]
 opt-level = 3
 codegen-units = 1
-incremental = true
+incremental = false
 split-debuginfo = "off"
 debug = false
 

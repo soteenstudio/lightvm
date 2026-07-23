@@ -8,11 +8,11 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use lightvm::{LightVM, types::{vmconfig::VmConfig, capability::Capability, vmevent::VmEvent}};  
+use lightvm::{LightVM, types::{vmconfig::VmConfig, capability::Capability}};  
 
 fn main() {
   let mut vm = LightVM::new(VmConfig {
-    caps: vec![Capability::Control, Capability::Observe, Capability::Unsafe],
+    caps: vec![Capability::Control, Capability::Observe],
     ..Default::default()
   }).with_nightly(false).with_backtrace(false).with_explain(false).with_hint(true);
   
@@ -27,17 +27,11 @@ fn main() {
   println; ;; IP=3
   "#;
   println!("{}", vm.tools().parse_ltc(str));
-  let optimized_json = vm.tools().optimize_bytecode(raw);
+  /*let optimized_json = vm.tools().optimize_bytecode(raw);
   
   vm.load(optimized_json);
   
-  let _res = vm.run(None);
-  vm.halt();
-  vm.run(None); // will not be executed
-  println!("The VM has been terminated.");
-  vm.on(VmEvent::Halt, |payload| {
-    println!("Halted: {}", payload);
-  });
+  let _res = vm.run(None);*/
   
   /*println!("===> Execution finished <===");
   println!("Output: {:?}", res);*/
