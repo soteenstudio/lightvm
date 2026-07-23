@@ -1,11 +1,38 @@
-import { cp, readdir, stat, readFile } from 'node:fs/promises';
+/**
+ * Copyright 2026 Clay.
+ *
+ * Script for syncing i18n documentation content.
+ */
+
+import { cp, readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
+import { existsSync, mkdirSync } from 'node:fs';
 
-const sourceDir = 'docs/en';
-const targetDir = 'docs/id';
+const SOURCE_LANG = 'en';
+const TARGET_LANGS = ['id']; // Add more languages here
+const baseDir = 'docs';
 
-async function syncFiles(src, dest) {
-  // Pastikan folder dest ada
+const s = {
+  reset: '\x1b[0m',
+  bold: '\x1b[1m',
+  dim: '\x1b[2m',
+  cyan: '\x1b[36m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  red: '\x1b[31m',
+};
+
+const logger = {
+  info: (msg) => console.log(`${s.bold}${s.cyan}⠋${s.reset} ${msg}`),
+  success: (msg) => console.log(`${s.bold}${s.green}✔${s.reset} ${msg}`),
+  warn: (msg) => console.log(`${s.bold}${s.yellow}⚠${s.reset} ${msg}`),
+  error: (msg, detail) => console.error(`${s.bold}${s.red}𐄂 ${msg}${s.reset}`, detail || ''),
+  step: (msg) => console.log(`${s.bold}${s.dim}→ ${msg}${s.reset}`),
+};
+
+async function syncFiles(src, dest, langCode) {
+  if (!existsSync(dest)) mkdirSync(dest, { recursive: true });
+  
   const entries = await readdir(src, { withFileTypes: true });
 
   for (const entry of entries) {
@@ -13,33 +40,43 @@ async function syncFiles(src, dest) {
     const destPath = join(dest, entry.name);
 
     if (entry.isDirectory()) {
-      await syncFiles(srcPath, destPath);
+      await syncFiles(srcPath, destPath, langCode);
     } else {
       try {
-        const destStat = await stat(destPath);
         const srcStat = await stat(srcPath);
+        
+        try {
+          const destStat = await stat(destPath);
 
-        // Cek apakah ukuran file berubah (indikasi ada konten baru/tambahan)
-        if (srcStat.size !== destStat.size) {
-          console.log(`⚠️ PERHATIAN: Perubahan terdeteksi di '${entry.name}'.`);
-          console.log(`   Size source: ${srcStat.size} bytes | Size target: ${destStat.size} bytes.`);
-          console.log(`   Silakan cek manual, mungkin ada konten baru yang perlu di-translate.`);
-        } else {
-          console.log(`✅ ${entry.name} - Up to date.`);
+          // Check if file in 'en' is newer than the target
+          if (srcStat.mtimeMs > destStat.mtimeMs + 1000) {
+            logger.warn(`${s.bold}[${langCode.toUpperCase()}]${s.reset} Changes detected in '${entry.name}'. Please update manually.`);
+          } else {
+            // Keep "Synced" logs dim to reduce visual clutter
+            console.log(`${s.dim}  ✔ [${langCode.toUpperCase()}] ${entry.name} - Synced${s.reset}`);
+          }
+        } catch {
+          // File doesn't exist in target, auto-copy
+          await cp(srcPath, destPath);
+          logger.success(`${s.bold}[${langCode.toUpperCase()}]${s.reset} New file synced: ${entry.name}`);
         }
-      } catch {
-        // Kalau belum ada, langsung copy
-        await cp(srcPath, destPath);
-        console.log(`✨ Copy file baru: ${entry.name}`);
+      } catch (err) {
+        logger.error(`Failed to process ${entry.name} for ${langCode}:`, err.message);
       }
     }
   }
 }
 
 async function startSync() {
-  console.log('🚀 Sync check dimulai...');
-  await syncFiles(sourceDir, targetDir);
-  console.log('✅ Selesai!');
+  logger.info(`${s.bold}Starting synchronization from '${SOURCE_LANG}' to: ${TARGET_LANGS.join(', ')}${s.reset}\n`);
+  
+  for (const lang of TARGET_LANGS) {
+    const src = join(baseDir, SOURCE_LANG);
+    const dest = join(baseDir, lang);
+    await syncFiles(src, dest, lang);
+  }
+  
+  console.log(`\n${s.bold}${s.green}✔ All languages processed successfully!${s.reset}`);
 }
 
 startSync();
