@@ -142,12 +142,12 @@ impl NodeLightVM {
       .map_err(|e| Error::from_reason(e.to_string()))
   }
   #[napi]
-  pub fn on(&mut self, event_type: String, callback: Function<String, ()>) -> Result<()> {
+  pub fn on(&mut self, event_type: u32, callback: Function<String, ()>) -> Result<()> {
     use crate::types::vmevent::VmEvent;
-    let event = match event_type.as_str() {
-      "tick" => VmEvent::Tick,
-      "halt" => VmEvent::Halt,
-      "panic" => VmEvent::Panic,
+    let event = match event_type {
+      0 => VmEvent::Tick,
+      1 => VmEvent::Halt,
+      2 => VmEvent::Panic,
       _ => return Err(Error::from_reason(format!("Unknown event: {}", event_type))),
     };
     let mut threadsafe_callback = callback.build_threadsafe_function().build()?;

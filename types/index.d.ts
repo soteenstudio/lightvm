@@ -12,7 +12,6 @@ import { VMConfig } from './generated/VMConfig.js';
 import { loadNapi } from './utils/loadNapi.js';
 import { isMusl } from './utils/isMusl.js';
 import { VMSystemError as VMError } from './utils/vmerror.js';
-export type VMEvent = 'Tick' | 'Halt' | 'Panic';
 export type Listener = (payload?: any) => void;
 export interface VMResult {
     value: any;
@@ -20,18 +19,27 @@ export interface VMResult {
     halted: boolean;
 }
 export declare enum Capability {
-    Observe = "OBSERVE",
-    Control = "CONTROL",
-    Debug = "DEBUG",
-    Unsafe = "UNSAFE"
+    Observe = 0,
+    Control = 1,
+    Debug = 2,
+    Unsafe = 3
+}
+export declare enum VMEvent {
+    Tick = 0,
+    Halt = 1,
+    Panic = 2
 }
 export declare class LightVM {
     private native;
     private instance;
     private config;
-    constructor(config?: Partial<Omit<VMConfig, 'caps'>> & {
-        caps?: (Capability | string | number)[];
+    private static readonly DEFAULTS;
+    constructor(config?: Partial<VMConfig> & {
+        caps?: Capability[];
     });
+    private wrap;
+    private parseSafe;
+    private updateConfig;
     withNightly(enabled: boolean): this;
     withBacktrace(enabled: boolean): this;
     withExplain(enabled: boolean): this;

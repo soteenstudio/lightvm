@@ -13,7 +13,6 @@ import { VMConfig } from './generated/VMConfig.js';
 import { loadNapi } from './utils/loadNapi.js';
 import { isMusl } from './utils/isMusl.js';
 import { VMSystemError as VMError } from './utils/vmerror.js';
-export type VMEvent = 'Tick' | 'Halt' | 'Panic';
 export type Listener = (payload?: any) => void;
 export interface VMResult {
   value: any;
@@ -21,150 +20,120 @@ export interface VMResult {
   halted: boolean;
 }
 export enum Capability {
-  Observe = 'OBSERVE',
-  Control = 'CONTROL',
-  Debug = 'DEBUG',
-  Unsafe = 'UNSAFE',
+  Observe = 0,
+  Control = 1,
+  Debug = 2,
+  Unsafe = 3,
+}
+export enum VMEvent {
+  Tick = 0,
+  Halt = 1,
+  Panic = 2,
 }
 export class LightVM {
   private native: any;
   private instance: any;
   private config: VMConfig;
 
-  constructor(
-    config: Partial<Omit<VMConfig, 'caps'>> & {
-      caps?: (Capability | string | number)[];
-    } = {
-      caps: [Capability.Observe],
-      runtimeConfig: {
-        nightly: false,
-      },
-      errorOptions: {
-        backtrace: false,
-        explain: false,
-        hint: true,
-      },
-    },
-  ) {
+  private static readonly DEFAULTS: VMConfig = {
+    caps: [Capability.Observe],
+    runtimeConfig: { nightly: false },
+    errorOptions: { backtrace: false, explain: false, hint: true },
+  };
+
+  constructor(config: Partial<VMConfig> & { caps?: Capability[] } = {}) {
     this.config = {
-      caps: config.caps ?? [Capability.Observe],
+      caps: config.caps ?? LightVM.DEFAULTS.caps,
       runtimeConfig: {
-        nightly: config.runtimeConfig?.nightly ?? false,
+        ...LightVM.DEFAULTS.runtimeConfig,
+        ...config.runtimeConfig,
       },
       errorOptions: {
-        backtrace: config?.errorOptions?.backtrace ?? false,
-        explain: config?.errorOptions?.explain ?? false,
-        hint: config?.errorOptions?.hint ?? true,
+        ...LightVM.DEFAULTS.errorOptions,
+        ...config.errorOptions,
       },
     } as VMConfig;
-    const runtimeConfig = config?.runtimeConfig;
-    const errorOptions = config?.errorOptions;
-
-    const capsList = config.caps || [Capability.Observe];
-    const numericCaps = capsList.map((cap) => {
-      if (typeof cap === 'number') return cap;
-
-      switch (cap.toUpperCase()) {
-        case 'OBSERVE':
-          return 0;
-        case 'CONTROL':
-          return 1;
-        case 'DEBUG':
-          return 2;
-        case 'UNSAFE':
-          return 3;
-        default:
-          throw new Error(`Unknown capability ${cap}`);
-      }
-    });
 
     this.native = loadNapi(
-      errorOptions?.explain ?? false,
-      errorOptions?.hint ?? true,
+      this.config.errorOptions?.explain ?? false,
+      this.config.errorOptions?.hint ?? true,
     );
     this.instance = new this.native.LightVM({
-      capsRaw: numericCaps,
-      runtimeConfig: {
-        nightly: runtimeConfig?.nightly ?? false,
-      },
-      errorOptions: {
-        backtrace: errorOptions?.backtrace ?? false,
-        explain: errorOptions?.explain ?? false,
-        hint: errorOptions?.hint ?? true,
-      },
+      capsRaw: this.config.caps,
+      runtimeConfig: this.config.runtimeConfig,
+      errorOptions: this.config.errorOptions,
     });
   }
+
+  private wrap<T>(fn: () => T): T {
+    try {
+      return fn();
+    } catch (err) {
+      throw err instanceof Error ? err : new Error(String(err));
+    }
+  }
+
+  private parseSafe(payload: string): any {
+    try {
+      return JSON.parse(payload);
+    } catch {
+      return payload;
+    }
+  }
+
+  private updateConfig(
+    key: 'runtimeConfig' | 'errorOptions',
+    sub: string,
+    val: boolean,
+  ) {
+    this.instance[`with${sub[0].toUpperCase() + sub.slice(1)}`](val);
+    (this.config[key] as any)[sub] = val;
+    return this;
+  }
+
   withNightly(enabled: boolean) {
-    this.instance.withNightly(enabled);
-    if (this.config.runtimeConfig) {
-      this.config.runtimeConfig.nightly = enabled;
-    }
-    return this;
+    return this.updateConfig('runtimeConfig', 'nightly', enabled);
   }
+
   withBacktrace(enabled: boolean) {
-    this.instance.withBacktrace(enabled);
-    if (this.config.errorOptions) {
-      this.config.errorOptions.backtrace = enabled;
-    }
-    return this;
+    return this.updateConfig('errorOptions', 'backtrace', enabled);
   }
+
   withExplain(enabled: boolean) {
-    this.instance.withExplain(enabled);
-    if (this.config.errorOptions) {
-      this.config.errorOptions.explain = enabled;
-    }
-    return this;
+    return this.updateConfig('errorOptions', 'explain', enabled);
   }
+
   withHint(enabled: boolean) {
-    this.instance.withHint(enabled);
-    if (this.config.errorOptions) {
-      this.config.errorOptions.hint = enabled;
-    }
+    return this.updateConfig('errorOptions', 'hint', enabled);
+  }
+
+  load(source: Instructions[] | string) {
+    const payload =
+      typeof source === 'string' ? source : JSON.stringify(source);
+
+    this.wrap(() => this.instance.load(payload));
     return this;
   }
-  load(source: Instructions[] | string) {
-    try {
-      let payload: string;
-      if (typeof source === 'string') {
-        if (source.trim().startsWith('[')) {
-          payload = source;
-        } else {
-          payload = source;
-        }
-      } else {
-        payload = JSON.stringify(source);
-      }
-      this.instance.load(payload);
-      return this;
-    } catch (err) {
-      console.error((err as Error).message);
-      process.exit(1);
-    }
-  }
+
   run(options: any = {}) {
-    try {
-      this.instance.run(options);
-    } catch (err) {
-      console.error((err as Error).message);
-      process.exit(1);
-    }
+    this.wrap(() => this.instance.run(options));
   }
+
   export(name: string) {
-    try {
-      return (...args: any[]) => {
+    return (...args: any[]) => {
+      return this.wrap(() => {
         const rawResult = this.instance.callExported(
           name,
           JSON.stringify(args),
         );
         const parsed = JSON.parse(rawResult);
-        if (!parsed || parsed === 'Undefined') return undefined;
+
+        if (parsed == null || parsed === 'Undefined') return undefined;
         return typeof parsed === 'object' ? Object.values(parsed)[0] : parsed;
-      };
-    } catch (err) {
-      console.error((err as Error).message);
-      process.exit(1);
-    }
+      });
+    };
   }
+
   provide(nameOrObj: string | any, value?: any) {
     if (typeof nameOrObj === 'object') {
       for (const [key, val] of Object.entries(nameOrObj)) {
@@ -175,45 +144,24 @@ export class LightVM {
     }
     return this;
   }
+
   halt() {
-    try {
-      this.instance.halt();
-    } catch (err) {
-      console.error((err as Error).message);
-      process.exit(1);
-    }
+    this.wrap(() => this.instance.halt());
   }
 
   on(event: VMEvent, fn: Listener) {
-    try {
-      this.instance.on(event.toLowerCase(), (payload: string) => {
-        let data;
-        try {
-          data = JSON.parse(payload);
-        } catch {
-          data = payload;
-        }
-
-        fn(data);
-      });
-
-      return this;
-    } catch (err) {
-      console.error((err as Error).message);
-      process.exit(1);
-    }
+    this.wrap(() =>
+      this.instance.on(event, (payload: string) => fn(this.parseSafe(payload))),
+    );
+    return this;
   }
 
   inspect() {
-    try {
-      return this.instance.inspect();
-    } catch (err) {
-      console.error((err as Error).message);
-      process.exit(1);
-    }
+    return this.wrap(() => this.instance.inspect());
   }
+
   embedded(): VMResult {
-    try {
+    return this.wrap(() => {
       this.instance.clear_outputs();
       this.instance.run({});
       return {
@@ -221,52 +169,32 @@ export class LightVM {
         outputs: this.instance.get_outputs(),
         halted: true,
       };
-    } catch (err) {
-      console.error((err as Error).message);
-      process.exit(1);
-    }
+    });
   }
+
   tools() {
     const runtimeConfig = this.config?.runtimeConfig;
     const errorOptions = this.config?.errorOptions;
     return {
       optimizeBytecode: (bytecode: any) => {
-        try {
-          return this.native.LightVM.optimizeBytecode(
+        return this.wrap(() =>
+          this.native.LightVM.optimizeBytecode(
             bytecode,
             runtimeConfig?.nightly ?? false,
             errorOptions?.backtrace ?? false,
             errorOptions?.explain ?? false,
             errorOptions?.hint ?? true,
-          );
-        } catch (err) {
-          console.error((err as Error).message);
-          process.exit(1);
-        }
+          ),
+        );
       },
       stringifyLTC: (json: Instructions[]) => {
-        try {
-          return this.native.LightVM.stringifyLtc(json);
-        } catch (err) {
-          console.error((err as Error).message);
-          process.exit(1);
-        }
+        return this.wrap(() => this.native.LightVM.stringifyLtc(json));
       },
       parseLTC: (code: string) => {
-        try {
-          return this.native.LightVM.parseLtc(code);
-        } catch (err) {
-          console.error((err as Error).message);
-          process.exit(1);
-        }
+        return this.wrap(() => this.native.LightVM.parseLtc(code));
       },
       parseLTCArray: (code: string) => {
-        try {
-          return this.native.LightVM.parseLtcArray(code);
-        } catch (err) {
-          console.error((err as Error).message);
-          process.exit(1);
-        }
+        return this.wrap(() => this.native.LightVM.parseLtcArray(code));
       },
     };
   }
