@@ -54,5 +54,5 @@ jobs:
           commit-message: "chore: sync lock files"
           title: "chore: sync lock files"
           body: "Auto-syncing lock files."
-          branch: "sync-lock-files-${{ github.head_ref }}"
+          branch: "sync-lock-files-pr-${{ github.event.pull_request.number }}"
           delete-branch: true
