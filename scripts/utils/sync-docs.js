@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import { existsSync, mkdirSync } from 'node:fs';
 
 const SOURCE_LANG = 'en';
-const TARGET_LANGS = ['id']; // Add more languages here
+const TARGET_LANGS = ['id'];
 const baseDir = 'docs';
 
 const s = {
@@ -48,15 +48,12 @@ async function syncFiles(src, dest, langCode) {
         try {
           const destStat = await stat(destPath);
 
-          // Check if file in 'en' is newer than the target
           if (srcStat.mtimeMs > destStat.mtimeMs + 1000) {
             logger.warn(`${s.bold}[${langCode.toUpperCase()}]${s.reset} Changes detected in '${entry.name}'. Please update manually.`);
           } else {
-            // Keep "Synced" logs dim to reduce visual clutter
             console.log(`${s.dim}  ✔ [${langCode.toUpperCase()}] ${entry.name} - Synced${s.reset}`);
           }
         } catch {
-          // File doesn't exist in target, auto-copy
           await cp(srcPath, destPath);
           logger.success(`${s.bold}[${langCode.toUpperCase()}]${s.reset} New file synced: ${entry.name}`);
         }
