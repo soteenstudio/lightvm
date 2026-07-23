@@ -10,13 +10,15 @@
 
 #![cfg(not(feature = "node"))]
 use crate::interfaces::interface::LightVM;
+use crate::traits::{json_value_trait::IntoJsonValue, vmevent_trait::IntoVmEvent};
+#[allow(unused_imports)]
+use crate::types::vmevent::VmEvent;
 use crate::types::{
   capability::Capability,
   error_options::ErrorOptions,
   runtime_config::RuntimeConfig,
   value::{RunOptions, Value},
   vmconfig::VmConfig,
-  vmevent::VmEvent,
   vmstate::VmState,
 };
 use crate::utils::vmerror::VMError;
@@ -25,24 +27,6 @@ use std::collections::HashSet;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use unescape::unescape;
-pub trait IntoJsonValue {
-  fn into_json_value(self) -> Result<serde_json::Value, serde_json::Error>;
-}
-impl IntoJsonValue for &str {
-  fn into_json_value(self) -> Result<serde_json::Value, serde_json::Error> {
-    serde_json::from_str(self).or_else(|_| Ok(serde_json::Value::String(self.to_string())))
-  }
-}
-impl IntoJsonValue for String {
-  fn into_json_value(self) -> Result<serde_json::Value, serde_json::Error> {
-    serde_json::from_str(&self).or(Ok(serde_json::Value::String(self)))
-  }
-}
-impl IntoJsonValue for serde_json::Value {
-  fn into_json_value(self) -> Result<serde_json::Value, serde_json::Error> {
-    Ok(self)
-  }
-}
 #[cfg(not(feature = "node"))]
 impl LightVM {
   pub fn new<C: Into<VmConfig>>(config: C) -> Self {
@@ -198,20 +182,13 @@ impl LightVM {
   pub fn halt(&mut self) {
     let _ = self.halt_internal();
   }
-  pub fn on<F>(&mut self, event_type: &str, callback: F) -> &mut Self
+  pub fn on<E, F>(&mut self, event: E, callback: F) -> &mut Self
   where
+    E: IntoVmEvent,
     F: Fn(String) + Send + Sync + 'static,
   {
-    let event = match event_type {
-      "tick" => VmEvent::Tick,
-      "halt" => VmEvent::Halt,
-      "panic" => VmEvent::Panic,
-      _ => {
-        eprintln!("Unknown event: {}", event_type);
-        std::process::exit(1);
-      }
-    };
-    let _ = self.on_internal(event, callback);
+    let vm_event = event.to_vm_event();
+    let _ = self.on_internal(vm_event, callback);
     self
   }
   /// Function to view state, number of instructions, and capability.
@@ -377,7 +354,7 @@ mod tests {
       ..Default::default()
     };
     let mut vm = LightVM::new(config);
-    vm.on("tick", |_| {});
+    vm.on(VmEvent::Tick, |_| {});
     assert_eq!(vm.listeners.get(&VmEvent::Tick).unwrap().len(), 1);
   }
   #[test]
@@ -389,7 +366,7 @@ mod tests {
     let mut vm = LightVM::new(config);
     let called = Arc::new(AtomicBool::new(false));
     let flag = called.clone();
-    vm.on("tick", move |_| {
+    vm.on(VmEvent::Tick, move |_| {
       flag.store(true, Ordering::SeqCst);
     });
     vm.emit(VmEvent::Tick, json!({"state":"start"}));
@@ -404,7 +381,7 @@ mod tests {
     let mut vm = LightVM::new(config);
     let payload = Arc::new(Mutex::new(String::new()));
     let out = payload.clone();
-    vm.on("tick", move |data| {
+    vm.on(VmEvent::Tick, move |data| {
       *out.lock().unwrap() = data;
     });
     vm.emit(VmEvent::Tick, json!({"hello":"world"}));
