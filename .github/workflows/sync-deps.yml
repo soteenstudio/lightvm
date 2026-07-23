@@ -51,6 +51,7 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          base: main
           commit-message: "chore: sync lock files"
           title: "chore: sync lock files"
           body: "Auto-syncing lock files."
