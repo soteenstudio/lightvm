@@ -48,7 +48,8 @@ export default {
     'argjson',
     'soteenstudio',
     'ghaction',
-    'gpgsign'
+    'gpgsign',
+    'signingkey'
   ],
   ignorePaths: [
     'node_modules/**',

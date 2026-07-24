@@ -21,6 +21,7 @@ jobs:
         uses: crazy-max/ghaction-import-gpg@v6
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          git_user_signingkey: true
 
       - name: Check if Production Workflow ran today
         id: check_prod
