@@ -47,7 +47,8 @@ export default {
     'nttld',
     'argjson',
     'soteenstudio',
-    'ghaction'
+    'ghaction',
+    'gpgsign'
   ],
   ignorePaths: [
     'node_modules/**',
