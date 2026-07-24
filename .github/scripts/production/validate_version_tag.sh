@@ -4,12 +4,12 @@ if [ -z "$VERSION" ]; then
   exit 1
 fi
 if git rev-parse "refs/tags/v$VERSION" >/dev/null 2>&1; then
-  echo "Error: Versi $VERSION sudah ada tag-nya! Ganti versi dulu."
+  echo "Error: $VERSION already has a tag! Change the version first."
   exit 1
 fi
 
 FILE_VERSION=$(jq -r .version package.json)
 if [ "$FILE_VERSION" != "$VERSION" ]; then
-  echo "Error: Versi di package.json ($FILE_VERSION) tidak sama dengan input ($VERSION)."
+  echo "Error: The version in package.json ($FILE_VERSION) is not the same as the input ($VERSION)."
   exit 1
 fi

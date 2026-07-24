@@ -1,3 +1,5 @@
+set -euo pipefail
+
 git config user.name "github-actions[bot]"
 git config user.email "github-actions[bot]@users.noreply.github.com"
 
