@@ -17,6 +17,11 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+
       - name: Check if Production Workflow ran today
         id: check_prod
         env:

@@ -46,7 +46,8 @@ export default {
     'rustflags',
     'nttld',
     'argjson',
-    'soteenstudio'
+    'soteenstudio',
+    'ghaction'
   ],
   ignorePaths: [
     'node_modules/**',
