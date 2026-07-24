@@ -1,6 +1,9 @@
 git config user.name "github-actions[bot]"
 git config user.email "github-actions[bot]@users.noreply.github.com"
 
+git config commit.gpgsign true
+git config tag.gpgsign true
+
 git add Cargo.toml
 [ -f "package.json" ] && git add package.json
 

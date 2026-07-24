@@ -46,7 +46,10 @@ export default {
     'rustflags',
     'nttld',
     'argjson',
-    'soteenstudio'
+    'soteenstudio',
+    'ghaction',
+    'gpgsign',
+    'signingkey'
   ],
   ignorePaths: [
     'node_modules/**',
