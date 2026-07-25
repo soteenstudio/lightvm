@@ -1,14 +1,13 @@
 export const navSupport = {
   text: 'Support',
   items: [
-    { text: 'Issues', link: 'https://github.com/soteenstudio/lightvm/issues' },
     {
-      text: 'Discussions',
-      link: 'https://github.com/soteenstudio/lightvm/discussions',
+      text: 'Issues',
+      link: 'https://github.com/soteenstudio/lightvm/issues'
     },
     {
-      text: 'Forum',
-      link: '/forum'
-    }
+      text: 'Support Levels',
+      link: '/support-levels'
+    },
   ],
 };

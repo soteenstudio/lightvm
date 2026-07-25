@@ -22,5 +22,5 @@ In **Rust**, the `on` method enables you to define event handlers that integrate
 ::: info
 **Capability Required**: no specific capability
 
-**Owned Events**: `tick`, `halt`, and `panic`
+**Owned Events**: `Tick`, `Halt`, and `Panic`
 :::

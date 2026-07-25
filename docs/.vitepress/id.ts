@@ -3,6 +3,8 @@ import {
   baseConfig,
   navAbout,
   navSupport,
+  navCommunity,
+  navDevelopment,
   sidebarGetStarted,
   sidebarAPIReferences,
   sidebarConcepts,
@@ -20,16 +22,16 @@ export const idId = defineConfig({
         link: '/id/api-reference/method-functions/run-method',
       },
       { text: 'Konsep', link: '/id/concepts/what-is' },
-      { text: 'Tingkat Dukungan', link: '/id/support-levels' },
       navAbout,
       navSupport,
+      navCommunity,
+      navDevelopment,
     ],
 
     sidebar: {
       '/id/get-started/': sidebarGetStarted,
       '/id/api-reference/': sidebarAPIReferences,
       '/id/concepts/': sidebarConcepts,
-      '/id/support-levels': sidebarGetStarted,
     },
   },
 });

@@ -18,9 +18,5 @@ export const sidebarGetStarted = [
   {
     text: 'Concepts',
     link: '/concepts/what-is'
-  },
-  {
-    text: 'Support Levels',
-    link: '/support-levels'
   }
 ];

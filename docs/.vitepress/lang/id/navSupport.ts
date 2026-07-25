@@ -1,14 +1,13 @@
 export const navSupport = {
   text: 'Dukungan',
   items: [
-    { text: 'Masalah', link: 'https://github.com/soteenstudio/lightvm/issues' },
     {
-      text: 'Diskusi',
-      link: 'https://github.com/soteenstudio/lightvm/discussions',
+      text: 'Masalah',
+      link: 'https://github.com/soteenstudio/lightvm/issues'
     },
     {
-      text: 'Forum',
-      link: '/id/forum'
-    }
+      text: 'Tingkat Dukungan',
+      link: '/id/support-levels'
+    },
   ],
 };

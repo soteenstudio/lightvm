@@ -3,6 +3,8 @@ import {
   baseConfig,
   navAbout,
   navSupport,
+  navCommunity,
+  navDevelopment,
   sidebarGetStarted,
   sidebarAPIReferences,
   sidebarConcepts,
@@ -20,16 +22,16 @@ export const enUs = defineConfig({
         link: '/api-reference/method-functions/run-method',
       },
       { text: 'Concepts', link: '/concepts/what-is' },
-      { text: 'Support Levels', link: '/support-levels' },
       navAbout,
       navSupport,
+      navCommunity,
+      navDevelopment,
     ],
 
     sidebar: {
       '/get-started/': sidebarGetStarted,
       '/api-reference/': sidebarAPIReferences,
       '/concepts/': sidebarConcepts,
-      '/support-levels': sidebarGetStarted,
     },
   },
 });
