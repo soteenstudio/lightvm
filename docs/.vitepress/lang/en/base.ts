@@ -32,7 +32,7 @@ export const baseConfig = {
   } as const,
 
   footer: {
-    message: 'Released under the Apache-2.0 License.',
-    copyright: 'Copyright © 2026 SoTeen Studio',
+    message: 'Released under the <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache-2.0 License</a>.',
+    copyright: 'Copyright © 2025-2026 <a href="https://github.com/soteenstudio">SoTeen Studio</a>',
   },
 };
