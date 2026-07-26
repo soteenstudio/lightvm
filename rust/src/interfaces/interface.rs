@@ -349,7 +349,6 @@ impl LightVM {
     })
   }
   pub fn parse_ltc_array_internal(code: String) -> Result<String, VMError> {
-    println!("{}", code);
     let instructions = crate::utils::loader::parse_ltc_to_vec(&code);
     serde_json::to_string(&instructions).map_err(|e| {
       VMError::SystemError(smol_str::SmolStr::from(format!(
