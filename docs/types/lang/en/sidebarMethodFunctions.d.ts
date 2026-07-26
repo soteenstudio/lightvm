@@ -1,4 +1,4 @@
-export declare const sidebarAPIReferences: ({
+export declare const sidebarMethodFunctions: {
     text: string;
     collapsed: boolean;
     items: ({
@@ -15,14 +15,4 @@ export declare const sidebarAPIReferences: ({
         }[];
         link?: undefined;
     })[];
-} | {
-    text: string;
-    collapsed: boolean;
-    items: {
-        text: string;
-        link: string;
-    }[];
-} | {
-    text: string;
-    link: string;
-})[];
+};

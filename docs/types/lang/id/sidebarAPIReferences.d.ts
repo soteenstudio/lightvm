@@ -15,10 +15,14 @@ export declare const sidebarAPIReferences: ({
         }[];
         link?: undefined;
     })[];
-    link?: undefined;
+} | {
+    text: string;
+    collapsed: boolean;
+    items: {
+        text: string;
+        link: string;
+    }[];
 } | {
     text: string;
     link: string;
-    collapsed?: undefined;
-    items?: undefined;
 })[];
