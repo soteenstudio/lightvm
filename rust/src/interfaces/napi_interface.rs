@@ -252,7 +252,7 @@ impl NodeLightVM {
     LightVM::parse_ltc_internal(code).map_err(|e| Error::from_reason(e.to_string()))
   }
   #[napi(js_name = "parseLtcArray")]
-  pub fn napi_parse_ltc_array(code: String) -> serde_json::Value {
-    LightVM::parse_ltc_array_internal(code)
+  pub fn napi_parse_ltc_array(code: String) -> Result<String> {
+    LightVM::parse_ltc_array_internal(code).map_err(|e| Error::from_reason(e.to_string()))
   }
 }
