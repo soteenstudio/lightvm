@@ -26,7 +26,7 @@ fn main() {
   add Int; ;; IP=2
   println; ;; IP=3
   "#;
-  println!("{}", vm.tools().parse_ltc(str));
+  println!("result {}", vm.tools().parse_ltc_array(str));
   let optimized_json = vm.tools().optimize_bytecode(raw);
   
   vm.load(optimized_json);

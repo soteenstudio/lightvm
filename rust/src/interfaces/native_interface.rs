@@ -324,8 +324,14 @@ impl LightVMTools {
   /// let json = tools.parse_ltc_array(raw);
   /// println!("{:#}", json.clone());
   /// ```
-  pub fn parse_ltc_array(&self, code: String) -> serde_json::Value {
-    LightVM::parse_ltc_array_internal(code)
+  pub fn parse_ltc_array(&self, code: &str) -> String {
+    match LightVM::parse_ltc_array_internal(code.to_string()) {
+      Ok(text) => text,
+      Err(e) => {
+        eprintln!("{}", e);
+        std::process::exit(1);
+      }
+    }
   }
 }
 #[cfg(test)]
