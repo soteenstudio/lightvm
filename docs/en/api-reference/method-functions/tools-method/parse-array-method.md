@@ -6,7 +6,7 @@ In **TypeScript**, the `parseLTCArray` method converts your assembly logic into 
 
 ::: code-group
 
-<<< @/examples/methodFunctions/toolsMethod/parseLTCArrayCode.ts{ts:line-numbers}[Code]
+<<< @/examples/methodFunctions/toolsMethod/parseArrayCode.ts{ts:line-numbers}[Code]
 
 :::
 
