@@ -23,12 +23,13 @@ fn main() {
   let str = r#"
   push 5; ;; IP=0
   push 5; ;; IP=1
-  add Int; ;; IP=2
+  add int; ;; IP=2
   println; ;; IP=3
   "#;
-  println!("{}", vm.tools().parse_ltc(str));
+  println!("result {}", vm.tools().parse_ltc_array(str));
   let optimized_json = vm.tools().optimize_bytecode(raw);
   
+  println!("{}", optimized_json);
   vm.load(optimized_json);
   
   let _res = vm.run(None);
