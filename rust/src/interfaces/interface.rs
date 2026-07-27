@@ -348,9 +348,14 @@ impl LightVM {
       )))
     })
   }
-  pub fn parse_ltc_array_internal(code: String) -> serde_json::Value {
+  pub fn parse_ltc_array_internal(code: String) -> Result<String, VMError> {
     let instructions = crate::utils::loader::parse_ltc_to_vec(&code);
-    serde_json::to_value(&instructions).unwrap_or(serde_json::Value::Array(vec![]))
+    serde_json::to_string(&instructions).map_err(|e| {
+      VMError::SystemError(smol_str::SmolStr::from(format!(
+        "Failed to stringify parsed instructions: {}",
+        e
+      )))
+    })
   }
   pub fn stringify_ltc_internal(bytecode_raw: serde_json::Value) -> Result<String, VMError> {
     let json_str = bytecode_raw.to_string();

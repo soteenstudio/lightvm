@@ -288,9 +288,9 @@ impl WasmLightVMTools {
       .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))
   }
   #[wasm_bindgen(js_name = "parseLtcArray")]
-  pub fn parse_ltc_array(&self, code: String) -> JsValue {
-    let res_json = LightVM::parse_ltc_array_internal(code);
-    serde_wasm_bindgen::to_value(&res_json).unwrap_or(JsValue::null())
+  pub fn parse_ltc_array(&self, code: String) -> Result<String, JsValue> {
+    LightVM::parse_ltc_array_internal(code)
+      .map_err(|e| JsValue::from(js_sys::Error::new(&e.to_string())))
   }
 }
 struct RcFnWrapper {
