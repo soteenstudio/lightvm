@@ -17,8 +17,10 @@ A capability-based virtual machine designed for __secure__, __predictable__, and
 
 ## Documentation
 Check out our official website for complete documentation.
- - See [documentation](https://lightvm.vercel.app)
-## License & Changelog
+ - **[Official Documentation](https://lightvm.vercel.app)**
+
+## Resource
  - This project is distributed using the [Apache-2.0 license](LICENSE).
  - See [credits](./CREDITS.md) for information regarding the project's origin and originality.
- - See [changelogs](./docs/CHANGELOG.md) for the latest updates and release history.
+ - See [releases](https://github.com/soteenstudio/releases) for the latest updates and release history.
+ - See [contributing](./.github/CONTRIBUTING.md) to learn how to contribute.
