@@ -1,12 +1,12 @@
 # Metode Parse Array
-Metode `parseArray` dirancang untuk mengubah string assembly LightVM yang dapat dibaca manusia menjadi array JSON terstruktur yang dapat diuraikan oleh mesin. Meskipun metode `parse` standar menangani penerjemahan umum, `parseArray` secara khusus disesuaikan untuk skenario di mana Anda memerlukan akses langsung ke struktur bytecode yang diserialisasi, menjadikannya ideal untuk debugging, analisis statis, atau membuat alat bantu eksternal.
+Metode `parseLTCArray` dirancang untuk mengubah string assembly LightVM yang dapat dibaca manusia menjadi array JSON terstruktur yang dapat diuraikan oleh mesin. Meskipun metode `parse` standar menangani penerjemahan umum, `parseLTCArray` secara khusus disesuaikan untuk skenario di mana Anda memerlukan akses langsung ke struktur bytecode yang diserialisasi, menjadikannya ideal untuk debugging, analisis statis, atau membuat alat bantu eksternal.
 
 ## Menggunakan TypeScript
-Untuk **TypeScript**, metode `parseArray` mengonversi logika assembly Anda ke dalam format array JSON standar. Ini sangat berguna jika Anda membangun alat bantu frontend, dashboard, atau sekadar perlu memeriksa urutan opcode Anda dalam format objek JavaScript yang familier sebelum runtime.
+Untuk **TypeScript**, metode `parseLTCArray` mengonversi logika assembly Anda ke dalam format array JSON standar. Ini sangat berguna jika Anda membangun alat bantu frontend, dashboard, atau sekadar perlu memeriksa urutan opcode Anda dalam format objek JavaScript yang familier sebelum runtime.
 
 ::: code-group
 
-<<< @/examples/methodFunctions/toolsMethod/parseArrayCode.ts{ts:line-numbers}[Kode]
+<<< @/examples/methodFunctions/toolsMethod/parseLTCArrayCode.ts{ts:line-numbers}[Kode]
 
 :::
 

@@ -1,12 +1,12 @@
 # Parse Array Method
-The `parseArray` method is designed to transform human-readable LightVM assembly strings into a structured, machine-parsable JSON array. While the standard `parse` method handles general translation, `parseArray` is specifically tailored for scenarios where you need direct access to the serialized bytecode structure, making it ideal for debugging, static analysis, or creating external build tools.
+The `parseLTCArray` method is designed to transform human-readable LightVM assembly strings into a structured, machine-parsable JSON array. While the standard `parse` method handles general translation, `parseLTCArray` is specifically tailored for scenarios where you need direct access to the serialized bytecode structure, making it ideal for debugging, static analysis, or creating external build tools.
 
 ## Using TypeScript
-In **TypeScript**, the `parseArray` method converts your assembly logic into a standard JSON array format. This is super handy if you're building frontend tools, dashboards, or simply need to inspect your opcode sequences in a familiar JavaScript object format before runtime.
+In **TypeScript**, the `parseLTCArray` method converts your assembly logic into a standard JSON array format. This is super handy if you're building frontend tools, dashboards, or simply need to inspect your opcode sequences in a familiar JavaScript object format before runtime.
 
 ::: code-group
 
-<<< @/examples/methodFunctions/toolsMethod/parseArrayCode.ts{ts:line-numbers}[Code]
+<<< @/examples/methodFunctions/toolsMethod/parseLTCArrayCode.ts{ts:line-numbers}[Code]
 
 :::
 
