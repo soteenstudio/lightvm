@@ -16,7 +16,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="file in files" :key="file.sha" class="file-row">
+        <tr v-for="file in sortedFiles" :key="file.sha" class="file-row">
           <td>
             <!-- Kalau folder, panggil fetchContent lagi. Kalau file, buka isi -->
             <a href="#" @click.prevent="handleItemClick(file)">{{ file.name }}</a>
@@ -35,13 +35,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 
 const props = defineProps<{ owner: string; repo: string; }>();
 const files = ref<any[]>([]);
 const currentPath = ref('');
 const fileContent = ref('');
 const loading = ref(true);
+
+// Logic Pengurutan: Folder dulu (dir), baru File, lalu keduanya urut abjad (A-Z)
+const sortedFiles = computed(() => {
+  return [...files.value].sort((a, b) => {
+    if (a.type !== b.type) {
+      return a.type === 'dir' ? -1 : 1;
+    }
+    return a.name.localeCompare(b.name);
+  });
+});
 
 const fetchContent = async (path: string) => {
   loading.value = true;

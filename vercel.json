@@ -9,12 +9,5 @@
         { "key": "X-XSS-Protection", "value": "1; mode=block" }
       ]
     }
-  ],
-  "redirects": [
-    {
-      "source": "/git",
-      "destination": "https://github.com/soteenstudio/lightvm",
-      "permanent": true
-    }
   ]
 }

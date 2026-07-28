@@ -2,6 +2,8 @@ import DefaultTheme from 'vitepress/theme';
 import HeroStats from './components/HeroStats.vue';
 import Giscus from './components/Giscus.vue';
 import Forum from './components/Forum.vue';
+import GitBranches from './components/GitBranches.vue';
+import GitTags from './components/GitTags.vue';
 import GitBrowser from './components/GitBrowser.vue';
 import './style.css';
 import pkg from '../../../package.json' with { type: 'json' };
@@ -19,6 +21,8 @@ export default {
     app.component('HeroStats', HeroStats);
     app.component('Giscus', Giscus);
     app.component('Forum', Forum);
+    app.component('GitBranches',GitBranches);
+    app.component('GitTags', GitTags);
     app.component('GitBrowser', GitBrowser);
     app.component('font-awesome-icon', FontAwesomeIcon);
   },
