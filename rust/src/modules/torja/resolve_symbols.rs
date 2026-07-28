@@ -52,6 +52,10 @@ pub fn resolve_symbols(
         let idx = get_or_insert_idx(&mut symbol_table, name, &mut next_idx);
         *instr = Instructions::IncIdx(idx, *num_type);
       }
+      Instructions::Dec(name, num_type) => {
+        let idx = get_or_insert_idx(&mut symbol_table, name, &mut next_idx);
+        *instr = Instructions::DecIdx(idx, *num_type);
+      }
       Instructions::Func(_, _, _, _, names) => {
         for p_name in names {
           symbol_table.entry(p_name.clone()).or_insert_with(|| {
