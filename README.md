@@ -5,7 +5,7 @@
 [![Build status](https://img.shields.io/github/actions/workflow/status/soteenstudio/lightvm/ci.yml?branch=main&style=flat-square&color=black&label=build&logo=github)](https://github.com/soteenstudio/lightvm/actions)
 [![npm version](https://img.shields.io/npm/v/lightvm?style=flat-square&color=black&logo=npm&logoColor=white)](https://www.npmjs.com/package/lightvm)
 [![nightly version](https://img.shields.io/npm/v/lightvm/next?style=flat-square&color=orange&label=nightly&logo=npm&logoColor=white)](https://www.npmjs.com/package/lightvm)
-[![github stars](https://img.shields.io/github/stars/soteenstudio/lightvm?style=flat-square&color=black&logo=github&logoColor=white)](https://github.com/soteenstudio/lightvm/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/soteenstudio/lightvm?style=flat-square&color=black&logo=github&logoColor=white)](https://github.com/soteenstudio/lightvm/stargazers)
 [![license](https://img.shields.io/badge/license-Apache--2.0-black?style=flat-square&logo=apache&logoColor=white)](https://www.apache.org/licenses/LICENSE-2.0)
 
 A capability-based virtual machine designed for __secure__, __predictable__, and __optimized bytecode execution__.
