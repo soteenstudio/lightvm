@@ -17,7 +17,10 @@ fn main() {
   }).with_nightly(false).with_backtrace(false).with_explain(false).with_hint(true);
   
   let raw = r#"[
+    ["val", "x"],
     ["push", 5],
+    ["set", "x"],
+    ["get", "x"],
     ["println"]
   ]"#;
   let str = r#"
@@ -32,7 +35,8 @@ fn main() {
   println!("{}", optimized_json);
   vm.load(optimized_json);
   
-  let _res = vm.run(None);
+  let res = vm.run(None);
+  println!("Res: {}", res);
   vm.halt();
   vm.run(None); // will not be executed
   println!("The VM has been terminated.");

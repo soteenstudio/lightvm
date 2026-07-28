@@ -16,10 +16,19 @@ pub fn execute_and_log(bytecode: Vec<Instructions>, options: Option<RunOptions>)
   let halt_flag = options.as_ref().map(|o| o.halt_flag.clone());
   let result = crate::vm::execute::execute(bytecode, options, halt_flag);
   match result {
-    Ok(val) => serde_json::to_string(&val).unwrap_or_default(),
+    Ok((val, tick)) => serde_json::json!({
+        "status": "success",
+        "result": val,
+        "ticks": tick
+    })
+    .to_string(),
     Err(err) => {
       eprintln!("\n{}", err);
-      format!(r#"{{"status": "error", "message": {:?}}}"#, err)
+      serde_json::json!({
+          "status": "error",
+          "message": format!("{:?}", err)
+      })
+      .to_string()
     }
   }
 }

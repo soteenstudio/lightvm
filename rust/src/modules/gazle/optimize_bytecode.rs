@@ -8,15 +8,16 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::optimizer::{
+use crate::modules::gazle::{
   analyze_usage::analyze_usage, eliminate_dead_loops::eliminate_dead_loops,
   eliminate_dead_stores::eliminate_dead_stores,
   eliminate_redundant_loads::eliminate_redundant_loads, fold_constants::fold_constants,
   fold_conversions::fold_conversions, jump_threading::jump_threading,
-  strength_reduction::strength_reduction,
+  specialize_instructions::specialize_instructions, strength_reduction::strength_reduction,
 };
 use crate::types::instructions::Instructions;
 pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
+  specialize_instructions(&mut bytecode);
   strength_reduction(&mut bytecode);
   fold_constants(&mut bytecode);
   fold_conversions(&mut bytecode);

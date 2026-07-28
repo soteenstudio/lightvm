@@ -9,12 +9,12 @@
  */
 
 use crate::instructions::stack::import_func::import_func;
+use crate::modules::torja::resolve_symbols::resolve_symbols;
 use crate::types::{
   control_flow_signal::ControlFlowSignal,
   instructions::Instructions,
   value::{RunOptions, Value},
 };
-use crate::utils::resolve_symbols::resolve_symbols;
 use crate::vm::dispatch::{
   collections_dispatch::collections_dispatch, comparison_dispatch::comparison_dispatch,
   control_flow_dispatch::control_flow_dispatch, conversions_dispatch::conversions_dispatch,
@@ -38,7 +38,7 @@ pub fn execute(
   mut bytecode: Vec<Instructions>,
   options: Option<RunOptions>,
   halt_flag: Option<Arc<AtomicBool>>,
-) -> Result<Value, SmolStr> {
+) -> Result<(Value, u64), SmolStr> {
   let mut last_return = Value::Undefined;
   let mut stack: SmallVec<[Value; 128]> = SmallVec::new();
   let empty_map: AHashMap<SmolStr, Value> = AHashMap::new();
@@ -58,13 +58,13 @@ pub fn execute(
   let bytecode_ptr = bytecode.as_ptr();
   let bytecode_len = bytecode.len();
   let threshold = if bytecode_len < 100 { 1 } else { 50 };
-  let mut tick = 0;
+  let mut tick: u64 = 0;
   while ip < bytecode_len {
-    if tick % threshold == 0
+    if tick.is_multiple_of(threshold)
       && let Some(ref flag) = halt_flag
       && flag.load(Ordering::Relaxed)
     {
-      return Ok(Value::Undefined);
+      return Ok((Value::Undefined, tick));
     }
     tick += 1;
     unsafe { std::hint::assert_unchecked(ip < bytecode_len) }
@@ -201,40 +201,36 @@ pub fn execute(
     ip += 1;
   }
   if options.as_ref().is_some_and(|o| o.capture_return) {
-    return Ok(last_return);
+    return Ok((last_return, tick));
   }
-  Ok(Value::Undefined)
+  Ok((Value::Undefined, tick))
 }
-#[cfg(test)]
-mod tests {
-  use super::*;
-  use crate::types::{instructions::Instructions, value::Value};
-  use std::sync::Arc;
-  use std::sync::atomic::AtomicBool;
-  #[test]
-  fn test_execute_basic_math_and_return() {
-    let bytecode = vec![
-      Instructions::PushInt32(5),
-      Instructions::PushInt32(10),
-      Instructions::Add(crate::types::primitive_types::PrimitiveTypes::Int),
-      Instructions::Stop,
-    ];
-    let halt_flag = Arc::new(AtomicBool::new(false));
-    let options = crate::types::value::RunOptions {
-      capture_return: true,
-      ..Default::default()
-    };
-    let result = execute(bytecode, Some(options), Some(halt_flag));
-    assert!(result.is_ok());
-  }
-  #[test]
-  fn test_halt_flag_behavior() {
-    let bytecode = vec![Instructions::Jump(0)];
-    let halt_flag = Arc::new(AtomicBool::new(false));
-    let flag_clone = halt_flag.clone();
-    flag_clone.store(true, std::sync::atomic::Ordering::Relaxed);
-    let result = execute(bytecode, None, Some(halt_flag));
-    assert!(result.is_ok());
-    assert_eq!(result.unwrap(), Value::Undefined);
-  }
+#[test]
+fn test_execute_basic_math_and_return() {
+  let bytecode = vec![
+    Instructions::PushInt32(5),
+    Instructions::PushInt32(10),
+    Instructions::Add(crate::types::primitive_types::PrimitiveTypes::Int),
+    Instructions::Stop,
+  ];
+  let halt_flag = Arc::new(AtomicBool::new(false));
+  let options = crate::types::value::RunOptions {
+    capture_return: true,
+    ..Default::default()
+  };
+  let result = execute(bytecode, Some(options), Some(halt_flag));
+  assert!(result.is_ok());
+  let (val, _tick) = result.unwrap();
+  assert_eq!(val, Value::Int32(15));
+}
+#[test]
+fn test_halt_flag_behavior() {
+  let bytecode = vec![Instructions::Jump(0)];
+  let halt_flag = Arc::new(AtomicBool::new(false));
+  let flag_clone = halt_flag.clone();
+  flag_clone.store(true, std::sync::atomic::Ordering::Relaxed);
+  let result = execute(bytecode, None, Some(halt_flag));
+  assert!(result.is_ok());
+  let (val, _tick) = result.unwrap();
+  assert_eq!(val, Value::Undefined);
 }

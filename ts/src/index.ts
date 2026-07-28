@@ -116,7 +116,7 @@ export class LightVM {
   }
 
   run(options: any = {}) {
-    this.wrap(() => this.instance.run(options));
+    return this.wrap(() => this.instance.run(options));
   }
 
   export(name: string) {
