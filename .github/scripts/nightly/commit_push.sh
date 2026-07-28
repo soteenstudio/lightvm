@@ -9,6 +9,7 @@ git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 git config commit.gpgsign true
 git config tag.gpgsign true
 
+export GIT_EDITOR=true
 git fetch --no-recurse-submodules --depth=1 origin
 
 git add Cargo.toml
