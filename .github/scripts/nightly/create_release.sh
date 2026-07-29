@@ -1,4 +1,10 @@
-PREV_TAG=$(git describe --tags --abbrev=0 --exclude="$VERSION_VAL" 2>/dev/null || echo "")
+PREV_TAG=$(git tag --sort=-creatordate | sed -n '2p')
+
+if [ -z "$PREV_TAG" ]; then
+  LOGS=$(git log --pretty=format:"%s")
+else
+  LOGS=$(git log $PREV_TAG..HEAD --pretty=format:"%s")
+fi
 
 LOGS=$(git log $PREV_TAG..HEAD --pretty=format:"%s")
 
