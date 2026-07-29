@@ -23,5 +23,5 @@ fi
 
 git commit -m "chore: nightly release ${VERSION_VAL}"
 
-git tag "$VERSION_VAL"
+git tag -a "$VERSION_VAL" -m "Nightly Release $VERSION_VAL"
 git push origin HEAD --tags --no-verify
