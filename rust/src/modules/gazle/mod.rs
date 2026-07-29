@@ -17,5 +17,5 @@ pub(crate) mod fold_conversions;
 pub(crate) mod is_pure_loop;
 pub(crate) mod jump_threading;
 pub(crate) mod optimize_bytecode;
-pub(crate) mod specialize_instructions;
+pub(crate) mod specialized_instructions;
 pub(crate) mod strength_reduction;
