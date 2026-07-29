@@ -8,14 +8,14 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod eq;
-pub mod eq_func;
-pub mod ge;
-pub mod ge_func;
-pub mod gt;
-pub mod gt_func;
-pub mod le;
-pub mod le_func;
-pub mod lt;
-pub mod lt_func;
-pub mod neq_func;
+pub(crate) mod eq;
+pub(crate) mod eq_func;
+pub(crate) mod ge;
+pub(crate) mod ge_func;
+pub(crate) mod gt;
+pub(crate) mod gt_func;
+pub(crate) mod le;
+pub(crate) mod le_func;
+pub(crate) mod lt;
+pub(crate) mod lt_func;
+pub(crate) mod neq_func;

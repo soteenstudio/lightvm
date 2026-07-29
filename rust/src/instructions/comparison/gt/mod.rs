@@ -8,9 +8,9 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod gt_f16in;
-pub mod gt_f32in;
-pub mod gt_f64in;
-pub mod gt_i16in;
-pub mod gt_i32in;
-pub mod gt_i64in;
+pub(crate) mod gt_f16in;
+pub(crate) mod gt_f32in;
+pub(crate) mod gt_f64in;
+pub(crate) mod gt_i16in;
+pub(crate) mod gt_i32in;
+pub(crate) mod gt_i64in;

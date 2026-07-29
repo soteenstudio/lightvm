@@ -8,22 +8,22 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod concat_func;
-pub mod dup_func;
-pub mod get_func;
-pub mod import_func;
-pub mod push_array_func;
-pub mod push_f16_func;
-pub mod push_f32_func;
-pub mod push_f64_func;
-pub mod push_func;
-pub mod push_i128_func;
-pub mod push_i16_func;
-pub mod push_i32_func;
-pub mod push_i64_func;
-pub mod push_object_func;
-pub mod push_string_func;
-pub mod set_func;
-pub mod swap_func;
-pub mod truncate_func;
-pub mod val_func;
+pub(crate) mod concat_func;
+pub(crate) mod dup_func;
+pub(crate) mod get_func;
+pub(crate) mod import_func;
+pub(crate) mod push_array_func;
+pub(crate) mod push_f16_func;
+pub(crate) mod push_f32_func;
+pub(crate) mod push_f64_func;
+pub(crate) mod push_func;
+pub(crate) mod push_i128_func;
+pub(crate) mod push_i16_func;
+pub(crate) mod push_i32_func;
+pub(crate) mod push_i64_func;
+pub(crate) mod push_object_func;
+pub(crate) mod push_string_func;
+pub(crate) mod set_func;
+pub(crate) mod swap_func;
+pub(crate) mod truncate_func;
+pub(crate) mod val_func;

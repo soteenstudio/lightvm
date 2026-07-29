@@ -8,9 +8,9 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod eq_f16in;
-pub mod eq_f32in;
-pub mod eq_f64in;
-pub mod eq_i16in;
-pub mod eq_i32in;
-pub mod eq_i64in;
+pub(crate) mod eq_f16in;
+pub(crate) mod eq_f32in;
+pub(crate) mod eq_f64in;
+pub(crate) mod eq_i16in;
+pub(crate) mod eq_i32in;
+pub(crate) mod eq_i64in;

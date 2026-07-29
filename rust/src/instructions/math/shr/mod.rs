@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod shr_i128in;
-pub mod shr_i16in;
-pub mod shr_i32in;
-pub mod shr_i64in;
+pub(crate) mod shr_i128in;
+pub(crate) mod shr_i16in;
+pub(crate) mod shr_i32in;
+pub(crate) mod shr_i64in;

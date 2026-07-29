@@ -8,11 +8,11 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod to_double_func;
-pub mod to_float_func;
-pub mod to_half_func;
-pub mod to_integer_func;
-pub mod to_long_func;
-pub mod to_octa_func;
-pub mod to_short_func;
-pub mod to_string_func;
+pub(crate) mod to_double_func;
+pub(crate) mod to_float_func;
+pub(crate) mod to_half_func;
+pub(crate) mod to_integer_func;
+pub(crate) mod to_long_func;
+pub(crate) mod to_octa_func;
+pub(crate) mod to_short_func;
+pub(crate) mod to_string_func;

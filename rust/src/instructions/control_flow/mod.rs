@@ -8,10 +8,10 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod break_func;
-pub mod call_func;
-pub mod if_false_func;
-pub mod instantiate_func;
-pub mod jump_func;
-pub mod return_func;
-pub mod stop_func;
+pub(crate) mod break_func;
+pub(crate) mod call_func;
+pub(crate) mod if_false_func;
+pub(crate) mod instantiate_func;
+pub(crate) mod jump_func;
+pub(crate) mod return_func;
+pub(crate) mod stop_func;

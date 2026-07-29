@@ -8,6 +8,6 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod sin_f16in;
-pub mod sin_f32in;
-pub mod sin_f64in;
+pub(crate) mod sin_f16in;
+pub(crate) mod sin_f32in;
+pub(crate) mod sin_f64in;

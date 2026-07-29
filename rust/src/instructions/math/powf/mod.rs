@@ -8,6 +8,6 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod powf_f16in;
-pub mod powf_f32in;
-pub mod powf_f64in;
+pub(crate) mod powf_f16in;
+pub(crate) mod powf_f32in;
+pub(crate) mod powf_f64in;

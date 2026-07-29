@@ -8,9 +8,9 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod access_func;
-pub mod access_index_func;
-pub mod make_array_func;
-pub mod make_obj_func;
-pub mod set_prop_func;
-pub mod shrink_func;
+pub(crate) mod access_func;
+pub(crate) mod access_index_func;
+pub(crate) mod make_array_func;
+pub(crate) mod make_obj_func;
+pub(crate) mod set_prop_func;
+pub(crate) mod shrink_func;

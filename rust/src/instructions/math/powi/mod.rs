@@ -8,6 +8,6 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod powi_f16in;
-pub mod powi_f32in;
-pub mod powi_f64in;
+pub(crate) mod powi_f16in;
+pub(crate) mod powi_f32in;
+pub(crate) mod powi_f64in;
