@@ -8,7 +8,7 @@ fi
 if [ -z "$PREV_TAG" ]; then
   LOGS=$(git log --pretty=format:"%s")
 else
-  LOGS=$(git log $PREV_TAG..HEAD --pretty=format:"%s")
+  LOGS=$(git log $PREV_TAG..HEAD~1 --pretty=format:"%s")
 fi
 
 FEAT=$(echo "$LOGS" | grep -E "^feat(\(.*\))?: " | sed -E 's/^feat(\(.*\))?: /- /' || echo "")
