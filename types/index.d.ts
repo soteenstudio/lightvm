@@ -45,7 +45,7 @@ export declare class LightVM {
     withExplain(enabled: boolean): this;
     withHint(enabled: boolean): this;
     load(source: Instructions[] | string): this;
-    run(options?: any): void;
+    run(options?: any): any;
     export(name: string): (...args: any[]) => any;
     provide(nameOrObj: string | any, value?: any): this;
     halt(): void;

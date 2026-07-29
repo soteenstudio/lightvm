@@ -18,6 +18,7 @@ println; ;; IP=3
   console.log(vm.tools().parseLTCArray(str));
   vm.load(vm.tools().optimizeBytecode(raw));
   const res = vm.run();
+  console.log('Res: ', res);
   vm.halt();
   vm.run();
   vm.on(VMEvent.Halt, (payload) => {

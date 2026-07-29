@@ -49,7 +49,9 @@ export default {
     'soteenstudio',
     'ghaction',
     'gpgsign',
-    'signingkey'
+    'signingkey',
+    'gazle', 
+    'torja'
   ],
   ignorePaths: [
     'node_modules/**',

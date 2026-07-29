@@ -13,6 +13,7 @@ pub mod dup_func;
 pub mod get_func;
 pub mod import_func;
 pub mod push_array_func;
+pub mod push_bool_func;
 pub mod push_f16_func;
 pub mod push_f32_func;
 pub mod push_f64_func;

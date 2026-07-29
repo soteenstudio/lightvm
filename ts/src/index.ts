@@ -116,7 +116,7 @@ export class LightVM {
   }
 
   run(options: any = {}) {
-    this.wrap(() => this.instance.run(options));
+    return this.wrap(() => this.instance.run(options));
   }
 
   export(name: string) {
@@ -126,10 +126,12 @@ export class LightVM {
           name,
           JSON.stringify(args),
         );
-        const parsed = JSON.parse(rawResult);
 
-        if (parsed == null || parsed === 'Undefined') return undefined;
-        return typeof parsed === 'object' ? Object.values(parsed)[0] : parsed;
+        if (rawResult == null || rawResult === 'Undefined') return undefined;
+
+        return typeof rawResult === 'object' && !Array.isArray(rawResult)
+          ? Object.values(rawResult)[0]
+          : rawResult;
       });
     };
   }
