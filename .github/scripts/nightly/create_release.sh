@@ -1,6 +1,15 @@
-PREV_TAG=$(git describe --tags --abbrev=0 --exclude="$VERSION_VAL" 2>/dev/null || echo "")
+PREV_TAG=$(git tag --sort=-creatordate | sed -n '2p')
 
-LOGS=$(git log $PREV_TAG..HEAD --pretty=format:"%s")
+if [ -z "$PREV_TAG" ]; then
+  echo "PREV_TAG not found. Cannot create release notes because this is the first build."
+  exit 1
+fi
+
+if [ -z "$PREV_TAG" ]; then
+  LOGS=$(git log --pretty=format:"%s")
+else
+  LOGS=$(git log $PREV_TAG..HEAD --pretty=format:"%s" | grep -v "chore: nightly release")
+fi
 
 FEAT=$(echo "$LOGS" | grep -E "^feat(\(.*\))?: " | sed -E 's/^feat(\(.*\))?: /- /' || echo "")
 FIX=$(echo "$LOGS" | grep -E "^fix(\(.*\))?: " | sed -E 's/^fix(\(.*\))?: /- /' || echo "")
