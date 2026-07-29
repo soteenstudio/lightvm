@@ -8,7 +8,9 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::modules::gazle::optimize_bytecode;
+use crate::modules::{
+  gazle::optimize_bytecode::optimize_bytecode, krates::has_nightly_opcodes::has_nightly_opcodes,
+};
 use crate::types::{
   capability::Capability,
   instructions::Instructions,
@@ -16,7 +18,7 @@ use crate::types::{
   vmevent::VmEvent,
   vmstate::VmState,
 };
-use crate::utils::{has_nightly_opcodes::has_nightly_opcodes, vmerror::VMError};
+use crate::utils::vmerror::VMError;
 use crate::vm::run::run;
 use ahash::AHashMap;
 use regex::Regex;
@@ -306,7 +308,7 @@ impl LightVM {
       .iter()
       .map(Instructions::from_json_array)
       .collect::<Result<Vec<Instructions>, VMError>>();
-    let optimized = optimize_bytecode::optimize_bytecode(bytecode?);
+    let optimized = optimize_bytecode(bytecode?);
     serde_json::to_string(&optimized)
       .map_err(|e| VMError::SystemError(format!("Failed to stringify: {}", e).into()))
   }
