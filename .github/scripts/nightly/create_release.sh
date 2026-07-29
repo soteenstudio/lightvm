@@ -4,6 +4,7 @@ LOGS=$(git log $PREV_TAG..HEAD --pretty=format:"%s")
 
 FEAT=$(echo "$LOGS" | grep -E "^feat(\(.*\))?: " | sed -E 's/^feat(\(.*\))?: /- /' || echo "")
 FIX=$(echo "$LOGS" | grep -E "^fix(\(.*\))?: " | sed -E 's/^fix(\(.*\))?: /- /' || echo "")
+PERF=$(echo "$LOGS" | grep -E "^perf(\(.*\))?: " | sed -E 's/^perf(\(.*\))?: /- /' || echo "")
 
 COMPARE_LINK="https://github.com/$REPOSITORY/compare/${PREV_TAG}...$VERSION_VAL"
 
@@ -24,7 +25,13 @@ COMPARE_LINK="https://github.com/$REPOSITORY/compare/${PREV_TAG}...$VERSION_VAL"
     echo ""
   fi
   
-  if [ -z "$FEAT" ] && [ -z "$FIX" ]; then
+  if [ -n "$PERF" ]; then
+    echo "### Performance"
+    echo "$PERF"
+    echo ""
+  fi
+  
+  if [ -z "$FEAT" ] && [ -z "$FIX" ] && [ -z "$PERF" ]; then
     echo "_No significant changes in this build._"
     echo ""
   fi
