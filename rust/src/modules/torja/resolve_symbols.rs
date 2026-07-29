@@ -8,25 +8,10 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::modules::torja::get_or_insert_idx::get_or_insert_idx;
 use crate::types::{instructions::Instructions, value::Value};
 use ahash::AHashMap;
 use smol_str::SmolStr;
-#[inline(always)]
-fn get_or_insert_idx(
-  table: &mut AHashMap<SmolStr, usize>,
-  name: &SmolStr,
-  next_idx: &mut usize,
-) -> usize {
-  use std::collections::hash_map::Entry;
-  match table.entry(name.clone()) {
-    Entry::Occupied(o) => *o.get(),
-    Entry::Vacant(v) => {
-      let i = *next_idx;
-      *next_idx += 1;
-      *v.insert(i)
-    }
-  }
-}
 #[cold]
 pub fn resolve_symbols(
   bytecode: &mut [Instructions],

@@ -8,4 +8,5 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+pub(crate) mod get_or_insert_idx;
 pub(crate) mod resolve_symbols;
