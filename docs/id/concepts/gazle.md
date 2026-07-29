@@ -4,7 +4,7 @@
 ## Cara Kerja Gazle
 Gazle menggunakan alur transformasi khusus untuk menyempurnakan bytecode Anda. Ia memproses aliran instruksi melalui beberapa tahapan, secara sistematis mengidentifikasi dan menghilangkan ketidakefisienan sebelum.
 
- * **Instruksi Terspesialisasi**: Gazle mengoptimalkan penggunaan memori dan kecepatan eksekusi dengan mengubah instruksi `push` yang generik menjadi pasangan yang spesifik menurut tipenya (contohnya: `push_int16`, `push_string`, `push_bool`). Hal ini memungkinkan VM untuk memproses data dengan ukuran dan tipe yang sudah ditentukan sebelumnya, sehingga secara signifikan mengurangi overhead untuk pengecekan tipe dan alokasi saat runtime.
+  * **Instruksi Terspesialisasi**: Gazle mengoptimalkan penggunaan memori dan kecepatan eksekusi dengan mengubah instruksi `push` yang generik menjadi pasangan yang spesifik menurut tipenya (contohnya: `push_int16`, `push_string`, `push_bool`). Hal ini memungkinkan VM untuk memproses data dengan ukuran dan tipe yang sudah ditentukan sebelumnya, sehingga secara signifikan mengurangi overhead untuk pengecekan tipe dan alokasi saat runtime.
  * **Pelipatan Konstanta**: Melakukan pra-hitung operasi matematika dan logika (misalnya, `add`, `sub`, `xor`, `concat`) jika nilainya diketahui pada saat kompilasi.
  * **Konversi & Pelipatan Metadata**: Melakukan pra-evaluasi konversi tipe (misalnya, `to_integer`, `to_string`) dan pemeriksaan metadata seperti `type_of` untuk menghilangkan pekerjaan runtime yang berlebihan.
  * **Pengurangan Kekuatan**: Menggantikan operasi "berat" dengan operasi yang lebih ringan, seperti mengubah perkalian dengan pangkat dua menjadi `shl` (Shift Left) bitwise.
