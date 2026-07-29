@@ -9,6 +9,7 @@
  */
 
 use crate::instructions::stack::import_func::import_func;
+use crate::modules::krates::{validate_bytecode::validate_bytecode, validate_vars::validate_vars};
 use crate::modules::torja::resolve_symbols::resolve_symbols;
 use crate::types::{
   control_flow_signal::ControlFlowSignal,
@@ -21,10 +22,7 @@ use crate::vm::dispatch::{
   io_dispatch::io_dispatch, logic_dispatch::logic_dispatch, math_dispatch::math_dispatch,
   metadata_dispatch::metadata_dispatch, stack_dispatch::stack_dispatch,
 };
-use crate::vm::{
-  inject_args::inject_args, prepare_vm::prepare_vm, validate_bytecode::validate_bytecode,
-  validate_vars::validate_vars,
-};
+use crate::vm::{inject_args::inject_args, prepare_vm::prepare_vm};
 use ahash::AHashMap;
 use smallvec::SmallVec;
 use smol_str::SmolStr;

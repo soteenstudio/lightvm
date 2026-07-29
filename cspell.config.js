@@ -51,7 +51,8 @@ export default {
     'gpgsign',
     'signingkey',
     'gazle', 
-    'torja'
+    'torja',
+    'krates'
   ],
   ignorePaths: [
     'node_modules/**',

@@ -13,5 +13,3 @@ pub(crate) mod execute;
 pub(crate) mod inject_args;
 pub(crate) mod prepare_vm;
 pub(crate) mod run;
-pub(crate) mod validate_bytecode;
-pub(crate) mod validate_vars;

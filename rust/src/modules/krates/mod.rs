@@ -8,6 +8,5 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub(crate) mod gazle;
-pub(crate) mod krates;
-pub(crate) mod torja;
+pub(crate) mod validate_bytecode;
+pub(crate) mod validate_vars;
