@@ -13,6 +13,7 @@ pub(crate) mod dup_func;
 pub(crate) mod get_func;
 pub(crate) mod import_func;
 pub(crate) mod push_array_func;
+pub(crate) mod push_bool_func;
 pub(crate) mod push_f16_func;
 pub(crate) mod push_f32_func;
 pub(crate) mod push_f64_func;

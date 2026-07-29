@@ -103,8 +103,10 @@ impl LightVM {
   /// vm.load(vm.tools().optimize_bytecode(raw).clone())
   ///   .run(None);
   /// ```
-  pub fn run(&mut self, options: Option<RunOptions>) {
-    let _ = self.run_internal(options);
+  pub fn run(&mut self, options: Option<RunOptions>) -> String {
+    self
+      .run_internal(options)
+      .unwrap_or_else(|e| format!(r#"{{"status": "error", "message": "{}"}}"#, e))
   }
   /// Function to export functions in the VM out.
   ///
@@ -127,15 +129,17 @@ impl LightVM {
         Ok(raw_result) => {
           let parsed: serde_json::Value =
             serde_json::from_str(&raw_result).unwrap_or(serde_json::Value::Null);
-          if parsed.is_null() || parsed == "Undefined" {
-            return None;
-          }
-          if parsed.is_object() {
-            parsed
-              .as_object()
-              .and_then(|obj| obj.values().next().cloned())
+          if parsed["status"] == "success" {
+            let result = parsed.get("result").cloned();
+            if result.is_none()
+              || result == Some(serde_json::Value::String("Undefined".to_string()))
+            {
+              return None;
+            }
+            result
           } else {
-            Some(parsed)
+            eprintln!("Error: {}", parsed["message"]);
+            None
           }
         }
         Err(e) => {

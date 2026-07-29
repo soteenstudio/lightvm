@@ -8,10 +8,5 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub(crate) mod fast_format;
-pub(crate) mod filtered_writer;
-pub(crate) mod format_output;
-pub(crate) mod has_nightly_opcodes;
-pub(crate) mod loader;
-pub(crate) mod map_primitive;
-pub(crate) mod vmerror;
+pub(crate) mod get_or_insert_idx;
+pub(crate) mod resolve_symbols;

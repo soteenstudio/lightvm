@@ -106,11 +106,13 @@ impl NodeLightVM {
       .map_err(|e| Error::from_reason(e.to_string()))
   }
   #[napi]
-  pub fn run(&mut self) -> Result<()> {
-    self
+  pub fn run(&mut self) -> Result<serde_json::Value> {
+    let raw_json = self
       .inner
       .run_internal(None)
-      .map_err(|e| Error::from_reason(e.to_string()))
+      .map_err(|e| Error::from_reason(e.to_string()))?;
+    serde_json::from_str(&raw_json)
+      .map_err(|e| Error::from_reason(format!("Failed to parse VM result: {}", e)))
   }
   #[napi]
   pub fn provide(&mut self, name: String, value: serde_json::Value) -> Result<()> {
@@ -169,7 +171,7 @@ impl NodeLightVM {
       .inner
       .clear_outputs_internal()
       .map_err(|e| Error::from_reason(e.to_string()))?;
-    self
+    let _ = self
       .inner
       .run_internal(None)
       .map_err(|e| Error::from_reason(e.to_string()))?;
@@ -193,13 +195,23 @@ impl NodeLightVM {
       .inner
       .call_exported_internal(name, args)
       .map_err(|e| Error::from_reason(e.to_string()))?;
-    serde_json::from_str(&raw_result).map_err(|e| {
-      let vm_err = VMError::SystemError(smol_str::SmolStr::new(format!(
-        "Failed to parse export return value: {}",
-        e
-      )));
-      Error::from_reason(vm_err.to_string())
-    })
+    let parsed: serde_json::Value = serde_json::from_str(&raw_result)
+      .map_err(|e| Error::from_reason(format!("Failed to parse export return: {}", e)))?;
+    if parsed["status"] == "success" {
+      Ok(
+        parsed
+          .get("result")
+          .cloned()
+          .unwrap_or(serde_json::Value::Null),
+      )
+    } else {
+      Err(Error::from_reason(
+        parsed["message"]
+          .as_str()
+          .unwrap_or("Unknown Error")
+          .to_string(),
+      ))
+    }
   }
   #[napi(js_name = "optimizeBytecode")]
   pub fn napi_optimize_bytecode(

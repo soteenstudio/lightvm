@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::optimizer::optimize_bytecode;
+use crate::modules::gazle::optimize_bytecode;
 use crate::types::{
   capability::Capability,
   instructions::Instructions,
@@ -162,7 +162,7 @@ impl LightVM {
     self.index_metadata();
     Ok(())
   }
-  pub fn run_internal(&mut self, _options: Option<RunOptions>) -> Result<(), VMError> {
+  pub fn run_internal(&mut self, _options: Option<RunOptions>) -> Result<String, VMError> {
     self.set_mode(self.backtrace, self.explain, self.hint);
     crate::utils::vmerror::get_backtrace::clear_backtrace();
     if self.backtrace {
@@ -190,9 +190,9 @@ impl LightVM {
       imports: self._imports.clone(),
       halt_flag: self.should_halt.clone(),
     };
-    let _result = crate::vm::run::run(&bytecode_json, Some(options));
+    let result = crate::vm::run::run(&bytecode_json, Some(options));
     self.state = VmState::Idle;
-    Ok(())
+    Ok(result)
   }
   #[inline]
   pub fn on_internal<F>(&mut self, event: VmEvent, callback: F) -> Result<(), String>
