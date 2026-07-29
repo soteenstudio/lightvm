@@ -104,11 +104,23 @@ impl WasmLightVM {
       .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))
   }
   #[wasm_bindgen]
-  pub fn run(&mut self) -> Result<(), JsValue> {
-    self
+  pub fn run(&mut self) -> Result<JsValue, JsValue> {
+    let raw_json = self
       .inner
       .run_internal(None)
-      .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))
+      .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))?;
+    let parsed: serde_json::Value = serde_json::from_str(&raw_json).map_err(|e| {
+      wasm_bindgen::JsValue::from(js_sys::Error::new(&format!(
+        "Failed to parse VM result: {}",
+        e
+      )))
+    })?;
+    serde_wasm_bindgen::to_value(&parsed).map_err(|e| {
+      wasm_bindgen::JsValue::from(js_sys::Error::new(&format!(
+        "Wasm serialization failed: {}",
+        e
+      )))
+    })
   }
   #[wasm_bindgen]
   pub fn provide(&mut self, name: String, value: JsValue) -> Result<(), JsValue> {
