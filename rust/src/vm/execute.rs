@@ -201,6 +201,11 @@ pub fn execute(
     ip += 1;
   }
   if options.as_ref().is_some_and(|o| o.capture_return) {
+    if let Value::Undefined = last_return
+      && let Some(v) = stack.pop()
+    {
+      last_return = v;
+    }
     return Ok((last_return, tick));
   }
   Ok((Value::Undefined, tick))

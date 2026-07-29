@@ -11,7 +11,6 @@
 use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
-
 #[inline(always)]
 pub fn push_bool_func(stack: &mut Stack, val: &bool, ip: usize) -> Result<(), VMError> {
   if stack.len() == stack.capacity() {
