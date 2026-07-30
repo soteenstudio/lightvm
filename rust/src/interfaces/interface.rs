@@ -425,6 +425,7 @@ mod tests {
     },
   };
   fn make_vm(caps: Vec<Capability>) -> LightVM {
+    use crate::types::security_config::SecurityConfig;
     let mut caps_set = HashSet::new();
     if caps.is_empty() {
       caps_set.insert(Capability::Observe);
@@ -433,6 +434,7 @@ mod tests {
         caps_set.insert(cap);
       }
     }
+    let default_security = SecurityConfig::default();
     LightVM {
       bytecode: Vec::new(),
       listeners: AHashMap::new(),
@@ -444,6 +446,13 @@ mod tests {
       functions: AHashMap::new(),
       exported: HashSet::new(),
       _imports: AHashMap::new(),
+      max_io: default_security.max_io,
+      max_import: default_security.max_import,
+      max_alloc: default_security.max_alloc,
+      max_call: default_security.max_call,
+      max_jump: default_security.max_jump,
+      allowed_imports: default_security.allowed_imports,
+      unsafe_mode: default_security.unsafe_mode,
       nightly: false,
       backtrace: false,
       explain: false,
