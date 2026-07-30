@@ -39,6 +39,15 @@ export class LightVM {
     caps: [Capability.Observe],
     runtimeConfig: { nightly: false },
     errorOptions: { backtrace: false, explain: false, hint: true },
+    securityConfig: {
+      max_io: 100,
+      max_import: 3,
+      max_alloc: 50,
+      max_call: 200,
+      max_jump: 100,
+      allowed_imports: [],
+      unsafe_mode: false,
+    },
   };
 
   constructor(config: Partial<VMConfig> & { caps?: Capability[] } = {}) {
@@ -51,6 +60,10 @@ export class LightVM {
       errorOptions: {
         ...LightVM.DEFAULTS.errorOptions,
         ...config.errorOptions,
+      },
+      securityConfig: {
+        ...LightVM.DEFAULTS.securityConfig,
+        ...config.securityConfig,
       },
     } as VMConfig;
 
@@ -82,13 +95,41 @@ export class LightVM {
   }
 
   private updateConfig(
-    key: 'runtimeConfig' | 'errorOptions',
+    key: 'runtimeConfig' | 'errorOptions' | 'securityConfig',
     sub: string,
-    val: boolean,
+    val: boolean | number | Array<string>,
   ) {
     this.instance[`with${sub[0].toUpperCase() + sub.slice(1)}`](val);
     (this.config[key] as any)[sub] = val;
     return this;
+  }
+
+  setMaxIo(value: number) {
+    return this.updateConfig('securityConfig', 'maxIo', value);
+  }
+
+  setMaxImport(value: number) {
+    return this.updateConfig('securityConfig', 'maxImport', value);
+  }
+
+  setMaxAlloc(value: number) {
+    return this.updateConfig('securityConfig', 'maxAlloc', value);
+  }
+
+  setMaxCall(value: number) {
+    return this.updateConfig('securityConfig', 'maxCall', value);
+  }
+
+  setMaxJump(value: number) {
+    return this.updateConfig('securityConfig', 'maxJump', value);
+  }
+
+  setAllowedImports(value: Array<string>) {
+    return this.updateConfig('securityConfig', 'allowedImports', value);
+  }
+
+  withUnsafeMode(enabled: boolean) {
+    return this.updateConfig('securityConfig', 'unsafeMode', enabled);
   }
 
   withNightly(enabled: boolean) {
