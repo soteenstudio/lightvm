@@ -41,14 +41,26 @@ pub struct LightVM {
   pub functions: AHashMap<SmolStr, FuncMetadata>,
   pub exported: HashSet<SmolStr>,
   pub _imports: AHashMap<SmolStr, Value>,
-  pub security_config: SecurityConfig,
+  pub max_io: usize,
+  pub max_import: usize,
+  pub max_alloc: usize,
+  pub max_call: usize,
+  pub max_jump: usize,
+  pub allowed_imports: Vec<String>,
+  pub unsafe_mode: bool,
   pub nightly: bool,
   pub backtrace: bool,
   pub explain: bool,
   pub hint: bool,
 }
 impl LightVM {
-  pub fn new_node(nightly: bool, backtrace: bool, explain: bool, hint: bool) -> Self {
+  pub fn new_node(
+    security_config: SecurityConfig,
+    nightly: bool,
+    backtrace: bool,
+    explain: bool,
+    hint: bool,
+  ) -> Self {
     use crate::types::capability::Capability;
     use crate::types::value::Value;
     use crate::types::vmstate::VmState;
@@ -67,7 +79,13 @@ impl LightVM {
       functions: AHashMap::new(),
       exported: HashSet::new(),
       _imports: AHashMap::new(),
-      security_config: SecurityConfig::default(),
+      max_io: security_config.max_io,
+      max_import: security_config.max_import,
+      max_alloc: security_config.max_alloc,
+      max_call: security_config.max_call,
+      max_jump: security_config.max_jump,
+      allowed_imports: security_config.allowed_imports,
+      unsafe_mode: security_config.unsafe_mode,
       nightly,
       backtrace,
       explain,
@@ -194,7 +212,15 @@ impl LightVM {
       capture_return: false,
       imports: self._imports.clone(),
       halt_flag: self.should_halt.clone(),
-      security_config: self.security_config.clone(),
+      security_config: SecurityConfig {
+        max_io: self.max_io,
+        max_import: self.max_import,
+        max_alloc: self.max_alloc,
+        max_call: self.max_call,
+        max_jump: self.max_jump,
+        allowed_imports: self.allowed_imports.clone(),
+        unsafe_mode: self.unsafe_mode,
+      },
     };
     let result = crate::vm::run::run(&bytecode_json, Some(options));
     self.state = VmState::Idle;
@@ -274,7 +300,15 @@ impl LightVM {
       capture_return: true,
       imports: self._imports.clone(),
       halt_flag: self.should_halt.clone(),
-      security_config: self.security_config.clone(),
+      security_config: SecurityConfig {
+        max_io: self.max_io,
+        max_import: self.max_import,
+        max_alloc: self.max_alloc,
+        max_call: self.max_call,
+        max_jump: self.max_jump,
+        allowed_imports: self.allowed_imports.clone(),
+        unsafe_mode: self.unsafe_mode,
+      },
     };
     let result_run = run(&bytecode_str.clone(), Some(options));
     Ok(result_run)

@@ -54,12 +54,46 @@ impl LightVM {
       functions: AHashMap::new(),
       exported: HashSet::new(),
       _imports: AHashMap::new(),
-      security_config,
+      max_io: security_config.max_io,
+      max_import: security_config.max_import,
+      max_alloc: security_config.max_alloc,
+      max_call: security_config.max_call,
+      max_jump: security_config.max_jump,
+      allowed_imports: security_config.allowed_imports,
+      unsafe_mode: security_config.unsafe_mode,
       nightly: runtime_config.nightly,
       backtrace: error_options.backtrace,
       explain: error_options.explain,
       hint: error_options.hint,
     }
+  }
+  pub fn set_max_io(mut self, value: usize) -> Self {
+    self.max_io = value;
+    self
+  }
+  pub fn set_max_import(mut self, value: usize) -> Self {
+    self.max_import = value;
+    self
+  }
+  pub fn set_max_alloc(mut self, value: usize) -> Self {
+    self.max_alloc = value;
+    self
+  }
+  pub fn set_max_call(mut self, value: usize) -> Self {
+    self.max_call = value;
+    self
+  }
+  pub fn set_max_jump(mut self, value: usize) -> Self {
+    self.max_jump = value;
+    self
+  }
+  pub fn set_allowed_imports(mut self, value: Vec<String>) -> Self {
+    self.allowed_imports = value;
+    self
+  }
+  pub fn with_unsafe_mode(mut self, enabled: bool) -> Self {
+    self.unsafe_mode = enabled;
+    self
   }
   pub fn with_nightly(mut self, enabled: bool) -> Self {
     self.nightly = enabled;

@@ -19,6 +19,7 @@ pub fn validate_security(
   if config.unsafe_mode {
     return Ok(());
   }
+  println!("{:?}", config);
   let mut io_count = 0;
   let mut import_count = 0;
   let mut alloc_count = 0;

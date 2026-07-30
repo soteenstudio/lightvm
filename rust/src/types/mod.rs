@@ -14,6 +14,7 @@ pub mod error_options;
 pub(crate) mod instructions;
 pub(crate) mod js_error_options;
 pub(crate) mod js_runtime_config;
+pub(crate) mod js_security_config;
 pub(crate) mod primitive_types;
 pub mod runtime_config;
 pub mod security_config;
