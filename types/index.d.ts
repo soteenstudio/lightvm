@@ -40,6 +40,13 @@ export declare class LightVM {
     private wrap;
     private parseSafe;
     private updateConfig;
+    setMaxIo(value: number): this;
+    setMaxImport(value: number): this;
+    setMaxAlloc(value: number): this;
+    setMaxCall(value: number): this;
+    setMaxJump(value: number): this;
+    setAllowedImports(value: Array<string>): this;
+    withUnsafeMode(enabled: boolean): this;
     withNightly(enabled: boolean): this;
     withBacktrace(enabled: boolean): this;
     withExplain(enabled: boolean): this;

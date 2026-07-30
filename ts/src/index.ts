@@ -40,13 +40,13 @@ export class LightVM {
     runtimeConfig: { nightly: false },
     errorOptions: { backtrace: false, explain: false, hint: true },
     securityConfig: {
-      max_io: 100,
-      max_import: 3,
-      max_alloc: 50,
-      max_call: 200,
-      max_jump: 100,
-      allowed_imports: [],
-      unsafe_mode: false,
+      maxIo: 100,
+      maxImport: 3,
+      maxAlloc: 50,
+      maxCall: 200,
+      maxJump: 100,
+      allowedImports: [],
+      unsafeMode: false,
     },
   };
 
@@ -216,6 +216,7 @@ export class LightVM {
   }
 
   tools() {
+    const securityConfig = this.config?.securityConfig;
     const runtimeConfig = this.config?.runtimeConfig;
     const errorOptions = this.config?.errorOptions;
     return {
@@ -223,6 +224,13 @@ export class LightVM {
         return this.wrap(() =>
           this.native.LightVM.optimizeBytecode(
             bytecode,
+            securityConfig?.maxIo ?? 100,
+            securityConfig?.maxImport ?? 3,
+            securityConfig?.maxAlloc ?? 50,
+            securityConfig?.maxCall ?? 200,
+            securityConfig?.maxJump ?? 100,
+            securityConfig?.allowedImports ?? [],
+            securityConfig?.unsafeMode ?? true,
             runtimeConfig?.nightly ?? false,
             errorOptions?.backtrace ?? false,
             errorOptions?.explain ?? false,
