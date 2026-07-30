@@ -14,6 +14,7 @@ use crate::modules::{
 use crate::types::{
   capability::Capability,
   instructions::Instructions,
+  security_config::SecurityConfig,
   value::{FuncMetadata, RunOptions, Value},
   vmevent::VmEvent,
   vmstate::VmState,
@@ -40,6 +41,7 @@ pub struct LightVM {
   pub functions: AHashMap<SmolStr, FuncMetadata>,
   pub exported: HashSet<SmolStr>,
   pub _imports: AHashMap<SmolStr, Value>,
+  pub security_config: SecurityConfig,
   pub nightly: bool,
   pub backtrace: bool,
   pub explain: bool,
@@ -65,6 +67,7 @@ impl LightVM {
       functions: AHashMap::new(),
       exported: HashSet::new(),
       _imports: AHashMap::new(),
+      security_config: SecurityConfig::default(),
       nightly,
       backtrace,
       explain,
@@ -191,6 +194,7 @@ impl LightVM {
       capture_return: false,
       imports: self._imports.clone(),
       halt_flag: self.should_halt.clone(),
+      security_config: self.security_config.clone(),
     };
     let result = crate::vm::run::run(&bytecode_json, Some(options));
     self.state = VmState::Idle;
@@ -270,6 +274,7 @@ impl LightVM {
       capture_return: true,
       imports: self._imports.clone(),
       halt_flag: self.should_halt.clone(),
+      security_config: self.security_config.clone(),
     };
     let result_run = run(&bytecode_str.clone(), Some(options));
     Ok(result_run)

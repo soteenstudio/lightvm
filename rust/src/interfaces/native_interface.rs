@@ -17,6 +17,7 @@ use crate::types::{
   capability::Capability,
   error_options::ErrorOptions,
   runtime_config::RuntimeConfig,
+  security_config::SecurityConfig,
   value::{RunOptions, Value},
   vmconfig::VmConfig,
   vmstate::VmState,
@@ -33,6 +34,7 @@ impl LightVM {
     let config: VmConfig = config.into();
     let runtime_config: RuntimeConfig = config.runtime_config.unwrap_or_default();
     let error_options: ErrorOptions = config.error_options.unwrap_or_default();
+    let security_config: SecurityConfig = config.security_config.unwrap_or_default();
     let mut caps_set = HashSet::new();
     if config.caps.is_empty() {
       caps_set.insert(Capability::Observe);
@@ -52,6 +54,7 @@ impl LightVM {
       functions: AHashMap::new(),
       exported: HashSet::new(),
       _imports: AHashMap::new(),
+      security_config,
       nightly: runtime_config.nightly,
       backtrace: error_options.backtrace,
       explain: error_options.explain,

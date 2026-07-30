@@ -9,7 +9,10 @@
  */
 
 use crate::instructions::stack::import_func::import_func;
-use crate::modules::krates::{validate_bytecode::validate_bytecode, validate_vars::validate_vars};
+use crate::modules::krates::{
+  validate_bytecode::validate_bytecode, validate_security::validate_security,
+  validate_vars::validate_vars,
+};
 use crate::modules::torja::resolve_symbols::resolve_symbols;
 use crate::types::{
   control_flow_signal::ControlFlowSignal,
@@ -50,8 +53,13 @@ pub fn execute(
   }
   let mut _call_stack: Vec<usize> = Vec::new();
   let (functions, _exported, mut ip) = prepare_vm(&bytecode, &options);
+  let security_config = options
+    .as_ref()
+    .map(|o| o.security_config.clone())
+    .unwrap_or_default();
   validate_vars(&bytecode, var_count)?;
   validate_bytecode(&bytecode, &functions)?;
+  validate_security(&bytecode, &security_config)?;
   inject_args(&mut vars, &functions, &options, ip);
   let bytecode_ptr = bytecode.as_ptr();
   let bytecode_len = bytecode.len();

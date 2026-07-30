@@ -8,6 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::types::security_config::SecurityConfig;
 use crate::utils::fast_format::{float_to_smol, int_to_smol};
 use ahash::AHashMap;
 use half::f16;
@@ -58,6 +59,7 @@ pub struct RunOptions {
   pub capture_return: bool,
   pub imports: AHashMap<SmolStr, Value>,
   pub halt_flag: Arc<AtomicBool>,
+  pub security_config: SecurityConfig,
 }
 impl Value {
   #[inline(always)]

@@ -15,6 +15,7 @@ use crate::types::js_error_options::JSErrorOptions;
 #[cfg(feature = "node")]
 use crate::types::js_runtime_config::JSRuntimeConfig;
 use crate::types::runtime_config::RuntimeConfig;
+use crate::types::security_config::SecurityConfig;
 #[cfg(feature = "wasm")]
 use crate::types::wasm_error_options::WASMErrorOptions;
 #[cfg(feature = "wasm")]
@@ -28,6 +29,7 @@ pub struct VmConfig {
   pub caps: Vec<Capability>,
   pub runtime_config: Option<RuntimeConfig>,
   pub error_options: Option<ErrorOptions>,
+  pub security_config: Option<SecurityConfig>,
 }
 #[cfg(feature = "node")]
 #[napi(object)]

@@ -10,4 +10,5 @@
 
 pub(crate) mod has_nightly_opcodes;
 pub(crate) mod validate_bytecode;
+pub(crate) mod validate_security;
 pub(crate) mod validate_vars;
