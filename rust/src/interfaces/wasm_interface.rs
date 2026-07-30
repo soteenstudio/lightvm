@@ -61,6 +61,8 @@ impl WasmLightVM {
         }
       }
     }
+    use crate::types::security_config::SecurityConfig;
+    let default_security = SecurityConfig::default();
     Ok(Self {
       inner: LightVM {
         bytecode: Vec::new(),
@@ -73,6 +75,13 @@ impl WasmLightVM {
         functions: AHashMap::new(),
         exported: HashSet::new(),
         _imports: AHashMap::new(),
+        max_io: default_security.max_io,
+        max_import: default_security.max_import,
+        max_alloc: default_security.max_alloc,
+        max_call: default_security.max_call,
+        max_jump: default_security.max_jump,
+        allowed_imports: default_security.allowed_imports,
+        unsafe_mode: default_security.unsafe_mode,
         nightly: runtime_config.nightly.unwrap_or(false),
         backtrace: error_options.backtrace.unwrap_or(false),
         explain: error_options.explain.unwrap_or(false),
@@ -255,6 +264,7 @@ pub struct WasmLightVMTools {
 impl WasmLightVMTools {
   #[wasm_bindgen(js_name = "optimizeBytecode")]
   pub fn optimize_bytecode(&self, bytecode: JsValue) -> Result<JsValue, JsValue> {
+    use crate::types::security_config::SecurityConfig;
     use crate::utils::vmerror::VMError;
     let input_json: serde_json::Value = serde_wasm_bindgen::from_value(bytecode).map_err(|e| {
       wasm_bindgen::JsValue::from(js_sys::Error::new(&format!(
@@ -262,7 +272,13 @@ impl WasmLightVMTools {
         e
       )))
     })?;
-    let mut vm_instance = LightVM::new_node(self.nightly, self.backtrace, self.explain, self.hint);
+    let mut vm_instance = LightVM::new_node(
+      SecurityConfig::default(),
+      self.nightly,
+      self.backtrace,
+      self.explain,
+      self.hint,
+    );
     let opt_str = vm_instance
       .optimize_bytecode_internal(input_json)
       .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))?;

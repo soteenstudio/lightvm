@@ -79,7 +79,9 @@ impl NodeLightVM {
         max_alloc: security_config.max_alloc.unwrap_or(50) as usize,
         max_call: security_config.max_call.unwrap_or(200) as usize,
         max_jump: security_config.max_jump.unwrap_or(100) as usize,
-        allowed_imports: security_config.allowed_imports.unwrap_or(Vec::new()),
+        allowed_imports: security_config
+          .allowed_imports
+          .unwrap_or_else(|| vec!["math".into(), "time".into(), "utils".into()]),
         unsafe_mode: security_config.unsafe_mode.unwrap_or(false),
         nightly: runtime_config.nightly.unwrap_or(false),
         backtrace: error_options.backtrace.unwrap_or(false),
@@ -293,7 +295,8 @@ impl NodeLightVM {
     let is_max_alloc = max_alloc.unwrap_or(50) as usize;
     let is_max_call = max_call.unwrap_or(200) as usize;
     let is_max_jump = max_jump.unwrap_or(100) as usize;
-    let is_allowed_imports = allowed_imports.unwrap_or(Vec::new());
+    let is_allowed_imports =
+      allowed_imports.unwrap_or_else(|| vec!["math".into(), "time".into(), "utils".into()]);
     let is_unsafe_mode = unsafe_mode.unwrap_or(false);
     let is_nightly = nightly.unwrap_or(false);
     let is_backtrace = backtrace.unwrap_or(false);
