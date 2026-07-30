@@ -29,7 +29,11 @@ pub fn validate_security(
       Instructions::Print
       | Instructions::Println
       | Instructions::Stdout
-      | Instructions::Stdoutln => {
+      | Instructions::Stdoutln
+      | Instructions::Stdin
+      | Instructions::InspectObj
+      | Instructions::InspectArr
+      | Instructions::ClearScreen => {
         io_count += 1;
         if io_count > config.max_io {
           return Err(VMError::SystemError(SmolStr::from(format!(

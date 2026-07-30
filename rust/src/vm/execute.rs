@@ -65,6 +65,10 @@ pub fn execute(
   let bytecode_len = bytecode.len();
   let threshold = if bytecode_len < 100 { 1 } else { 50 };
   let mut tick: u64 = 0;
+  let mut runtime_io_count = 0usize;
+  let mut runtime_call_count = 0usize;
+  let mut runtime_jump_count = 0usize;
+  let mut runtime_alloc_count = 0usize;
   while ip < bytecode_len {
     if tick.is_multiple_of(threshold)
       && let Some(ref flag) = halt_flag
@@ -140,13 +144,55 @@ pub fn execute(
       Instructions::And | Instructions::Or | Instructions::Xor | Instructions::Not => {
         logic_dispatch(instr, &mut stack, ip)?;
       }
-      Instructions::IfFalse(_)
-      | Instructions::Jump(_)
-      | Instructions::Return
-      | Instructions::Call(_, _)
+      Instructions::IfFalse(_) | Instructions::Jump(_) | Instructions::Break(_) => {
+        if !security_config.unsafe_mode {
+          runtime_jump_count += 1;
+          if runtime_jump_count > security_config.max_jump {
+            return Err(SmolStr::from("Security Violation: Excessive jumps"));
+          }
+        }
+        match control_flow_dispatch(
+          instr,
+          &mut stack,
+          &mut vars,
+          &mut _call_stack,
+          &mut last_return,
+          &functions,
+          &symbol_table,
+          &mut ip,
+          bytecode_len,
+        )? {
+          ControlFlowSignal::Continue => continue,
+          ControlFlowSignal::Break => break,
+          ControlFlowSignal::None => {}
+        }
+      }
+      Instructions::Call(_, _) => {
+        if !security_config.unsafe_mode {
+          runtime_call_count += 1;
+          if runtime_call_count > security_config.max_call {
+            return Err(SmolStr::from("Security Violation: Excessive calls"));
+          }
+        }
+        match control_flow_dispatch(
+          instr,
+          &mut stack,
+          &mut vars,
+          &mut _call_stack,
+          &mut last_return,
+          &functions,
+          &symbol_table,
+          &mut ip,
+          bytecode_len,
+        )? {
+          ControlFlowSignal::Continue => continue,
+          ControlFlowSignal::Break => break,
+          ControlFlowSignal::None => {}
+        }
+      }
+      Instructions::Return
       | Instructions::Stop
       | Instructions::Instantiate(_, _)
-      | Instructions::Break(_)
       | Instructions::Func(_, _, _, _, _) => {
         match control_flow_dispatch(
           instr,
@@ -172,11 +218,27 @@ pub fn execute(
       | Instructions::InspectObj
       | Instructions::InspectArr
       | Instructions::ClearScreen => {
+        if !security_config.unsafe_mode {
+          runtime_io_count += 1;
+          if runtime_io_count > security_config.max_io {
+            return Err(SmolStr::from(format!(
+              "Security Violation: I/O Flood at IP {}",
+              ip
+            )));
+          }
+        }
         io_dispatch(instr, &mut stack, ip)?;
       }
-      Instructions::MakeObj(_)
-      | Instructions::MakeArray(_)
-      | Instructions::AccessIndex
+      Instructions::MakeObj(_) | Instructions::MakeArray(_) => {
+        if !security_config.unsafe_mode {
+          runtime_alloc_count += 1;
+          if runtime_alloc_count > security_config.max_alloc {
+            return Err(SmolStr::from("Security Violation: Memory limit reached"));
+          }
+        }
+        collections_dispatch(instr, &mut stack, ip)?;
+      }
+      Instructions::AccessIndex
       | Instructions::Access(_)
       | Instructions::SetProp(_)
       | Instructions::Shrink => {
