@@ -26,9 +26,9 @@ impl GasMonitor {
   }
   #[inline(always)]
   pub fn check_tick(&self, tick: u64) -> Result<(), SmolStr> {
-    if tick > self.max_ticks {
+    if tick >= self.max_ticks {
       return Err(SmolStr::from(
-        "Security Violation: Gas limit exceeded (Infinite loop detected)",
+        "Security Violation: Tick limit exceeded.",
       ));
     }
     Ok(())
