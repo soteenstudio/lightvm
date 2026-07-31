@@ -10,8 +10,8 @@
 
 use crate::instructions::stack::import_func::import_func;
 use crate::modules::krates::{
-  validate_bytecode::validate_bytecode, validate_security::validate_security,
-  validate_vars::validate_vars,
+  gas_monitor::GasMonitor, validate_bytecode::validate_bytecode,
+  validate_security::validate_security, validate_vars::validate_vars,
 };
 use crate::modules::torja::resolve_symbols::resolve_symbols;
 use crate::types::{
@@ -64,6 +64,7 @@ pub fn execute(
   let bytecode_ptr = bytecode.as_ptr();
   let bytecode_len = bytecode.len();
   let threshold = if bytecode_len < 100 { 1 } else { 50 };
+  let gas_monitor = GasMonitor::new(&security_config)?;
   let mut tick: u64 = 0;
   let mut runtime_io_count = 0usize;
   let mut runtime_call_count = 0usize;
@@ -71,6 +72,7 @@ pub fn execute(
   let mut runtime_alloc_count = 0usize;
   let mut runtime_import_count = 0usize;
   while ip < bytecode_len {
+    gas_monitor.check_tick(tick)?;
     if tick.is_multiple_of(threshold)
       && let Some(ref flag) = halt_flag
       && flag.load(Ordering::Relaxed)

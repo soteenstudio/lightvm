@@ -16,6 +16,7 @@ pub struct SecurityConfig {
   pub max_alloc: usize,
   pub max_call: usize,
   pub max_jump: usize,
+  pub max_ticks: u64,
   pub allowed_imports: Vec<String>,
   pub unsafe_mode: bool,
 }
@@ -27,6 +28,7 @@ impl Default for SecurityConfig {
       max_alloc: 50,
       max_call: 200,
       max_jump: 100,
+      max_ticks: 1_000_000,
       allowed_imports: vec!["math".into(), "time".into(), "utils".into()],
       unsafe_mode: false,
     }

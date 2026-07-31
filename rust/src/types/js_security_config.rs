@@ -25,6 +25,8 @@ pub struct JSSecurityConfig {
   pub max_call: Option<u32>,
   #[ts(rename = "maxJump")]
   pub max_jump: Option<u32>,
+  #[ts(rename = "maxTicks")]
+  pub max_ticks: Option<u32>,
   #[ts(rename = "allowedImports")]
   pub allowed_imports: Option<Vec<String>>,
   #[ts(rename = "unsafeMode")]

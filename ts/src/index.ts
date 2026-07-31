@@ -45,6 +45,7 @@ export class LightVM {
       maxAlloc: 50,
       maxCall: 200,
       maxJump: 100,
+      maxTicks: 1_000_000,
       allowedImports: [],
       unsafeMode: false,
     },
@@ -111,11 +112,21 @@ export class LightVM {
   }
 
   setMaxImport(value: number) {
-    return this.updateConfig('securityConfig', 'maxImport', value, 'setMaxImport');
+    return this.updateConfig(
+      'securityConfig',
+      'maxImport',
+      value,
+      'setMaxImport',
+    );
   }
 
   setMaxAlloc(value: number) {
-    return this.updateConfig('securityConfig', 'maxAlloc', value, 'setMaxAlloc');
+    return this.updateConfig(
+      'securityConfig',
+      'maxAlloc',
+      value,
+      'setMaxAlloc',
+    );
   }
 
   setMaxCall(value: number) {
@@ -126,12 +137,31 @@ export class LightVM {
     return this.updateConfig('securityConfig', 'maxJump', value, 'setMaxJump');
   }
 
+  setMaxTicks(value: number) {
+    return this.updateConfig(
+      'securityConfig',
+      'maxTicks',
+      value,
+      'setMaxTicks',
+    );
+  }
+
   setAllowedImports(value: Array<string>) {
-    return this.updateConfig('securityConfig', 'allowedImports', value, 'setAllowedImports');
+    return this.updateConfig(
+      'securityConfig',
+      'allowedImports',
+      value,
+      'setAllowedImports',
+    );
   }
 
   withUnsafeMode(enabled: boolean) {
-    return this.updateConfig('securityConfig', 'unsafeMode', enabled, 'withUnsafeMode');
+    return this.updateConfig(
+      'securityConfig',
+      'unsafeMode',
+      enabled,
+      'withUnsafeMode',
+    );
   }
 
   withNightly(enabled: boolean) {
@@ -231,6 +261,7 @@ export class LightVM {
             securityConfig?.maxAlloc ?? 50,
             securityConfig?.maxCall ?? 200,
             securityConfig?.maxJump ?? 100,
+            securityConfig?.maxTicks ?? 1_000_000,
             securityConfig?.allowedImports ?? [],
             securityConfig?.unsafeMode ?? true,
             runtimeConfig?.nightly ?? false,

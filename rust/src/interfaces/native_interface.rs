@@ -59,6 +59,7 @@ impl LightVM {
       max_alloc: security_config.max_alloc,
       max_call: security_config.max_call,
       max_jump: security_config.max_jump,
+      max_ticks: security_config.max_ticks,
       allowed_imports: security_config.allowed_imports,
       unsafe_mode: security_config.unsafe_mode,
       nightly: runtime_config.nightly,
@@ -85,6 +86,10 @@ impl LightVM {
   }
   pub fn set_max_jump(mut self, value: usize) -> Self {
     self.max_jump = value;
+    self
+  }
+  pub fn set_max_ticks(mut self, value: u64) -> Self {
+    self.max_ticks = value;
     self
   }
   pub fn set_allowed_imports(mut self, value: Vec<String>) -> Self {

@@ -8,6 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+pub(crate) mod gas_monitor;
 pub(crate) mod has_nightly_opcodes;
 pub(crate) mod validate_bytecode;
 pub(crate) mod validate_security;
