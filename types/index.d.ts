@@ -45,6 +45,7 @@ export declare class LightVM {
     setMaxAlloc(value: number): this;
     setMaxCall(value: number): this;
     setMaxJump(value: number): this;
+    setMaxTicks(value: number): this;
     setAllowedImports(value: Array<string>): this;
     withUnsafeMode(enabled: boolean): this;
     withNightly(enabled: boolean): this;

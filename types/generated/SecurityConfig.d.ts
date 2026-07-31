@@ -4,6 +4,7 @@ export type SecurityConfig = {
     maxAlloc: number | null;
     maxCall: number | null;
     maxJump: number | null;
+    maxTicks: number | null;
     allowedImports: Array<string> | null;
     unsafeMode: boolean | null;
 };
