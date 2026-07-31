@@ -1,9 +1,9 @@
 export type SecurityConfig = {
-    maxIo: number | null;
-    maxImport: number | null;
-    maxAlloc: number | null;
-    maxCall: number | null;
-    maxJump: number | null;
-    allowedImports: Array<string> | null;
-    unsafeMode: boolean | null;
+    max_io: number | null;
+    max_import: number | null;
+    max_alloc: number | null;
+    max_call: number | null;
+    max_jump: number | null;
+    allowed_imports: Array<string> | null;
+    unsafe_mode: boolean | null;
 };
