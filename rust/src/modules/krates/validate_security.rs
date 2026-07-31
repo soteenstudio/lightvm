@@ -24,6 +24,8 @@ pub fn validate_security(
   let mut alloc_count = 0;
   let mut call_count = 0;
   let mut jump_count = 0;
+  let total_instr = bytecode.len();
+  let mut nop_count = 0;
   for (ip, instr) in bytecode.iter().enumerate() {
     match instr {
       Instructions::Print
@@ -80,8 +82,16 @@ pub fn validate_security(
           )));
         }
       }
+      Instructions::Nop => {
+        nop_count += 1;
+      }
       _ => {}
     }
+  }
+  if total_instr > 10 && (nop_count * 10) > total_instr {
+    return Err(VMError::SystemError(SmolStr::from(
+      "Security Violation: Excessive Nop padding",
+    )));
   }
   Ok(())
 }
