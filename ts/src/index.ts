@@ -98,38 +98,40 @@ export class LightVM {
     key: 'runtimeConfig' | 'errorOptions' | 'securityConfig',
     sub: string,
     val: boolean | number | Array<string>,
+    methodName?: string,
   ) {
-    this.instance[`with${sub[0].toUpperCase() + sub.slice(1)}`](val);
+    const method = methodName ?? `with${sub[0].toUpperCase() + sub.slice(1)}`;
+    this.instance[method](val);
     (this.config[key] as any)[sub] = val;
     return this;
   }
 
   setMaxIo(value: number) {
-    return this.updateConfig('securityConfig', 'maxIo', value);
+    return this.updateConfig('securityConfig', 'maxIo', value, 'setMaxIo');
   }
 
   setMaxImport(value: number) {
-    return this.updateConfig('securityConfig', 'maxImport', value);
+    return this.updateConfig('securityConfig', 'maxImport', value, 'setMaxImport');
   }
 
   setMaxAlloc(value: number) {
-    return this.updateConfig('securityConfig', 'maxAlloc', value);
+    return this.updateConfig('securityConfig', 'maxAlloc', value, 'setMaxAlloc');
   }
 
   setMaxCall(value: number) {
-    return this.updateConfig('securityConfig', 'maxCall', value);
+    return this.updateConfig('securityConfig', 'maxCall', value, 'setMaxCall');
   }
 
   setMaxJump(value: number) {
-    return this.updateConfig('securityConfig', 'maxJump', value);
+    return this.updateConfig('securityConfig', 'maxJump', value, 'setMaxJump');
   }
 
   setAllowedImports(value: Array<string>) {
-    return this.updateConfig('securityConfig', 'allowedImports', value);
+    return this.updateConfig('securityConfig', 'allowedImports', value, 'setAllowedImports');
   }
 
   withUnsafeMode(enabled: boolean) {
-    return this.updateConfig('securityConfig', 'unsafeMode', enabled);
+    return this.updateConfig('securityConfig', 'unsafeMode', enabled, 'withUnsafeMode');
   }
 
   withNightly(enabled: boolean) {

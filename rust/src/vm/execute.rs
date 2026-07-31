@@ -69,6 +69,7 @@ pub fn execute(
   let mut runtime_call_count = 0usize;
   let mut runtime_jump_count = 0usize;
   let mut runtime_alloc_count = 0usize;
+  let mut runtime_import_count = 0usize;
   while ip < bytecode_len {
     if tick.is_multiple_of(threshold)
       && let Some(ref flag) = halt_flag
@@ -111,6 +112,12 @@ pub fn execute(
         stack_dispatch(instr, &mut stack, &mut vars, ip)?;
       }
       Instructions::Import(module_name, alias_idx) => {
+        if !security_config.unsafe_mode {
+          runtime_import_count += 1;
+          if runtime_import_count > security_config.max_import {
+            return Err(SmolStr::from("Security Violation: Excessive imports"));
+          }
+        }
         import_func(&mut vars, &options, module_name, *alias_idx, ip)?;
       }
       Instructions::Add(_)
