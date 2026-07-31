@@ -298,6 +298,10 @@ fn test_execute_basic_math_and_return() {
   let halt_flag = Arc::new(AtomicBool::new(false));
   let options = crate::types::value::RunOptions {
     capture_return: true,
+    security_config: crate::types::security_config::SecurityConfig {
+      max_ticks: 100_000,
+      ..Default::default()
+    },
     ..Default::default()
   };
   let result = execute(bytecode, Some(options), Some(halt_flag));
