@@ -80,6 +80,7 @@ impl WasmLightVM {
         max_alloc: default_security.max_alloc,
         max_call: default_security.max_call,
         max_jump: default_security.max_jump,
+        max_ticks: default_security.max_ticks,
         allowed_imports: default_security.allowed_imports,
         unsafe_mode: default_security.unsafe_mode,
         nightly: runtime_config.nightly.unwrap_or(false),
