@@ -5,6 +5,7 @@ export type SecurityConfig = {
     maxCall: number | null;
     maxJump: number | null;
     maxTicks: number | null;
+    maxStackSize: number | null;
     allowedImports: Array<string> | null;
     unsafeMode: boolean | null;
 };

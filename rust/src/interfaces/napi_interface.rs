@@ -80,6 +80,7 @@ impl NodeLightVM {
         max_call: security_config.max_call.unwrap_or(200) as usize,
         max_jump: security_config.max_jump.unwrap_or(100) as usize,
         max_ticks: security_config.max_ticks.unwrap_or(1_000_000) as u64,
+        max_stack_size: security_config.max_stack_size.unwrap_or(128) as usize,
         allowed_imports: security_config
           .allowed_imports
           .unwrap_or_else(|| vec!["math".into(), "time".into(), "utils".into()]),
@@ -270,6 +271,7 @@ impl NodeLightVM {
     max_call: Option<u32>,
     max_jump: Option<u32>,
     max_ticks: Option<u32>,
+    max_stack_size: Option<u32>,
     allowed_imports: Option<Vec<String>>,
     unsafe_mode: Option<bool>,
     nightly: Option<bool>,
@@ -298,6 +300,7 @@ impl NodeLightVM {
     let is_max_call = max_call.unwrap_or(200) as usize;
     let is_max_jump = max_jump.unwrap_or(100) as usize;
     let is_max_ticks = max_ticks.unwrap_or(1_000_000) as u64;
+    let is_max_stack_size = max_stack_size.unwrap_or(128) as usize;
     let is_allowed_imports =
       allowed_imports.unwrap_or_else(|| vec!["math".into(), "time".into(), "utils".into()]);
     let is_unsafe_mode = unsafe_mode.unwrap_or(false);
@@ -313,6 +316,7 @@ impl NodeLightVM {
         max_call: is_max_call,
         max_jump: is_max_jump,
         max_ticks: is_max_ticks,
+        max_stack_size: is_max_stack_size,
         allowed_imports: is_allowed_imports,
         unsafe_mode: is_unsafe_mode,
       },

@@ -52,7 +52,8 @@ export default {
     'signingkey',
     'gazle', 
     'torja',
-    'krates'
+    'krates',
+    'nops'
   ],
   ignorePaths: [
     'node_modules/**',

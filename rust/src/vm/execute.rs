@@ -57,6 +57,10 @@ pub fn execute(
     .as_ref()
     .map(|o| o.security_config.clone())
     .unwrap_or_default();
+  if security_config.max_stack_size > 0 {
+    stack.clear();
+    stack.reserve(security_config.max_stack_size);
+  }
   validate_vars(&bytecode, var_count)?;
   validate_bytecode(&bytecode, &functions)?;
   validate_security(&bytecode, &security_config)?;

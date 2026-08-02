@@ -60,6 +60,7 @@ impl LightVM {
       max_call: security_config.max_call,
       max_jump: security_config.max_jump,
       max_ticks: security_config.max_ticks,
+      max_stack_size: security_config.max_stack_size,
       allowed_imports: security_config.allowed_imports,
       unsafe_mode: security_config.unsafe_mode,
       nightly: runtime_config.nightly,

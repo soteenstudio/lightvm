@@ -46,6 +46,7 @@ export class LightVM {
       maxCall: 200,
       maxJump: 100,
       maxTicks: 1_000_000,
+      maxStackSize: 128,
       allowedImports: [],
       unsafeMode: false,
     },
@@ -143,6 +144,15 @@ export class LightVM {
       'maxTicks',
       value,
       'setMaxTicks',
+    );
+  }
+
+  setMaxStackSize(value: number) {
+    return this.updateConfig(
+      'securityConfig',
+      'maxStackSize',
+      value,
+      'setMaxStackSize',
     );
   }
 
@@ -262,6 +272,7 @@ export class LightVM {
             securityConfig?.maxCall ?? 200,
             securityConfig?.maxJump ?? 100,
             securityConfig?.maxTicks ?? 1_000_000,
+            securityConfig?.maxStackSize ?? 128,
             securityConfig?.allowedImports ?? [],
             securityConfig?.unsafeMode ?? true,
             runtimeConfig?.nightly ?? false,
