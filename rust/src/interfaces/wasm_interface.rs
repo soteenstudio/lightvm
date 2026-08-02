@@ -81,6 +81,7 @@ impl WasmLightVM {
         max_call: default_security.max_call,
         max_jump: default_security.max_jump,
         max_ticks: default_security.max_ticks,
+        max_stack_size: default_security.max_stack_size,
         allowed_imports: default_security.allowed_imports,
         unsafe_mode: default_security.unsafe_mode,
         nightly: runtime_config.nightly.unwrap_or(false),
