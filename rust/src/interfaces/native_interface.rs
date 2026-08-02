@@ -93,6 +93,10 @@ impl LightVM {
     self.max_ticks = value;
     self
   }
+  pub fn set_max_stack_size(mut self, value: usize) -> Self {
+    self.max_stack_size = value;
+    self
+  }
   pub fn set_allowed_imports(mut self, value: Vec<String>) -> Self {
     self.allowed_imports = value;
     self
