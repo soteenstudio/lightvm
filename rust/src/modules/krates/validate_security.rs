@@ -11,7 +11,6 @@
 use crate::types::instructions::Instructions;
 use crate::types::security_config::SecurityConfig;
 use crate::utils::vmerror::VMError;
-use smol_str::SmolStr;
 pub fn validate_security(
   bytecode: &[Instructions],
   config: &SecurityConfig,
@@ -38,48 +37,36 @@ pub fn validate_security(
       | Instructions::ClearScreen => {
         io_count += 1;
         if io_count > config.max_io {
-          return Err(VMError::SystemError(SmolStr::from(format!(
-            "Security Violation: I/O Flood at IP {}",
-            ip
-          ))));
+          return Err(VMError::IoFlood { ip });
         }
       }
       Instructions::Import(module, _) => {
         import_count += 1;
         if import_count > config.max_import {
-          return Err(VMError::SystemError(SmolStr::from(
-            "Security Violation: Too many imports",
-          )));
+          return Err(VMError::ImportLimitReached);
         }
         if !config.allowed_imports.contains(&module.to_string()) {
-          return Err(VMError::SystemError(SmolStr::from(format!(
-            "Security Violation: Forbidden module '{}'",
-            module
-          ))));
+          return Err(VMError::UnauthorizedModule {
+            module: module.clone(),
+          });
         }
       }
       Instructions::MakeObj(_) | Instructions::MakeArray(_) => {
         alloc_count += 1;
         if alloc_count > config.max_alloc {
-          return Err(VMError::SystemError(SmolStr::from(
-            "Security Violation: Memory limit reached",
-          )));
+          return Err(VMError::MemoryLimitExceeded);
         }
       }
       Instructions::Call(_, _) => {
         call_count += 1;
         if call_count > config.max_call {
-          return Err(VMError::SystemError(SmolStr::from(
-            "Security Violation: Excessive calls",
-          )));
+          return Err(VMError::CallLimitExceeded);
         }
       }
       Instructions::Jump(_) | Instructions::IfFalse(_) | Instructions::Break(_) => {
         jump_count += 1;
         if jump_count > config.max_jump {
-          return Err(VMError::SystemError(SmolStr::from(
-            "Security Violation: Excessive jumps",
-          )));
+          return Err(VMError::JumpLimitExceeded);
         }
       }
       Instructions::Nop => {
@@ -89,9 +76,7 @@ pub fn validate_security(
     }
   }
   if total_instr > 10 && (nop_count * 10) > total_instr {
-    return Err(VMError::SystemError(SmolStr::from(
-      "Security Violation: Excessive Nop padding",
-    )));
+    return Err(VMError::ExcessiveNopPadding);
   }
   Ok(())
 }

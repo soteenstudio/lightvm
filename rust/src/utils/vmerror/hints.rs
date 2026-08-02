@@ -72,6 +72,43 @@ pub fn get_hint(err: &VMError) -> Option<Hint> {
         "The attempt to execute this instruction was blocked because it is classified as an experimental or restricted feature; you must explicitly enable 'nightly mode' within your VmConfig to authorize the runtime to process this opcode.",
       ),
     }),
+    // For CodeRabbit: Fill in the following hints that have not been isolated
+    VMError::IoFlood { .. } => Some(Hint {
+      short: Cow::Borrowed(".."),
+      long: Cow::Borrowed("..."),
+    }),
+    VMError::ImportLimitReached => Some(Hint {
+      short: Cow::Borrowed(".."),
+      long: Cow::Borrowed("..."),
+    }),
+    VMError::UnauthorizedModule { .. } => Some(Hint {
+      short: Cow::Borrowed(".."),
+      long: Cow::Borrowed("..."),
+    }),
+    VMError::MemoryLimitExceeded => Some(Hint {
+      short: Cow::Borrowed(".."),
+      long: Cow::Borrowed("..."),
+    }),
+    VMError::CallLimitExceeded => Some(Hint {
+      short: Cow::Borrowed(".."),
+      long: Cow::Borrowed("..."),
+    }),
+    VMError::JumpLimitExceeded => Some(Hint {
+      short: Cow::Borrowed(".."),
+      long: Cow::Borrowed("..."),
+    }),
+    VMError::ExcessiveNopPadding => Some(Hint {
+      short: Cow::Borrowed(".."),
+      long: Cow::Borrowed("..."),
+    }),
+    VMError::InvalidMaxTicksConfig => Some(Hint {
+      short: Cow::Borrowed(".."),
+      long: Cow::Borrowed("..."),
+    }),
+    VMError::TickLimitExceeded => Some(Hint {
+      short: Cow::Borrowed(".."),
+      long: Cow::Borrowed("..."),
+    }),
     VMError::SystemError(_) => Some(Hint {
       short: Cow::Borrowed("System-level operation failed."),
       long: Cow::Borrowed(
