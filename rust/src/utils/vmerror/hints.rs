@@ -85,13 +85,17 @@ pub fn get_hint(err: &VMError) -> Option<Hint> {
       ),
     }),
     VMError::UnauthorizedModule { .. } => Some(Hint {
-      short: Cow::Borrowed("Add the module to allowed_imports in SecurityConfig or remove the import."),
+      short: Cow::Borrowed(
+        "Add the module to allowed_imports in SecurityConfig or remove the import.",
+      ),
       long: Cow::Borrowed(
         "The bytecode attempted to import a module that is not included in the SecurityConfig's allowed_imports whitelist. To proceed, either add the required module name to the whitelist, or remove the import if it is not essential. This restriction prevents execution of untrusted or unauthorized external code.",
       ),
     }),
     VMError::MemoryLimitExceeded { .. } => Some(Hint {
-      short: Cow::Borrowed("Reduce object/array allocations or increase max_alloc in SecurityConfig."),
+      short: Cow::Borrowed(
+        "Reduce object/array allocations or increase max_alloc in SecurityConfig.",
+      ),
       long: Cow::Borrowed(
         "The bytecode exceeded the maximum permitted memory allocations (MakeObj, MakeArray) as defined in the SecurityConfig. To resolve this, optimize your data structures to use fewer allocations, reuse existing objects where possible, or increase the max_alloc limit if the memory usage is justified.",
       ),
@@ -103,7 +107,9 @@ pub fn get_hint(err: &VMError) -> Option<Hint> {
       ),
     }),
     VMError::JumpLimitExceeded { .. } => Some(Hint {
-      short: Cow::Borrowed("Reduce control flow complexity or increase max_jump in SecurityConfig."),
+      short: Cow::Borrowed(
+        "Reduce control flow complexity or increase max_jump in SecurityConfig.",
+      ),
       long: Cow::Borrowed(
         "The bytecode exceeded the maximum number of control flow jump instructions (Jump, IfFalse, Break) permitted by the SecurityConfig. This typically indicates overly complex branching or loop structures. Simplify your control flow logic, reduce nested loops, or increase the max_jump limit if the complexity is unavoidable.",
       ),
