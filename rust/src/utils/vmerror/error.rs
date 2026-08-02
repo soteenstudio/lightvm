@@ -55,13 +55,22 @@ pub enum VMError {
   IoFlood {
     ip: usize,
   },
-  ImportLimitReached,
+  ImportLimitReached {
+    ip: usize,
+  },
   UnauthorizedModule {
+    ip: usize,
     module: SmolStr,
   },
-  MemoryLimitExceeded,
-  CallLimitExceeded,
-  JumpLimitExceeded,
+  MemoryLimitExceeded {
+    ip: usize,
+  },
+  CallLimitExceeded {
+    ip: usize,
+  },
+  JumpLimitExceeded {
+    ip: usize,
+  },
   ExcessiveNopPadding,
   InvalidMaxTicksConfig,
   TickLimitExceeded,
@@ -83,11 +92,11 @@ impl VMError {
       VMError::InvalidJumpTarget { .. } => "LVM006",
       VMError::FeatureRestricted { .. } => "LVM007",
       VMError::IoFlood { .. } => "LVM008",
-      VMError::ImportLimitReached => "LVM009",
+      VMError::ImportLimitReached { .. } => "LVM009",
       VMError::UnauthorizedModule { .. } => "LVM010",
-      VMError::MemoryLimitExceeded => "LVM011",
-      VMError::CallLimitExceeded => "LVM012",
-      VMError::JumpLimitExceeded => "LVM013",
+      VMError::MemoryLimitExceeded { .. } => "LVM011",
+      VMError::CallLimitExceeded { .. } => "LVM012",
+      VMError::JumpLimitExceeded { .. } => "LVM013",
       VMError::ExcessiveNopPadding => "LVM014",
       VMError::InvalidMaxTicksConfig => "LVM015",
       VMError::TickLimitExceeded => "LVM016",
