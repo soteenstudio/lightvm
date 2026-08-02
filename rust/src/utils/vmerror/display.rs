@@ -31,11 +31,11 @@ impl fmt::Display for VMError {
       VMError::InvalidJumpTarget { .. } => "InvalidJumpTarget",
       VMError::FeatureRestricted { .. } => "FeatureRestricted",
       VMError::IoFlood { .. } => "IoFlood",
-      VMError::ImportLimitReached => "ImportLimitReached",
+      VMError::ImportLimitReached { .. } => "ImportLimitReached",
       VMError::UnauthorizedModule { .. } => "UnauthorizedModule",
-      VMError::MemoryLimitExceeded => "MemoryLimitExceeded",
-      VMError::CallLimitExceeded => "CallLimitExceeded",
-      VMError::JumpLimitExceeded => "JumpLimitExceeded",
+      VMError::MemoryLimitExceeded { .. } => "MemoryLimitExceeded",
+      VMError::CallLimitExceeded { .. } => "CallLimitExceeded",
+      VMError::JumpLimitExceeded { .. } => "JumpLimitExceeded",
       VMError::ExcessiveNopPadding => "ExcessiveNopPadding",
       VMError::InvalidMaxTicksConfig => "InvalidMaxTicksConfig",
       VMError::TickLimitExceeded => "TickLimitExceeded",
@@ -43,11 +43,6 @@ impl fmt::Display for VMError {
     };
     let ip = match self {
       VMError::SystemError(_)
-      | VMError::ImportLimitReached
-      | VMError::UnauthorizedModule { .. }
-      | VMError::MemoryLimitExceeded
-      | VMError::CallLimitExceeded
-      | VMError::JumpLimitExceeded
       | VMError::ExcessiveNopPadding
       | VMError::InvalidMaxTicksConfig
       | VMError::TickLimitExceeded => 0,
@@ -58,7 +53,12 @@ impl fmt::Display for VMError {
       | VMError::OutOfBounds { ip, .. }
       | VMError::InvalidJumpTarget { ip, .. }
       | VMError::FeatureRestricted { ip, .. }
-      | VMError::IoFlood { ip } => *ip,
+      | VMError::IoFlood { ip }
+      | VMError::ImportLimitReached { ip }
+      | VMError::UnauthorizedModule { ip, .. }
+      | VMError::MemoryLimitExceeded { ip }
+      | VMError::CallLimitExceeded { ip }
+      | VMError::JumpLimitExceeded { ip } => *ip,
     };
     write!(f, "{BOLD}{RED}Error[{}]{RESET}: ", self.error_code())?;
     match self {
@@ -102,19 +102,19 @@ impl fmt::Display for VMError {
       VMError::IoFlood { .. } => {
         write!(f, "Maximum allowed I/O operations reached")
       }
-      VMError::ImportLimitReached => {
+      VMError::ImportLimitReached { .. } => {
         write!(f, "Maximum allowed module imports reached")
       }
-      VMError::UnauthorizedModule { module } => {
+      VMError::UnauthorizedModule { module, .. } => {
         write!(f, "Import of module '{}' is unauthorized", module)
       }
-      VMError::MemoryLimitExceeded => {
+      VMError::MemoryLimitExceeded { .. } => {
         write!(f, "Maximum allowed memory allocation reached")
       }
-      VMError::CallLimitExceeded => {
+      VMError::CallLimitExceeded { .. } => {
         write!(f, "Maximum allowed function calls reached")
       }
-      VMError::JumpLimitExceeded => {
+      VMError::JumpLimitExceeded { .. } => {
         write!(f, "Maximum allowed control flow jumps reached")
       }
       VMError::ExcessiveNopPadding => {

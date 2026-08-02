@@ -43,10 +43,11 @@ pub fn validate_security(
       Instructions::Import(module, _) => {
         import_count += 1;
         if import_count > config.max_import {
-          return Err(VMError::ImportLimitReached);
+          return Err(VMError::ImportLimitReached { ip });
         }
         if !config.allowed_imports.contains(&module.to_string()) {
           return Err(VMError::UnauthorizedModule {
+            ip,
             module: module.clone(),
           });
         }
@@ -54,19 +55,19 @@ pub fn validate_security(
       Instructions::MakeObj(_) | Instructions::MakeArray(_) => {
         alloc_count += 1;
         if alloc_count > config.max_alloc {
-          return Err(VMError::MemoryLimitExceeded);
+          return Err(VMError::MemoryLimitExceeded { ip });
         }
       }
       Instructions::Call(_, _) => {
         call_count += 1;
         if call_count > config.max_call {
-          return Err(VMError::CallLimitExceeded);
+          return Err(VMError::CallLimitExceeded { ip });
         }
       }
       Instructions::Jump(_) | Instructions::IfFalse(_) | Instructions::Break(_) => {
         jump_count += 1;
         if jump_count > config.max_jump {
-          return Err(VMError::JumpLimitExceeded);
+          return Err(VMError::JumpLimitExceeded { ip });
         }
       }
       Instructions::Nop => {
