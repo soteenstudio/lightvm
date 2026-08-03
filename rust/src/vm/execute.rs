@@ -9,22 +9,23 @@
  */
 
 use crate::instructions::stack::import_func::import_func;
+use crate::modules::krates::{
+  gas_monitor::GasMonitor, validate_bytecode::validate_bytecode,
+  validate_security::validate_security, validate_vars::validate_vars,
+};
+use crate::modules::torja::resolve_symbols::resolve_symbols;
 use crate::types::{
   control_flow_signal::ControlFlowSignal,
   instructions::Instructions,
   value::{RunOptions, Value},
 };
-use crate::utils::resolve_symbols::resolve_symbols;
 use crate::vm::dispatch::{
   collections_dispatch::collections_dispatch, comparison_dispatch::comparison_dispatch,
   control_flow_dispatch::control_flow_dispatch, conversions_dispatch::conversions_dispatch,
   io_dispatch::io_dispatch, logic_dispatch::logic_dispatch, math_dispatch::math_dispatch,
   metadata_dispatch::metadata_dispatch, stack_dispatch::stack_dispatch,
 };
-use crate::vm::{
-  inject_args::inject_args, prepare_vm::prepare_vm, validate_bytecode::validate_bytecode,
-  validate_vars::validate_vars,
-};
+use crate::vm::{inject_args::inject_args, prepare_vm::prepare_vm};
 use ahash::AHashMap;
 use smallvec::SmallVec;
 use smol_str::SmolStr;
@@ -38,7 +39,7 @@ pub fn execute(
   mut bytecode: Vec<Instructions>,
   options: Option<RunOptions>,
   halt_flag: Option<Arc<AtomicBool>>,
-) -> Result<Value, SmolStr> {
+) -> Result<(Value, u64), SmolStr> {
   let mut last_return = Value::Undefined;
   let mut stack: SmallVec<[Value; 128]> = SmallVec::new();
   let empty_map: AHashMap<SmolStr, Value> = AHashMap::new();
@@ -52,19 +53,35 @@ pub fn execute(
   }
   let mut _call_stack: Vec<usize> = Vec::new();
   let (functions, _exported, mut ip) = prepare_vm(&bytecode, &options);
+  let security_config = options
+    .as_ref()
+    .map(|o| o.security_config.clone())
+    .unwrap_or_default();
+  if security_config.max_stack_size > 0 {
+    stack.clear();
+    stack.reserve(security_config.max_stack_size);
+  }
   validate_vars(&bytecode, var_count)?;
   validate_bytecode(&bytecode, &functions)?;
+  validate_security(&bytecode, &security_config)?;
   inject_args(&mut vars, &functions, &options, ip);
   let bytecode_ptr = bytecode.as_ptr();
   let bytecode_len = bytecode.len();
   let threshold = if bytecode_len < 100 { 1 } else { 50 };
-  let mut tick = 0;
+  let gas_monitor = GasMonitor::new(&security_config)?;
+  let mut tick: u64 = 0;
+  let mut runtime_io_count = 0usize;
+  let mut runtime_call_count = 0usize;
+  let mut runtime_jump_count = 0usize;
+  let mut runtime_alloc_count = 0usize;
+  let mut runtime_import_count = 0usize;
   while ip < bytecode_len {
-    if tick % threshold == 0
+    gas_monitor.check_tick(tick)?;
+    if tick.is_multiple_of(threshold)
       && let Some(ref flag) = halt_flag
       && flag.load(Ordering::Relaxed)
     {
-      return Ok(Value::Undefined);
+      return Ok((Value::Undefined, tick));
     }
     tick += 1;
     unsafe { std::hint::assert_unchecked(ip < bytecode_len) }
@@ -101,6 +118,12 @@ pub fn execute(
         stack_dispatch(instr, &mut stack, &mut vars, ip)?;
       }
       Instructions::Import(module_name, alias_idx) => {
+        if !security_config.unsafe_mode {
+          runtime_import_count += 1;
+          if runtime_import_count > security_config.max_import {
+            return Err(SmolStr::from("Security Violation: Excessive imports"));
+          }
+        }
         import_func(&mut vars, &options, module_name, *alias_idx, ip)?;
       }
       Instructions::Add(_)
@@ -134,13 +157,55 @@ pub fn execute(
       Instructions::And | Instructions::Or | Instructions::Xor | Instructions::Not => {
         logic_dispatch(instr, &mut stack, ip)?;
       }
-      Instructions::IfFalse(_)
-      | Instructions::Jump(_)
-      | Instructions::Return
-      | Instructions::Call(_, _)
+      Instructions::IfFalse(_) | Instructions::Jump(_) | Instructions::Break(_) => {
+        if !security_config.unsafe_mode {
+          runtime_jump_count += 1;
+          if runtime_jump_count > security_config.max_jump {
+            return Err(SmolStr::from("Security Violation: Excessive jumps"));
+          }
+        }
+        match control_flow_dispatch(
+          instr,
+          &mut stack,
+          &mut vars,
+          &mut _call_stack,
+          &mut last_return,
+          &functions,
+          &symbol_table,
+          &mut ip,
+          bytecode_len,
+        )? {
+          ControlFlowSignal::Continue => continue,
+          ControlFlowSignal::Break => break,
+          ControlFlowSignal::None => {}
+        }
+      }
+      Instructions::Call(_, _) => {
+        if !security_config.unsafe_mode {
+          runtime_call_count += 1;
+          if runtime_call_count > security_config.max_call {
+            return Err(SmolStr::from("Security Violation: Excessive calls"));
+          }
+        }
+        match control_flow_dispatch(
+          instr,
+          &mut stack,
+          &mut vars,
+          &mut _call_stack,
+          &mut last_return,
+          &functions,
+          &symbol_table,
+          &mut ip,
+          bytecode_len,
+        )? {
+          ControlFlowSignal::Continue => continue,
+          ControlFlowSignal::Break => break,
+          ControlFlowSignal::None => {}
+        }
+      }
+      Instructions::Return
       | Instructions::Stop
       | Instructions::Instantiate(_, _)
-      | Instructions::Break(_)
       | Instructions::Func(_, _, _, _, _) => {
         match control_flow_dispatch(
           instr,
@@ -166,11 +231,27 @@ pub fn execute(
       | Instructions::InspectObj
       | Instructions::InspectArr
       | Instructions::ClearScreen => {
+        if !security_config.unsafe_mode {
+          runtime_io_count += 1;
+          if runtime_io_count > security_config.max_io {
+            return Err(SmolStr::from(format!(
+              "Security Violation: I/O Flood at IP {}",
+              ip
+            )));
+          }
+        }
         io_dispatch(instr, &mut stack, ip)?;
       }
-      Instructions::MakeObj(_)
-      | Instructions::MakeArray(_)
-      | Instructions::AccessIndex
+      Instructions::MakeObj(_) | Instructions::MakeArray(_) => {
+        if !security_config.unsafe_mode {
+          runtime_alloc_count += 1;
+          if runtime_alloc_count > security_config.max_alloc {
+            return Err(SmolStr::from("Security Violation: Memory limit reached"));
+          }
+        }
+        collections_dispatch(instr, &mut stack, ip)?;
+      }
+      Instructions::AccessIndex
       | Instructions::Access(_)
       | Instructions::SetProp(_)
       | Instructions::Shrink => {
@@ -201,40 +282,45 @@ pub fn execute(
     ip += 1;
   }
   if options.as_ref().is_some_and(|o| o.capture_return) {
-    return Ok(last_return);
+    if let Value::Undefined = last_return
+      && let Some(v) = stack.pop()
+    {
+      last_return = v;
+    }
+    return Ok((last_return, tick));
   }
-  Ok(Value::Undefined)
+  Ok((Value::Undefined, tick))
 }
-#[cfg(test)]
-mod tests {
-  use super::*;
-  use crate::types::{instructions::Instructions, value::Value};
-  use std::sync::Arc;
-  use std::sync::atomic::AtomicBool;
-  #[test]
-  fn test_execute_basic_math_and_return() {
-    let bytecode = vec![
-      Instructions::PushInt32(5),
-      Instructions::PushInt32(10),
-      Instructions::Add(crate::types::primitive_types::PrimitiveTypes::Int),
-      Instructions::Stop,
-    ];
-    let halt_flag = Arc::new(AtomicBool::new(false));
-    let options = crate::types::value::RunOptions {
-      capture_return: true,
+#[test]
+fn test_execute_basic_math_and_return() {
+  let bytecode = vec![
+    Instructions::PushInt32(5),
+    Instructions::PushInt32(10),
+    Instructions::Add(crate::types::primitive_types::PrimitiveTypes::Int),
+    Instructions::Stop,
+  ];
+  let halt_flag = Arc::new(AtomicBool::new(false));
+  let options = crate::types::value::RunOptions {
+    capture_return: true,
+    security_config: crate::types::security_config::SecurityConfig {
+      max_ticks: 100_000,
       ..Default::default()
-    };
-    let result = execute(bytecode, Some(options), Some(halt_flag));
-    assert!(result.is_ok());
-  }
-  #[test]
-  fn test_halt_flag_behavior() {
-    let bytecode = vec![Instructions::Jump(0)];
-    let halt_flag = Arc::new(AtomicBool::new(false));
-    let flag_clone = halt_flag.clone();
-    flag_clone.store(true, std::sync::atomic::Ordering::Relaxed);
-    let result = execute(bytecode, None, Some(halt_flag));
-    assert!(result.is_ok());
-    assert_eq!(result.unwrap(), Value::Undefined);
-  }
+    },
+    ..Default::default()
+  };
+  let result = execute(bytecode, Some(options), Some(halt_flag));
+  assert!(result.is_ok());
+  let (val, _tick) = result.unwrap();
+  assert_eq!(val, Value::Int32(15));
+}
+#[test]
+fn test_halt_flag_behavior() {
+  let bytecode = vec![Instructions::Jump(0)];
+  let halt_flag = Arc::new(AtomicBool::new(false));
+  let flag_clone = halt_flag.clone();
+  flag_clone.store(true, std::sync::atomic::Ordering::Relaxed);
+  let result = execute(bytecode, None, Some(halt_flag));
+  assert!(result.is_ok());
+  let (val, _tick) = result.unwrap();
+  assert_eq!(val, Value::Undefined);
 }

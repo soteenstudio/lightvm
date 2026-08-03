@@ -8,15 +8,18 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::optimizer::optimize_bytecode;
+use crate::modules::{
+  gazle::optimize_bytecode::optimize_bytecode, krates::has_nightly_opcodes::has_nightly_opcodes,
+};
 use crate::types::{
   capability::Capability,
   instructions::Instructions,
+  security_config::SecurityConfig,
   value::{FuncMetadata, RunOptions, Value},
   vmevent::VmEvent,
   vmstate::VmState,
 };
-use crate::utils::{has_nightly_opcodes::has_nightly_opcodes, vmerror::VMError};
+use crate::utils::vmerror::VMError;
 use crate::vm::run::run;
 use ahash::AHashMap;
 use regex::Regex;
@@ -38,13 +41,28 @@ pub struct LightVM {
   pub functions: AHashMap<SmolStr, FuncMetadata>,
   pub exported: HashSet<SmolStr>,
   pub _imports: AHashMap<SmolStr, Value>,
+  pub max_io: usize,
+  pub max_import: usize,
+  pub max_alloc: usize,
+  pub max_call: usize,
+  pub max_jump: usize,
+  pub max_ticks: u64,
+  pub max_stack_size: usize,
+  pub allowed_imports: Vec<String>,
+  pub unsafe_mode: bool,
   pub nightly: bool,
   pub backtrace: bool,
   pub explain: bool,
   pub hint: bool,
 }
 impl LightVM {
-  pub fn new_node(nightly: bool, backtrace: bool, explain: bool, hint: bool) -> Self {
+  pub fn new_node(
+    security_config: SecurityConfig,
+    nightly: bool,
+    backtrace: bool,
+    explain: bool,
+    hint: bool,
+  ) -> Self {
     use crate::types::capability::Capability;
     use crate::types::value::Value;
     use crate::types::vmstate::VmState;
@@ -63,6 +81,15 @@ impl LightVM {
       functions: AHashMap::new(),
       exported: HashSet::new(),
       _imports: AHashMap::new(),
+      max_io: security_config.max_io,
+      max_import: security_config.max_import,
+      max_alloc: security_config.max_alloc,
+      max_call: security_config.max_call,
+      max_jump: security_config.max_jump,
+      max_ticks: security_config.max_ticks,
+      max_stack_size: security_config.max_stack_size,
+      allowed_imports: security_config.allowed_imports,
+      unsafe_mode: security_config.unsafe_mode,
       nightly,
       backtrace,
       explain,
@@ -162,7 +189,7 @@ impl LightVM {
     self.index_metadata();
     Ok(())
   }
-  pub fn run_internal(&mut self, _options: Option<RunOptions>) -> Result<(), VMError> {
+  pub fn run_internal(&mut self, _options: Option<RunOptions>) -> Result<String, VMError> {
     self.set_mode(self.backtrace, self.explain, self.hint);
     crate::utils::vmerror::get_backtrace::clear_backtrace();
     if self.backtrace {
@@ -189,10 +216,21 @@ impl LightVM {
       capture_return: false,
       imports: self._imports.clone(),
       halt_flag: self.should_halt.clone(),
+      security_config: SecurityConfig {
+        max_io: self.max_io,
+        max_import: self.max_import,
+        max_alloc: self.max_alloc,
+        max_call: self.max_call,
+        max_jump: self.max_jump,
+        max_ticks: self.max_ticks,
+        max_stack_size: self.max_stack_size,
+        allowed_imports: self.allowed_imports.clone(),
+        unsafe_mode: self.unsafe_mode,
+      },
     };
-    let _result = crate::vm::run::run(&bytecode_json, Some(options));
+    let result = crate::vm::run::run(&bytecode_json, Some(options));
     self.state = VmState::Idle;
-    Ok(())
+    Ok(result)
   }
   #[inline]
   pub fn on_internal<F>(&mut self, event: VmEvent, callback: F) -> Result<(), String>
@@ -268,6 +306,17 @@ impl LightVM {
       capture_return: true,
       imports: self._imports.clone(),
       halt_flag: self.should_halt.clone(),
+      security_config: SecurityConfig {
+        max_io: self.max_io,
+        max_import: self.max_import,
+        max_alloc: self.max_alloc,
+        max_call: self.max_call,
+        max_jump: self.max_jump,
+        max_ticks: self.max_ticks,
+        max_stack_size: self.max_stack_size,
+        allowed_imports: self.allowed_imports.clone(),
+        unsafe_mode: self.unsafe_mode,
+      },
     };
     let result_run = run(&bytecode_str.clone(), Some(options));
     Ok(result_run)
@@ -306,7 +355,7 @@ impl LightVM {
       .iter()
       .map(Instructions::from_json_array)
       .collect::<Result<Vec<Instructions>, VMError>>();
-    let optimized = optimize_bytecode::optimize_bytecode(bytecode?);
+    let optimized = optimize_bytecode(bytecode?);
     serde_json::to_string(&optimized)
       .map_err(|e| VMError::SystemError(format!("Failed to stringify: {}", e).into()))
   }
@@ -384,6 +433,7 @@ mod tests {
     },
   };
   fn make_vm(caps: Vec<Capability>) -> LightVM {
+    use crate::types::security_config::SecurityConfig;
     let mut caps_set = HashSet::new();
     if caps.is_empty() {
       caps_set.insert(Capability::Observe);
@@ -392,6 +442,7 @@ mod tests {
         caps_set.insert(cap);
       }
     }
+    let default_security = SecurityConfig::default();
     LightVM {
       bytecode: Vec::new(),
       listeners: AHashMap::new(),
@@ -403,6 +454,15 @@ mod tests {
       functions: AHashMap::new(),
       exported: HashSet::new(),
       _imports: AHashMap::new(),
+      max_io: default_security.max_io,
+      max_import: default_security.max_import,
+      max_alloc: default_security.max_alloc,
+      max_call: default_security.max_call,
+      max_jump: default_security.max_jump,
+      max_ticks: default_security.max_ticks,
+      max_stack_size: default_security.max_stack_size,
+      allowed_imports: default_security.allowed_imports,
+      unsafe_mode: default_security.unsafe_mode,
       nightly: false,
       backtrace: false,
       explain: false,

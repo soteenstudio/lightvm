@@ -10,7 +10,9 @@
 
 #![cfg(feature = "node")]
 use crate::interfaces::interface::LightVM;
-use crate::types::{capability::Capability, vmconfig::VmNapiConfig};
+use crate::types::{
+  capability::Capability, security_config::SecurityConfig, vmconfig::VmNapiConfig,
+};
 use crate::utils::vmerror::VMError;
 use napi::bindgen_prelude::*;
 use napi::threadsafe_function::ThreadsafeFunctionCallMode;
@@ -27,6 +29,7 @@ impl NodeLightVM {
   pub fn napi_new(config: VmNapiConfig) -> Result<Self> {
     let runtime_config = config.runtime_config.unwrap_or_default();
     let error_options = config.error_options.unwrap_or_default();
+    let security_config = config.security_config.unwrap_or_default();
     use crate::types::value::Value;
     use crate::types::vmstate::VmState;
     use ahash::AHashMap;
@@ -71,12 +74,58 @@ impl NodeLightVM {
         functions: AHashMap::new(),
         exported: HashSet::new(),
         _imports: AHashMap::new(),
+        max_io: security_config.max_io.unwrap_or(100) as usize,
+        max_import: security_config.max_import.unwrap_or(3) as usize,
+        max_alloc: security_config.max_alloc.unwrap_or(50) as usize,
+        max_call: security_config.max_call.unwrap_or(200) as usize,
+        max_jump: security_config.max_jump.unwrap_or(100) as usize,
+        max_ticks: security_config.max_ticks.unwrap_or(1_000_000.0) as u64,
+        max_stack_size: security_config.max_stack_size.unwrap_or(128) as usize,
+        allowed_imports: security_config
+          .allowed_imports
+          .unwrap_or_else(|| vec!["math".into(), "time".into(), "utils".into()]),
+        unsafe_mode: security_config.unsafe_mode.unwrap_or(false),
         nightly: runtime_config.nightly.unwrap_or(false),
         backtrace: error_options.backtrace.unwrap_or(false),
         explain: error_options.explain.unwrap_or(false),
         hint: error_options.hint.unwrap_or(true),
       },
     })
+  }
+  #[napi]
+  pub fn set_max_io(&mut self, value: u32) -> Result<()> {
+    self.inner.max_io = value as usize;
+    Ok(())
+  }
+  #[napi]
+  pub fn set_max_import(&mut self, value: u32) -> Result<()> {
+    self.inner.max_import = value as usize;
+    Ok(())
+  }
+  #[napi]
+  pub fn set_max_alloc(&mut self, value: u32) -> Result<()> {
+    self.inner.max_alloc = value as usize;
+    Ok(())
+  }
+  #[napi]
+  pub fn set_max_call(&mut self, value: u32) -> Result<()> {
+    self.inner.max_call = value as usize;
+    Ok(())
+  }
+  #[napi]
+  pub fn set_max_jump(&mut self, value: u32) -> Result<()> {
+    self.inner.max_jump = value as usize;
+    Ok(())
+  }
+  #[napi]
+  pub fn set_allowed_imports(&mut self, value: Vec<String>) -> Result<()> {
+    self.inner.allowed_imports = value;
+    Ok(())
+  }
+  #[napi]
+  pub fn with_unsafe_mode(&mut self, enabled: bool) -> Result<()> {
+    self.inner.unsafe_mode = enabled;
+    Ok(())
   }
   #[napi]
   pub fn with_nightly(&mut self, enabled: bool) -> Result<()> {
@@ -106,11 +155,13 @@ impl NodeLightVM {
       .map_err(|e| Error::from_reason(e.to_string()))
   }
   #[napi]
-  pub fn run(&mut self) -> Result<()> {
-    self
+  pub fn run(&mut self) -> Result<serde_json::Value> {
+    let raw_json = self
       .inner
       .run_internal(None)
-      .map_err(|e| Error::from_reason(e.to_string()))
+      .map_err(|e| Error::from_reason(e.to_string()))?;
+    serde_json::from_str(&raw_json)
+      .map_err(|e| Error::from_reason(format!("Failed to parse VM result: {}", e)))
   }
   #[napi]
   pub fn provide(&mut self, name: String, value: serde_json::Value) -> Result<()> {
@@ -169,7 +220,7 @@ impl NodeLightVM {
       .inner
       .clear_outputs_internal()
       .map_err(|e| Error::from_reason(e.to_string()))?;
-    self
+    let _ = self
       .inner
       .run_internal(None)
       .map_err(|e| Error::from_reason(e.to_string()))?;
@@ -193,17 +244,36 @@ impl NodeLightVM {
       .inner
       .call_exported_internal(name, args)
       .map_err(|e| Error::from_reason(e.to_string()))?;
-    serde_json::from_str(&raw_result).map_err(|e| {
-      let vm_err = VMError::SystemError(smol_str::SmolStr::new(format!(
-        "Failed to parse export return value: {}",
-        e
-      )));
-      Error::from_reason(vm_err.to_string())
-    })
+    let parsed: serde_json::Value = serde_json::from_str(&raw_result)
+      .map_err(|e| Error::from_reason(format!("Failed to parse export return: {}", e)))?;
+    if parsed["status"] == "success" {
+      Ok(
+        parsed
+          .get("result")
+          .cloned()
+          .unwrap_or(serde_json::Value::Null),
+      )
+    } else {
+      Err(Error::from_reason(
+        parsed["message"]
+          .as_str()
+          .unwrap_or("Unknown Error")
+          .to_string(),
+      ))
+    }
   }
   #[napi(js_name = "optimizeBytecode")]
   pub fn napi_optimize_bytecode(
     bytecode: serde_json::Value,
+    max_io: Option<u32>,
+    max_import: Option<u32>,
+    max_alloc: Option<u32>,
+    max_call: Option<u32>,
+    max_jump: Option<u32>,
+    max_ticks: Option<u32>,
+    max_stack_size: Option<u32>,
+    allowed_imports: Option<Vec<String>>,
+    unsafe_mode: Option<bool>,
     nightly: Option<bool>,
     backtrace: Option<bool>,
     explain: Option<bool>,
@@ -224,11 +294,37 @@ impl NodeLightVM {
       )));
       Error::from_reason(vm_err.to_string())
     })?;
+    let is_max_io = max_io.unwrap_or(100) as usize;
+    let is_max_import = max_import.unwrap_or(3) as usize;
+    let is_max_alloc = max_alloc.unwrap_or(50) as usize;
+    let is_max_call = max_call.unwrap_or(200) as usize;
+    let is_max_jump = max_jump.unwrap_or(100) as usize;
+    let is_max_ticks = max_ticks.unwrap_or(1_000_000) as u64;
+    let is_max_stack_size = max_stack_size.unwrap_or(128) as usize;
+    let is_allowed_imports =
+      allowed_imports.unwrap_or_else(|| vec!["math".into(), "time".into(), "utils".into()]);
+    let is_unsafe_mode = unsafe_mode.unwrap_or(false);
     let is_nightly = nightly.unwrap_or(false);
     let is_backtrace = backtrace.unwrap_or(false);
     let is_explain = explain.unwrap_or(false);
     let is_hint = hint.unwrap_or(true);
-    let mut vm_instance = LightVM::new_node(is_nightly, is_backtrace, is_explain, is_hint);
+    let mut vm_instance = LightVM::new_node(
+      SecurityConfig {
+        max_io: is_max_io,
+        max_import: is_max_import,
+        max_alloc: is_max_alloc,
+        max_call: is_max_call,
+        max_jump: is_max_jump,
+        max_ticks: is_max_ticks,
+        max_stack_size: is_max_stack_size,
+        allowed_imports: is_allowed_imports,
+        unsafe_mode: is_unsafe_mode,
+      },
+      is_nightly,
+      is_backtrace,
+      is_explain,
+      is_hint,
+    );
     let opt_str = vm_instance
       .optimize_bytecode_internal(input_json)
       .map_err(|e| Error::from_reason(e.to_string()))?;

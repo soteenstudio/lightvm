@@ -9,6 +9,6 @@
  */
 
 pub(crate) mod interface;
-pub mod napi_interface;
-pub mod native_interface;
-pub mod wasm_interface;
+pub(crate) mod napi_interface;
+pub(crate) mod native_interface;
+pub(crate) mod wasm_interface;

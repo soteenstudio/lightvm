@@ -17,10 +17,10 @@ export const sidebarGetStarted = [
   },
   {
     text: 'Konsep',
-    link: '/id/concepts/what-is'
+    link: '/id/concepts/what-is',
   },
   {
     text: 'Tingkat Dukungan',
-    link: '/id/support-levels'
-  }
+    link: '/id/support-levels',
+  },
 ];

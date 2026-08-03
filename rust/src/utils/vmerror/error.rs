@@ -13,11 +13,20 @@ use std::borrow::Cow;
 #[derive(Debug)]
 pub enum VMError {
   /// Occurs when the stack reaches the maximum limit specified by InitStack or default.
-  StackOverflow { ip: usize, limit: usize },
+  StackOverflow {
+    ip: usize,
+    limit: usize,
+  },
   /// Occurs when the opcode tries to pop data but the stack is empty.
-  StackUnderflow { ip: usize, opcode: &'static str },
+  StackUnderflow {
+    ip: usize,
+    opcode: &'static str,
+  },
   /// Occurs when the parser or executor encounters illegal bytecode.
-  InvalidOpcode { ip: usize, code: SmolStr },
+  InvalidOpcode {
+    ip: usize,
+    code: SmolStr,
+  },
   /// Occurs when an operation (e.g. Add) encounters an asynchronous data type.
   TypeMismatch {
     ip: usize,
@@ -27,7 +36,11 @@ pub enum VMError {
   /// Common errors related to the environment or OS
   SystemError(SmolStr),
   /// Error when accessing index out of range (Array/Object)
-  OutOfBounds { ip: usize, index: usize, len: usize },
+  OutOfBounds {
+    ip: usize,
+    index: usize,
+    len: usize,
+  },
   /// Occurs when control flow jumps to an IP that is outside the bytecode length.
   InvalidJumpTarget {
     ip: usize,
@@ -35,7 +48,32 @@ pub enum VMError {
     len: usize,
   },
   /// Occurs when a nightly/experimental opcode is used but nightly mode is disabled.
-  FeatureRestricted { ip: usize, feature: &'static str },
+  FeatureRestricted {
+    ip: usize,
+    feature: &'static str,
+  },
+  IoFlood {
+    ip: usize,
+  },
+  ImportLimitReached {
+    ip: usize,
+  },
+  UnauthorizedModule {
+    ip: usize,
+    module: SmolStr,
+  },
+  MemoryLimitExceeded {
+    ip: usize,
+  },
+  CallLimitExceeded {
+    ip: usize,
+  },
+  JumpLimitExceeded {
+    ip: usize,
+  },
+  ExcessiveNopPadding,
+  InvalidMaxTicksConfig,
+  TickLimitExceeded,
 }
 pub struct Hint {
   pub short: Cow<'static, str>,
@@ -53,6 +91,15 @@ impl VMError {
       VMError::OutOfBounds { .. } => "LVM005",
       VMError::InvalidJumpTarget { .. } => "LVM006",
       VMError::FeatureRestricted { .. } => "LVM007",
+      VMError::IoFlood { .. } => "LVM008",
+      VMError::ImportLimitReached { .. } => "LVM009",
+      VMError::UnauthorizedModule { .. } => "LVM010",
+      VMError::MemoryLimitExceeded { .. } => "LVM011",
+      VMError::CallLimitExceeded { .. } => "LVM012",
+      VMError::JumpLimitExceeded { .. } => "LVM013",
+      VMError::ExcessiveNopPadding => "LVM014",
+      VMError::InvalidMaxTicksConfig => "LVM015",
+      VMError::TickLimitExceeded => "LVM016",
       VMError::SystemError(_) => "LVM500",
     }
   }

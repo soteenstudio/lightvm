@@ -17,6 +17,7 @@ use crate::types::{
   capability::Capability,
   error_options::ErrorOptions,
   runtime_config::RuntimeConfig,
+  security_config::SecurityConfig,
   value::{RunOptions, Value},
   vmconfig::VmConfig,
   vmstate::VmState,
@@ -33,6 +34,7 @@ impl LightVM {
     let config: VmConfig = config.into();
     let runtime_config: RuntimeConfig = config.runtime_config.unwrap_or_default();
     let error_options: ErrorOptions = config.error_options.unwrap_or_default();
+    let security_config: SecurityConfig = config.security_config.unwrap_or_default();
     let mut caps_set = HashSet::new();
     if config.caps.is_empty() {
       caps_set.insert(Capability::Observe);
@@ -52,11 +54,56 @@ impl LightVM {
       functions: AHashMap::new(),
       exported: HashSet::new(),
       _imports: AHashMap::new(),
+      max_io: security_config.max_io,
+      max_import: security_config.max_import,
+      max_alloc: security_config.max_alloc,
+      max_call: security_config.max_call,
+      max_jump: security_config.max_jump,
+      max_ticks: security_config.max_ticks,
+      max_stack_size: security_config.max_stack_size,
+      allowed_imports: security_config.allowed_imports,
+      unsafe_mode: security_config.unsafe_mode,
       nightly: runtime_config.nightly,
       backtrace: error_options.backtrace,
       explain: error_options.explain,
       hint: error_options.hint,
     }
+  }
+  pub fn set_max_io(mut self, value: usize) -> Self {
+    self.max_io = value;
+    self
+  }
+  pub fn set_max_import(mut self, value: usize) -> Self {
+    self.max_import = value;
+    self
+  }
+  pub fn set_max_alloc(mut self, value: usize) -> Self {
+    self.max_alloc = value;
+    self
+  }
+  pub fn set_max_call(mut self, value: usize) -> Self {
+    self.max_call = value;
+    self
+  }
+  pub fn set_max_jump(mut self, value: usize) -> Self {
+    self.max_jump = value;
+    self
+  }
+  pub fn set_max_ticks(mut self, value: u64) -> Self {
+    self.max_ticks = value;
+    self
+  }
+  pub fn set_max_stack_size(mut self, value: usize) -> Self {
+    self.max_stack_size = value;
+    self
+  }
+  pub fn set_allowed_imports(mut self, value: Vec<String>) -> Self {
+    self.allowed_imports = value;
+    self
+  }
+  pub fn with_unsafe_mode(mut self, enabled: bool) -> Self {
+    self.unsafe_mode = enabled;
+    self
   }
   pub fn with_nightly(mut self, enabled: bool) -> Self {
     self.nightly = enabled;
@@ -103,8 +150,10 @@ impl LightVM {
   /// vm.load(vm.tools().optimize_bytecode(raw).clone())
   ///   .run(None);
   /// ```
-  pub fn run(&mut self, options: Option<RunOptions>) {
-    let _ = self.run_internal(options);
+  pub fn run(&mut self, options: Option<RunOptions>) -> String {
+    self
+      .run_internal(options)
+      .unwrap_or_else(|e| format!(r#"{{"status": "error", "message": "{}"}}"#, e))
   }
   /// Function to export functions in the VM out.
   ///
@@ -127,15 +176,17 @@ impl LightVM {
         Ok(raw_result) => {
           let parsed: serde_json::Value =
             serde_json::from_str(&raw_result).unwrap_or(serde_json::Value::Null);
-          if parsed.is_null() || parsed == "Undefined" {
-            return None;
-          }
-          if parsed.is_object() {
-            parsed
-              .as_object()
-              .and_then(|obj| obj.values().next().cloned())
+          if parsed["status"] == "success" {
+            let result = parsed.get("result").cloned();
+            if result.is_none()
+              || result == Some(serde_json::Value::String("Undefined".to_string()))
+            {
+              return None;
+            }
+            result
           } else {
-            Some(parsed)
+            eprintln!("Error: {}", parsed["message"]);
+            None
           }
         }
         Err(e) => {

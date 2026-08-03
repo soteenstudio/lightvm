@@ -8,10 +8,10 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod neg_f16in;
-pub mod neg_f32in;
-pub mod neg_f64in;
-pub mod neg_i128in;
-pub mod neg_i16in;
-pub mod neg_i32in;
-pub mod neg_i64in;
+pub(crate) mod neg_f16in;
+pub(crate) mod neg_f32in;
+pub(crate) mod neg_f64in;
+pub(crate) mod neg_i128in;
+pub(crate) mod neg_i16in;
+pub(crate) mod neg_i32in;
+pub(crate) mod neg_i64in;

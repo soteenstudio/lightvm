@@ -72,6 +72,66 @@ pub fn get_hint(err: &VMError) -> Option<Hint> {
         "The attempt to execute this instruction was blocked because it is classified as an experimental or restricted feature; you must explicitly enable 'nightly mode' within your VmConfig to authorize the runtime to process this opcode.",
       ),
     }),
+    VMError::IoFlood { .. } => Some(Hint {
+      short: Cow::Borrowed("Reduce I/O operations or increase max_io in SecurityConfig."),
+      long: Cow::Borrowed(
+        "The bytecode exceeded the maximum number of permitted I/O operations (print, println, stdout, stdin, etc.) defined in the SecurityConfig. To resolve this, either refactor the code to reduce the number of I/O calls, or increase the max_io limit in your security configuration if the usage is legitimate.",
+      ),
+    }),
+    VMError::ImportLimitReached { .. } => Some(Hint {
+      short: Cow::Borrowed("Reduce module imports or increase max_import in SecurityConfig."),
+      long: Cow::Borrowed(
+        "The bytecode contains more module import statements than the maximum allowed by the SecurityConfig. You can fix this by consolidating imports, removing unused modules, or raising the max_import threshold if additional imports are necessary for your use case.",
+      ),
+    }),
+    VMError::UnauthorizedModule { .. } => Some(Hint {
+      short: Cow::Borrowed(
+        "Add the module to allowed_imports in SecurityConfig or remove the import.",
+      ),
+      long: Cow::Borrowed(
+        "The bytecode attempted to import a module that is not included in the SecurityConfig's allowed_imports whitelist. To proceed, either add the required module name to the whitelist, or remove the import if it is not essential. This restriction prevents execution of untrusted or unauthorized external code.",
+      ),
+    }),
+    VMError::MemoryLimitExceeded { .. } => Some(Hint {
+      short: Cow::Borrowed(
+        "Reduce object/array allocations or increase max_alloc in SecurityConfig.",
+      ),
+      long: Cow::Borrowed(
+        "The bytecode exceeded the maximum permitted memory allocations (MakeObj, MakeArray) as defined in the SecurityConfig. To resolve this, optimize your data structures to use fewer allocations, reuse existing objects where possible, or increase the max_alloc limit if the memory usage is justified.",
+      ),
+    }),
+    VMError::CallLimitExceeded { .. } => Some(Hint {
+      short: Cow::Borrowed("Reduce function calls or increase max_call in SecurityConfig."),
+      long: Cow::Borrowed(
+        "The bytecode contains more function call instructions than the maximum allowed by the SecurityConfig. This limit prevents excessively complex or potentially malicious call chains. You can address this by refactoring to reduce recursion depth or call frequency, or by increasing the max_call threshold if the call pattern is legitimate.",
+      ),
+    }),
+    VMError::JumpLimitExceeded { .. } => Some(Hint {
+      short: Cow::Borrowed(
+        "Reduce control flow complexity or increase max_jump in SecurityConfig.",
+      ),
+      long: Cow::Borrowed(
+        "The bytecode exceeded the maximum number of control flow jump instructions (Jump, IfFalse, Break) permitted by the SecurityConfig. This typically indicates overly complex branching or loop structures. Simplify your control flow logic, reduce nested loops, or increase the max_jump limit if the complexity is unavoidable.",
+      ),
+    }),
+    VMError::ExcessiveNopPadding => Some(Hint {
+      short: Cow::Borrowed("Remove unnecessary Nop instructions from the bytecode."),
+      long: Cow::Borrowed(
+        "The bytecode contains an excessive proportion of Nop (no-operation) instructions, which may indicate an attempt to obfuscate code, bypass analysis, or artificially inflate the bytecode size. Review and regenerate the bytecode to eliminate unnecessary padding. If the Nops are intentional, they exceed the 10% threshold relative to total instructions.",
+      ),
+    }),
+    VMError::InvalidMaxTicksConfig => Some(Hint {
+      short: Cow::Borrowed("Set max_ticks to a value greater than zero in SecurityConfig."),
+      long: Cow::Borrowed(
+        "The SecurityConfig was initialized with a max_ticks value of zero, which is invalid and would allow unbounded execution. You must configure max_ticks to a positive integer to enforce execution limits and prevent infinite loops or runaway processes. Update your configuration before initializing the VM.",
+      ),
+    }),
+    VMError::TickLimitExceeded => Some(Hint {
+      short: Cow::Borrowed("Optimize execution or increase max_ticks in SecurityConfig."),
+      long: Cow::Borrowed(
+        "The execution exceeded the maximum number of ticks (complexity/time units) allowed by the SecurityConfig. This limit prevents infinite loops and ensures the VM remains responsive. To fix this, optimize your code to reduce computational complexity, or increase the max_ticks threshold if the workload legitimately requires more processing cycles.",
+      ),
+    }),
     VMError::SystemError(_) => Some(Hint {
       short: Cow::Borrowed("System-level operation failed."),
       long: Cow::Borrowed(

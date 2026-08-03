@@ -61,6 +61,8 @@ impl WasmLightVM {
         }
       }
     }
+    use crate::types::security_config::SecurityConfig;
+    let default_security = SecurityConfig::default();
     Ok(Self {
       inner: LightVM {
         bytecode: Vec::new(),
@@ -73,12 +75,57 @@ impl WasmLightVM {
         functions: AHashMap::new(),
         exported: HashSet::new(),
         _imports: AHashMap::new(),
+        max_io: default_security.max_io,
+        max_import: default_security.max_import,
+        max_alloc: default_security.max_alloc,
+        max_call: default_security.max_call,
+        max_jump: default_security.max_jump,
+        max_ticks: default_security.max_ticks,
+        max_stack_size: default_security.max_stack_size,
+        allowed_imports: default_security.allowed_imports,
+        unsafe_mode: default_security.unsafe_mode,
         nightly: runtime_config.nightly.unwrap_or(false),
         backtrace: error_options.backtrace.unwrap_or(false),
         explain: error_options.explain.unwrap_or(false),
         hint: error_options.hint.unwrap_or(true),
       },
     })
+  }
+  #[wasm_bindgen(js_name = "setMaxIo")]
+  pub fn set_max_io(&mut self, value: usize) {
+    self.inner.max_io = value;
+  }
+  #[wasm_bindgen(js_name = "setMaxImport")]
+  pub fn set_max_import(&mut self, value: usize) {
+    self.inner.max_import = value;
+  }
+  #[wasm_bindgen(js_name = "setMaxAlloc")]
+  pub fn set_max_alloc(&mut self, value: usize) {
+    self.inner.max_alloc = value;
+  }
+  #[wasm_bindgen(js_name = "setMaxCall")]
+  pub fn set_max_call(&mut self, value: usize) {
+    self.inner.max_call = value;
+  }
+  #[wasm_bindgen(js_name = "setMaxJump")]
+  pub fn set_max_jump(&mut self, value: usize) {
+    self.inner.max_jump = value;
+  }
+  #[wasm_bindgen(js_name = "setMaxTicks")]
+  pub fn set_max_ticks(&mut self, value: f64) {
+    self.inner.max_ticks = value as u64;
+  }
+  #[wasm_bindgen(js_name = "setMaxStackSize")]
+  pub fn set_max_stack_size(&mut self, value: usize) {
+    self.inner.max_stack_size = value;
+  }
+  #[wasm_bindgen(js_name = "setAllowedImports")]
+  pub fn set_allowed_imports(&mut self, value: Vec<String>) {
+    self.inner.allowed_imports = value;
+  }
+  #[wasm_bindgen(js_name = "withUnsafeMode")]
+  pub fn with_unsafe_mode(&mut self, enabled: bool) {
+    self.inner.unsafe_mode = enabled;
   }
   #[wasm_bindgen(js_name = "withNightly")]
   pub fn with_nightly(&mut self, enabled: bool) {
@@ -104,11 +151,23 @@ impl WasmLightVM {
       .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))
   }
   #[wasm_bindgen]
-  pub fn run(&mut self) -> Result<(), JsValue> {
-    self
+  pub fn run(&mut self) -> Result<JsValue, JsValue> {
+    let raw_json = self
       .inner
       .run_internal(None)
-      .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))
+      .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))?;
+    let parsed: serde_json::Value = serde_json::from_str(&raw_json).map_err(|e| {
+      wasm_bindgen::JsValue::from(js_sys::Error::new(&format!(
+        "Failed to parse VM result: {}",
+        e
+      )))
+    })?;
+    serde_wasm_bindgen::to_value(&parsed).map_err(|e| {
+      wasm_bindgen::JsValue::from(js_sys::Error::new(&format!(
+        "Wasm serialization failed: {}",
+        e
+      )))
+    })
   }
   #[wasm_bindgen]
   pub fn provide(&mut self, name: String, value: JsValue) -> Result<(), JsValue> {
@@ -243,6 +302,7 @@ pub struct WasmLightVMTools {
 impl WasmLightVMTools {
   #[wasm_bindgen(js_name = "optimizeBytecode")]
   pub fn optimize_bytecode(&self, bytecode: JsValue) -> Result<JsValue, JsValue> {
+    use crate::types::security_config::SecurityConfig;
     use crate::utils::vmerror::VMError;
     let input_json: serde_json::Value = serde_wasm_bindgen::from_value(bytecode).map_err(|e| {
       wasm_bindgen::JsValue::from(js_sys::Error::new(&format!(
@@ -250,7 +310,13 @@ impl WasmLightVMTools {
         e
       )))
     })?;
-    let mut vm_instance = LightVM::new_node(self.nightly, self.backtrace, self.explain, self.hint);
+    let mut vm_instance = LightVM::new_node(
+      SecurityConfig::default(),
+      self.nightly,
+      self.backtrace,
+      self.explain,
+      self.hint,
+    );
     let opt_str = vm_instance
       .optimize_bytecode_internal(input_json)
       .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))?;

@@ -6,6 +6,7 @@ export const sidebarConcepts = [
       { text: 'Apa itu LightVM?', link: '/id/concepts/what-is' },
       { text: 'Torja (Penyelesai Simbol)', link: '/id/concepts/torja' },
       { text: 'Gazle (Pengoptimal)', link: '/id/concepts/gazle' },
+      { text: 'Krates (Validasi & Keamanan)', link: '/id/concepts/krates' },
     ],
   },
 ];
