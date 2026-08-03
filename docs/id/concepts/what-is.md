@@ -9,7 +9,7 @@ Pada intinya, LightVM dibangun di atas tiga pilar fundamental yang mendefinisika
  * __Explicit Security (Keamanan Eksplisit)__: Keamanan ditegakkan melalui sistem *Capability* yang ketat. VM tidak berasumsi mengenai izin akses; sebaliknya, setiap akses dan operasi harus memiliki hak yang didefinisikan secara eksplisit oleh *host* sejak awal, guna mencegah efek samping yang tidak diinginkan.
 
 ## Arsitektur: Pipeline Eksekusi
-LightVM mencapai kecepatannya melalui *pipeline* pra-eksekusi yang canggih. Sebelum satu instruksi pun diproses oleh *loop* utama, *bytecode* Anda melewati dua tahap khusus yang dirancang untuk memaksimalkan efisiensi:
+LightVM mencapai kecepatannya melalui *pipeline* pra-eksekusi yang canggih. Sebelum satu instruksi pun diproses oleh *loop* utama, *bytecode* Anda melewati tiga tahap khusus yang dirancang untuk memaksimalkan efisiensi:
 
 ### 1. Torja: The Symbol Resolver
 **Torja** bertindak sebagai gerbang masuk VM. Ia mengubah *bytecode* tingkat tinggi yang mudah dibaca manusia menjadi format berperforma tinggi. Dengan memetakan nama variabel dan pengenal fungsi ke indeks integer posisi tetap, Torja menghilangkan pencarian *hash-map* yang memakan waktu saat *runtime*. Torja juga melakukan "Value Promotion", yaitu mengonversi instruksi generik menjadi *opcode* khusus (contoh: `push_int16` vs `push_string`), yang memberikan informasi awal kepada *execution engine* mengenai tipe dan ukuran data.

@@ -9,7 +9,7 @@ At its core, LightVM is built on three fundamental pillars that define how it ha
  * **Explicit Security**: Security is enforced through a strict Capability system. The VM does not assume permissions; instead, every access and operation must have its rights explicitly defined by the host environment, preventing unauthorized side effects.
 
 ## Architecture: The Execution Pipeline
-LightVM achieves its speed through a sophisticated pre-execution pipeline. Before a single instruction is processed by the main loop, your bytecode passes through two specialized stages designed to maximize efficiency:
+LightVM achieves its speed through a sophisticated pre-execution pipeline. Before a single instruction is processed by the main loop, your bytecode passes through three specialized stages designed to maximize efficiency:
 
 ### 1. Torja: The Symbol Resolver
 **Torja** acts as the gateway of the VM. It transforms high-level, human-readable bytecode into a high-performance format. By mapping variable names and function identifiers to fixed-position integer indices, Torja eliminates costly runtime hash-map lookups. It also performs "Value Promotion," converting generic instructions into specialized opcodes (e.g., `push_int16` vs `push_string`), which gives the execution engine advance knowledge of data types and sizes.
