@@ -22,6 +22,8 @@ use crate::types::security_config::SecurityConfig;
 use crate::types::wasm_error_options::WASMErrorOptions;
 #[cfg(feature = "wasm")]
 use crate::types::wasm_runtime_config::WASMRuntimeConfig;
+#[cfg(feature = "wasm")]
+use crate::types::wasm_security_config::WASMSecurityConfig;
 #[cfg(feature = "node")]
 use napi_derive::napi;
 #[cfg(feature = "wasm")]
@@ -54,4 +56,5 @@ pub struct VmWasmConfig {
   pub caps: Vec<u32>,
   pub runtime_config: Option<WASMRuntimeConfig>,
   pub error_options: Option<WASMErrorOptions>,
+  pub security_config: Option<WASMSecurityConfig>,
 }
