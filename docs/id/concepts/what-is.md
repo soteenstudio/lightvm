@@ -17,6 +17,9 @@ LightVM mencapai kecepatannya melalui *pipeline* pra-eksekusi yang canggih. Sebe
 ### 2. Gazle: The Bytecode Optimizer
 Setelah simbol diselesaikan, **Gazle** mengambil alih untuk menyempurnakan *bytecode*. Ia menjalankan *pipeline* optimasi multi-pass—termasuk *constant folding*, *dead store elimination*, dan *jump threading*—untuk memangkas operasi yang tidak perlu dan menyederhanakan alur kontrol. Saat *bytecode* mencapai fase eksekusi, kode tersebut telah dibersihkan dari langkah-langkah redundan, memastikan bahwa VM hanya melakukan pekerjaan yang berkontribusi langsung pada status program akhir.
 
+### 3. Krates: Lapisan Validasi & Keamanan
+**Krates** bertindak sebagai penjaga gerbang terakhir yang memeriksa bytecode sebelum eksekusi, memastikan runtime tetap terlindungi dari instruksi yang cacat, fitur yang tidak sah, dan pelanggaran akses memori. Dengan menerapkan protokol keamanan yang ketat melalui alur verifikasi yang komprehensif, Krates menjamin bahwa hanya bytecode yang aman dan deterministik yang mencapai mesin eksekusi. Krates menangani tugas-tugas keamanan penting, termasuk verifikasi batas untuk mencegah luapan memori, pemeriksaan keamanan variabel, dan validasi integritas fungsi. Selain itu, Krates memantau fitur-fitur yang dibatasi, menegakkan kuota sumber daya melalui pemantauan gas (tick) untuk mencegah loop tak terbatas, serta memelihara daftar putih modul yang ketat. Krates juga melakukan analisis pola instruksi untuk mendeteksi bytecode yang berpotensi berbahaya, sekaligus menawarkan konfigurasi `unsafe_mode` untuk melewati pemeriksaan ini pada lingkungan tepercaya yang mengutamakan performa tinggi.
+
 ::: tip
-LightVM dirancang agar ramping, transparan, dan cepat. Dengan memisahkan **Resolusi** (Torja) dari **Optimasi** (Gazle), LightVM memastikan bahwa *loop* eksekusi inti VM tetap sesingkat mungkin.
+LightVM dirancang agar ramping, transparan, dan cepat. Dengan memisahkan **Resolusi** (Torja), **Optimasi** (Gazle), dan **Keamanan** (Krates) menjadi modul terpisah, LightVM memastikan bahwa *loop* eksekusi inti VM tetap sesingkat mungkin.
 :::

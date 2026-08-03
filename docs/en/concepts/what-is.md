@@ -17,6 +17,9 @@ LightVM achieves its speed through a sophisticated pre-execution pipeline. Befor
 ### 2. Gazle: The Bytecode Optimizer
 Once symbols are resolved, **Gazle** takes over to refine the bytecode. It runs a multi-pass optimization pipeline—including constant folding, dead store elimination, and jump threading—to prune unnecessary operations and simplify control flow. By the time the bytecode reaches the execution phase, it has been stripped of redundant steps, ensuring that the VM only performs work that contributes directly to the final program state.
 
+### 3. Krates: The Validation & Security Layer
+**Krates** acts as the final gatekeeper that inspects bytecode before execution, ensuring the runtime remains protected against malformed instructions, unauthorized features, and memory access violations. By enforcing strict safety protocols through a comprehensive verification pipeline, Krates guarantees that only safe and deterministic bytecode reaches the execution engine. It handles critical security tasks, including bounds verification to prevent memory overflow, variable safety checks, and function integrity validation. Furthermore, Krates monitors for restricted features, enforces resource quotas via gas monitoring (ticks) to prevent infinite loops, and maintains a strict module whitelist. It also performs instruction pattern analysis to detect potentially malicious bytecode, all while offering an `unsafe_mode` configuration to bypass these checks for trusted, high-performance environments.
+
 ::: tip
-LightVM is designed to be lean, transparent, and fast. By separating **Resolution** (Torja) from **Optimization** (Gazle), it ensures that the core VM execution loop remains as streamlined as possible.
+LightVM is designed to be lean, transparent, and fast. By separating **Resolution** (Torja), **Optimization** (Gazle), and **Security** (Krates) into distinct modules, LightVM ensures that the core VM execution loop remains as streamlined as possible.
 :::
