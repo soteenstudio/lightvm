@@ -99,7 +99,7 @@ export class LightVM {
   private updateConfig(
     key: 'runtimeConfig' | 'errorOptions' | 'securityConfig',
     sub: string,
-    val: boolean | number | Array<string>,
+    val: boolean | number | bigint | Array<string>,
     methodName?: string,
   ) {
     const method = methodName ?? `with${sub[0].toUpperCase() + sub.slice(1)}`;
