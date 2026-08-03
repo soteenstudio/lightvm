@@ -29,8 +29,12 @@ fn main() {
   let optimized_json = vm.tools().optimize_bytecode(raw);
   
   vm.load(optimized_json);
-  
-  let _res = vm.run(None);
+
+  let res = vm.run(None);
+  let parsed: serde_json::Value = serde_json::from_str(&res).expect("Failed to parse VM result");
+  assert_eq!(parsed["status"], "error", "Expected VM to fail due to tick limit");
+  let error_msg = parsed["message"].as_str().expect("Expected error message");
+  assert!(error_msg.contains("TickLimitExceeded"), "Expected TickLimitExceeded error, got: {}", error_msg);
   vm.halt();
   vm.run(None); // will not be executed
   println!("The VM has been terminated.");

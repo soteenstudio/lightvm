@@ -18,7 +18,7 @@ pub struct WASMSecurityConfig {
   pub max_alloc: Option<u32>,
   pub max_call: Option<u32>,
   pub max_jump: Option<u32>,
-  pub max_ticks: Option<u32>,
+  pub max_ticks: Option<u64>,
   pub max_stack_size: Option<u32>,
   pub allowed_imports: Option<Vec<String>>,
   pub unsafe_mode: Option<bool>,

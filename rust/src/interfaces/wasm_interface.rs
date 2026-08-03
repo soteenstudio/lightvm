@@ -112,7 +112,7 @@ impl WasmLightVM {
     self.inner.max_jump = value;
   }
   #[wasm_bindgen(js_name = "setMaxTicks")]
-  pub fn set_max_ticks(&mut self, value: u32) {
+  pub fn set_max_ticks(&mut self, value: f64) {
     self.inner.max_ticks = value as u64;
   }
   #[wasm_bindgen(js_name = "setMaxStackSize")]

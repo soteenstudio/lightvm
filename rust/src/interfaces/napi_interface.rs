@@ -79,7 +79,7 @@ impl NodeLightVM {
         max_alloc: security_config.max_alloc.unwrap_or(50) as usize,
         max_call: security_config.max_call.unwrap_or(200) as usize,
         max_jump: security_config.max_jump.unwrap_or(100) as usize,
-        max_ticks: security_config.max_ticks.unwrap_or(1_000_000) as u64,
+        max_ticks: security_config.max_ticks.unwrap_or(1_000_000.0) as u64,
         max_stack_size: security_config.max_stack_size.unwrap_or(128) as usize,
         allowed_imports: security_config
           .allowed_imports

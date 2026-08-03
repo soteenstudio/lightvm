@@ -26,7 +26,7 @@ pub struct JSSecurityConfig {
   #[ts(rename = "maxJump")]
   pub max_jump: Option<u32>,
   #[ts(rename = "maxTicks")]
-  pub max_ticks: Option<u32>,
+  pub max_ticks: Option<f64>,
   #[ts(rename = "maxStackSize")]
   pub max_stack_size: Option<u32>,
   #[ts(rename = "allowedImports")]
