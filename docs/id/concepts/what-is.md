@@ -11,10 +11,10 @@ Pada intinya, LightVM dibangun di atas tiga pilar fundamental yang mendefinisika
 ## Arsitektur: Pipeline Eksekusi
 LightVM mencapai kecepatannya melalui *pipeline* pra-eksekusi yang canggih. Sebelum satu instruksi pun diproses oleh *loop* utama, *bytecode* Anda melewati tiga tahap khusus yang dirancang untuk memaksimalkan efisiensi:
 
-### 1. Torja: The Symbol Resolver
+### 1. Torja: Penyelesai Simbol
 **Torja** bertindak sebagai gerbang masuk VM. Ia mengubah *bytecode* tingkat tinggi yang mudah dibaca manusia menjadi format berperforma tinggi. Dengan memetakan nama variabel dan pengenal fungsi ke indeks integer posisi tetap, Torja menghilangkan pencarian *hash-map* yang memakan waktu saat *runtime*. Torja juga melakukan "Value Promotion", yaitu mengonversi instruksi generik menjadi *opcode* khusus (contoh: `push_int16` vs `push_string`), yang memberikan informasi awal kepada *execution engine* mengenai tipe dan ukuran data.
 
-### 2. Gazle: The Bytecode Optimizer
+### 2. Gazle: Pengoptimal Bytecode
 Setelah simbol diselesaikan, **Gazle** mengambil alih untuk menyempurnakan *bytecode*. Ia menjalankan *pipeline* optimasi multi-pass—termasuk *constant folding*, *dead store elimination*, dan *jump threading*—untuk memangkas operasi yang tidak perlu dan menyederhanakan alur kontrol. Saat *bytecode* mencapai fase eksekusi, kode tersebut telah dibersihkan dari langkah-langkah redundan, memastikan bahwa VM hanya melakukan pekerjaan yang berkontribusi langsung pada status program akhir.
 
 ### 3. Krates: Lapisan Validasi & Keamanan
