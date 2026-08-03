@@ -3,11 +3,11 @@ export const navSupport = {
   items: [
     {
       text: 'Issues',
-      link: 'https://github.com/soteenstudio/lightvm/issues'
+      link: 'https://github.com/soteenstudio/lightvm/issues',
     },
     {
       text: 'Support Levels',
-      link: '/support-levels'
+      link: '/support-levels',
     },
   ],
 };

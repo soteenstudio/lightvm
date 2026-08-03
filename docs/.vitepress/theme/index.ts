@@ -21,7 +21,7 @@ export default {
     app.component('HeroStats', HeroStats);
     app.component('Giscus', Giscus);
     app.component('Forum', Forum);
-    app.component('GitBranches',GitBranches);
+    app.component('GitBranches', GitBranches);
     app.component('GitTags', GitTags);
     app.component('GitBrowser', GitBrowser);
     app.component('font-awesome-icon', FontAwesomeIcon);

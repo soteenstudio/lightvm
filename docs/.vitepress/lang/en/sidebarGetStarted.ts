@@ -17,6 +17,6 @@ export const sidebarGetStarted = [
   },
   {
     text: 'Concepts',
-    link: '/concepts/what-is'
-  }
+    link: '/concepts/what-is',
+  },
 ];

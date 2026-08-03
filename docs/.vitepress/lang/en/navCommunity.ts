@@ -7,7 +7,7 @@ export const navCommunity = {
     },
     {
       text: 'Forum',
-      link: '/forum'
-    }
+      link: '/forum',
+    },
   ],
 };

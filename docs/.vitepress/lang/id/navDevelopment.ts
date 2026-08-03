@@ -7,7 +7,7 @@ export const navDevelopment = {
     },
     {
       text: 'Pengajuan Perubahan',
-      link: 'https://github.com/soteenstudio/lightvm/pulls'
-    }
+      link: 'https://github.com/soteenstudio/lightvm/pulls',
+    },
   ],
 };

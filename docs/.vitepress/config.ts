@@ -1,5 +1,5 @@
-import { defineConfig } from 'vitepress'
-import { withMermaid } from 'vitepress-plugin-mermaid'
+import { defineConfig } from 'vitepress';
+import { withMermaid } from 'vitepress-plugin-mermaid';
 import { enUs, enUsSearch } from './en.js';
 import { idId, idIdSearch } from './id.js';
 import fs from 'fs';
@@ -115,9 +115,9 @@ export default withMermaid(
           indexName: 'Yoush',
           locales: {
             root: enUsSearch,
-            id: idIdSearch
-          }
-        }
+            id: idIdSearch,
+          },
+        },
       },
 
       socialLinks: [

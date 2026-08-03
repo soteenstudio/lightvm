@@ -7,7 +7,7 @@ export const navDevelopment = {
     },
     {
       text: 'Pull Requests',
-      link: 'https://github.com/soteenstudio/lightvm/pulls'
-    }
+      link: 'https://github.com/soteenstudio/lightvm/pulls',
+    },
   ],
 };
