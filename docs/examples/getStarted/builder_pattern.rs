@@ -12,6 +12,7 @@ fn main() {
   .set_max_call(200) // Maximum number of nested function calls allowed (default: 200)
   .set_max_jump(100) // Maximum number of control flow jumps allowed (default: 100)
   .set_max_ticks(1_000_000) // Maximum number of execution ticks before stopping (default: 1,000,000)
+  .set_max_stack_size(128) // Maximum number of items the stack can hold (default: 128)
   .set_allowed_imports(vec!["math".into(), "time".into(), "utils".into()]) // Whitelist of modules that can be imported
   .with_unsafe_mode(false) // Enable or disable system-level unsafe operations (default: false)
   .with_nightly(false) // Allow nightly features (default: false)

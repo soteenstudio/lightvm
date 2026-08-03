@@ -17,6 +17,7 @@ const vm = new LightVM({
     maxCall: 200,  // Maximum number of nested function calls allowed (default: 200)
     maxJump: 100,  // Maximum number of control flow jumps allowed (default: 100)
     maxTicks: 1_000_000,  // Maximum number of execution ticks before stopping (default: 1,000,000)
+    maxStackSize: 128, // Maximum number of items the stack can hold (default: 128)
     allowedImports: ["math", "time", "utils"], // Whitelist of modules that can be imported
     unsafeMode: false // Enable or disable system-level unsafe operations (default: false)
   }
