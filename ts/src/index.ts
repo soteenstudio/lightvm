@@ -39,6 +39,17 @@ export class LightVM {
     caps: [Capability.Observe],
     runtimeConfig: { nightly: false },
     errorOptions: { backtrace: false, explain: false, hint: true },
+    securityConfig: {
+      maxIo: 100,
+      maxImport: 3,
+      maxAlloc: 50,
+      maxCall: 200,
+      maxJump: 100,
+      maxTicks: 1_000_000,
+      maxStackSize: 128,
+      allowedImports: [],
+      unsafeMode: false,
+    },
   };
 
   constructor(config: Partial<VMConfig> & { caps?: Capability[] } = {}) {
@@ -51,6 +62,10 @@ export class LightVM {
       errorOptions: {
         ...LightVM.DEFAULTS.errorOptions,
         ...config.errorOptions,
+      },
+      securityConfig: {
+        ...LightVM.DEFAULTS.securityConfig,
+        ...config.securityConfig,
       },
     } as VMConfig;
 
@@ -82,13 +97,81 @@ export class LightVM {
   }
 
   private updateConfig(
-    key: 'runtimeConfig' | 'errorOptions',
+    key: 'runtimeConfig' | 'errorOptions' | 'securityConfig',
     sub: string,
-    val: boolean,
+    val: boolean | number | Array<string>,
+    methodName?: string,
   ) {
-    this.instance[`with${sub[0].toUpperCase() + sub.slice(1)}`](val);
+    const method = methodName ?? `with${sub[0].toUpperCase() + sub.slice(1)}`;
+    this.instance[method](val);
     (this.config[key] as any)[sub] = val;
     return this;
+  }
+
+  setMaxIo(value: number) {
+    return this.updateConfig('securityConfig', 'maxIo', value, 'setMaxIo');
+  }
+
+  setMaxImport(value: number) {
+    return this.updateConfig(
+      'securityConfig',
+      'maxImport',
+      value,
+      'setMaxImport',
+    );
+  }
+
+  setMaxAlloc(value: number) {
+    return this.updateConfig(
+      'securityConfig',
+      'maxAlloc',
+      value,
+      'setMaxAlloc',
+    );
+  }
+
+  setMaxCall(value: number) {
+    return this.updateConfig('securityConfig', 'maxCall', value, 'setMaxCall');
+  }
+
+  setMaxJump(value: number) {
+    return this.updateConfig('securityConfig', 'maxJump', value, 'setMaxJump');
+  }
+
+  setMaxTicks(value: number) {
+    return this.updateConfig(
+      'securityConfig',
+      'maxTicks',
+      value,
+      'setMaxTicks',
+    );
+  }
+
+  setMaxStackSize(value: number) {
+    return this.updateConfig(
+      'securityConfig',
+      'maxStackSize',
+      value,
+      'setMaxStackSize',
+    );
+  }
+
+  setAllowedImports(value: Array<string>) {
+    return this.updateConfig(
+      'securityConfig',
+      'allowedImports',
+      value,
+      'setAllowedImports',
+    );
+  }
+
+  withUnsafeMode(enabled: boolean) {
+    return this.updateConfig(
+      'securityConfig',
+      'unsafeMode',
+      enabled,
+      'withUnsafeMode',
+    );
   }
 
   withNightly(enabled: boolean) {
@@ -175,6 +258,7 @@ export class LightVM {
   }
 
   tools() {
+    const securityConfig = this.config?.securityConfig;
     const runtimeConfig = this.config?.runtimeConfig;
     const errorOptions = this.config?.errorOptions;
     return {
@@ -182,6 +266,15 @@ export class LightVM {
         return this.wrap(() =>
           this.native.LightVM.optimizeBytecode(
             bytecode,
+            securityConfig?.maxIo ?? 100,
+            securityConfig?.maxImport ?? 3,
+            securityConfig?.maxAlloc ?? 50,
+            securityConfig?.maxCall ?? 200,
+            securityConfig?.maxJump ?? 100,
+            securityConfig?.maxTicks ?? 1_000_000,
+            securityConfig?.maxStackSize ?? 128,
+            securityConfig?.allowedImports ?? [],
+            securityConfig?.unsafeMode ?? true,
             runtimeConfig?.nightly ?? false,
             errorOptions?.backtrace ?? false,
             errorOptions?.explain ?? false,

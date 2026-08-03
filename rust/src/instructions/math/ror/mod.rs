@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod ror_i128in;
-pub mod ror_i16in;
-pub mod ror_i32in;
-pub mod ror_i64in;
+pub(crate) mod ror_i128in;
+pub(crate) mod ror_i16in;
+pub(crate) mod ror_i32in;
+pub(crate) mod ror_i64in;

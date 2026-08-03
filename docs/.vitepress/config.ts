@@ -1,5 +1,5 @@
-import { defineConfig } from 'vitepress'
-import { withMermaid } from 'vitepress-plugin-mermaid'
+import { defineConfig } from 'vitepress';
+import { withMermaid } from 'vitepress-plugin-mermaid';
 import { enUs } from './en.js';
 import { idId } from './id.js';
 import fs from 'fs';
@@ -10,21 +10,24 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Membaca file SVG
-const donationSvg = fs.readFileSync(path.resolve(__dirname, '../public/assets/donation-box.svg'), 'utf-8');
+const donationSvg = fs.readFileSync(
+  path.resolve(__dirname, '../public/assets/donation-box.svg'),
+  'utf-8',
+);
 
 export default withMermaid(
   defineConfig({
     rewrites: {
       'en/:rest*': ':rest*',
     },
-  
+
     title: 'LightVM',
     titleTemplate: ':title | LightVM Docs',
     description:
       'A capability-based virtual machine designed for secure, predictable, and optimized bytecode execution.',
-  
+
     cleanUrls: true,
-  
+
     head: [
       [
         'meta',
@@ -60,33 +63,33 @@ export default withMermaid(
         }),
       ],
     ],
-  
+
     sitemap: {
       hostname: 'https://lightvm.vercel.app',
     },
-  
+
     transformPageData(pageData: any) {
       if (!pageData.content) {
         return;
       }
-  
+
       if (
         pageData.relativePath === 'index.md' ||
         pageData.frontmatter.layout === 'home'
       ) {
         return;
       }
-  
+
       const lines = (pageData.content as string)
         .split('\n')
         .filter((line: string) => line.trim() !== '');
-  
+
       if (lines.length >= 2 && !pageData.frontmatter.description) {
         const desc = lines[1].replace(/[#*`]/g, '').trim();
         pageData.frontmatter.description = desc;
       }
     },
-  
+
     lastUpdated: true,
     locales: {
       root: {
@@ -110,9 +113,9 @@ export default withMermaid(
           appId: '7KAJIG4S68',
           apiKey: '113fdb221f76b5367d9bd85a868f1958',
           indexName: 'Yoush',
-        }
+        },
       },
-  
+
       socialLinks: [
         { icon: 'github', link: 'https://github.com/soteenstudio/lightvm' },
         { icon: 'instagram', link: 'https://instagram.com/soteenstudio' },
@@ -122,9 +125,8 @@ export default withMermaid(
           },
           link: 'https://trakteer.id/soteen_studio/tip?quantity=1',
           ariaLabel: 'trakteer',
-        }
-  
+        },
       ],
     },
-  })
+  }),
 );

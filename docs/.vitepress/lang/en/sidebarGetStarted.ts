@@ -17,10 +17,10 @@ export const sidebarGetStarted = [
   },
   {
     text: 'Concepts',
-    link: '/concepts/what-is'
+    link: '/concepts/what-is',
   },
   {
     text: 'Support Levels',
-    link: '/support-levels'
-  }
+    link: '/support-levels',
+  },
 ];

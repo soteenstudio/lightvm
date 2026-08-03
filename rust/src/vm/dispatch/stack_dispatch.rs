@@ -20,7 +20,6 @@ use crate::instructions::stack::{
 use crate::types::stack::Stack;
 use crate::types::{instructions::Instructions, value::Value, var_stack::VarStack};
 use crate::utils::vmerror::VMError;
-const MAX_STACK_RESERVATION: usize = 65_536;
 #[inline(always)]
 pub fn stack_dispatch(
   instr: &Instructions,
@@ -29,20 +28,6 @@ pub fn stack_dispatch(
   ip: usize,
 ) -> Result<(), VMError> {
   match instr {
-    Instructions::InitStack(size) => {
-      let reserve_size = *size as usize;
-      if ip == 0 {
-        if reserve_size > MAX_STACK_RESERVATION {
-          return Err(VMError::StackOverflow {
-            ip,
-            limit: MAX_STACK_RESERVATION,
-          });
-        }
-        stack.clear();
-        stack.reserve(*size as usize);
-      }
-      Ok(())
-    }
     Instructions::PushInt16(v) => push_i16_func(stack, v, ip),
     Instructions::PushInt32(v) => push_i32_func(stack, v, ip),
     Instructions::PushInt64(v) => push_i64_func(stack, v, ip),

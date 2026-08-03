@@ -8,10 +8,10 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod clear_screen_func;
-pub mod inspect_arr_func;
-pub mod inspect_obj_func;
-pub mod print_func;
-pub mod println_func;
-pub mod stdin_func;
-pub mod stdout_func;
+pub(crate) mod clear_screen_func;
+pub(crate) mod inspect_arr_func;
+pub(crate) mod inspect_obj_func;
+pub(crate) mod print_func;
+pub(crate) mod println_func;
+pub(crate) mod stdin_func;
+pub(crate) mod stdout_func;

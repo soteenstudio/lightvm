@@ -8,6 +8,6 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod cos_f16in;
-pub mod cos_f32in;
-pub mod cos_f64in;
+pub(crate) mod cos_f16in;
+pub(crate) mod cos_f32in;
+pub(crate) mod cos_f64in;

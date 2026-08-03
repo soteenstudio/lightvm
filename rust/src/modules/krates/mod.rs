@@ -8,10 +8,8 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub(crate) mod neg_f16in;
-pub(crate) mod neg_f32in;
-pub(crate) mod neg_f64in;
-pub(crate) mod neg_i128in;
-pub(crate) mod neg_i16in;
-pub(crate) mod neg_i32in;
-pub(crate) mod neg_i64in;
+pub(crate) mod gas_monitor;
+pub(crate) mod has_nightly_opcodes;
+pub(crate) mod validate_bytecode;
+pub(crate) mod validate_security;
+pub(crate) mod validate_vars;

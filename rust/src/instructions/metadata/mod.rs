@@ -8,5 +8,5 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod length_func;
-pub mod typeof_func;
+pub(crate) mod length_func;
+pub(crate) mod typeof_func;

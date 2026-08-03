@@ -9,4 +9,5 @@
  */
 
 pub(crate) mod gazle;
+pub(crate) mod krates;
 pub(crate) mod torja;

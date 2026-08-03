@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod and_func;
-pub mod not_func;
-pub mod or_func;
-pub mod xor_func;
+pub(crate) mod and_func;
+pub(crate) mod not_func;
+pub(crate) mod or_func;
+pub(crate) mod xor_func;

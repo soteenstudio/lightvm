@@ -8,5 +8,5 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod json_value_trait;
-pub mod vmevent_trait;
+pub(crate) mod json_value_trait;
+pub(crate) mod vmevent_trait;

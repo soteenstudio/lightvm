@@ -8,7 +8,7 @@ export const navSupport = {
     },
     {
       text: 'Forum',
-      link: '/id/forum'
-    }
+      link: '/id/forum',
+    },
   ],
 };

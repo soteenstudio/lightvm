@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod pow_i128in;
-pub mod pow_i16in;
-pub mod pow_i32in;
-pub mod pow_i64in;
+pub(crate) mod pow_i128in;
+pub(crate) mod pow_i16in;
+pub(crate) mod pow_i32in;
+pub(crate) mod pow_i64in;

@@ -14,11 +14,16 @@ use crate::types::error_options::ErrorOptions;
 use crate::types::js_error_options::JSErrorOptions;
 #[cfg(feature = "node")]
 use crate::types::js_runtime_config::JSRuntimeConfig;
+#[cfg(feature = "node")]
+use crate::types::js_security_config::JSSecurityConfig;
 use crate::types::runtime_config::RuntimeConfig;
+use crate::types::security_config::SecurityConfig;
 #[cfg(feature = "wasm")]
 use crate::types::wasm_error_options::WASMErrorOptions;
 #[cfg(feature = "wasm")]
 use crate::types::wasm_runtime_config::WASMRuntimeConfig;
+#[cfg(feature = "wasm")]
+use crate::types::wasm_security_config::WASMSecurityConfig;
 #[cfg(feature = "node")]
 use napi_derive::napi;
 #[cfg(feature = "wasm")]
@@ -28,6 +33,7 @@ pub struct VmConfig {
   pub caps: Vec<Capability>,
   pub runtime_config: Option<RuntimeConfig>,
   pub error_options: Option<ErrorOptions>,
+  pub security_config: Option<SecurityConfig>,
 }
 #[cfg(feature = "node")]
 #[napi(object)]
@@ -40,6 +46,8 @@ pub struct VmNapiConfig {
   pub error_options: Option<JSErrorOptions>,
   #[ts(rename = "runtimeConfig")]
   pub runtime_config: Option<JSRuntimeConfig>,
+  #[ts(rename = "securityConfig")]
+  pub security_config: Option<JSSecurityConfig>,
 }
 #[cfg(feature = "wasm")]
 #[derive(Serialize, Deserialize)]
@@ -48,4 +56,5 @@ pub struct VmWasmConfig {
   pub caps: Vec<u32>,
   pub runtime_config: Option<WASMRuntimeConfig>,
   pub error_options: Option<WASMErrorOptions>,
+  pub security_config: Option<WASMSecurityConfig>,
 }
