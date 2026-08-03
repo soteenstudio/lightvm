@@ -9,25 +9,23 @@
  */
 
 use crate::types::security_config::SecurityConfig;
-use smol_str::SmolStr;
+use crate::utils::vmerror::VMError;
 pub struct GasMonitor {
   pub max_ticks: u64,
 }
 impl GasMonitor {
-  pub fn new(config: &SecurityConfig) -> Result<Self, SmolStr> {
+  pub fn new(config: &SecurityConfig) -> Result<Self, VMError> {
     if config.max_ticks == 0 {
-      return Err(SmolStr::from(
-        "Security Config Error: max_ticks cannot be 0. Please set a valid limit or remove the restriction.",
-      ));
+      return Err(VMError::InvalidMaxTicksConfig);
     }
     Ok(Self {
       max_ticks: config.max_ticks,
     })
   }
   #[inline(always)]
-  pub fn check_tick(&self, tick: u64) -> Result<(), SmolStr> {
+  pub fn check_tick(&self, tick: u64) -> Result<(), VMError> {
     if tick >= self.max_ticks {
-      return Err(SmolStr::from("Security Violation: Tick limit exceeded."));
+      return Err(VMError::TickLimitExceeded);
     }
     Ok(())
   }
