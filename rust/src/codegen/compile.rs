@@ -30,15 +30,22 @@ mod manual_assembler {
     }
   }
   fn assemble_aarch64_text(asm_code: &str) -> Result<Vec<u8>> {
+    use std::collections::HashMap;
     let mut raw_machine_code: Vec<u8> = Vec::new();
+    let mut label_positions: HashMap<String, usize> = HashMap::new();
+    let mut pending_branches: Vec<(usize, String)> = Vec::new();
     for line in asm_code.lines() {
       let trimmed = line.trim();
       if trimmed.is_empty()
         || trimmed.starts_with('.')
         || trimmed.starts_with(';')
         || trimmed.starts_with("//")
-        || trimmed.ends_with(':')
       {
+        continue;
+      }
+      if trimmed.ends_with(':') {
+        let label_name = trimmed.trim_end_matches(':').to_string();
+        label_positions.insert(label_name, raw_machine_code.len());
         continue;
       }
       let opcode_bytes = match trimmed {
@@ -53,6 +60,9 @@ mod manual_assembler {
         s if s.starts_with("ldr x9, [x19, #-16]") => vec![0xe9, 0x3f, 0x4f, 0xf8],
         s if s.starts_with("mov sp, x19") => vec![0xe0, 0x03, 0x00, 0x91],
         s if s.starts_with("mov x19, x9") => vec![0xe3, 0x03, 0x09, 0xaa],
+        s if s.starts_with("mov x0, #0") => vec![0x00, 0x00, 0x80, 0xd2],
+        s if s.starts_with("mov x8, #93") => vec![0xa8, 0x0b, 0x80, 0xd2],
+        s if s.starts_with("svc #0") => vec![0x01, 0x00, 0x00, 0xd4],
         s if s.starts_with("ret") => vec![0xc0, 0x03, 0x5f, 0xd6],
         s if s.starts_with("mov x9, #0") => vec![0x29, 0x00, 0x80, 0xd2],
         s if s.starts_with("movz x9") => vec![0x29, 0x00, 0x80, 0xd2],
@@ -69,6 +79,8 @@ mod manual_assembler {
         s if s.starts_with("str d0, [sp]") => vec![0x00, 0x0b, 0x00, 0xfd],
         s if s.starts_with("str s0, [sp]") => vec![0x00, 0x0b, 0x00, 0xbd],
         s if s.starts_with("bl ") => {
+          let target = s.trim_start_matches("bl ").trim();
+          pending_branches.push((raw_machine_code.len(), target.to_string()));
           vec![0x00, 0x00, 0x00, 0x94]
         }
         _ => {
@@ -79,6 +91,26 @@ mod manual_assembler {
         }
       };
       raw_machine_code.extend(opcode_bytes);
+    }
+    for (branch_pc, target_label) in pending_branches {
+      if let Some(&target_addr) = label_positions.get(&target_label) {
+        let offset = (target_addr as isize - branch_pc as isize) / 4;
+        if offset < -(1 << 25) || offset >= (1 << 25) {
+          return Err(Error::new(
+            ErrorKind::InvalidData,
+            format!("Branch target '{}' out of range", target_label),
+          ));
+        }
+        let imm26 = (offset as u32) & 0x03ffffff;
+        let bl_opcode = 0x94000000 | imm26;
+        let bytes = bl_opcode.to_le_bytes();
+        raw_machine_code[branch_pc..branch_pc + 4].copy_from_slice(&bytes);
+      } else {
+        return Err(Error::new(
+          ErrorKind::InvalidData,
+          format!("Undefined branch target label: {}", target_label),
+        ));
+      }
     }
     if raw_machine_code.is_empty() {
       return Err(Error::new(
