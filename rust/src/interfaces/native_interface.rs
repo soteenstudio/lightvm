@@ -158,8 +158,16 @@ impl LightVM {
   }
   pub fn compile(&mut self, arch: TargetArch, path: &str) -> String {
     match self.compile_internal(arch, path) {
-      Ok(_) => format!(r#"{{"status": "success", "path": "{}"}}"#, path),
-      Err(e) => format!(r#"{{"status": "error", "message": "{}"}}"#, e),
+      Ok(_) => serde_json::json!({
+        "status": "success",
+        "path": path
+      })
+      .to_string(),
+      Err(e) => serde_json::json!({
+        "status": "error",
+        "message": e.to_string()
+      })
+      .to_string(),
     }
   }
   /// Function to export functions in the VM out.

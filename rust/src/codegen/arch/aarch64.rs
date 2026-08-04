@@ -14,7 +14,7 @@ use crate::modules::torja::resolve_symbols::resolve_symbols;
 use crate::types::instructions::Instructions;
 use ahash::AHashMap;
 use smol_str::SmolStr;
-pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> String {
+pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> Result<String, String> {
   let empty_imports: AHashMap<SmolStr, crate::types::value::Value> = AHashMap::new();
   let (var_count, _symbol_table) = resolve_symbols(&mut instructions, &empty_imports);
   let mut builder = AArch64Builder::new()
@@ -23,6 +23,12 @@ pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> String {
     .inject_io_constants()
     .text()
     .label("main");
+
+  // Establish frame: save original sp to x19 (callee-saved register)
+  builder = builder
+    .comment("Establish stack frame")
+    .mov("x19", "sp");
+
   if var_count > 0 {
     let stack_bytes = var_count * 16;
     builder = builder
@@ -33,7 +39,6 @@ pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> String {
       .sub("sp", "sp", &format!("#{}", stack_bytes));
   }
   for (index, inst) in instructions.iter().enumerate() {
-    println!("{:?}", instructions);
     let _label_prefix = format!("const_{}", index);
     builder = match inst {
       Instructions::InitStack(_)
@@ -67,8 +72,18 @@ pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> String {
       | Instructions::InspectObj
       | Instructions::InspectArr
       | Instructions::ClearScreen => io_isel(builder, inst),
-      _ => builder,
+      _ => {
+        return Err(format!(
+          "Unsupported instruction at index {}: {:?}",
+          index, inst
+        ))
+      }
     };
   }
-  builder.ret().build()
+  // Restore sp from frame base before returning
+  Ok(builder
+    .comment("Restore stack pointer from frame base")
+    .mov("sp", "x19")
+    .ret()
+    .build())
 }
