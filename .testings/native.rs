@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use lightvm::{LightVM, types::{vmconfig::VmConfig, capability::Capability, vmevent::VmEvent}};  
+use lightvm::{LightVM, types::{vmconfig::VmConfig, capability::Capability, vmevent::VmEvent, target_arch::TargetArch}};  
 
 fn main() {
   let mut vm = LightVM::new(VmConfig {
@@ -17,8 +17,11 @@ fn main() {
   }).set_max_io(5000000).set_max_ticks(200).set_max_stack_size(0).with_nightly(false).with_backtrace(false).with_explain(false).with_hint(true);
   
   let raw = r#"[
-    ["push", 138],
-    ["jump", 0]
+    ["val", "x"],
+    ["push", 1688888],
+    ["set", "x"],
+    ["get", "x"],
+    ["println"]
   ]"#;
   let str = r#"
   push 5; ;; IP=0
@@ -30,17 +33,8 @@ fn main() {
   
   vm.load(optimized_json);
 
-  let res = vm.run(None);
-  let parsed: serde_json::Value = serde_json::from_str(&res).expect("Failed to parse VM result");
-  assert_eq!(parsed["status"], "error", "Expected VM to fail due to tick limit");
-  let error_msg = parsed["message"].as_str().expect("Expected error message");
-  assert!(error_msg.contains("TickLimitExceeded"), "Expected TickLimitExceeded error, got: {}", error_msg);
-  vm.halt();
-  vm.run(None); // will not be executed
-  println!("The VM has been terminated.");
-  vm.on(VmEvent::Halt, |payload| {
-    println!("Halted: {}", payload);
-  });
+  //vm.run(None);
+  let res = vm.compile(TargetArch::AArch64, "./test.s");
   
   /*println!("===> Execution finished <===");
   println!("Output: {:?}", res);*/

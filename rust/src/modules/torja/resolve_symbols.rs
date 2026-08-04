@@ -25,6 +25,10 @@ pub fn resolve_symbols(
   }
   for instr in bytecode.iter_mut() {
     match instr {
+      Instructions::Val(name) => {
+        let idx = get_or_insert_idx(&mut symbol_table, name, &mut next_idx);
+        *instr = Instructions::ValIdx(idx);
+      }
       Instructions::Get(name) => {
         let idx = get_or_insert_idx(&mut symbol_table, name, &mut next_idx);
         *instr = Instructions::GetIdx(idx);

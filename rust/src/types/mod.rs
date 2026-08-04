@@ -19,6 +19,7 @@ pub(crate) mod primitive_types;
 pub mod runtime_config;
 pub mod security_config;
 pub(crate) mod stack;
+pub mod target_arch;
 pub(crate) mod usage;
 pub(crate) mod value;
 pub(crate) mod var_stack;

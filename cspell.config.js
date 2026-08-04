@@ -53,7 +53,16 @@ export default {
     'gazle', 
     'torja',
     'krates',
-    'nops'
+    'nops',
+    'carzy',
+    'rodata',
+    'hword',
+    'asciz',
+    'codegen',
+    'isel',
+    'fmov',
+    'movz',
+    'movk'
   ],
   ignorePaths: [
     'node_modules/**',

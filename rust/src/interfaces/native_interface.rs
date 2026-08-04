@@ -18,6 +18,7 @@ use crate::types::{
   error_options::ErrorOptions,
   runtime_config::RuntimeConfig,
   security_config::SecurityConfig,
+  target_arch::TargetArch,
   value::{RunOptions, Value},
   vmconfig::VmConfig,
   vmstate::VmState,
@@ -154,6 +155,12 @@ impl LightVM {
     self
       .run_internal(options)
       .unwrap_or_else(|e| format!(r#"{{"status": "error", "message": "{}"}}"#, e))
+  }
+  pub fn compile(&mut self, arch: TargetArch, path: &str) -> String {
+    match self.compile_internal(arch, path) {
+      Ok(_) => format!(r#"{{"status": "success", "path": "{}"}}"#, path),
+      Err(e) => format!(r#"{{"status": "error", "message": "{}"}}"#, e),
+    }
   }
   /// Function to export functions in the VM out.
   ///

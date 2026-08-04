@@ -8,6 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::codegen::compile::compile;
 use crate::modules::{
   gazle::optimize_bytecode::optimize_bytecode, krates::has_nightly_opcodes::has_nightly_opcodes,
 };
@@ -15,6 +16,7 @@ use crate::types::{
   capability::Capability,
   instructions::Instructions,
   security_config::SecurityConfig,
+  target_arch::TargetArch,
   value::{FuncMetadata, RunOptions, Value},
   vmevent::VmEvent,
   vmstate::VmState,
@@ -231,6 +233,46 @@ impl LightVM {
     let result = crate::vm::run::run(&bytecode_json, Some(options));
     self.state = VmState::Idle;
     Ok(result)
+  }
+  #[inline]
+  pub fn compile_internal(&mut self, arch: TargetArch, path: &str) -> Result<(), VMError> {
+    self.set_mode(self.backtrace, self.explain, self.hint);
+    crate::utils::vmerror::get_backtrace::clear_backtrace();
+    if self.backtrace {
+      crate::utils::vmerror::get_backtrace::capture_backtrace();
+    }
+    self.require(Capability::Control)?;
+    if self.bytecode.is_empty() {
+      return Err(VMError::InvalidOpcode {
+        ip: 0,
+        code: smol_str::SmolStr::new("EMPTY_BYTECODE"),
+      });
+    }
+    self.state = VmState::Running;
+    self.emit(
+      VmEvent::Tick,
+      serde_json::json!({ "state": "compile_start" }),
+    );
+    let compile_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+      compile(&self.bytecode, arch, path)
+    }));
+    self.state = VmState::Idle;
+    match compile_result {
+      Ok(Ok(_)) => {
+        self.emit(
+          VmEvent::Tick,
+          serde_json::json!({ "state": "compile_success" }),
+        );
+        Ok(())
+      }
+      Ok(Err(io_err)) => Err(VMError::SystemError(smol_str::SmolStr::new(format!(
+        "Failed to write compiled assembly file: {}",
+        io_err
+      )))),
+      Err(_) => Err(VMError::SystemError(smol_str::SmolStr::new(
+        "Panic occurred during assembly compilation",
+      ))),
+    }
   }
   #[inline]
   pub fn on_internal<F>(&mut self, event: VmEvent, callback: F) -> Result<(), String>
