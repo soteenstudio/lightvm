@@ -72,7 +72,10 @@ mod manual_assembler {
           vec![0x00, 0x00, 0x00, 0x94]
         }
         _ => {
-          vec![0x1f, 0x20, 0x03, 0xd5]
+          return Err(Error::new(
+            ErrorKind::InvalidData,
+            format!("Unrecognized AArch64 instruction: {}", trimmed),
+          ));
         }
       };
       raw_machine_code.extend(opcode_bytes);
@@ -89,22 +92,25 @@ mod manual_assembler {
     let mut elf = Vec::new();
     match arch {
       TargetArch::AArch64 => {
+        const CODE_OFFSET: u64 = 128;
+        const BASE_VADDR: u64 = 0x400000;
+        let entry_point = BASE_VADDR + CODE_OFFSET;
         elf.extend_from_slice(&[0x7f, b'E', b'L', b'F', 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
         elf.extend_from_slice(&[2, 0, 0xb7, 0, 1, 0, 0, 0]);
-        elf.extend_from_slice(&[0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00]);
+        elf.extend_from_slice(&entry_point.to_le_bytes());
         elf.extend_from_slice(&[64, 0, 0, 0, 0, 0, 0, 0]);
         elf.extend_from_slice(&[0, 0, 0, 0, 0, 0, 0, 0]);
         elf.extend_from_slice(&[0, 0, 0, 0, 64, 0, 56, 0, 1, 0, 0, 0, 0, 0, 0, 0]);
         elf.extend_from_slice(&[1, 0, 0, 0, 5, 0, 0, 0]);
         elf.extend_from_slice(&[0, 0, 0, 0, 0, 0, 0, 0]);
-        elf.extend_from_slice(&[0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00]);
-        elf.extend_from_slice(&[0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00]);
-        let file_sz = (64 + 56 + machine_code.len()) as u64;
+        elf.extend_from_slice(&BASE_VADDR.to_le_bytes());
+        elf.extend_from_slice(&BASE_VADDR.to_le_bytes());
+        let file_sz = CODE_OFFSET + machine_code.len() as u64;
         elf.extend_from_slice(&file_sz.to_le_bytes());
-        let mem_sz = (64 + 56 + machine_code.len() + 4096) as u64;
+        let mem_sz = CODE_OFFSET + machine_code.len() as u64 + 4096;
         elf.extend_from_slice(&mem_sz.to_le_bytes());
         elf.extend_from_slice(&[0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
-        elf.resize(128, 0);
+        elf.resize(CODE_OFFSET as usize, 0);
       }
     }
     elf.extend_from_slice(machine_code);

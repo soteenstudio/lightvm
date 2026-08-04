@@ -17,6 +17,16 @@ use smol_str::SmolStr;
 pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> Result<String, String> {
   let empty_imports: AHashMap<SmolStr, crate::types::value::Value> = AHashMap::new();
   let (var_count, _symbol_table) = resolve_symbols(&mut instructions, &empty_imports);
+  let init_stack_capacity = instructions
+    .iter()
+    .find_map(|inst| {
+      if let Instructions::InitStack(size) = inst {
+        Some(*size as usize)
+      } else {
+        None
+      }
+    })
+    .unwrap_or(0);
   let mut builder = AArch64Builder::new()
     .global("main")
     .rodata()
@@ -29,12 +39,13 @@ pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> Result<String, St
     .str("x19", "sp")
     .mov("x19", "sp")
     .add("x19", "x19", "#16");
-  if var_count > 0 {
-    let stack_bytes = var_count * 16;
+  let total_stack_slots = var_count + init_stack_capacity;
+  if total_stack_slots > 0 {
+    let stack_bytes = total_stack_slots * 16;
     builder = builder
       .comment(&format!(
-        "Allocate local variables stack space: {} vars",
-        var_count
+        "Allocate local frame: {} vars + {} InitStack slots",
+        var_count, init_stack_capacity
       ))
       .sub("sp", "sp", &format!("#{}", stack_bytes));
   }

@@ -13,7 +13,11 @@ use crate::types::instructions::Instructions;
 pub fn stack_isel(mut builder: AArch64Builder, inst: &Instructions) -> AArch64Builder {
   match inst {
     Instructions::InitStack(size) => {
-      builder.comment(&format!("InitStack({}) handled in function prologue", size))
+      if *size > 0 {
+        builder.comment(&format!("InitStack({}) capacity reserved in prologue", size))
+      } else {
+        builder
+      }
     }
     Instructions::PushInt16(val) => {
       let v = *val as i64 as u64;
