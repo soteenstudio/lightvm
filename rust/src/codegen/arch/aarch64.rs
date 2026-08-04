@@ -23,15 +23,12 @@ pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> Result<String, St
     .inject_io_constants()
     .text()
     .label("main");
-
-  // Establish frame: save original sp to x19 (callee-saved register)
   builder = builder
     .comment("Establish stack frame")
     .sub("sp", "sp", "#16")
     .str("x19", "sp")
     .mov("x19", "sp")
     .add("x19", "x19", "#16");
-
   if var_count > 0 {
     let stack_bytes = var_count * 16;
     builder = builder
@@ -77,16 +74,17 @@ pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> Result<String, St
         return Err(format!(
           "Unsupported instruction at index {}: {:?}",
           index, inst
-        ))
+        ));
       }
     };
   }
-  // Restore sp from frame base before returning
-  Ok(builder
-    .comment("Restore stack pointer from frame base")
-    .inst("ldr", "x9, [x19, #-16]")
-    .mov("sp", "x19")
-    .mov("x19", "x9")
-    .ret()
-    .build())
+  Ok(
+    builder
+      .comment("Restore stack pointer from frame base")
+      .inst("ldr", "x9, [x19, #-16]")
+      .mov("sp", "x19")
+      .mov("x19", "x9")
+      .ret()
+      .build(),
+  )
 }

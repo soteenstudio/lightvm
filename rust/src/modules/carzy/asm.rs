@@ -67,7 +67,6 @@ impl AsmBuilder {
     self
   }
   pub fn alloc(&mut self, name: &str, ty: PrimitiveTypes, value: &str) -> &mut Self {
-    // Validate and sanitize name as valid assembler identifier
     let sanitized_name = name
       .chars()
       .map(|c| {
@@ -78,10 +77,8 @@ impl AsmBuilder {
         }
       })
       .collect::<String>();
-
     match ty {
       PrimitiveTypes::Str => {
-        // Escape string value for assembly
         let escaped_value = value
           .replace("\\", "\\\\")
           .replace("\"", "\\\"")
@@ -96,9 +93,12 @@ impl AsmBuilder {
         ));
       }
       _ => {
-        self
-          .buffer
-          .push_str(&format!("{}:\n    {} {}\n", sanitized_name, ty.directive(), value));
+        self.buffer.push_str(&format!(
+          "{}:\n    {} {}\n",
+          sanitized_name,
+          ty.directive(),
+          value
+        ));
       }
     }
     self

@@ -13,14 +13,10 @@ use crate::types::instructions::Instructions;
 pub fn stack_isel(mut builder: AArch64Builder, inst: &Instructions) -> AArch64Builder {
   match inst {
     Instructions::InitStack(size) => {
-      // InitStack is now handled in the prologue; skip it here
-      builder.comment(&format!(
-        "InitStack({}) handled in function prologue",
-        size
-      ))
+      builder.comment(&format!("InitStack({}) handled in function prologue", size))
     }
     Instructions::PushInt16(val) => {
-      let v = *val as i64 as u64; // Sign-extend then convert to u64
+      let v = *val as i64 as u64;
       let low = v & 0xFFFF;
       let mid1 = (v >> 16) & 0xFFFF;
       let mid2 = (v >> 32) & 0xFFFF;
@@ -28,7 +24,6 @@ pub fn stack_isel(mut builder: AArch64Builder, inst: &Instructions) -> AArch64Bu
       builder = builder
         .comment(&format!("PushInt16({})", val))
         .inst("movz", &format!("x9, #{:#x}", low));
-      // Always emit movk for non-zero chunks (includes 0xFFFF for negative numbers)
       if mid1 != 0 {
         builder = builder.inst("movk", &format!("x9, #{:#x}, lsl #16", mid1));
       }
@@ -41,7 +36,7 @@ pub fn stack_isel(mut builder: AArch64Builder, inst: &Instructions) -> AArch64Bu
       builder.sub("sp", "sp", "#16").str("x9", "sp")
     }
     Instructions::PushInt32(val) => {
-      let v = *val as i64 as u64; // Sign-extend then convert to u64
+      let v = *val as i64 as u64;
       let low = v & 0xFFFF;
       let mid1 = (v >> 16) & 0xFFFF;
       let mid2 = (v >> 32) & 0xFFFF;
@@ -49,7 +44,6 @@ pub fn stack_isel(mut builder: AArch64Builder, inst: &Instructions) -> AArch64Bu
       builder = builder
         .comment(&format!("PushInt32({})", val))
         .inst("movz", &format!("x9, #{:#x}", low));
-      // Always emit movk for non-zero chunks (includes 0xFFFF for negative numbers)
       if mid1 != 0 {
         builder = builder.inst("movk", &format!("x9, #{:#x}, lsl #16", mid1));
       }
@@ -83,7 +77,6 @@ pub fn stack_isel(mut builder: AArch64Builder, inst: &Instructions) -> AArch64Bu
     }
     Instructions::PushInt128(val) => {
       let v = *val as u128;
-      // Build low 64 bits in x9
       let low_64 = (v & 0xFFFFFFFFFFFFFFFF) as u64;
       let low = low_64 & 0xFFFF;
       let mid1 = (low_64 >> 16) & 0xFFFF;
@@ -101,7 +94,6 @@ pub fn stack_isel(mut builder: AArch64Builder, inst: &Instructions) -> AArch64Bu
       if high != 0 {
         builder = builder.inst("movk", &format!("x9, #{:#x}, lsl #48", high));
       }
-      // Build high 64 bits in x10
       let high_64 = (v >> 64) as u64;
       let low_h = high_64 & 0xFFFF;
       let mid1_h = (high_64 >> 16) & 0xFFFF;
@@ -117,7 +109,6 @@ pub fn stack_isel(mut builder: AArch64Builder, inst: &Instructions) -> AArch64Bu
       if high_h != 0 {
         builder = builder.inst("movk", &format!("x10, #{:#x}, lsl #48", high_h));
       }
-      // Store both registers into 16-byte stack slot
       builder
         .sub("sp", "sp", "#16")
         .str("x9", "sp")

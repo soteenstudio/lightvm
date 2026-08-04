@@ -249,28 +249,22 @@ impl LightVM {
       });
     }
     self.state = VmState::Running;
-
     let emit_result_start = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
       self.emit(
         VmEvent::Tick,
         serde_json::json!({ "state": "compile_start" }),
       );
     }));
-
     if emit_result_start.is_err() {
       self.state = VmState::Idle;
       return Err(VMError::SystemError(smol_str::SmolStr::new(
         "Panic in compile_start event listener",
       )));
     }
-
     let compile_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
       compile(&self.bytecode, arch, path)
     }));
-
-    // Ensure state is restored even if emit panics
     self.state = VmState::Idle;
-
     match compile_result {
       Ok(Ok(_)) => {
         let emit_result_success = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
@@ -279,13 +273,11 @@ impl LightVM {
             serde_json::json!({ "state": "compile_success" }),
           );
         }));
-
         if emit_result_success.is_err() {
           return Err(VMError::SystemError(smol_str::SmolStr::new(
             "Panic in compile_success event listener",
           )));
         }
-
         Ok(())
       }
       Ok(Err(io_err)) => Err(VMError::SystemError(smol_str::SmolStr::new(format!(

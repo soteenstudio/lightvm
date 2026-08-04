@@ -11,7 +11,10 @@
 use crate::codegen::arch::aarch64::compile_aarch64;
 use crate::types::instructions::Instructions;
 use crate::types::target_arch::TargetArch;
-pub fn compile_to_target(instructions: &[Instructions], arch: TargetArch) -> Result<String, String> {
+pub fn compile_to_target(
+  instructions: &[Instructions],
+  arch: TargetArch,
+) -> Result<String, String> {
   match arch {
     TargetArch::AArch64 => compile_aarch64(instructions.to_vec()),
   }
