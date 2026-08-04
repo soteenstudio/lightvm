@@ -18,7 +18,7 @@ fn main() {
   
   let raw = r#"[
     ["val", "x"],
-    ["push", 1688888],
+    ["push", true],
     ["set", "x"],
     ["get", "x"],
     ["println"]
@@ -34,7 +34,7 @@ fn main() {
   vm.load(optimized_json);
 
   //vm.run(None);
-  let res = vm.compile(TargetArch::AArch64, "./test.s");
+  let res = vm.compile(TargetArch::AArch64, "./test");
   
   /*println!("===> Execution finished <===");
   println!("Output: {:?}", res);*/
