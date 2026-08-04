@@ -27,7 +27,10 @@ pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> Result<String, St
   // Establish frame: save original sp to x19 (callee-saved register)
   builder = builder
     .comment("Establish stack frame")
-    .mov("x19", "sp");
+    .sub("sp", "sp", "#16")
+    .str("x19", "sp")
+    .mov("x19", "sp")
+    .add("x19", "x19", "#16");
 
   if var_count > 0 {
     let stack_bytes = var_count * 16;
@@ -60,10 +63,8 @@ pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> Result<String, St
       | Instructions::ValIdx(_)
       | Instructions::SetIdx(_)
       | Instructions::GetIdx(_)
-      | Instructions::Concat
       | Instructions::Dup
-      | Instructions::Swap
-      | Instructions::Truncate => stack_isel(builder, inst),
+      | Instructions::Swap => stack_isel(builder, inst),
       Instructions::Print
       | Instructions::Println
       | Instructions::Stdout
@@ -83,7 +84,9 @@ pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> Result<String, St
   // Restore sp from frame base before returning
   Ok(builder
     .comment("Restore stack pointer from frame base")
+    .inst("ldr", "x9, [x19, #-16]")
     .mov("sp", "x19")
+    .mov("x19", "x9")
     .ret()
     .build())
 }

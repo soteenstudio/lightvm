@@ -242,14 +242,6 @@ pub fn stack_isel(mut builder: AArch64Builder, inst: &Instructions) -> AArch64Bu
         .sub("sp", "sp", "#16")
         .str("x9", "sp")
     }
-    Instructions::Concat => builder
-      .comment("Concat - TODO: implement runtime concat operation")
-      .comment("Pop two values, concatenate, push result")
-      .ldr("x9", "sp")
-      .inst("ldr", "x10, [sp, #16]")
-      .inst("add", "sp, sp, #16")
-      .comment("Placeholder: just push first value for now")
-      .str("x9", "sp"),
     Instructions::Dup => builder
       .comment("Dup")
       .ldr("x9", "sp")
@@ -261,12 +253,6 @@ pub fn stack_isel(mut builder: AArch64Builder, inst: &Instructions) -> AArch64Bu
       .inst("ldr", "x10, [sp, #16]")
       .inst("str", "x9, [sp, #16]")
       .inst("str", "x10, [sp]"),
-    Instructions::Truncate => builder
-      .comment("Truncate - TODO: implement runtime truncate operation")
-      .comment("Pop value, truncate, push result")
-      .ldr("x9", "sp")
-      .comment("Placeholder: just keep value as-is for now")
-      .str("x9", "sp"),
     _ => builder,
   }
 }
