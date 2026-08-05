@@ -14,7 +14,10 @@ pub fn stack_isel(mut builder: AArch64Builder, inst: &Instructions) -> AArch64Bu
   match inst {
     Instructions::InitStack(size) => {
       if *size > 0 {
-        builder.comment(&format!("InitStack({}) capacity reserved in prologue", size))
+        builder.comment(&format!(
+          "InitStack({}) capacity reserved in prologue",
+          size
+        ))
       } else {
         builder
       }
