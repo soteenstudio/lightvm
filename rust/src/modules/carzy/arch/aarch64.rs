@@ -25,6 +25,10 @@ impl AArch64Builder {
     self.inner.global(name);
     self
   }
+  pub fn symbol_type(mut self, name: &str, ty: &str) -> Self {
+    self.inner.symbol_type(name, ty);
+    self
+  }
   pub fn text(mut self) -> Self {
     self.inner.text();
     self

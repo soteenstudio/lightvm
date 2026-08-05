@@ -28,17 +28,11 @@ pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> Result<String, St
     })
     .unwrap_or(0);
   let mut builder = AArch64Builder::new()
-    .global("_start")
     .global("main")
+    .symbol_type("main", "function")
     .rodata()
     .inject_io_constants()
     .text()
-    .label("_start")
-    .comment("Entry point: call main and exit with its return value")
-    .inst("bl", "main")
-    .comment("Exit syscall with return value from main (in x0)")
-    .inst("mov", "x8, #93")
-    .inst("svc", "#0")
     .label("main");
   builder = builder
     .comment("Establish stack frame")

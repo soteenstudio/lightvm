@@ -25,6 +25,10 @@ impl AsmBuilder {
     self.buffer.push_str(&format!(".global {}\n", name));
     self
   }
+  pub fn symbol_type(&mut self, name: &str, ty: &str) -> &mut Self {
+    self.buffer.push_str(&format!(".type {}, %{}\n", name, ty));
+    self
+  }
   pub fn text(&mut self) -> &mut Self {
     self.buffer.push_str(".text\n");
     self
@@ -39,8 +43,7 @@ impl AsmBuilder {
   }
   pub fn inject_io_constants(&mut self) -> &mut Self {
     self.buffer.push_str(
-      ".section .rodata\n\
-       nl_char:    .ascii \"\\n\"\n\
+      "nl_char:    .ascii \"\\n\"\n\
        num_16:     .ascii \"16\"\n\
        obj_str:    .ascii \"[Obj]\"\n\
        arr_str:    .ascii \"[Arr]\"\n\

@@ -16,6 +16,7 @@ use crate::types::vmevent::VmEvent;
 use crate::types::{
   capability::Capability,
   error_options::ErrorOptions,
+  file_type::FileType,
   runtime_config::RuntimeConfig,
   security_config::SecurityConfig,
   target_arch::TargetArch,
@@ -156,8 +157,8 @@ impl LightVM {
       .run_internal(options)
       .unwrap_or_else(|e| format!(r#"{{"status": "error", "message": "{}"}}"#, e))
   }
-  pub fn compile(&mut self, arch: TargetArch, path: &str) -> String {
-    match self.compile_internal(arch, path) {
+  pub fn compile(&mut self, arch: TargetArch, file_type: FileType, path: &str) -> String {
+    match self.compile_internal(arch, file_type, path) {
       Ok(_) => serde_json::json!({
         "status": "success",
         "path": path

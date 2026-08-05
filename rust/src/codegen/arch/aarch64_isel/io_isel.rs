@@ -10,7 +10,6 @@
 
 use crate::modules::carzy::arch::aarch64::AArch64Builder;
 use crate::types::instructions::Instructions;
-
 pub fn io_isel(builder: AArch64Builder, inst: &Instructions) -> AArch64Builder {
   match inst {
     Instructions::Print => builder
