@@ -15,3 +15,7 @@ sweep.timestamp
 /docs/.vitepress/cache
 /docs/.vitepress/dist
 *.bak
+*.s
+*.bin
+test
+*.log
