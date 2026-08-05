@@ -10,43 +10,44 @@
 
 use crate::modules::carzy::arch::aarch64::AArch64Builder;
 use crate::types::instructions::Instructions;
+
 pub fn io_isel(builder: AArch64Builder, inst: &Instructions) -> AArch64Builder {
   match inst {
     Instructions::Print => builder
-      .comment("Print (Runtime Mock)")
+      .comment("Print")
       .ldr("x0", "sp")
       .inst("bl", "lightvm_print")
       .add("sp", "sp", "#16"),
     Instructions::Println => builder
-      .comment("Println (Runtime Mock)")
+      .comment("Println")
       .ldr("x0", "sp")
       .inst("bl", "lightvm_println")
       .add("sp", "sp", "#16"),
     Instructions::Stdout => builder
-      .comment("Stdout (Runtime Mock)")
+      .comment("Stdout")
       .ldr("x0", "sp")
       .inst("bl", "lightvm_stdout")
       .add("sp", "sp", "#16"),
     Instructions::Stdoutln => builder
-      .comment("Stdoutln (Runtime Mock)")
+      .comment("Stdoutln")
       .ldr("x0", "sp")
       .inst("bl", "lightvm_stdoutln")
       .add("sp", "sp", "#16"),
     Instructions::Stdin => builder
-      .comment("Stdin (Runtime Mock)")
+      .comment("Stdin")
       .sub("sp", "sp", "#16")
       .add("x0", "sp", "#0")
       .inst("bl", "lightvm_stdin"),
     Instructions::InspectObj => builder
-      .comment("InspectObj (Runtime Mock)")
+      .comment("InspectObj")
       .ldr("x0", "sp")
       .inst("bl", "lightvm_inspect_obj"),
     Instructions::InspectArr => builder
-      .comment("InspectArr (Runtime Mock)")
+      .comment("InspectArr")
       .ldr("x0", "sp")
       .inst("bl", "lightvm_inspect_arr"),
     Instructions::ClearScreen => builder
-      .comment("ClearScreen (Runtime Mock)")
+      .comment("ClearScreen")
       .inst("bl", "lightvm_clear_screen"),
     _ => builder,
   }

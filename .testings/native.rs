@@ -35,6 +35,7 @@ fn main() {
 
   //vm.run(None);
   let res = vm.compile(TargetArch::AArch64, "./test");
+  println!("{}", res);
   
   /*println!("===> Execution finished <===");
   println!("Output: {:?}", res);*/

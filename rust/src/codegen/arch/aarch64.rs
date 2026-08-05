@@ -29,6 +29,7 @@ pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> Result<String, St
     .unwrap_or(0);
   let mut builder = AArch64Builder::new()
     .global("_start")
+    .global("main")
     .rodata()
     .inject_io_constants()
     .text()

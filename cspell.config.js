@@ -62,7 +62,9 @@ export default {
     'isel',
     'fmov',
     'movz',
-    'movk'
+    'movk',
+    'syscall',
+    'nostartfiles'
   ],
   ignorePaths: [
     'node_modules/**',
