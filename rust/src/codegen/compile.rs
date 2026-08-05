@@ -95,7 +95,7 @@ mod manual_assembler {
     for (branch_pc, target_label) in pending_branches {
       if let Some(&target_addr) = label_positions.get(&target_label) {
         let offset = (target_addr as isize - branch_pc as isize) / 4;
-        if offset < -(1 << 25) || offset >= (1 << 25) {
+        if !(-(1 << 25)..(1 << 25)).contains(&offset) {
           return Err(Error::new(
             ErrorKind::InvalidData,
             format!("Branch target '{}' out of range", target_label),
