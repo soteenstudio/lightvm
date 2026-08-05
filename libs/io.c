@@ -26,11 +26,12 @@ void lightvm_stdoutln(long long val) {
   printf("%lld\n", val); 
 }
 
-void* lightvm_stdin(void* buf) { 
+void* lightvm_stdin(void* buf) {
   if (buf) {
+    *(long long*)buf = 0;
     scanf("%lld", (long long*)buf);
   }
-  return buf; 
+  return buf;
 }
 
 void lightvm_inspect_obj(void* ptr) {

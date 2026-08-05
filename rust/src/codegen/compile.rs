@@ -44,24 +44,36 @@ pub fn compile(instructions: &[Instructions], arch: TargetArch, path: &str) -> s
   let io_c_path = format!("{}_io.c", path);
   fs::write(&io_c_path, IO_C_CONTENT)?;
 
-  let compiler = if check_tool_exists("clang") {
-    "clang"
-  } else if check_tool_exists("gcc") {
-    "gcc"
-  } else {
-    let _ = fs::remove_file(&asm_path);
-    let _ = fs::remove_file(&io_c_path);
-    return Err(Error::new(
-      ErrorKind::NotFound,
-      "No C compiler found on your system! Please install 'clang' or 'gcc'.",
-    ));
+  let (compiler, target_args) = match arch {
+    TargetArch::AArch64 => {
+      if check_tool_exists("clang") {
+        ("clang", vec!["--target=aarch64-linux-gnu".to_string()])
+      } else if check_tool_exists("aarch64-linux-gnu-gcc") {
+        ("aarch64-linux-gnu-gcc", vec![])
+      } else if check_tool_exists("gcc") {
+        ("gcc", vec![])
+      } else {
+        let _ = fs::remove_file(&asm_path);
+        let _ = fs::remove_file(&io_c_path);
+        return Err(Error::new(
+          ErrorKind::NotFound,
+          "No C compiler found on your system! Please install 'clang' or 'gcc'.",
+        ));
+      }
+    }
   };
 
-  let status = Command::new(compiler)
-    .arg(&io_c_path)
+  let mut cmd = Command::new(compiler);
+  cmd.arg(&io_c_path)
     .arg(&asm_path)
     .arg("-O2")
-    .arg("-nostartfiles")
+    .arg("-nostartfiles");
+
+  for arg in target_args {
+    cmd.arg(arg);
+  }
+
+  let status = cmd
     .arg("-o")
     .arg(path)
     .status();
