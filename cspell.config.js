@@ -66,7 +66,13 @@ export default {
     'syscall',
     'nostartfiles',
     'subsec',
-    'fadd'
+    'fadd',
+    'fsub',
+    'fmul',
+    'sdiv',
+    'msub',
+    'fdiv',
+    'adcs'
   ],
   ignorePaths: [
     'node_modules/**',

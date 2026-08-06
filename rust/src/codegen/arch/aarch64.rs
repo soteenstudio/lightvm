@@ -85,7 +85,11 @@ pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> Result<String, St
       | Instructions::InspectObj
       | Instructions::InspectArr
       | Instructions::ClearScreen => io_isel(builder, inst),
-      Instructions::Add(_) => math_isel(builder, inst),
+      Instructions::Add(_)
+      | Instructions::Sub(_)
+      | Instructions::Mul(_)
+      | Instructions::Div(_)
+      | Instructions::Mod(_) => math_isel(builder, inst),
       _ => {
         return Err(format!(
           "Unsupported instruction at index {}: {:?}",
