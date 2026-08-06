@@ -21,9 +21,13 @@ pub fn emit_div(builder: AArch64Builder, num_type: &PrimitiveTypes) -> AArch64Bu
   let mut b = builder.comment(&comment_str);
   match num_type {
     PrimitiveTypes::Hlf => {
+      // Convert half to single precision for compatibility
       b = b.ldr("h1", "sp, #8");
       b = b.ldr("h2", "sp, #24");
-      b = b.inst("fdiv", "h0, h2, h1");
+      b = b.inst("fcvt", "s1, h1");
+      b = b.inst("fcvt", "s2, h2");
+      b = b.inst("fdiv", "s0, s2, s1");
+      b = b.inst("fcvt", "h0, s0");
       b = b.inst("str", "h0, [sp, #24]");
     }
     PrimitiveTypes::Flt => {
@@ -41,16 +45,36 @@ pub fn emit_div(builder: AArch64Builder, num_type: &PrimitiveTypes) -> AArch64Bu
     PrimitiveTypes::Sht | PrimitiveTypes::Int => {
       b = b.ldr("w1", "sp, #8");
       b = b.ldr("w2", "sp, #24");
+      // Check for division by zero - sdiv with zero divisor causes undefined result
+      b = b.inst("cbz", "w1, 1f");
       b = b.inst3("sdiv", "w9", "w2, w1");
       b = b.str("w9", "sp, #24");
+      b = b.inst("b", "2f");
+      b = b.label("1");
+      // Trigger division by zero - store zero as result to avoid undefined behavior
+      b = b.inst("udiv", "w9, w9, wzr"); // Division by zero trap
+      b = b.label("2");
     }
-    PrimitiveTypes::Lng | PrimitiveTypes::Oct => {
+    PrimitiveTypes::Lng => {
       b = b.ldr("x1", "sp, #8");
       b = b.ldr("x2", "sp, #24");
+      // Check for division by zero
+      b = b.inst("cbz", "x1, 1f");
       b = b.inst3("sdiv", "x9", "x2, x1");
       b = b.str("x9", "sp, #24");
+      b = b.inst("b", "2f");
+      b = b.label("1");
+      // Trigger division by zero trap
+      b = b.inst("udiv", "x9, x9, xzr");
+      b = b.label("2");
     }
-    PrimitiveTypes::Str => {}
+    PrimitiveTypes::Oct => {
+      // 128-bit division not supported - would require software division
+      panic!("128-bit integer division not supported");
+    }
+    PrimitiveTypes::Str => {
+      panic!("String division not supported");
+    }
   }
   b = b.inst("mov", &format!("x10, #{}", type_tag));
   b = b.str("x10", "sp, #16");

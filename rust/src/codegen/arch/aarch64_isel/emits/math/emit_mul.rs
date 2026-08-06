@@ -21,9 +21,13 @@ pub fn emit_mul(builder: AArch64Builder, num_type: &PrimitiveTypes) -> AArch64Bu
   let mut b = builder.comment(&comment_str);
   match num_type {
     PrimitiveTypes::Hlf => {
+      // Convert half to single precision for compatibility
       b = b.ldr("h1", "sp, #8");
       b = b.ldr("h2", "sp, #24");
-      b = b.inst("fmul", "h0, h2, h1");
+      b = b.inst("fcvt", "s1, h1");
+      b = b.inst("fcvt", "s2, h2");
+      b = b.inst("fmul", "s0, s2, s1");
+      b = b.inst("fcvt", "h0, s0");
       b = b.inst("str", "h0, [sp, #24]");
     }
     PrimitiveTypes::Flt => {
@@ -44,13 +48,19 @@ pub fn emit_mul(builder: AArch64Builder, num_type: &PrimitiveTypes) -> AArch64Bu
       b = b.inst3("mul", "w9", "w2, w1");
       b = b.str("w9", "sp, #24");
     }
-    PrimitiveTypes::Lng | PrimitiveTypes::Oct => {
+    PrimitiveTypes::Lng => {
       b = b.ldr("x1", "sp, #8");
       b = b.ldr("x2", "sp, #24");
       b = b.inst3("mul", "x9", "x2, x1");
       b = b.str("x9", "sp, #24");
     }
-    PrimitiveTypes::Str => {}
+    PrimitiveTypes::Oct => {
+      // 128-bit multiplication not supported - would require multi-word multiplication
+      panic!("128-bit integer multiplication not supported");
+    }
+    PrimitiveTypes::Str => {
+      panic!("String multiplication not supported");
+    }
   }
   b = b.inst("mov", &format!("x10, #{}", type_tag));
   b = b.str("x10", "sp, #16");

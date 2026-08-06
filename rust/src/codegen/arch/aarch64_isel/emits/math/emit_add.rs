@@ -21,9 +21,13 @@ pub fn emit_add(builder: AArch64Builder, num_type: &PrimitiveTypes) -> AArch64Bu
   let mut b = builder.comment(&comment_str);
   match num_type {
     PrimitiveTypes::Hlf => {
+      // Convert half to single precision for compatibility
       b = b.ldr("h1", "sp, #8");
       b = b.ldr("h2", "sp, #24");
-      b = b.inst("fadd", "h0, h2, h1");
+      b = b.inst("fcvt", "s1, h1");
+      b = b.inst("fcvt", "s2, h2");
+      b = b.inst("fadd", "s0, s2, s1");
+      b = b.inst("fcvt", "h0, s0");
       b = b.inst("str", "h0, [sp, #24]");
     }
     PrimitiveTypes::Flt => {
@@ -67,8 +71,8 @@ pub fn emit_add(builder: AArch64Builder, num_type: &PrimitiveTypes) -> AArch64Bu
       b = b.str("x9", "sp, #24");
     }
     PrimitiveTypes::Str => {
-      b = b.ldr("x1", "sp, #8");
-      b = b.ldr("x2", "sp, #24");
+      // String addition not supported - use Concat instruction instead
+      panic!("String addition not supported in emit_add - use Concat instruction");
     }
   }
   b = b.inst("mov", &format!("x10, #{}", type_tag));
