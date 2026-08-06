@@ -44,13 +44,18 @@ pub fn emit_mul(builder: AArch64Builder, num_type: &PrimitiveTypes) -> AArch64Bu
       b = b.inst3("mul", "w9", "w2, w1");
       b = b.str("w9", "sp, #24");
     }
-    PrimitiveTypes::Lng | PrimitiveTypes::Oct => {
+    PrimitiveTypes::Lng => {
       b = b.ldr("x1", "sp, #8");
       b = b.ldr("x2", "sp, #24");
       b = b.inst3("mul", "x9", "x2, x1");
       b = b.str("x9", "sp, #24");
     }
-    PrimitiveTypes::Str => {}
+    PrimitiveTypes::Oct => {
+      panic!("Mul operation not supported for Oct type - 128-bit multiplication requires complex implementation");
+    }
+    PrimitiveTypes::Str => {
+      panic!("Mul operation not supported for Str type");
+    }
   }
   b = b.inst("mov", &format!("x10, #{}", type_tag));
   b = b.str("x10", "sp, #16");
