@@ -19,25 +19,26 @@ use std::process::Command;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::SystemTime;
 const IO_C_CONTENT: &str = include_str!("../../../libs/io.c");
-
 static TEMP_DIR_COUNTER: AtomicU64 = AtomicU64::new(0);
-
+fn get_ram_dir() -> String {
+  if (cfg!(target_os = "linux") || cfg!(target_os = "android"))
+    && std::path::Path::new("/dev/shm").exists()
+  {
+    return "/dev/shm".to_string();
+  }
+  std::env::temp_dir().to_string_lossy().into_owned()
+}
 fn create_secure_temp_dir() -> std::io::Result<PathBuf> {
-  let base_dir = std::env::temp_dir();
+  let base_dir = PathBuf::from(get_ram_dir());
   let pid = std::process::id();
-
-  // Try up to 100 times to create a unique directory
   for _ in 0..100 {
     let counter = TEMP_DIR_COUNTER.fetch_add(1, Ordering::Relaxed);
     let nanos = SystemTime::now()
       .duration_since(SystemTime::UNIX_EPOCH)
       .map(|d| d.subsec_nanos())
       .unwrap_or(0);
-
     let dir_name = format!("lightvm_{}_{}_{}_{}", pid, counter, nanos, fastrand());
     let temp_dir = base_dir.join(dir_name);
-
-    // Attempt to create the directory atomically
     #[cfg(unix)]
     {
       use std::os::unix::fs::DirBuilderExt;
@@ -49,7 +50,6 @@ fn create_secure_temp_dir() -> std::io::Result<PathBuf> {
         Err(e) => return Err(e),
       }
     }
-
     #[cfg(not(unix))]
     {
       match fs::create_dir(&temp_dir) {
@@ -59,25 +59,22 @@ fn create_secure_temp_dir() -> std::io::Result<PathBuf> {
       }
     }
   }
-
   Err(Error::new(
     ErrorKind::AlreadyExists,
     "Failed to create unique temporary directory after 100 attempts",
   ))
 }
-
 fn fastrand() -> u64 {
-  // Simple fast random number generator using process ID and system time
   let pid = std::process::id() as u64;
   let time = SystemTime::now()
     .duration_since(SystemTime::UNIX_EPOCH)
     .map(|d| d.as_nanos() as u64)
     .unwrap_or(0);
-  pid.wrapping_mul(6364136223846793005)
+  pid
+    .wrapping_mul(6364136223846793005)
     .wrapping_add(time)
     .wrapping_mul(1442695040888963407)
 }
-
 pub fn compile_to_target(
   instructions: &[Instructions],
   arch: TargetArch,
@@ -93,14 +90,6 @@ fn check_tool_exists(tool: &str) -> bool {
     .map(|output| output.status.success())
     .unwrap_or(false)
 }
-fn get_ram_dir() -> String {
-  if (cfg!(target_os = "linux") || cfg!(target_os = "android"))
-    && std::path::Path::new("/dev/shm").exists()
-  {
-    return "/dev/shm".to_string();
-  }
-  std::env::temp_dir().to_string_lossy().into_owned()
-}
 pub fn compile(
   instructions: &[Instructions],
   arch: TargetArch,
@@ -115,18 +104,18 @@ pub fn compile(
     } else {
       format!("{}.s", path)
     };
-    if let Some(parent) = std::path::Path::new(&asm_path).parent() {
-      if !parent.as_os_str().is_empty() {
-        fs::create_dir_all(parent)?;
-      }
+    if let Some(parent) = std::path::Path::new(&asm_path).parent()
+      && !parent.as_os_str().is_empty()
+    {
+      fs::create_dir_all(parent)?;
     }
     fs::write(&asm_path, &asm_code)?;
     return Ok(());
   }
-  if let Some(parent) = std::path::Path::new(path).parent() {
-    if !parent.as_os_str().is_empty() {
-      fs::create_dir_all(parent)?;
-    }
+  if let Some(parent) = std::path::Path::new(path).parent()
+    && !parent.as_os_str().is_empty()
+  {
+    fs::create_dir_all(parent)?;
   }
   let compiler = match arch {
     TargetArch::AArch64 => {

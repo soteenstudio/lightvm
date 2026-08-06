@@ -64,7 +64,8 @@ export default {
     'movz',
     'movk',
     'syscall',
-    'nostartfiles'
+    'nostartfiles',
+    'subsec'
   ],
   ignorePaths: [
     'node_modules/**',

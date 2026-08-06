@@ -17,10 +17,11 @@ fn main() {
   }).set_max_io(5000000).set_max_ticks(200).set_max_stack_size(0).with_nightly(false).with_backtrace(false).with_explain(false).with_hint(true);
   
   let raw = r#"[
-    ["val", "x"],
+    ["push", 16],
+    ["println"],
     ["push", true],
-    ["set", "x"],
-    ["get", "x"],
+    ["println"],
+    ["push", "Result is 128"],
     ["println"]
   ]"#;
   let str = r#"
