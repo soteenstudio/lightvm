@@ -80,7 +80,11 @@ pub fn stack_isel(mut builder: AArch64Builder, inst: &Instructions) -> AArch64Bu
       if high != 0 {
         builder = builder.inst("movk", &format!("x9, #{:#x}, lsl #48", high));
       }
-      builder.sub("sp", "sp", "#16").str("x9", "sp")
+      builder
+        .sub("sp", "sp", "#16")
+        .inst("mov", "x10, #0")
+        .str("x10", "sp")
+        .inst("str", "x9, [sp, #8]")
     }
     Instructions::PushInt128(val) => {
       let v = *val as u128;
@@ -192,11 +196,14 @@ pub fn stack_isel(mut builder: AArch64Builder, inst: &Instructions) -> AArch64Bu
       .str("x9", "sp"),
     Instructions::PushBool(b) => {
       let val = if *b { 1 } else { 0 };
+      println!("{}", val);
       builder
         .comment(&format!("PushBool({})", b))
-        .inst("movz", &format!("x9, #{}", val))
         .sub("sp", "sp", "#16")
+        .inst3("mov", "x9", "#1")
         .str("x9", "sp")
+        .inst("mov", &format!("x9, #{}", val))
+        .inst3("str", "x9", "[sp, #8]")
     }
     Instructions::PushNull => builder
       .comment("PushNull")

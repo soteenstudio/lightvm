@@ -14,12 +14,12 @@ pub fn io_isel(builder: AArch64Builder, inst: &Instructions) -> AArch64Builder {
   match inst {
     Instructions::Print => builder
       .comment("Print")
-      .ldr("x0", "sp")
+      .mov("x0", "sp")
       .inst("bl", "lightvm_print")
       .add("sp", "sp", "#16"),
     Instructions::Println => builder
       .comment("Println")
-      .ldr("x0", "sp")
+      .mov("x0", "sp")
       .inst("bl", "lightvm_println")
       .add("sp", "sp", "#16"),
     Instructions::Stdout => builder

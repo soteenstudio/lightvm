@@ -14,10 +14,9 @@ use crate::modules::{
 };
 use crate::types::{
   capability::Capability,
-  file_type::FileType,
+  compile_config::CompileConfig,
   instructions::Instructions,
   security_config::SecurityConfig,
-  target_arch::TargetArch,
   value::{FuncMetadata, RunOptions, Value},
   vmevent::VmEvent,
   vmstate::VmState,
@@ -236,12 +235,7 @@ impl LightVM {
     Ok(result)
   }
   #[inline]
-  pub fn compile_internal(
-    &mut self,
-    arch: TargetArch,
-    file_type: FileType,
-    path: &str,
-  ) -> Result<(), VMError> {
+  pub fn compile_internal(&mut self, config: CompileConfig) -> Result<(), VMError> {
     self.set_mode(self.backtrace, self.explain, self.hint);
     crate::utils::vmerror::get_backtrace::clear_backtrace();
     if self.backtrace {
@@ -268,7 +262,12 @@ impl LightVM {
       )));
     }
     let compile_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-      compile(&self.bytecode, arch, path, file_type)
+      compile(
+        &self.bytecode,
+        config.target_arch,
+        config.path,
+        config.file_type,
+      )
     }));
     self.state = VmState::Idle;
     match compile_result {

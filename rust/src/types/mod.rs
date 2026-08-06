@@ -9,6 +9,7 @@
  */
 
 pub mod capability;
+pub mod compile_config;
 pub(crate) mod control_flow_signal;
 pub mod error_options;
 pub mod file_type;

@@ -10,12 +10,26 @@
 
 #include <stdio.h>
 
-void lightvm_print(long long val) { 
-  printf("%lld", val); 
+typedef struct {
+    long long type_tag; // 0 = Int, 1 = Bool, 2 = Float, dst.
+    long long value;    // Nilai aslinya
+} LightVMValue;
+
+void lightvm_print(LightVMValue* val_ptr) {
+    if (!val_ptr) return;
+
+    if (val_ptr->type_tag == 1) {
+        // Tag 1 adalah Boolean
+        printf("%s", val_ptr->value ? "true" : "false");
+    } else {
+        // Tag 0 atau lainnya dicetak sebagai angka biasa
+        printf("%lld", val_ptr->value);
+    }
 }
 
-void lightvm_println(long long val) { 
-  printf("%lld\n", val); 
+void lightvm_println(LightVMValue* val_ptr) {
+    lightvm_print(val_ptr);
+    printf("\n");
 }
 
 void lightvm_stdout(long long val) { 

@@ -15,11 +15,10 @@ use crate::traits::{json_value_trait::IntoJsonValue, vmevent_trait::IntoVmEvent}
 use crate::types::vmevent::VmEvent;
 use crate::types::{
   capability::Capability,
+  compile_config::CompileConfig,
   error_options::ErrorOptions,
-  file_type::FileType,
   runtime_config::RuntimeConfig,
   security_config::SecurityConfig,
-  target_arch::TargetArch,
   value::{RunOptions, Value},
   vmconfig::VmConfig,
   vmstate::VmState,
@@ -157,11 +156,11 @@ impl LightVM {
       .run_internal(options)
       .unwrap_or_else(|e| format!(r#"{{"status": "error", "message": "{}"}}"#, e))
   }
-  pub fn compile(&mut self, arch: TargetArch, file_type: FileType, path: &str) -> String {
-    match self.compile_internal(arch, file_type, path) {
+  pub fn compile(&mut self, config: CompileConfig) -> String {
+    match self.compile_internal(config) {
       Ok(_) => serde_json::json!({
         "status": "success",
-        "path": path
+        "path": config.path
       })
       .to_string(),
       Err(e) => serde_json::json!({
