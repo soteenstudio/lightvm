@@ -24,12 +24,12 @@ pub fn io_isel(builder: AArch64Builder, inst: &Instructions) -> AArch64Builder {
       .add("sp", "sp", "#16"),
     Instructions::Stdout => builder
       .comment("Stdout")
-      .ldr("x0", "sp")
+      .mov("x0", "sp")
       .inst("bl", "lightvm_stdout")
       .add("sp", "sp", "#16"),
     Instructions::Stdoutln => builder
       .comment("Stdoutln")
-      .ldr("x0", "sp")
+      .mov("x0", "sp")
       .inst("bl", "lightvm_stdoutln")
       .add("sp", "sp", "#16"),
     Instructions::Stdin => builder
@@ -49,5 +49,38 @@ pub fn io_isel(builder: AArch64Builder, inst: &Instructions) -> AArch64Builder {
       .comment("ClearScreen")
       .inst("bl", "lightvm_clear_screen"),
     _ => builder,
+  }
+}
+#[cfg(test)]
+mod tests {
+  use super::*;
+  fn emit(inst: Instructions) -> String {
+    io_isel(AArch64Builder::new(), &inst).build()
+  }
+  #[test]
+  fn print_passes_stack_pointer_to_runtime() {
+    let asm = emit(Instructions::Print);
+    assert!(asm.contains("mov x0, sp"));
+    assert!(asm.contains("bl lightvm_print"));
+  }
+  #[test]
+  fn println_passes_stack_pointer_to_runtime() {
+    let asm = emit(Instructions::Println);
+    assert!(asm.contains("mov x0, sp"));
+    assert!(asm.contains("bl lightvm_println"));
+  }
+  #[test]
+  fn stdout_passes_stack_pointer_to_runtime() {
+    let asm = emit(Instructions::Stdout);
+    assert!(asm.contains("mov x0, sp"));
+    assert!(!asm.contains("ldr x0, [sp]"));
+    assert!(asm.contains("bl lightvm_stdout"));
+  }
+  #[test]
+  fn stdoutln_passes_stack_pointer_to_runtime() {
+    let asm = emit(Instructions::Stdoutln);
+    assert!(asm.contains("mov x0, sp"));
+    assert!(!asm.contains("ldr x0, [sp]"));
+    assert!(asm.contains("bl lightvm_stdoutln"));
   }
 }

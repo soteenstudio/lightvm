@@ -113,3 +113,15 @@ pub fn compile(
     ))),
   }
 }
+#[cfg(test)]
+mod tests {
+  use super::*;
+  #[test]
+  fn embedded_c_runtime_formats_boolean_tag_as_true_false() {
+    assert!(IO_C_CONTENT.contains("type_tag == 1"));
+    assert!(IO_C_CONTENT.contains("\"true\""));
+    assert!(IO_C_CONTENT.contains("\"false\""));
+    assert!(IO_C_CONTENT.contains("lightvm_stdout(LightVMValue"));
+    assert!(IO_C_CONTENT.contains("lightvm_stdoutln(LightVMValue"));
+  }
+}

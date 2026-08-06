@@ -100,3 +100,41 @@ pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> Result<String, St
       .build(),
   )
 }
+#[cfg(test)]
+mod tests {
+  use super::*;
+  fn compile_bool_through_all_outputs(b: bool) -> String {
+    compile_aarch64(vec![
+      Instructions::PushBool(b),
+      Instructions::Print,
+      Instructions::PushBool(b),
+      Instructions::Println,
+      Instructions::PushBool(b),
+      Instructions::Stdout,
+      Instructions::PushBool(b),
+      Instructions::Stdoutln,
+    ])
+    .expect("boolean CLI output program should compile")
+  }
+  #[test]
+  fn compiles_true_through_print_println_stdout_stdoutln() {
+    let asm = compile_bool_through_all_outputs(true);
+    assert!(asm.contains("str x9, [sp, #8]"));
+    assert!(asm.contains("bl lightvm_print"));
+    assert!(asm.contains("bl lightvm_println"));
+    assert!(asm.contains("bl lightvm_stdout"));
+    assert!(asm.contains("bl lightvm_stdoutln"));
+    assert!(!asm.contains("ldr x0, [sp]"));
+  }
+  #[test]
+  fn compiles_false_through_print_println_stdout_stdoutln() {
+    let asm = compile_bool_through_all_outputs(false);
+    assert!(asm.contains("mov x9, #0"));
+    assert!(asm.contains("str x9, [sp, #8]"));
+    assert!(asm.contains("bl lightvm_print"));
+    assert!(asm.contains("bl lightvm_println"));
+    assert!(asm.contains("bl lightvm_stdout"));
+    assert!(asm.contains("bl lightvm_stdoutln"));
+    assert!(!asm.contains("ldr x0, [sp]"));
+  }
+}
