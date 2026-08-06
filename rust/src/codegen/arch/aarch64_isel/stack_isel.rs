@@ -9,7 +9,7 @@
  */
 
 use crate::modules::carzy::arch::aarch64::AArch64Builder;
-use crate::types::instructions::Instructions;
+use crate::types::{instructions::Instructions, primitive_types::PrimitiveTypes};
 pub fn stack_isel(mut builder: AArch64Builder, inst: &Instructions) -> AArch64Builder {
   match inst {
     Instructions::InitStack(size) => {
@@ -178,14 +178,25 @@ pub fn stack_isel(mut builder: AArch64Builder, inst: &Instructions) -> AArch64Bu
         .sub("sp", "sp", "#16")
         .inst("str", "d0, [sp]")
     }
-    Instructions::PushString(s) => builder
-      .comment(&format!(
-        "PushString(\"{}\") - TODO: implement runtime string allocation",
-        s
-      ))
-      .inst("mov", "x9, #0")
-      .sub("sp", "sp", "#16")
-      .str("x9", "sp"),
+    Instructions::PushString(s) => {
+      let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::SystemTime::UNIX_EPOCH)
+        .map(|d| d.subsec_nanos())
+        .unwrap_or(0);
+      let label_name = format!(".L.str.{}", nanos);
+      let escaped_str = format!("\"{}\"", s);
+      builder
+        .comment(&format!("PushString(\"{}\")", s))
+        .rodata()
+        .label(&label_name)
+        .alloc(&label_name, PrimitiveTypes::Str, &escaped_str)
+        .text()
+        .inst("adr", &format!("x9, {}", label_name))
+        .sub("sp", "sp", "#16")
+        .inst("mov", "x10, #3")
+        .str("x10", "sp")
+        .inst("str", "x9, [sp, #8]")
+    }
     Instructions::PushArray(arr) => builder
       .comment(&format!(
         "PushArray(len={}) - TODO: implement runtime array allocation",
