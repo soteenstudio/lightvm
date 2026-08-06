@@ -20,7 +20,7 @@ impl<'a> Default for CompileConfig<'a> {
     Self {
       target_arch: TargetArch::AArch64,
       file_type: FileType::Binary,
-      path: "./bin/",
+      path: "./bin/lightvm",
     }
   }
 }

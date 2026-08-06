@@ -12,7 +12,8 @@ use crate::codegen::arch::aarch64::compile_aarch64;
 use crate::types::instructions::Instructions;
 use crate::types::{file_type::FileType, target_arch::TargetArch};
 use std::fs;
-use std::io::{Error, ErrorKind};
+use std::fs::OpenOptions;
+use std::io::{Error, ErrorKind, Write};
 use std::process::Command;
 const IO_C_CONTENT: &str = include_str!("../../../libs/io.c");
 pub fn compile_to_target(
@@ -31,8 +32,8 @@ fn check_tool_exists(tool: &str) -> bool {
     .unwrap_or(false)
 }
 fn get_ram_dir() -> String {
-  if cfg!(target_os = "linux")
-    || cfg!(target_os = "android") && std::path::Path::new("/dev/shm").exists()
+  if (cfg!(target_os = "linux") || cfg!(target_os = "android"))
+    && std::path::Path::new("/dev/shm").exists()
   {
     return "/dev/shm".to_string();
   }
@@ -52,8 +53,14 @@ pub fn compile(
     } else {
       format!("{}.s", path)
     };
+    if let Some(parent) = std::path::Path::new(&asm_path).parent() {
+      fs::create_dir_all(parent)?;
+    }
     fs::write(&asm_path, &asm_code)?;
     return Ok(());
+  }
+  if let Some(parent) = std::path::Path::new(path).parent() {
+    fs::create_dir_all(parent)?;
   }
   let compiler = match arch {
     TargetArch::AArch64 => {
@@ -69,12 +76,23 @@ pub fn compile(
       }
     }
   };
-  let ram_base = get_ram_dir();
   let unique_id = std::process::id();
-  let ram_asm_path = format!("{}/{}_lightvm.s", ram_base, unique_id);
-  let ram_c_path = format!("{}/{}_lightvm_io.c", ram_base, unique_id);
-  fs::write(&ram_asm_path, &asm_code)?;
-  fs::write(&ram_c_path, IO_C_CONTENT)?;
+  let temp_dir = std::env::temp_dir().join(format!("lightvm_{}", unique_id));
+  fs::create_dir_all(&temp_dir)?;
+  let ram_asm_path = temp_dir.join("lightvm.s");
+  let ram_c_path = temp_dir.join("lightvm_io.c");
+  let mut asm_file = OpenOptions::new()
+    .write(true)
+    .create_new(true)
+    .open(&ram_asm_path)?;
+  asm_file.write_all(asm_code.as_bytes())?;
+  drop(asm_file);
+  let mut c_file = OpenOptions::new()
+    .write(true)
+    .create_new(true)
+    .open(&ram_c_path)?;
+  c_file.write_all(IO_C_CONTENT.as_bytes())?;
+  drop(c_file);
   let status = Command::new(compiler)
     .arg(&ram_c_path)
     .arg(&ram_asm_path)
@@ -82,8 +100,7 @@ pub fn compile(
     .arg("-o")
     .arg(path)
     .status();
-  let _ = fs::remove_file(&ram_asm_path);
-  let _ = fs::remove_file(&ram_c_path);
+  let _ = fs::remove_dir_all(&temp_dir);
   match status {
     Ok(s) if s.success() => Ok(()),
     Ok(s) => Err(Error::other(format!(

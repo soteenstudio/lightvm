@@ -34,16 +34,21 @@ fn main() {
   vm.load(optimized_json);
 
   //vm.run(None);
-  vm.compile(CompileConfig {
+  let binary_result = vm.compile(CompileConfig {
     target_arch: TargetArch::AArch64,
     file_type: FileType::Binary,
     path: "./test"
   });
-  vm.compile(CompileConfig {
+  let binary_parsed: serde_json::Value = serde_json::from_str(&binary_result).expect("Failed to parse binary compile result");
+  assert_eq!(binary_parsed["status"], "success", "Binary compilation failed: {}", binary_result);
+
+  let assembly_result = vm.compile(CompileConfig {
     target_arch: TargetArch::AArch64,
     file_type: FileType::Assembly,
     path: "./test"
   });
+  let assembly_parsed: serde_json::Value = serde_json::from_str(&assembly_result).expect("Failed to parse assembly compile result");
+  assert_eq!(assembly_parsed["status"], "success", "Assembly compilation failed: {}", assembly_result);
   
   /*println!("===> Execution finished <===");
   println!("Output: {:?}", res);*/
