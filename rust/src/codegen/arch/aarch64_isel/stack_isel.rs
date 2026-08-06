@@ -234,10 +234,11 @@ pub fn stack_isel(mut builder: AArch64Builder, inst: &Instructions) -> AArch64Bu
       .sub("sp", "sp", "#16")
       .str("x9", "sp"),
     Instructions::PushNaN => builder
-      .comment("PushNaN - TODO: implement proper NaN representation")
-      .inst("mov", "x9, #0")
+      .comment("PushNaN")
+      .inst("movz", "x9, #0x7ff8, lsl #32")
+      .inst("fmov", "d0, x9")
       .sub("sp", "sp", "#16")
-      .str("x9", "sp"),
+      .inst("str", "d0, [sp]"),
     Instructions::Push(_) => builder
       .comment("Push (Generic) - TODO: implement proper value representation")
       .inst("mov", "x9, #0")

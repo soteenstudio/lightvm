@@ -18,13 +18,7 @@ fn main() {
   
   let raw = r#"[
     ["push", 16],
-    ["println"],
-    ["push", true],
-    ["println"],
-    ["push", "Result is 128"],
-    ["println"],
-    ["push", 4],
-    ["push", 4],
+    ["push", 16],
     ["add", "int"],
     ["println"]
   ]"#;
