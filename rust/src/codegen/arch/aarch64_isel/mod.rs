@@ -9,4 +9,5 @@
  */
 
 pub(crate) mod io_isel;
+pub(crate) mod math_isel;
 pub(crate) mod stack_isel;

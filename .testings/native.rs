@@ -22,6 +22,10 @@ fn main() {
     ["push", true],
     ["println"],
     ["push", "Result is 128"],
+    ["println"],
+    ["push", 4],
+    ["push", 4],
+    ["add", "int"],
     ["println"]
   ]"#;
   let str = r#"

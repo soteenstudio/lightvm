@@ -8,7 +8,9 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::codegen::arch::aarch64_isel::{io_isel::io_isel, stack_isel::stack_isel};
+use crate::codegen::arch::aarch64_isel::{
+  io_isel::io_isel, math_isel::math_isel, stack_isel::stack_isel,
+};
 use crate::modules::carzy::arch::aarch64::AArch64Builder;
 use crate::modules::gazle::specialized_instructions::specialized_instructions;
 use crate::modules::torja::resolve_symbols::resolve_symbols;
@@ -83,6 +85,7 @@ pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> Result<String, St
       | Instructions::InspectObj
       | Instructions::InspectArr
       | Instructions::ClearScreen => io_isel(builder, inst),
+      Instructions::Add(_) => math_isel(builder, inst),
       _ => {
         return Err(format!(
           "Unsupported instruction at index {}: {:?}",

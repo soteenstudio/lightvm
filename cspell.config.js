@@ -65,7 +65,8 @@ export default {
     'movk',
     'syscall',
     'nostartfiles',
-    'subsec'
+    'subsec',
+    'fadd'
   ],
   ignorePaths: [
     'node_modules/**',
