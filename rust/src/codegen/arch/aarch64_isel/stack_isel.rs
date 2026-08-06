@@ -40,7 +40,11 @@ pub fn stack_isel(mut builder: AArch64Builder, inst: &Instructions) -> AArch64Bu
       if high != 0 {
         builder = builder.inst("movk", &format!("x9, #{:#x}, lsl #48", high));
       }
-      builder.sub("sp", "sp", "#16").str("x9", "sp")
+      builder
+        .sub("sp", "sp", "#16")
+        .inst("mov", "x10, #0")
+        .str("x10", "sp")
+        .inst("str", "x9, [sp, #8]")
     }
     Instructions::PushInt32(val) => {
       let v = *val as i64 as u64;
@@ -60,7 +64,11 @@ pub fn stack_isel(mut builder: AArch64Builder, inst: &Instructions) -> AArch64Bu
       if high != 0 {
         builder = builder.inst("movk", &format!("x9, #{:#x}, lsl #48", high));
       }
-      builder.sub("sp", "sp", "#16").str("x9", "sp")
+      builder
+        .sub("sp", "sp", "#16")
+        .inst("mov", "x10, #0")
+        .str("x10", "sp")
+        .inst("str", "x9, [sp, #8]")
     }
     Instructions::PushInt64(val) => {
       let v = *val as u64;
@@ -228,35 +236,47 @@ pub fn stack_isel(mut builder: AArch64Builder, inst: &Instructions) -> AArch64Bu
       let offset = idx * 16;
       builder
         .comment(&format!("ValIdx({})", idx))
-        .ldr("x9", "sp")
+        .inst("ldr", "x9, [sp]")
+        .inst("ldr", "x10, [sp, #8]")
         .inst("str", &format!("x9, [x19, #-{}]", offset + 16))
+        .inst("str", &format!("x10, [x19, #-{}]", offset + 8))
     }
     Instructions::SetIdx(idx) => {
       let offset = idx * 16;
       builder
         .comment(&format!("SetIdx({})", idx))
-        .ldr("x9", "sp")
+        .inst("ldr", "x9, [sp]")
+        .inst("ldr", "x10, [sp, #8]")
         .inst("str", &format!("x9, [x19, #-{}]", offset + 16))
+        .inst("str", &format!("x10, [x19, #-{}]", offset + 8))
     }
     Instructions::GetIdx(idx) => {
       let offset = idx * 16;
       builder
         .comment(&format!("GetIdx({})", idx))
         .inst("ldr", &format!("x9, [x19, #-{}]", offset + 16))
+        .inst("ldr", &format!("x10, [x19, #-{}]", offset + 8))
         .sub("sp", "sp", "#16")
-        .str("x9", "sp")
+        .inst("str", "x9, [sp]")
+        .inst("str", "x10, [sp, #8]")
     }
     Instructions::Dup => builder
       .comment("Dup")
-      .ldr("x9", "sp")
+      .inst("ldr", "x9, [sp]")
+      .inst("ldr", "x10, [sp, #8]")
       .sub("sp", "sp", "#16")
-      .str("x9", "sp"),
+      .inst("str", "x9, [sp]")
+      .inst("str", "x10, [sp, #8]"),
     Instructions::Swap => builder
       .comment("Swap")
       .inst("ldr", "x9, [sp]")
-      .inst("ldr", "x10, [sp, #16]")
+      .inst("ldr", "x10, [sp, #8]")
+      .inst("ldr", "x11, [sp, #16]")
+      .inst("ldr", "x12, [sp, #24]")
+      .inst("str", "x11, [sp]")
+      .inst("str", "x12, [sp, #8]")
       .inst("str", "x9, [sp, #16]")
-      .inst("str", "x10, [sp]"),
+      .inst("str", "x10, [sp, #24]"),
     _ => builder,
   }
 }
@@ -284,5 +304,69 @@ mod tests {
     mov x9, #0\n\
     str x9, [sp, #8]\n";
     assert_eq!(asm, expected);
+  }
+  #[test]
+  fn push_int16_stores_type_tag_zero_and_value_at_offset_eight() {
+    let asm = stack_isel(AArch64Builder::new(), &Instructions::PushInt16(128)).build();
+    assert!(asm.contains("sub sp, sp, #16"));
+    assert!(asm.contains("mov x10, #0"));
+    assert!(asm.contains("str x10, [sp]"));
+    assert!(asm.contains("movz x9, #0x80"));
+    assert!(asm.contains("str x9, [sp, #8]"));
+  }
+  #[test]
+  fn push_int32_stores_type_tag_zero_and_value_at_offset_eight() {
+    let asm = stack_isel(AArch64Builder::new(), &Instructions::PushInt32(128)).build();
+    assert!(asm.contains("sub sp, sp, #16"));
+    assert!(asm.contains("mov x10, #0"));
+    assert!(asm.contains("str x10, [sp]"));
+    assert!(asm.contains("movz x9, #0x80"));
+    assert!(asm.contains("str x9, [sp, #8]"));
+  }
+  #[test]
+  fn val_idx_transfers_both_type_tag_and_value_fields() {
+    let asm = stack_isel(AArch64Builder::new(), &Instructions::ValIdx(0)).build();
+    assert!(asm.contains("ldr x9, [sp]"));
+    assert!(asm.contains("ldr x10, [sp, #8]"));
+    assert!(asm.contains("str x9, [x19, #-16]"));
+    assert!(asm.contains("str x10, [x19, #-8]"));
+  }
+  #[test]
+  fn set_idx_transfers_both_type_tag_and_value_fields() {
+    let asm = stack_isel(AArch64Builder::new(), &Instructions::SetIdx(0)).build();
+    assert!(asm.contains("ldr x9, [sp]"));
+    assert!(asm.contains("ldr x10, [sp, #8]"));
+    assert!(asm.contains("str x9, [x19, #-16]"));
+    assert!(asm.contains("str x10, [x19, #-8]"));
+  }
+  #[test]
+  fn get_idx_transfers_both_type_tag_and_value_fields() {
+    let asm = stack_isel(AArch64Builder::new(), &Instructions::GetIdx(0)).build();
+    assert!(asm.contains("ldr x9, [x19, #-16]"));
+    assert!(asm.contains("ldr x10, [x19, #-8]"));
+    assert!(asm.contains("sub sp, sp, #16"));
+    assert!(asm.contains("str x9, [sp]"));
+    assert!(asm.contains("str x10, [sp, #8]"));
+  }
+  #[test]
+  fn dup_transfers_both_type_tag_and_value_fields() {
+    let asm = stack_isel(AArch64Builder::new(), &Instructions::Dup).build();
+    assert!(asm.contains("ldr x9, [sp]"));
+    assert!(asm.contains("ldr x10, [sp, #8]"));
+    assert!(asm.contains("sub sp, sp, #16"));
+    assert!(asm.contains("str x9, [sp]"));
+    assert!(asm.contains("str x10, [sp, #8]"));
+  }
+  #[test]
+  fn swap_exchanges_full_sixteen_byte_values() {
+    let asm = stack_isel(AArch64Builder::new(), &Instructions::Swap).build();
+    assert!(asm.contains("ldr x9, [sp]"));
+    assert!(asm.contains("ldr x10, [sp, #8]"));
+    assert!(asm.contains("ldr x11, [sp, #16]"));
+    assert!(asm.contains("ldr x12, [sp, #24]"));
+    assert!(asm.contains("str x11, [sp]"));
+    assert!(asm.contains("str x12, [sp, #8]"));
+    assert!(asm.contains("str x9, [sp, #16]"));
+    assert!(asm.contains("str x10, [sp, #24]"));
   }
 }
