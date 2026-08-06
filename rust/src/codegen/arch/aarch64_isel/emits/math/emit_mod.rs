@@ -23,18 +23,36 @@ pub fn emit_mod(builder: AArch64Builder, num_type: &PrimitiveTypes) -> AArch64Bu
     PrimitiveTypes::Sht | PrimitiveTypes::Int => {
       b = b.ldr("w1", "sp, #8");
       b = b.ldr("w2", "sp, #24");
+      b = b.inst("cbz", "w1, .Lmod_by_zero_w");
       b = b.inst3("sdiv", "w9", "w2, w1");
       b = b.inst3("msub", "w9", "w9, w1, w2");
+      b = b.inst("b", ".Lmod_done_w");
+      b = b.label(".Lmod_by_zero_w");
+      b = b.inst("mov", "w9, #0");
+      b = b.label(".Lmod_done_w");
       b = b.str("w9", "sp, #24");
     }
-    PrimitiveTypes::Lng | PrimitiveTypes::Oct => {
+    PrimitiveTypes::Lng => {
       b = b.ldr("x1", "sp, #8");
       b = b.ldr("x2", "sp, #24");
+      b = b.inst("cbz", "x1, .Lmod_by_zero_x");
       b = b.inst3("sdiv", "x9", "x2, x1");
       b = b.inst3("msub", "x9", "x9, x1, x2");
+      b = b.inst("b", ".Lmod_done_x");
+      b = b.label(".Lmod_by_zero_x");
+      b = b.inst("mov", "x9, #0");
+      b = b.label(".Lmod_done_x");
       b = b.str("x9", "sp, #24");
     }
-    _ => {}
+    PrimitiveTypes::Oct => {
+      panic!("Mod operation not supported for Oct type - 128-bit modulo requires complex implementation");
+    }
+    PrimitiveTypes::Hlf | PrimitiveTypes::Flt | PrimitiveTypes::Dbl => {
+      panic!("Mod operation not supported for floating-point types");
+    }
+    PrimitiveTypes::Str => {
+      panic!("Mod operation not supported for Str type");
+    }
   }
   b = b.inst("mov", &format!("x10, #{}", type_tag));
   b = b.str("x10", "sp, #16");

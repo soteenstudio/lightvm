@@ -47,8 +47,12 @@ pub fn emit_sub(builder: AArch64Builder, num_type: &PrimitiveTypes) -> AArch64Bu
     PrimitiveTypes::Oct => {
       b = b.ldr("x1", "sp, #8");
       b = b.ldr("x2", "sp, #24");
+      b = b.ldr("x3", "sp, #16");
+      b = b.ldr("x4", "sp, #32");
       b = b.inst("subs", "x9, x2, x1");
+      b = b.inst3("sbcs", "x11", "x4, x3");
       b = b.str("x9", "sp, #24");
+      b = b.str("x11", "sp, #32");
     }
     PrimitiveTypes::Lng => {
       b = b.ldr("x1", "sp, #8");
@@ -56,7 +60,9 @@ pub fn emit_sub(builder: AArch64Builder, num_type: &PrimitiveTypes) -> AArch64Bu
       b = b.sub("x9", "x2", "x1");
       b = b.str("x9", "sp, #24");
     }
-    PrimitiveTypes::Str => {}
+    PrimitiveTypes::Str => {
+      panic!("Sub operation not supported for Str type");
+    }
   }
   b = b.inst("mov", &format!("x10, #{}", type_tag));
   b = b.str("x10", "sp, #16");

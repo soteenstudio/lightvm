@@ -67,8 +67,7 @@ pub fn emit_add(builder: AArch64Builder, num_type: &PrimitiveTypes) -> AArch64Bu
       b = b.str("x9", "sp, #24");
     }
     PrimitiveTypes::Str => {
-      b = b.ldr("x1", "sp, #8");
-      b = b.ldr("x2", "sp, #24");
+      panic!("Add operation not supported for Str type");
     }
   }
   b = b.inst("mov", &format!("x10, #{}", type_tag));
