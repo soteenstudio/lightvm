@@ -32,12 +32,12 @@ void lightvm_println(LightVMValue* val_ptr) {
   printf("\n");
 }
 
-void lightvm_stdout(long long val) {
-  printf("%lld", val);
+void lightvm_stdout(LightVMValue* val_ptr) {
+  lightvm_print(val_ptr);
 }
 
-void lightvm_stdoutln(long long val) {
-  printf("%lld\n", val);
+void lightvm_stdoutln(LightVMValue* val_ptr) {
+  lightvm_println(val_ptr);
 }
 
 void* lightvm_stdin(void* buf) {

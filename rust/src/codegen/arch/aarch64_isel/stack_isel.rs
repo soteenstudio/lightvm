@@ -196,7 +196,6 @@ pub fn stack_isel(mut builder: AArch64Builder, inst: &Instructions) -> AArch64Bu
       .str("x9", "sp"),
     Instructions::PushBool(b) => {
       let val = if *b { 1 } else { 0 };
-      println!("{}", val);
       builder
         .comment(&format!("PushBool({})", b))
         .sub("sp", "sp", "#16")
@@ -259,5 +258,31 @@ pub fn stack_isel(mut builder: AArch64Builder, inst: &Instructions) -> AArch64Bu
       .inst("str", "x9, [sp, #16]")
       .inst("str", "x10, [sp]"),
     _ => builder,
+  }
+}
+#[cfg(test)]
+mod tests {
+  use super::*;
+  #[test]
+  fn push_bool_true_stores_tag_one_and_value_one() {
+    let asm = stack_isel(AArch64Builder::new(), &Instructions::PushBool(true)).build();
+    let expected = "    // PushBool(true)\n\
+    sub sp, sp, #16\n\
+    mov x9, #1\n\
+    str x9, [sp]\n\
+    mov x9, #1\n\
+    str x9, [sp, #8]\n";
+    assert_eq!(asm, expected);
+  }
+  #[test]
+  fn push_bool_false_stores_tag_one_and_value_zero() {
+    let asm = stack_isel(AArch64Builder::new(), &Instructions::PushBool(false)).build();
+    let expected = "    // PushBool(false)\n\
+    sub sp, sp, #16\n\
+    mov x9, #1\n\
+    str x9, [sp]\n\
+    mov x9, #0\n\
+    str x9, [sp, #8]\n";
+    assert_eq!(asm, expected);
   }
 }
