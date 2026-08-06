@@ -10,11 +10,13 @@
 
 use crate::codegen::arch::aarch64_isel::{io_isel::io_isel, stack_isel::stack_isel};
 use crate::modules::carzy::arch::aarch64::AArch64Builder;
+use crate::modules::gazle::specialized_instructions::specialized_instructions;
 use crate::modules::torja::resolve_symbols::resolve_symbols;
 use crate::types::instructions::Instructions;
 use ahash::AHashMap;
 use smol_str::SmolStr;
 pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> Result<String, String> {
+  specialized_instructions(&mut instructions);
   let empty_imports: AHashMap<SmolStr, crate::types::value::Value> = AHashMap::new();
   let (var_count, _symbol_table) = resolve_symbols(&mut instructions, &empty_imports);
   let init_stack_capacity = instructions
@@ -68,7 +70,6 @@ pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> Result<String, St
       | Instructions::PushUndefined
       | Instructions::PushNull
       | Instructions::PushNaN
-      | Instructions::Push(_)
       | Instructions::ValIdx(_)
       | Instructions::SetIdx(_)
       | Instructions::GetIdx(_)
@@ -103,6 +104,30 @@ pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> Result<String, St
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::types::value::Value;
+  #[test]
+  fn specializes_raw_cli_push_int16_before_selection() {
+    let asm = compile_aarch64(vec![
+      Instructions::Push(Value::Int16(128)),
+      Instructions::Println,
+    ])
+    .expect("raw CLI Push(Int16) program should compile");
+    assert!(asm.contains("PushInt16(128)"));
+    assert!(!asm.contains("Push (Generic)"));
+    assert!(asm.contains("mov x10, #0"));
+    assert!(asm.contains("str x10, [sp]"));
+    assert!(asm.contains("str x9, [sp, #8]"));
+  }
+  #[test]
+  fn specializes_raw_cli_push_bool_before_selection() {
+    let asm = compile_aarch64(vec![
+      Instructions::Push(Value::Bool(true)),
+      Instructions::Println,
+    ])
+    .expect("raw CLI Push(Bool) program should compile");
+    assert!(asm.contains("PushBool(true)"));
+    assert!(!asm.contains("Push (Generic)"));
+  }
   fn compile_bool_through_all_outputs(b: bool) -> String {
     compile_aarch64(vec![
       Instructions::PushBool(b),
