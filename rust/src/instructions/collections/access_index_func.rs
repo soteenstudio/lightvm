@@ -20,22 +20,120 @@ pub fn access_index_func(stack: &mut Stack, ip: usize) -> Result<(), VMError> {
   if let Some(top) = stack.last_mut() {
     match &mut *top {
       Value::Array(arr) => {
-        if !index_val.is_number() {
-          return Err(VMError::TypeMismatch {
-            ip,
-            expected: "Number (Index)",
-            found: "Invalid Index Type",
-          });
-        }
-        let idx = index_val.as_i64();
-        if idx < 0 {
-          return Err(VMError::OutOfBounds {
-            ip,
-            index: 0,
-            len: arr.len(),
-          });
-        }
-        let i = idx as usize;
+        // Convert index to usize with proper validation
+        let i = match &index_val {
+          Value::Int16(v) => {
+            if *v < 0 {
+              return Err(VMError::TypeMismatch {
+                ip,
+                expected: "Number (Index)",
+                found: "Invalid Index Type",
+              });
+            }
+            *v as usize
+          }
+          Value::Int32(v) => {
+            if *v < 0 {
+              return Err(VMError::TypeMismatch {
+                ip,
+                expected: "Number (Index)",
+                found: "Invalid Index Type",
+              });
+            }
+            *v as usize
+          }
+          Value::Int64(v) => {
+            if *v < 0 {
+              return Err(VMError::TypeMismatch {
+                ip,
+                expected: "Number (Index)",
+                found: "Invalid Index Type",
+              });
+            }
+            usize::try_from(*v).map_err(|_| VMError::TypeMismatch {
+              ip,
+              expected: "Number (Index)",
+              found: "Invalid Index Type",
+            })?
+          }
+          Value::Int128(v) => {
+            if *v < 0 {
+              return Err(VMError::TypeMismatch {
+                ip,
+                expected: "Number (Index)",
+                found: "Invalid Index Type",
+              });
+            }
+            usize::try_from(*v).map_err(|_| VMError::TypeMismatch {
+              ip,
+              expected: "Number (Index)",
+              found: "Invalid Index Type",
+            })?
+          }
+          Value::Float16(v) => {
+            let f = v.to_f32();
+            if !f.is_finite() || f.fract() != 0.0 || f < 0.0 {
+              return Err(VMError::TypeMismatch {
+                ip,
+                expected: "Number (Index)",
+                found: "Invalid Index Type",
+              });
+            }
+            let f_val = f as usize;
+            if (f_val as f32) != f {
+              return Err(VMError::TypeMismatch {
+                ip,
+                expected: "Number (Index)",
+                found: "Invalid Index Type",
+              });
+            }
+            f_val
+          }
+          Value::Float32(v) => {
+            if !v.is_finite() || v.fract() != 0.0 || *v < 0.0 {
+              return Err(VMError::TypeMismatch {
+                ip,
+                expected: "Number (Index)",
+                found: "Invalid Index Type",
+              });
+            }
+            let f_val = *v as usize;
+            if (f_val as f32) != *v {
+              return Err(VMError::TypeMismatch {
+                ip,
+                expected: "Number (Index)",
+                found: "Invalid Index Type",
+              });
+            }
+            f_val
+          }
+          Value::Float64(v) => {
+            if !v.is_finite() || v.fract() != 0.0 || *v < 0.0 {
+              return Err(VMError::TypeMismatch {
+                ip,
+                expected: "Number (Index)",
+                found: "Invalid Index Type",
+              });
+            }
+            let f_val = *v as usize;
+            if (f_val as f64) != *v {
+              return Err(VMError::TypeMismatch {
+                ip,
+                expected: "Number (Index)",
+                found: "Invalid Index Type",
+              });
+            }
+            f_val
+          }
+          _ => {
+            return Err(VMError::TypeMismatch {
+              ip,
+              expected: "Number (Index)",
+              found: "Invalid Index Type",
+            });
+          }
+        };
+
         if i < arr.len() {
           *top = arr[i].clone();
           Ok(())
