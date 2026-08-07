@@ -11,9 +11,7 @@
 use crate::modules::carzy::arch::aarch64::AArch64Builder;
 use crate::types::primitive_types::PrimitiveTypes;
 use std::sync::atomic::{AtomicUsize, Ordering};
-
 static MOD_LABEL_COUNTER: AtomicUsize = AtomicUsize::new(0);
-
 #[inline]
 pub fn emit_mod(builder: AArch64Builder, num_type: &PrimitiveTypes) -> AArch64Builder {
   let label_id = MOD_LABEL_COUNTER.fetch_add(1, Ordering::Relaxed);

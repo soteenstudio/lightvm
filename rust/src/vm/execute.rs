@@ -93,8 +93,7 @@ pub fn execute(
     );
     let instr = unsafe { &*bytecode_ptr.add(ip) };
     match instr {
-      Instructions::InitStack(_)
-      | Instructions::PushInt16(_)
+      Instructions::PushInt16(_)
       | Instructions::PushInt32(_)
       | Instructions::PushInt64(_)
       | Instructions::PushInt128(_)

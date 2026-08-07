@@ -72,7 +72,10 @@ export default {
     'sdiv',
     'msub',
     'fdiv',
-    'adcs'
+    'adcs',
+    'ldiv',
+    'lmod',
+    'sbcs'
   ],
   ignorePaths: [
     'node_modules/**',
