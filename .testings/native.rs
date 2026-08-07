@@ -14,15 +14,29 @@ fn main() {
   let mut vm = LightVM::new(VmConfig {
     caps: vec![Capability::Control, Capability::Observe, Capability::Unsafe],
     ..Default::default()
-  }).set_max_io(5000000).set_max_ticks(200).set_max_stack_size(0).with_nightly(false).with_backtrace(false).with_explain(false).with_hint(true);
+  }).set_max_io(5000000).set_max_ticks(200).set_max_stack_size(0).with_nightly(false).with_backtrace(false).with_explain(false).with_hint(false);
   
   let raw = r#"[
     ["val", "x"],
-    ["push", 16],
+    ["push", { "num": 16 }],
     ["set", "x"],
+    ["push", "Result is: "],
+    ["println"],
     ["get", "x"],
-    ["get", "x"],
-    ["add", "int"],
+    ["access", "num"],
+    ["println"],
+    
+    ["val", "y"],
+    ["push", "apple"],
+    ["push", "banana"],
+    ["push", "orange"],
+    ["make_array", 3],
+    ["set", "y"],
+    ["push", "Array result is: "],
+    ["println"],
+    ["get", "y"],
+    ["push", 1],
+    ["access_index"],
     ["println"]
   ]"#;
   let str = r#"
@@ -35,8 +49,8 @@ fn main() {
   
   vm.load(optimized_json);
 
-  //vm.run(None);
-  let binary_result = vm.compile(CompileConfig {
+  vm.run(None);
+  /*let binary_result = vm.compile(CompileConfig {
     target_arch: TargetArch::AArch64,
     file_type: FileType::Binary,
     path: "./test"
@@ -50,7 +64,7 @@ fn main() {
     path: "./test"
   });
   let assembly_parsed: serde_json::Value = serde_json::from_str(&assembly_result).expect("Failed to parse assembly compile result");
-  assert_eq!(assembly_parsed["status"], "success", "Assembly compilation failed: {}", assembly_result);
+  assert_eq!(assembly_parsed["status"], "success", "Assembly compilation failed: {}", assembly_result);,*/
   
   /*println!("===> Execution finished <===");
   println!("Output: {:?}", res);*/

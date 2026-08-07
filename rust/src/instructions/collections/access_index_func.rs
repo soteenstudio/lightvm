@@ -18,8 +18,16 @@ pub fn access_index_func(stack: &mut Stack, ip: usize) -> Result<(), VMError> {
     opcode: "ACCESS_INDEX (index)",
   })?;
   if let Some(top) = stack.last_mut() {
-    match (&mut *top, index_val) {
-      (Value::Array(arr), Value::Int64(idx)) => {
+    match &mut *top {
+      Value::Array(arr) => {
+        if !index_val.is_number() {
+          return Err(VMError::TypeMismatch {
+            ip,
+            expected: "Number (Index)",
+            found: "Invalid Index Type",
+          });
+        }
+        let idx = index_val.as_i64();
         if idx < 0 {
           return Err(VMError::OutOfBounds {
             ip,
@@ -39,11 +47,6 @@ pub fn access_index_func(stack: &mut Stack, ip: usize) -> Result<(), VMError> {
           })
         }
       }
-      (Value::Array(_), _) => Err(VMError::TypeMismatch {
-        ip,
-        expected: "Int64 (Index)",
-        found: "Invalid Index Type",
-      }),
       _ => Err(VMError::TypeMismatch {
         ip,
         expected: "Array",

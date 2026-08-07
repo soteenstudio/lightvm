@@ -306,6 +306,15 @@ impl Instructions {
           } else {
             Value::String(SmolStr::new(s))
           }
+        } else if let Some(obj) = val.as_object() {
+          let mut map = AHashMap::with_capacity(obj.len());
+          for (k, v) in obj {
+            map.insert(SmolStr::new(k), Value::from(v.clone()));
+          }
+          Value::Object(Arc::new(map))
+        } else if let Some(arr) = val.as_array() {
+          let converted: Vec<Value> = arr.iter().map(|v| Value::from(v.clone())).collect();
+          Value::Array(Arc::new(converted))
         } else if val.is_null() {
           Value::Null
         } else {
