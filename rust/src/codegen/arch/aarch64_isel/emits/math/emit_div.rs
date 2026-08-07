@@ -10,8 +10,13 @@
 
 use crate::modules::carzy::arch::aarch64::AArch64Builder;
 use crate::types::primitive_types::PrimitiveTypes;
+use std::sync::atomic::{AtomicUsize, Ordering};
+
+static DIV_LABEL_COUNTER: AtomicUsize = AtomicUsize::new(0);
+
 #[inline]
 pub fn emit_div(builder: AArch64Builder, num_type: &PrimitiveTypes) -> AArch64Builder {
+  let label_id = DIV_LABEL_COUNTER.fetch_add(1, Ordering::Relaxed);
   let type_tag = match num_type {
     PrimitiveTypes::Sht | PrimitiveTypes::Int | PrimitiveTypes::Lng | PrimitiveTypes::Oct => 0,
     PrimitiveTypes::Hlf | PrimitiveTypes::Flt | PrimitiveTypes::Dbl => 2,
@@ -41,23 +46,23 @@ pub fn emit_div(builder: AArch64Builder, num_type: &PrimitiveTypes) -> AArch64Bu
     PrimitiveTypes::Sht | PrimitiveTypes::Int => {
       b = b.ldr("w1", "sp, #8");
       b = b.ldr("w2", "sp, #24");
-      b = b.inst("cbz", "w1, .Ldiv_by_zero_w");
+      b = b.inst("cbz", &format!("w1, .Ldiv_by_zero_w_{}", label_id));
       b = b.inst3("sdiv", "w9", "w2, w1");
-      b = b.inst("b", ".Ldiv_done_w");
-      b = b.label(".Ldiv_by_zero_w");
+      b = b.inst("b", &format!(".Ldiv_done_w_{}", label_id));
+      b = b.label(&format!(".Ldiv_by_zero_w_{}", label_id));
       b = b.inst("mov", "w9, #0");
-      b = b.label(".Ldiv_done_w");
+      b = b.label(&format!(".Ldiv_done_w_{}", label_id));
       b = b.str("w9", "sp, #24");
     }
     PrimitiveTypes::Lng => {
       b = b.ldr("x1", "sp, #8");
       b = b.ldr("x2", "sp, #24");
-      b = b.inst("cbz", "x1, .Ldiv_by_zero_x");
+      b = b.inst("cbz", &format!("x1, .Ldiv_by_zero_x_{}", label_id));
       b = b.inst3("sdiv", "x9", "x2, x1");
-      b = b.inst("b", ".Ldiv_done_x");
-      b = b.label(".Ldiv_by_zero_x");
+      b = b.inst("b", &format!(".Ldiv_done_x_{}", label_id));
+      b = b.label(&format!(".Ldiv_by_zero_x_{}", label_id));
       b = b.inst("mov", "x9, #0");
-      b = b.label(".Ldiv_done_x");
+      b = b.label(&format!(".Ldiv_done_x_{}", label_id));
       b = b.str("x9", "sp, #24");
     }
     PrimitiveTypes::Oct => {
