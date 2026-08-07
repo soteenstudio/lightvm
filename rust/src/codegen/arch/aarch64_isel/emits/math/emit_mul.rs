@@ -51,7 +51,9 @@ pub fn emit_mul(builder: AArch64Builder, num_type: &PrimitiveTypes) -> AArch64Bu
       b = b.str("x9", "sp, #24");
     }
     PrimitiveTypes::Oct => {
-      panic!("Mul operation not supported for Oct type - 128-bit multiplication requires complex implementation");
+      panic!(
+        "Mul operation not supported for Oct type - 128-bit multiplication requires complex implementation"
+      );
     }
     PrimitiveTypes::Str => {
       panic!("Mul operation not supported for Str type");
