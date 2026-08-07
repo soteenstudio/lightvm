@@ -15,6 +15,7 @@ use crate::traits::{json_value_trait::IntoJsonValue, vmevent_trait::IntoVmEvent}
 use crate::types::vmevent::VmEvent;
 use crate::types::{
   capability::Capability,
+  compile_config::CompileConfig,
   error_options::ErrorOptions,
   runtime_config::RuntimeConfig,
   security_config::SecurityConfig,
@@ -154,6 +155,20 @@ impl LightVM {
     self
       .run_internal(options)
       .unwrap_or_else(|e| format!(r#"{{"status": "error", "message": "{}"}}"#, e))
+  }
+  pub fn compile(&mut self, config: CompileConfig) -> String {
+    match self.compile_internal(config) {
+      Ok(_) => serde_json::json!({
+        "status": "success",
+        "path": config.path
+      })
+      .to_string(),
+      Err(e) => serde_json::json!({
+        "status": "error",
+        "message": e.to_string()
+      })
+      .to_string(),
+    }
   }
   /// Function to export functions in the VM out.
   ///

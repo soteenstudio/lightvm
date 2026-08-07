@@ -8,7 +8,8 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub(crate) mod carzy;
-pub(crate) mod gazle;
-pub(crate) mod krates;
-pub(crate) mod torja;
+pub(crate) mod emit_add;
+pub(crate) mod emit_div;
+pub(crate) mod emit_mod;
+pub(crate) mod emit_mul;
+pub(crate) mod emit_sub;
