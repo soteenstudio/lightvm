@@ -128,7 +128,7 @@ ahash = { version = "0.8", features = ["serde"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 ahash = { version = "0.8", default-features = false, features = ["serde", "no-rng", "std"] }
-object = { version = "0.36", features = ['write', 'std'] }
+object = { version = "0.37", features = ['write', 'std'] }
 
 [profile.release]
 opt-level = 3
