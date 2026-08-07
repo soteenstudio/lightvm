@@ -50,7 +50,9 @@ pub fn emit_mod(builder: AArch64Builder, num_type: &PrimitiveTypes) -> AArch64Bu
       b = b.str("x9", "sp, #24");
     }
     PrimitiveTypes::Oct => {
-      panic!("Mod operation not supported for Oct type - 128-bit modulo requires complex implementation");
+      panic!(
+        "Mod operation not supported for Oct type - 128-bit modulo requires complex implementation"
+      );
     }
     PrimitiveTypes::Hlf | PrimitiveTypes::Flt | PrimitiveTypes::Dbl => {
       panic!("Mod operation not supported for floating-point types");

@@ -66,7 +66,9 @@ pub fn emit_div(builder: AArch64Builder, num_type: &PrimitiveTypes) -> AArch64Bu
       b = b.str("x9", "sp, #24");
     }
     PrimitiveTypes::Oct => {
-      panic!("Div operation not supported for Oct type - 128-bit division requires complex implementation");
+      panic!(
+        "Div operation not supported for Oct type - 128-bit division requires complex implementation"
+      );
     }
     PrimitiveTypes::Str => {
       panic!("Div operation not supported for Str type");
