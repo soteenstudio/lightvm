@@ -23,3 +23,14 @@ pub enum PrimitiveTypes {
   Dbl,
   Str,
 }
+impl PrimitiveTypes {
+  pub fn directive(&self) -> &'static str {
+    match self {
+      PrimitiveTypes::Sht | PrimitiveTypes::Hlf => ".hword",
+      PrimitiveTypes::Int | PrimitiveTypes::Flt => ".word",
+      PrimitiveTypes::Lng | PrimitiveTypes::Dbl => ".quad",
+      PrimitiveTypes::Oct => ".octa",
+      PrimitiveTypes::Str => ".asciz",
+    }
+  }
+}

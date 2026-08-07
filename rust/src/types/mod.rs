@@ -9,8 +9,10 @@
  */
 
 pub mod capability;
+pub mod compile_config;
 pub(crate) mod control_flow_signal;
 pub mod error_options;
+pub mod file_type;
 pub(crate) mod instructions;
 pub(crate) mod js_error_options;
 pub(crate) mod js_runtime_config;
@@ -19,6 +21,7 @@ pub(crate) mod primitive_types;
 pub mod runtime_config;
 pub mod security_config;
 pub(crate) mod stack;
+pub mod target_arch;
 pub(crate) mod usage;
 pub(crate) mod value;
 pub(crate) mod var_stack;

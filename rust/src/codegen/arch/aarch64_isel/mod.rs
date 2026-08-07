@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub(crate) mod carzy;
-pub(crate) mod gazle;
-pub(crate) mod krates;
-pub(crate) mod torja;
+pub(crate) mod emits;
+pub(crate) mod io_isel;
+pub(crate) mod math_isel;
+pub(crate) mod stack_isel;

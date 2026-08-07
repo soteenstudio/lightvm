@@ -9,6 +9,8 @@
  */
 
 #[doc(hidden)]
+pub(crate) mod codegen;
+#[doc(hidden)]
 #[allow(clippy::type_complexity)]
 pub(crate) mod instructions;
 #[doc(hidden)]

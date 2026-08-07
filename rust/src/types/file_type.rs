@@ -8,7 +8,8 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub(crate) mod carzy;
-pub(crate) mod gazle;
-pub(crate) mod krates;
-pub(crate) mod torja;
+#[derive(Debug, Clone, Copy)]
+pub enum FileType {
+  Assembly,
+  Binary,
+}

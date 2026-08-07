@@ -202,6 +202,20 @@ impl Value {
       Value::Object(_) => SmolStr::new_static("[object]"),
     }
   }
+  #[inline(always)]
+  pub fn as_object(&self) -> Option<&AHashMap<SmolStr, Value>> {
+    match self {
+      Value::Object(map) => Some(map.as_ref()),
+      _ => None,
+    }
+  }
+  #[inline(always)]
+  pub fn as_array(&self) -> Option<Arc<Vec<Value>>> {
+    match self {
+      Value::Array(arr) => Some(arr.clone()),
+      _ => None,
+    }
+  }
   pub fn type_of(&self) -> &'static str {
     match self {
       Value::Int16(_) => "int16",

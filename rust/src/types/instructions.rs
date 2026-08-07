@@ -23,7 +23,6 @@ use ts_rs::TS;
 #[repr(u16)]
 #[ts(export)]
 pub enum Instructions {
-  InitStack(u32),
   PushInt16(i16),
   PushInt32(i32),
   PushInt64(i64),
@@ -213,7 +212,6 @@ impl Instructions {
     }
     if let Some(s) = item.as_str() {
       return match s {
-        "init_stack" => Ok(Instructions::InitStack(16)),
         "stop" => Ok(Instructions::Stop),
         "return" => Ok(Instructions::Return),
         "and" => Ok(Instructions::And),
@@ -271,10 +269,6 @@ impl Instructions {
     let arg1 = arr.get(1);
     let arg2 = arr.get(2);
     match op_bytes {
-      b"init_stack" => {
-        let size = arg1.and_then(|v| v.as_u64()).unwrap_or(16) as u32;
-        Ok(Instructions::InitStack(size))
-      }
       b"push" => {
         let val = match arg1 {
           Some(v) => v,
@@ -312,6 +306,15 @@ impl Instructions {
           } else {
             Value::String(SmolStr::new(s))
           }
+        } else if let Some(obj) = val.as_object() {
+          let mut map = AHashMap::with_capacity(obj.len());
+          for (k, v) in obj {
+            map.insert(SmolStr::new(k), Value::from(v.clone()));
+          }
+          Value::Object(Arc::new(map))
+        } else if let Some(arr) = val.as_array() {
+          let converted: Vec<Value> = arr.iter().map(|v| Value::from(v.clone())).collect();
+          Value::Array(Arc::new(converted))
         } else if val.is_null() {
           Value::Null
         } else {

@@ -93,8 +93,7 @@ pub fn execute(
     );
     let instr = unsafe { &*bytecode_ptr.add(ip) };
     match instr {
-      Instructions::InitStack(_)
-      | Instructions::PushInt16(_)
+      Instructions::PushInt16(_)
       | Instructions::PushInt32(_)
       | Instructions::PushInt64(_)
       | Instructions::PushInt128(_)
@@ -103,6 +102,7 @@ pub fn execute(
       | Instructions::PushFloat64(_)
       | Instructions::PushString(_)
       | Instructions::PushArray(_)
+      | Instructions::PushBool(_)
       | Instructions::PushObject(_)
       | Instructions::PushUndefined
       | Instructions::PushNull
@@ -277,7 +277,6 @@ pub fn execute(
       | Instructions::Dec(_, _) => {
         handle_unused_opcodes();
       }
-      _ => unsafe { std::hint::unreachable_unchecked() },
     }
     ip += 1;
   }
