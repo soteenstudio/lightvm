@@ -102,6 +102,7 @@ pub fn execute(
       | Instructions::PushFloat64(_)
       | Instructions::PushString(_)
       | Instructions::PushArray(_)
+      | Instructions::PushBool(_)
       | Instructions::PushObject(_)
       | Instructions::PushUndefined
       | Instructions::PushNull
@@ -276,7 +277,6 @@ pub fn execute(
       | Instructions::Dec(_, _) => {
         handle_unused_opcodes();
       }
-      _ => unsafe { std::hint::unreachable_unchecked() },
     }
     ip += 1;
   }
