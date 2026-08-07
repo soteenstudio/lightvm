@@ -23,7 +23,6 @@ use ts_rs::TS;
 #[repr(u16)]
 #[ts(export)]
 pub enum Instructions {
-  InitStack(u32),
   PushInt16(i16),
   PushInt32(i32),
   PushInt64(i64),
@@ -213,7 +212,6 @@ impl Instructions {
     }
     if let Some(s) = item.as_str() {
       return match s {
-        "init_stack" => Ok(Instructions::InitStack(16)),
         "stop" => Ok(Instructions::Stop),
         "return" => Ok(Instructions::Return),
         "and" => Ok(Instructions::And),
@@ -271,10 +269,6 @@ impl Instructions {
     let arg1 = arr.get(1);
     let arg2 = arr.get(2);
     match op_bytes {
-      b"init_stack" => {
-        let size = arg1.and_then(|v| v.as_u64()).unwrap_or(16) as u32;
-        Ok(Instructions::InitStack(size))
-      }
       b"push" => {
         let val = match arg1 {
           Some(v) => v,

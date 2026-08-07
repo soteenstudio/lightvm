@@ -12,16 +12,6 @@ use crate::modules::carzy::arch::aarch64::AArch64Builder;
 use crate::types::{instructions::Instructions, primitive_types::PrimitiveTypes};
 pub fn stack_isel(mut builder: AArch64Builder, inst: &Instructions) -> AArch64Builder {
   match inst {
-    Instructions::InitStack(size) => {
-      if *size > 0 {
-        builder.comment(&format!(
-          "InitStack({}) capacity reserved in prologue",
-          size
-        ))
-      } else {
-        builder
-      }
-    }
     Instructions::PushInt16(val) => {
       let v = *val as i64 as u64;
       let low = v & 0xFFFF;

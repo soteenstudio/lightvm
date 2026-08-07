@@ -21,16 +21,6 @@ pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> Result<String, St
   specialized_instructions(&mut instructions);
   let empty_imports: AHashMap<SmolStr, crate::types::value::Value> = AHashMap::new();
   let (var_count, _symbol_table) = resolve_symbols(&mut instructions, &empty_imports);
-  let init_stack_capacity = instructions
-    .iter()
-    .find_map(|inst| {
-      if let Instructions::InitStack(size) = inst {
-        Some(*size as usize)
-      } else {
-        None
-      }
-    })
-    .unwrap_or(0);
   let mut builder = AArch64Builder::new()
     .global("main")
     .symbol_type("main", "function")
@@ -44,21 +34,17 @@ pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> Result<String, St
     .str("x19", "sp")
     .mov("x19", "sp")
     .add("x19", "x19", "#16");
-  let total_stack_slots = var_count + init_stack_capacity;
+  let total_stack_slots = var_count;
   if total_stack_slots > 0 {
     let stack_bytes = total_stack_slots * 16;
     builder = builder
-      .comment(&format!(
-        "Allocate local frame: {} vars + {} InitStack slots",
-        var_count, init_stack_capacity
-      ))
+      .comment(&format!("Allocate local frame: {} vars", var_count))
       .sub("sp", "sp", &format!("#{}", stack_bytes));
   }
   for (index, inst) in instructions.iter().enumerate() {
     let _label_prefix = format!("const_{}", index);
     builder = match inst {
-      Instructions::InitStack(_)
-      | Instructions::PushInt16(_)
+      Instructions::PushInt16(_)
       | Instructions::PushInt32(_)
       | Instructions::PushInt64(_)
       | Instructions::PushInt128(_)
