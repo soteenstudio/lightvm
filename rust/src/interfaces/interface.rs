@@ -250,10 +250,18 @@ impl LightVM {
       });
     }
     self.state = VmState::Running;
-    self.emit(
-      VmEvent::Tick,
-      serde_json::json!({ "state": "compile_start" }),
-    );
+    let emit_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+      self.emit(
+        VmEvent::Tick,
+        serde_json::json!({ "state": "compile_start" }),
+      );
+    }));
+    if emit_result.is_err() {
+      self.state = VmState::Idle;
+      return Err(VMError::SystemError(
+        "Compile lifecycle listener panicked during compile_start".into(),
+      ));
+    }
     let compile_result = compile(
       &self.bytecode,
       config.target_arch,
@@ -262,10 +270,17 @@ impl LightVM {
     );
     self.state = VmState::Idle;
     compile_result?;
-    self.emit(
-      VmEvent::Tick,
-      serde_json::json!({ "state": "compile_success" }),
-    );
+    let emit_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+      self.emit(
+        VmEvent::Tick,
+        serde_json::json!({ "state": "compile_success" }),
+      );
+    }));
+    if emit_result.is_err() {
+      return Err(VMError::SystemError(
+        "Compile lifecycle listener panicked during compile_success".into(),
+      ));
+    }
     Ok(())
   }
   #[inline]
@@ -633,5 +648,30 @@ mod tests {
     let mut vm = make_vm(vec![Capability::Control]);
     let result = vm.run_internal(None);
     assert!(result.is_err());
+  }
+  #[test]
+  fn compile_internal_catches_panicking_listener_and_restores_state() {
+    use crate::types::{compile_config::CompileConfig, file_type::FileType, target_arch::TargetArch};
+    let mut vm = make_vm(vec![Capability::Control]);
+    vm.bytecode = vec![Instructions::Push(crate::types::value::Value::Number(42.0))];
+    vm.on_internal(VmEvent::Tick, |payload| {
+      if payload.contains("compile_start") {
+        panic!("Intentional panic in listener");
+      }
+    })
+    .unwrap();
+    let config = CompileConfig {
+      target_arch: TargetArch::AArch64,
+      path: "/tmp/test_output",
+      file_type: FileType::Assembly,
+    };
+    let result = vm.compile_internal(config);
+    assert!(result.is_err());
+    assert_eq!(vm.state, VmState::Idle);
+    if let Err(VMError::SystemError(msg)) = result {
+      assert!(msg.contains("panicked"));
+    } else {
+      panic!("Expected SystemError with panic message");
+    }
   }
 }

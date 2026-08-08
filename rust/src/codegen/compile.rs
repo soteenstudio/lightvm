@@ -190,9 +190,13 @@ pub fn compile(
   let _ = fs::remove_dir_all(&temp_dir);
   match status {
     Ok(s) if s.success() => Ok(()),
-    Ok(s) => Err(VMError::SystemError(
-      format!("Compilation failed with exit code: {}", s).into(),
-    )),
+    Ok(s) => {
+      let msg = match s.code() {
+        Some(code) => format!("Compilation failed with exit code: {}", code),
+        None => "Compilation failed: process terminated by signal".to_string(),
+      };
+      Err(VMError::SystemError(msg.into()))
+    }
     Err(e) => Err(VMError::SystemError(
       format!("Failed to execute compiler command: {}", e).into(),
     )),
