@@ -168,11 +168,24 @@ impl LightVM {
         });
       }
     }
-    if !self.nightly && has_nightly_opcodes(&raw_code) {
-      return Err(VMError::FeatureRestricted {
-        ip: 0,
-        feature: "Nightly Opcodes (Experimental)",
-      });
+    if !self.nightly {
+      let mut nightly_ip = 0;
+      let raw_list_check: Result<Vec<serde_json::Value>, _> = serde_json::from_str(&raw_code);
+      if let Ok(list) = raw_list_check {
+        for (ip, item) in list.iter().enumerate() {
+          let item_str = item.to_string();
+          if has_nightly_opcodes(&item_str) {
+            nightly_ip = ip;
+            break;
+          }
+        }
+      }
+      if has_nightly_opcodes(&raw_code) {
+        return Err(VMError::FeatureRestricted {
+          ip: nightly_ip,
+          feature: "Nightly Opcodes (Experimental)",
+        });
+      }
     }
     if raw_code.starts_with('[') {
       let raw_list: Vec<serde_json::Value> = serde_json::from_str(&raw_code).map_err(|e| {
@@ -394,8 +407,17 @@ impl LightVM {
     }
     let json_str = bytecode_raw.to_string();
     if !self.nightly && has_nightly_opcodes(&json_str) {
+      let mut nightly_ip = 0;
+      if let Ok(raw_list) = serde_json::from_value::<Vec<serde_json::Value>>(bytecode_raw.clone()) {
+        for (ip, item) in raw_list.iter().enumerate() {
+          if has_nightly_opcodes(&item.to_string()) {
+            nightly_ip = ip;
+            break;
+          }
+        }
+      }
       return Err(VMError::FeatureRestricted {
-        ip: 0,
+        ip: nightly_ip,
         feature: "Nightly Opcodes (Experimental)",
       });
     }
