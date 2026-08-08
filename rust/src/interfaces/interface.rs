@@ -655,7 +655,9 @@ mod tests {
       compile_config::CompileConfig, file_type::FileType, target_arch::TargetArch,
     };
     let mut vm = make_vm(vec![Capability::Control]);
-    vm.bytecode = vec![Instructions::Push(crate::types::value::Value::Float64(42.0))];
+    vm.bytecode = vec![Instructions::Push(crate::types::value::Value::Float64(
+      42.0,
+    ))];
     vm.on_internal(VmEvent::Tick, |payload| {
       if payload.contains("compile_start") {
         panic!("Intentional panic in listener");
