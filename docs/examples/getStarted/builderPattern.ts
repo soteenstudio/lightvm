@@ -8,7 +8,7 @@ const vm = new LightVM({ caps: [Capability.Observe, Capability.Control] })
   .setMaxJump(100) // Maximum number of control flow jumps allowed (default: 100)
   .setMaxTicks(1_000_000) // Maximum number of execution ticks before stopping (default: 1,000,000)
   .setMaxStackSize(128) // Maximum number of items the stack can hold (default: 128)
-  .setAllowedImports(["math", "time", "utils"]) // Whitelist of modules that can be imported
+  .setAllowedImports(['math', 'time', 'utils']) // Whitelist of modules that can be imported
   .withUnsafeMode(false) // Enable or disable system-level unsafe operations (default: false)
   .withNightly(false) // Allow nightly features (default: false)
   .withBacktrace(false) // Display backtrace details in error messages (default: false)

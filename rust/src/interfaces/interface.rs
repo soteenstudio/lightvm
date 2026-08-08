@@ -651,7 +651,9 @@ mod tests {
   }
   #[test]
   fn compile_internal_catches_panicking_listener_and_restores_state() {
-    use crate::types::{compile_config::CompileConfig, file_type::FileType, target_arch::TargetArch};
+    use crate::types::{
+      compile_config::CompileConfig, file_type::FileType, target_arch::TargetArch,
+    };
     let mut vm = make_vm(vec![Capability::Control]);
     vm.bytecode = vec![Instructions::Push(crate::types::value::Value::Number(42.0))];
     vm.on_internal(VmEvent::Tick, |payload| {
