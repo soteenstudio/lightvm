@@ -15,9 +15,10 @@ use crate::modules::carzy::arch::aarch64::AArch64Builder;
 use crate::modules::gazle::specialized_instructions::specialized_instructions;
 use crate::modules::torja::resolve_symbols::resolve_symbols;
 use crate::types::instructions::Instructions;
+use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
 use smol_str::SmolStr;
-pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> Result<String, String> {
+pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> Result<String, VMError> {
   specialized_instructions(&mut instructions);
   let empty_imports: AHashMap<SmolStr, crate::types::value::Value> = AHashMap::new();
   let (var_count, _symbol_table) = resolve_symbols(&mut instructions, &empty_imports);
@@ -77,10 +78,10 @@ pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> Result<String, St
       | Instructions::Div(_)
       | Instructions::Mod(_) => math_isel(builder, inst),
       _ => {
-        return Err(format!(
-          "Unsupported instruction at index {}: {:?}",
-          index, inst
-        ));
+        return Err(VMError::InvalidOpcode {
+          ip: index,
+          code: "UNKNOWN_OPCODE".into(),
+        });
       }
     };
   }

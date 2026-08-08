@@ -17,7 +17,6 @@ use crate::modules::gazle::{
 };
 use crate::types::instructions::Instructions;
 pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
-  println!("{:?}", bytecode);
   specialized_instructions(&mut bytecode);
   strength_reduction(&mut bytecode);
   fold_constants(&mut bytecode);

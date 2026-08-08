@@ -158,16 +158,11 @@ impl LightVM {
   }
   pub fn compile(&mut self, config: CompileConfig) -> String {
     match self.compile_internal(config) {
-      Ok(_) => serde_json::json!({
-        "status": "success",
-        "path": config.path
-      })
-      .to_string(),
-      Err(e) => serde_json::json!({
-        "status": "error",
-        "message": e.to_string()
-      })
-      .to_string(),
+      Ok(_) => config.path.to_string(),
+      Err(e) => {
+        eprintln!("{}", e);
+        std::process::exit(1);
+      }
     }
   }
   /// Function to export functions in the VM out.

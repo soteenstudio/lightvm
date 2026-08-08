@@ -183,7 +183,8 @@ impl LightVM {
       })?;
       self.bytecode = raw_list
         .iter()
-        .map(Instructions::from_json_array)
+        .enumerate()
+        .map(|(ip, item)| Instructions::from_json_array(item, ip))
         .collect::<Result<Vec<Instructions>, VMError>>()?;
     } else {
       self.bytecode = crate::utils::loader::parse_ltc(&raw_code);
@@ -249,50 +250,23 @@ impl LightVM {
       });
     }
     self.state = VmState::Running;
-    let emit_result_start = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-      self.emit(
-        VmEvent::Tick,
-        serde_json::json!({ "state": "compile_start" }),
-      );
-    }));
-    if emit_result_start.is_err() {
-      self.state = VmState::Idle;
-      return Err(VMError::SystemError(smol_str::SmolStr::new(
-        "Panic in compile_start event listener",
-      )));
-    }
-    let compile_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-      compile(
-        &self.bytecode,
-        config.target_arch,
-        config.path,
-        config.file_type,
-      )
-    }));
+    self.emit(
+      VmEvent::Tick,
+      serde_json::json!({ "state": "compile_start" }),
+    );
+    let compile_result = compile(
+      &self.bytecode,
+      config.target_arch,
+      config.path,
+      config.file_type,
+    );
     self.state = VmState::Idle;
-    match compile_result {
-      Ok(Ok(_)) => {
-        let emit_result_success = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-          self.emit(
-            VmEvent::Tick,
-            serde_json::json!({ "state": "compile_success" }),
-          );
-        }));
-        if emit_result_success.is_err() {
-          return Err(VMError::SystemError(smol_str::SmolStr::new(
-            "Panic in compile_success event listener",
-          )));
-        }
-        Ok(())
-      }
-      Ok(Err(io_err)) => Err(VMError::SystemError(smol_str::SmolStr::new(format!(
-        "Failed to write compiled assembly file: {}",
-        io_err
-      )))),
-      Err(_) => Err(VMError::SystemError(smol_str::SmolStr::new(
-        "Panic occurred during assembly compilation",
-      ))),
-    }
+    compile_result?;
+    self.emit(
+      VmEvent::Tick,
+      serde_json::json!({ "state": "compile_success" }),
+    );
+    Ok(())
   }
   #[inline]
   pub fn on_internal<F>(&mut self, event: VmEvent, callback: F) -> Result<(), String>
@@ -415,8 +389,9 @@ impl LightVM {
       .map_err(|e| VMError::SystemError(format!("Invalid JSON format: {}", e).into()))?;
     let bytecode: Result<Vec<Instructions>, VMError> = raw_list
       .iter()
-      .map(Instructions::from_json_array)
-      .collect::<Result<Vec<Instructions>, VMError>>();
+      .enumerate()
+      .map(|(ip, item)| Instructions::from_json_array(item, ip))
+      .collect();
     let optimized = optimize_bytecode(bytecode?);
     serde_json::to_string(&optimized)
       .map_err(|e| VMError::SystemError(format!("Failed to stringify: {}", e).into()))
@@ -475,8 +450,9 @@ impl LightVM {
     let instructions: Result<Vec<Instructions>, VMError> = Ok(
       raw_list
         .iter()
-        .map(Instructions::from_json_array)
-        .collect::<Result<Vec<Instructions>, VMError>>(),
+        .enumerate()
+        .map(|(ip, item)| Instructions::from_json_array(item, ip))
+        .collect::<Result<Vec<Instructions>, _>>(),
     )?;
     Ok(crate::utils::loader::stringify_ltc(instructions?))
   }

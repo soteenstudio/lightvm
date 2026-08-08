@@ -206,7 +206,7 @@ impl Instructions {
     vec!["Unknown".into()]
   }
   #[inline]
-  pub fn from_json_array(item: &JsonValue) -> Result<Instructions, VMError> {
+  pub fn from_json_array(item: &JsonValue, ip: usize) -> Result<Instructions, VMError> {
     if item.is_null() {
       return Ok(Instructions::Stop);
     }
@@ -246,14 +246,14 @@ impl Instructions {
         "make_obj" => Ok(Instructions::MakeObj(0)),
         "make_array" => Ok(Instructions::MakeArray(0)),
         _ => Err(VMError::InvalidOpcode {
-          ip: 0,
+          ip,
           code: "UNKNOWN_OPCODE".into(),
         }),
       };
     }
     if item.is_object() {
       return Instructions::deserialize(item).map_err(|_| VMError::InvalidOpcode {
-        ip: 0,
+        ip,
         code: "DESERIALIZE_FAILED".into(),
       });
     }
@@ -262,7 +262,7 @@ impl Instructions {
       None => return Ok(Instructions::Stop),
     };
     let op = arr[0].as_str().ok_or_else(|| VMError::InvalidOpcode {
-      ip: 0,
+      ip,
       code: "OPCODE_NOT_STRING".into(),
     })?;
     let op_bytes = op.as_bytes();
@@ -352,7 +352,7 @@ impl Instructions {
         let s = arg1
           .and_then(|v| v.as_str())
           .ok_or(VMError::InvalidOpcode {
-            ip: 0,
+            ip,
             code: "SET_MISSING_ARG".into(),
           })?;
         Ok(Instructions::Set(SmolStr::new(s)))
@@ -361,7 +361,7 @@ impl Instructions {
         let s = arg1
           .and_then(|v| v.as_str())
           .ok_or(VMError::InvalidOpcode {
-            ip: 0,
+            ip,
             code: "GET_MISSING_ARG".into(),
           })?;
         Ok(Instructions::Get(SmolStr::new(s)))
@@ -370,7 +370,7 @@ impl Instructions {
         let s = arg1
           .and_then(|v| v.as_str())
           .ok_or(VMError::InvalidOpcode {
-            ip: 0,
+            ip,
             code: "VAL_MISSING_ARG".into(),
           })?;
         Ok(Instructions::Val(SmolStr::new(s)))
@@ -379,7 +379,7 @@ impl Instructions {
         let prop = arg1
           .and_then(|v| v.as_str())
           .ok_or(VMError::InvalidOpcode {
-            ip: 0,
+            ip,
             code: "ACCESS_MISSING_ARG".into(),
           })?;
         Ok(Instructions::Access(SmolStr::new(prop)))
@@ -394,7 +394,7 @@ impl Instructions {
         let target = arg1
           .and_then(|v| v.as_u64())
           .ok_or(VMError::InvalidOpcode {
-            ip: 0,
+            ip,
             code: "IF_FALSE_MISSING_TARGET".into(),
           })? as usize;
         Ok(Instructions::IfFalse(target))
@@ -403,7 +403,7 @@ impl Instructions {
         let target = arg1
           .and_then(|v| v.as_u64())
           .ok_or(VMError::InvalidOpcode {
-            ip: 0,
+            ip,
             code: "JUMP_MISSING_TARGET".into(),
           })? as usize;
         Ok(Instructions::Jump(target))
@@ -412,7 +412,7 @@ impl Instructions {
         let s = arg1
           .and_then(|v| v.as_str())
           .ok_or(VMError::InvalidOpcode {
-            ip: 0,
+            ip,
             code: "INC_MISSING_VAR".into(),
           })?;
         let num_type = match arg2.and_then(|v| v.as_str()) {
@@ -429,7 +429,7 @@ impl Instructions {
         let s = arg1
           .and_then(|v| v.as_str())
           .ok_or(VMError::InvalidOpcode {
-            ip: 0,
+            ip,
             code: "DEC_MISSING_VAR".into(),
           })?;
         let num_type = match arg2.and_then(|v| v.as_str()) {
@@ -469,7 +469,7 @@ impl Instructions {
         let count = arg1
           .and_then(|v| v.as_u64())
           .ok_or(VMError::InvalidOpcode {
-            ip: 0,
+            ip,
             code: "COUNT_MISSING_OR_INVALID".into(),
           })? as u32;
         Ok(Instructions::MakeObj(count))
@@ -478,7 +478,7 @@ impl Instructions {
         let count = arg1
           .and_then(|v| v.as_u64())
           .ok_or(VMError::InvalidOpcode {
-            ip: 0,
+            ip,
             code: "COUNT_MISSING_OR_INVALID".into(),
           })? as u32;
         Ok(Instructions::MakeArray(count))
@@ -503,7 +503,7 @@ impl Instructions {
         let class_name = arg1
           .and_then(|v| v.as_str())
           .ok_or(VMError::InvalidOpcode {
-            ip: 0,
+            ip,
             code: "INSTANTIATE_MISSING_NAME".into(),
           })?;
         let argc = arg2.and_then(|v| v.as_u64()).unwrap_or(0) as u32;
@@ -513,7 +513,7 @@ impl Instructions {
         let prop = arg1
           .and_then(|v| v.as_str())
           .ok_or(VMError::InvalidOpcode {
-            ip: 0,
+            ip,
             code: "SET_PROP_MISSING_NAME".into(),
           })?;
         Ok(Instructions::SetProp(SmolStr::new(prop)))
@@ -541,7 +541,7 @@ impl Instructions {
         let argc = arg2
           .and_then(|v| v.as_u64())
           .ok_or(VMError::InvalidOpcode {
-            ip: 0,
+            ip,
             code: "CALL_MISSING_ARGC".into(),
           })? as u32;
         Ok(Instructions::Call(SmolStr::new(s), argc))
@@ -549,7 +549,7 @@ impl Instructions {
       b"concat" => Ok(Instructions::Concat),
       b"stop" => Ok(Instructions::Stop),
       _ => Err(VMError::InvalidOpcode {
-        ip: 0,
+        ip,
         code: "UNKNOWN_OPCODE".into(),
       }),
     }

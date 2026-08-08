@@ -75,7 +75,8 @@ export default {
     'adcs',
     'ldiv',
     'lmod',
-    'sbcs'
+    'sbcs',
+    'fract'
   ],
   ignorePaths: [
     'node_modules/**',
