@@ -62,7 +62,7 @@ pub fn execute(
     stack.clear();
     stack.reserve(security_config.max_stack_size);
   }
-  let _ = validate_vars(&bytecode, var_count);
+  validate_vars(&bytecode, var_count)?;
   validate_bytecode(&bytecode, &functions)?;
   validate_security(&bytecode, &security_config)?;
   inject_args(&mut vars, &functions, &options, ip);
