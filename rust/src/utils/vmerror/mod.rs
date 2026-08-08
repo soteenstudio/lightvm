@@ -8,10 +8,10 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub mod colors;
-pub mod config;
-pub mod display;
-pub mod error;
-pub mod get_backtrace;
-pub mod hints;
-pub use error::VMError;
+pub(crate) mod colors;
+pub(crate) mod config;
+pub(crate) mod display;
+pub(crate) mod error;
+pub(crate) mod get_backtrace;
+pub(crate) mod hints;
+pub(crate) use error::VMError;
