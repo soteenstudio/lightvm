@@ -562,7 +562,7 @@ mod tests {
   #[test]
   fn test_instruction_round_trip() {
     let json_input = json!(["push", 123]);
-    let instr = Instructions::from_json_array(&json_input).unwrap();
+    let instr = Instructions::from_json_array(&json_input, 0).unwrap();
     match instr {
       Instructions::Push(Value::Int16(_)) => assert!(true),
       _ => panic!("Wrong data type!"),
@@ -571,7 +571,7 @@ mod tests {
   #[test]
   fn test_unknown_opcode_handling() {
     let json_input = json!(["random_nonsense", 1]);
-    let result = Instructions::from_json_array(&json_input);
+    let result = Instructions::from_json_array(&json_input, 0);
     assert!(result.is_err());
   }
 }
