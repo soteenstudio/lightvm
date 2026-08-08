@@ -22,5 +22,5 @@ Dalam **Rust**, metode `on` memungkinkan Anda untuk mendefinisikan penanganan pe
 ::: info
 **Kapabilitas yang Dibutuhkan**: tidak ada kapabilitas khusus
 
-**Event yang Dimiliki**: `tick`, `halt`, dan `panic`
+**Event yang Dimiliki**: `Tick`, `Halt`, dan `Panic`
 :::

@@ -1,8 +1,7 @@
-export declare const sidebarConcepts: {
+export declare const navCommunity: {
     text: string;
-    collapsed: boolean;
     items: {
         text: string;
         link: string;
     }[];
-}[];
+};

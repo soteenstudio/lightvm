@@ -32,7 +32,9 @@ export const baseConfig = {
   } as const,
 
   footer: {
-    message: 'Dirilis di bawah Lisensi Apache-2.0.',
-    copyright: 'Hak cipta © 2026 SoTeen Studio',
+    message:
+      'Dirilis di bawah <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank">Lisensi Apache-2.0</a>.',
+    copyright:
+      'Hak cipta © 2025-2026 <a href="https://github.com/soteenstudio">SoTeen Studio</a>',
   },
 };
