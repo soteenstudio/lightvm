@@ -9,8 +9,8 @@
  */
 
 use crate::types::instructions::Instructions;
-use smol_str::SmolStr;
-pub fn validate_vars(bytecode: &[Instructions], var_count: usize) -> Result<(), SmolStr> {
+use crate::utils::vmerror::VMError;
+pub fn validate_vars(bytecode: &[Instructions], var_count: usize) -> Result<(), VMError> {
   for (ip, instr) in bytecode.iter().enumerate() {
     let idx = match instr {
       Instructions::ValIdx(i)
@@ -23,12 +23,11 @@ pub fn validate_vars(bytecode: &[Instructions], var_count: usize) -> Result<(), 
     if let Some(i) = idx
       && i >= var_count
     {
-      return Err(SmolStr::from(format!(
-        "Variable index out of bounds at IP {}: {} (max: {})",
+      return Err(VMError::OutOfBounds {
         ip,
-        i,
-        var_count - 1
-      )));
+        index: i,
+        len: var_count,
+      });
     }
   }
   Ok(())
