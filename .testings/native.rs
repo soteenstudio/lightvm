@@ -17,27 +17,8 @@ fn main() {
   }).set_max_io(5000000).set_max_ticks(200).set_max_stack_size(0).with_nightly(false).with_backtrace(false).with_explain(false).with_hint(true);
   
   let raw = r#"[
-    ["val", "x"],
-    ["push", { "num": 16 }],
-    ["set", "x"],
-    ["push", "Result is: "],
-    ["println"],
-    ["get", "x"],
-    ["access", "num"],
-    ["println"],
-    
-    ["val", "y"],
-    ["push", "apple"],
-    ["push", "banana"],
-    ["push", "orange"],
-    ["make_array", 3],
-    ["set", "y"],
-    ["push", "Array result is: "],
-    ["println"],
-    ["get", "y"],
-    ["push", 1],
-    ["access_index"],
-    ["println"]
+    ["push", 5],
+    ["jump", 0]
   ]"#;
   let optimized_json = vm.tools().optimize_bytecode(raw);
   
