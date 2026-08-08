@@ -11,9 +11,10 @@
 use crate::codegen::arch::aarch64::compile_aarch64;
 use crate::types::instructions::Instructions;
 use crate::types::{file_type::FileType, target_arch::TargetArch};
+use crate::utils::vmerror::VMError;
 use std::fs;
 use std::fs::OpenOptions;
-use std::io::{Error, ErrorKind, Write};
+use std::io::Write;
 use std::path::PathBuf;
 use std::process::Command;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -28,7 +29,7 @@ fn get_ram_dir() -> String {
   }
   std::env::temp_dir().to_string_lossy().into_owned()
 }
-fn create_secure_temp_dir() -> std::io::Result<PathBuf> {
+fn create_secure_temp_dir() -> std::result::Result<PathBuf, VMError> {
   let base_dir = PathBuf::from(get_ram_dir());
   let pid = std::process::id();
   for _ in 0..100 {
@@ -46,22 +47,21 @@ fn create_secure_temp_dir() -> std::io::Result<PathBuf> {
       builder.mode(0o700);
       match builder.create(&temp_dir) {
         Ok(()) => return Ok(temp_dir),
-        Err(e) if e.kind() == ErrorKind::AlreadyExists => continue,
-        Err(e) => return Err(e),
+        Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => continue,
+        Err(e) => return Err(VMError::SystemError(e.to_string().into())),
       }
     }
     #[cfg(not(unix))]
     {
       match fs::create_dir(&temp_dir) {
         Ok(()) => return Ok(temp_dir),
-        Err(e) if e.kind() == ErrorKind::AlreadyExists => continue,
-        Err(e) => return Err(e),
+        Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => continue,
+        Err(e) => return Err(VMError::SystemError(e.to_string().into())),
       }
     }
   }
-  Err(Error::new(
-    ErrorKind::AlreadyExists,
-    "Failed to create unique temporary directory after 100 attempts",
+  Err(VMError::SystemError(
+    "Failed to create unique temporary directory after 100 attempts".into(),
   ))
 }
 fn fastrand() -> u64 {
@@ -78,7 +78,7 @@ fn fastrand() -> u64 {
 pub fn compile_to_target(
   instructions: &[Instructions],
   arch: TargetArch,
-) -> std::result::Result<String, String> {
+) -> std::result::Result<String, VMError> {
   match arch {
     TargetArch::AArch64 => compile_aarch64(instructions.to_vec()),
   }
@@ -95,9 +95,8 @@ pub fn compile(
   arch: TargetArch,
   path: &str,
   file_type: FileType,
-) -> std::io::Result<()> {
-  let asm_code =
-    compile_to_target(instructions, arch).map_err(|e| Error::new(ErrorKind::InvalidData, e))?;
+) -> std::result::Result<(), VMError> {
+  let asm_code = compile_to_target(instructions, arch)?;
   if matches!(file_type, FileType::Assembly) {
     let asm_path = if path.ends_with(".s") {
       path.to_string()
@@ -107,15 +106,23 @@ pub fn compile(
     if let Some(parent) = std::path::Path::new(&asm_path).parent()
       && !parent.as_os_str().is_empty()
     {
-      fs::create_dir_all(parent)?;
+      match fs::create_dir_all(parent) {
+        Ok(()) => {}
+        Err(e) => return Err(VMError::SystemError(e.to_string().into())),
+      }
     }
-    fs::write(&asm_path, &asm_code)?;
-    return Ok(());
+    match fs::write(&asm_path, &asm_code) {
+      Ok(()) => return Ok(()),
+      Err(e) => return Err(VMError::SystemError(e.to_string().into())),
+    }
   }
   if let Some(parent) = std::path::Path::new(path).parent()
     && !parent.as_os_str().is_empty()
   {
-    fs::create_dir_all(parent)?;
+    match fs::create_dir_all(parent) {
+      Ok(()) => {}
+      Err(e) => return Err(VMError::SystemError(e.to_string().into())),
+    }
   }
   let compiler = match arch {
     TargetArch::AArch64 => {
@@ -124,9 +131,8 @@ pub fn compile(
       } else if check_tool_exists("gcc") {
         "gcc"
       } else {
-        return Err(Error::new(
-          ErrorKind::NotFound,
-          "No C compiler found on your system! Please install 'clang' or 'gcc'.",
+        return Err(VMError::SystemError(
+          "No C compiler found on your system! Please install 'clang' or 'gcc'.".into(),
         ));
       }
     }
@@ -134,17 +140,45 @@ pub fn compile(
   let temp_dir = create_secure_temp_dir()?;
   let ram_asm_path = temp_dir.join("lightvm.s");
   let ram_c_path = temp_dir.join("lightvm_io.c");
-  let mut asm_file = OpenOptions::new()
+  let mut asm_file = match OpenOptions::new()
     .write(true)
     .create_new(true)
-    .open(&ram_asm_path)?;
-  asm_file.write_all(asm_code.as_bytes())?;
+    .open(&ram_asm_path)
+  {
+    Ok(file) => file,
+    Err(e) => {
+      let _ = fs::remove_dir_all(&temp_dir);
+      return Err(VMError::SystemError(e.to_string().into()));
+    }
+  };
+  match asm_file.write_all(asm_code.as_bytes()) {
+    Ok(()) => {}
+    Err(e) => {
+      drop(asm_file);
+      let _ = fs::remove_dir_all(&temp_dir);
+      return Err(VMError::SystemError(e.to_string().into()));
+    }
+  }
   drop(asm_file);
-  let mut c_file = OpenOptions::new()
+  let mut c_file = match OpenOptions::new()
     .write(true)
     .create_new(true)
-    .open(&ram_c_path)?;
-  c_file.write_all(IO_C_CONTENT.as_bytes())?;
+    .open(&ram_c_path)
+  {
+    Ok(file) => file,
+    Err(e) => {
+      let _ = fs::remove_dir_all(&temp_dir);
+      return Err(VMError::SystemError(e.to_string().into()));
+    }
+  };
+  match c_file.write_all(IO_C_CONTENT.as_bytes()) {
+    Ok(()) => {}
+    Err(e) => {
+      drop(c_file);
+      let _ = fs::remove_dir_all(&temp_dir);
+      return Err(VMError::SystemError(e.to_string().into()));
+    }
+  }
   drop(c_file);
   let status = Command::new(compiler)
     .arg(&ram_c_path)
@@ -156,14 +190,16 @@ pub fn compile(
   let _ = fs::remove_dir_all(&temp_dir);
   match status {
     Ok(s) if s.success() => Ok(()),
-    Ok(s) => Err(Error::other(format!(
-      "Compilation failed with exit code: {}",
-      s
-    ))),
-    Err(e) => Err(Error::other(format!(
-      "Failed to execute compiler command: {}",
-      e
-    ))),
+    Ok(s) => {
+      let msg = match s.code() {
+        Some(code) => format!("Compilation failed with exit code: {}", code),
+        None => "Compilation failed: process terminated by signal".to_string(),
+      };
+      Err(VMError::SystemError(msg.into()))
+    }
+    Err(e) => Err(VMError::SystemError(
+      format!("Failed to execute compiler command: {}", e).into(),
+    )),
   }
 }
 #[cfg(test)]

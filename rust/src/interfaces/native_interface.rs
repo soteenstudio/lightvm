@@ -17,6 +17,7 @@ use crate::types::{
   capability::Capability,
   compile_config::CompileConfig,
   error_options::ErrorOptions,
+  file_type::FileType,
   runtime_config::RuntimeConfig,
   security_config::SecurityConfig,
   value::{RunOptions, Value},
@@ -157,17 +158,21 @@ impl LightVM {
       .unwrap_or_else(|e| format!(r#"{{"status": "error", "message": "{}"}}"#, e))
   }
   pub fn compile(&mut self, config: CompileConfig) -> String {
+    let output_path = if matches!(config.file_type, FileType::Assembly) {
+      if config.path.ends_with(".s") {
+        config.path.to_string()
+      } else {
+        format!("{}.s", config.path)
+      }
+    } else {
+      config.path.to_string()
+    };
     match self.compile_internal(config) {
-      Ok(_) => serde_json::json!({
-        "status": "success",
-        "path": config.path
-      })
-      .to_string(),
-      Err(e) => serde_json::json!({
-        "status": "error",
-        "message": e.to_string()
-      })
-      .to_string(),
+      Ok(_) => output_path,
+      Err(e) => {
+        eprintln!("{}", e);
+        std::process::exit(1);
+      }
     }
   }
   /// Function to export functions in the VM out.

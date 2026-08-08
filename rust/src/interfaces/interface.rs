@@ -168,11 +168,24 @@ impl LightVM {
         });
       }
     }
-    if !self.nightly && has_nightly_opcodes(&raw_code) {
-      return Err(VMError::FeatureRestricted {
-        ip: 0,
-        feature: "Nightly Opcodes (Experimental)",
-      });
+    if !self.nightly {
+      let mut nightly_ip = 0;
+      let raw_list_check: Result<Vec<serde_json::Value>, _> = serde_json::from_str(&raw_code);
+      if let Ok(list) = raw_list_check {
+        for (ip, item) in list.iter().enumerate() {
+          let item_str = item.to_string();
+          if has_nightly_opcodes(&item_str) {
+            nightly_ip = ip;
+            break;
+          }
+        }
+      }
+      if has_nightly_opcodes(&raw_code) {
+        return Err(VMError::FeatureRestricted {
+          ip: nightly_ip,
+          feature: "Nightly Opcodes (Experimental)",
+        });
+      }
     }
     if raw_code.starts_with('[') {
       let raw_list: Vec<serde_json::Value> = serde_json::from_str(&raw_code).map_err(|e| {
@@ -183,7 +196,8 @@ impl LightVM {
       })?;
       self.bytecode = raw_list
         .iter()
-        .map(Instructions::from_json_array)
+        .enumerate()
+        .map(|(ip, item)| Instructions::from_json_array(item, ip))
         .collect::<Result<Vec<Instructions>, VMError>>()?;
     } else {
       self.bytecode = crate::utils::loader::parse_ltc(&raw_code);
@@ -249,50 +263,38 @@ impl LightVM {
       });
     }
     self.state = VmState::Running;
-    let emit_result_start = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+    let emit_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
       self.emit(
         VmEvent::Tick,
         serde_json::json!({ "state": "compile_start" }),
       );
     }));
-    if emit_result_start.is_err() {
+    if emit_result.is_err() {
       self.state = VmState::Idle;
-      return Err(VMError::SystemError(smol_str::SmolStr::new(
-        "Panic in compile_start event listener",
-      )));
+      return Err(VMError::SystemError(
+        "Compile lifecycle listener panicked during compile_start".into(),
+      ));
     }
-    let compile_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-      compile(
-        &self.bytecode,
-        config.target_arch,
-        config.path,
-        config.file_type,
-      )
-    }));
+    let compile_result = compile(
+      &self.bytecode,
+      config.target_arch,
+      config.path,
+      config.file_type,
+    );
     self.state = VmState::Idle;
-    match compile_result {
-      Ok(Ok(_)) => {
-        let emit_result_success = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-          self.emit(
-            VmEvent::Tick,
-            serde_json::json!({ "state": "compile_success" }),
-          );
-        }));
-        if emit_result_success.is_err() {
-          return Err(VMError::SystemError(smol_str::SmolStr::new(
-            "Panic in compile_success event listener",
-          )));
-        }
-        Ok(())
-      }
-      Ok(Err(io_err)) => Err(VMError::SystemError(smol_str::SmolStr::new(format!(
-        "Failed to write compiled assembly file: {}",
-        io_err
-      )))),
-      Err(_) => Err(VMError::SystemError(smol_str::SmolStr::new(
-        "Panic occurred during assembly compilation",
-      ))),
+    compile_result?;
+    let emit_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+      self.emit(
+        VmEvent::Tick,
+        serde_json::json!({ "state": "compile_success" }),
+      );
+    }));
+    if emit_result.is_err() {
+      return Err(VMError::SystemError(
+        "Compile lifecycle listener panicked during compile_success".into(),
+      ));
     }
+    Ok(())
   }
   #[inline]
   pub fn on_internal<F>(&mut self, event: VmEvent, callback: F) -> Result<(), String>
@@ -405,8 +407,17 @@ impl LightVM {
     }
     let json_str = bytecode_raw.to_string();
     if !self.nightly && has_nightly_opcodes(&json_str) {
+      let mut nightly_ip = 0;
+      if let Ok(raw_list) = serde_json::from_value::<Vec<serde_json::Value>>(bytecode_raw.clone()) {
+        for (ip, item) in raw_list.iter().enumerate() {
+          if has_nightly_opcodes(&item.to_string()) {
+            nightly_ip = ip;
+            break;
+          }
+        }
+      }
       return Err(VMError::FeatureRestricted {
-        ip: 0,
+        ip: nightly_ip,
         feature: "Nightly Opcodes (Experimental)",
       });
     }
@@ -415,8 +426,9 @@ impl LightVM {
       .map_err(|e| VMError::SystemError(format!("Invalid JSON format: {}", e).into()))?;
     let bytecode: Result<Vec<Instructions>, VMError> = raw_list
       .iter()
-      .map(Instructions::from_json_array)
-      .collect::<Result<Vec<Instructions>, VMError>>();
+      .enumerate()
+      .map(|(ip, item)| Instructions::from_json_array(item, ip))
+      .collect();
     let optimized = optimize_bytecode(bytecode?);
     serde_json::to_string(&optimized)
       .map_err(|e| VMError::SystemError(format!("Failed to stringify: {}", e).into()))
@@ -475,8 +487,9 @@ impl LightVM {
     let instructions: Result<Vec<Instructions>, VMError> = Ok(
       raw_list
         .iter()
-        .map(Instructions::from_json_array)
-        .collect::<Result<Vec<Instructions>, VMError>>(),
+        .enumerate()
+        .map(|(ip, item)| Instructions::from_json_array(item, ip))
+        .collect::<Result<Vec<Instructions>, _>>(),
     )?;
     Ok(crate::utils::loader::stringify_ltc(instructions?))
   }
@@ -657,5 +670,34 @@ mod tests {
     let mut vm = make_vm(vec![Capability::Control]);
     let result = vm.run_internal(None);
     assert!(result.is_err());
+  }
+  #[test]
+  fn compile_internal_catches_panicking_listener_and_restores_state() {
+    use crate::types::{
+      compile_config::CompileConfig, file_type::FileType, target_arch::TargetArch,
+    };
+    let mut vm = make_vm(vec![Capability::Control]);
+    vm.bytecode = vec![Instructions::Push(crate::types::value::Value::Float64(
+      42.0,
+    ))];
+    vm.on_internal(VmEvent::Tick, |payload| {
+      if payload.contains("compile_start") {
+        panic!("Intentional panic in listener");
+      }
+    })
+    .unwrap();
+    let config = CompileConfig {
+      target_arch: TargetArch::AArch64,
+      path: "/tmp/test_output",
+      file_type: FileType::Assembly,
+    };
+    let result = vm.compile_internal(config);
+    assert!(result.is_err());
+    assert_eq!(vm.state, VmState::Idle);
+    if let Err(VMError::SystemError(msg)) = result {
+      assert!(msg.contains("panicked"));
+    } else {
+      panic!("Expected SystemError with panic message");
+    }
   }
 }

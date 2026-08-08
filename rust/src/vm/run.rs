@@ -36,8 +36,11 @@ pub fn execute_and_log(bytecode: Vec<Instructions>, options: Option<RunOptions>)
 #[cold]
 pub fn run(bytecode_json: &str, options: Option<RunOptions>) -> String {
   let raw: Vec<JsonValue> = serde_json::from_str(bytecode_json).expect("Invalid JSON");
-  let bytecode_res: Result<Vec<Instructions>, VMError> =
-    raw.iter().map(Instructions::from_json_array).collect();
+  let bytecode_res: Result<Vec<Instructions>, VMError> = raw
+    .iter()
+    .enumerate()
+    .map(|(ip, item)| Instructions::from_json_array(item, ip))
+    .collect();
   match bytecode_res {
     Ok(bytecode) => execute_and_log(bytecode, options),
     Err(err) => {
