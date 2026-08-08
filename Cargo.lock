@@ -517,7 +517,7 @@ checksum = "b6d2cec3eae94f9f509c767b45932f1ada8350c4bdb85af2fcab4a3c14807981"
 
 [[package]]
 name = "lightvm"
-version = "0.1.0-alpha.8-nightly.20260807.fa1376c"
+version = "0.1.0-alpha.8-nightly.20260808.e6d7be8"
 dependencies = [
  "ahash",
  "backtrace",
