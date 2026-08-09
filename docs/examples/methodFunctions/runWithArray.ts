@@ -3,4 +3,6 @@ const raw = [
   ['val', 'x'],
   ['set', 'x'],
 ];
-vm.load(tools.optimizeBytecode(raw)).run();
+const optimized = tools.optimizeBytecode(raw);
+vm.load(optimized)
+  .run();

@@ -3,5 +3,6 @@ let raw = serde_json::json!([
   ["val", "x"],
   ["set", "x"]
 ]);
-vm.load(tools.optimize_bytecode(raw).clone())
+let optimized = tools.optimize_bytecode(raw);
+vm.load(optimized.clone())
   .run(None);
