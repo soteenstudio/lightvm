@@ -20,7 +20,6 @@ pub fn access_index_func(stack: &mut Stack, ip: usize) -> Result<(), VMError> {
   if let Some(top) = stack.last_mut() {
     match &mut *top {
       Value::Array(arr) => {
-        // Convert index to usize with proper validation
         let i = match &index_val {
           Value::Int16(v) => {
             if *v < 0 {
@@ -133,7 +132,6 @@ pub fn access_index_func(stack: &mut Stack, ip: usize) -> Result<(), VMError> {
             });
           }
         };
-
         if i < arr.len() {
           *top = arr[i].clone();
           Ok(())

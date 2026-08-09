@@ -164,6 +164,15 @@ impl NodeLightVM {
       .map_err(|e| Error::from_reason(format!("Failed to parse VM result: {}", e)))
   }
   #[napi]
+  pub fn compile(&mut self) -> Result<serde_json::Value> {
+    let raw_json = self
+      .inner
+      .compile_internal(None)
+      .map_err(|e| Error::from_reason(e.to_string()))?;
+    serde_json::from_str(&raw_json)
+      .map_err(|e| Error::from_reason(format!("Failed to parse VM result: {}", e)))
+  }
+  #[napi]
   pub fn provide(&mut self, name: String, value: serde_json::Value) -> Result<()> {
     self
       .inner

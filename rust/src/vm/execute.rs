@@ -19,6 +19,7 @@ use crate::types::{
   instructions::Instructions,
   value::{RunOptions, Value},
 };
+use crate::utils::vmerror::VMError;
 use crate::vm::dispatch::{
   collections_dispatch::collections_dispatch, comparison_dispatch::comparison_dispatch,
   control_flow_dispatch::control_flow_dispatch, conversions_dispatch::conversions_dispatch,
@@ -39,7 +40,7 @@ pub fn execute(
   mut bytecode: Vec<Instructions>,
   options: Option<RunOptions>,
   halt_flag: Option<Arc<AtomicBool>>,
-) -> Result<(Value, u64), SmolStr> {
+) -> Result<(Value, u64), VMError> {
   let mut last_return = Value::Undefined;
   let mut stack: SmallVec<[Value; 128]> = SmallVec::new();
   let empty_map: AHashMap<SmolStr, Value> = AHashMap::new();
@@ -121,7 +122,7 @@ pub fn execute(
         if !security_config.unsafe_mode {
           runtime_import_count += 1;
           if runtime_import_count > security_config.max_import {
-            return Err(SmolStr::from("Security Violation: Excessive imports"));
+            return Err(VMError::ImportLimitReached { ip });
           }
         }
         import_func(&mut vars, &options, module_name, *alias_idx, ip)?;
@@ -161,7 +162,7 @@ pub fn execute(
         if !security_config.unsafe_mode {
           runtime_jump_count += 1;
           if runtime_jump_count > security_config.max_jump {
-            return Err(SmolStr::from("Security Violation: Excessive jumps"));
+            return Err(VMError::JumpLimitExceeded { ip });
           }
         }
         match control_flow_dispatch(
@@ -184,7 +185,7 @@ pub fn execute(
         if !security_config.unsafe_mode {
           runtime_call_count += 1;
           if runtime_call_count > security_config.max_call {
-            return Err(SmolStr::from("Security Violation: Excessive calls"));
+            return Err(VMError::CallLimitExceeded { ip });
           }
         }
         match control_flow_dispatch(
@@ -234,10 +235,7 @@ pub fn execute(
         if !security_config.unsafe_mode {
           runtime_io_count += 1;
           if runtime_io_count > security_config.max_io {
-            return Err(SmolStr::from(format!(
-              "Security Violation: I/O Flood at IP {}",
-              ip
-            )));
+            return Err(VMError::IoFlood { ip });
           }
         }
         io_dispatch(instr, &mut stack, ip)?;
@@ -246,7 +244,7 @@ pub fn execute(
         if !security_config.unsafe_mode {
           runtime_alloc_count += 1;
           if runtime_alloc_count > security_config.max_alloc {
-            return Err(SmolStr::from("Security Violation: Memory limit reached"));
+            return Err(VMError::MemoryLimitExceeded { ip });
           }
         }
         collections_dispatch(instr, &mut stack, ip)?;

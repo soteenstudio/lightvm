@@ -19,7 +19,11 @@ fi
 echo "Final Publishing Version: $VERSION"
 
 TAG="latest"
-if [[ "$VERSION" =~ -(proto|alpha|beta|rc) ]]; then TAG="next"; fi
+if [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-nightly\.[0-9]{8}\.[[:alnum:]]+$ ]]; then
+    TAG="nightly"
+elif [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-(proto|alpha|beta|rc)(\.|$) ]]; then
+    TAG="next"
+fi
 echo "Using NPM Tag: $TAG"
 
 PLATFORMS=(
