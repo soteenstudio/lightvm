@@ -11,7 +11,8 @@
 #![cfg(feature = "node")]
 use crate::interfaces::interface::LightVM;
 use crate::types::{
-  capability::Capability, security_config::SecurityConfig, vmconfig::VmNapiConfig,
+  capability::Capability, compile_config::CompileConfig, file_type::FileType,
+  security_config::SecurityConfig, target_arch::TargetArch, vmconfig::VmNapiConfig,
 };
 use crate::utils::vmerror::VMError;
 use napi::bindgen_prelude::*;
@@ -162,6 +163,55 @@ impl NodeLightVM {
       .map_err(|e| Error::from_reason(e.to_string()))?;
     serde_json::from_str(&raw_json)
       .map_err(|e| Error::from_reason(format!("Failed to parse VM result: {}", e)))
+  }
+  #[napi]
+  pub fn compile(
+    &mut self,
+    target_arch: u32,
+    file_type: u32,
+    path: String,
+  ) -> Result<serde_json::Value> {
+    let arch = match target_arch {
+      0 => TargetArch::AArch64,
+      _ => {
+        return Err(Error::from_reason(format!(
+          "Unknown target architecture: {}",
+          target_arch
+        )));
+      }
+    };
+    let ftype = match file_type {
+      0 => FileType::Assembly,
+      1 => FileType::Binary,
+      _ => {
+        return Err(Error::from_reason(format!(
+          "Unknown file type: {}",
+          file_type
+        )));
+      }
+    };
+    let config = CompileConfig {
+      target_arch: arch,
+      file_type: ftype,
+      path: &path,
+    };
+    self
+      .inner
+      .compile_internal(config)
+      .map_err(|e| Error::from_reason(e.to_string()))?;
+    let output_path = if matches!(ftype, FileType::Assembly) {
+      if path.ends_with(".s") {
+        path
+      } else {
+        format!("{}.s", path)
+      }
+    } else {
+      path
+    };
+    Ok(serde_json::json!({
+      "status": "success",
+      "path": output_path
+    }))
   }
   #[napi]
   pub fn provide(&mut self, name: String, value: serde_json::Value) -> Result<()> {
