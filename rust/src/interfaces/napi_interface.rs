@@ -177,7 +177,7 @@ impl NodeLightVM {
         return Err(Error::from_reason(format!(
           "Unknown target architecture: {}",
           target_arch
-        )))
+        )));
       }
     };
     let ftype = match file_type {
@@ -187,7 +187,7 @@ impl NodeLightVM {
         return Err(Error::from_reason(format!(
           "Unknown file type: {}",
           file_type
-        )))
+        )));
       }
     };
     let config = CompileConfig {
