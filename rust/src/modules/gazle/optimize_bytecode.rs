@@ -17,24 +17,30 @@ use crate::modules::gazle::{
 };
 use crate::types::instructions::Instructions;
 pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
-  specialized_instructions(&mut bytecode);
-  strength_reduction(&mut bytecode);
-  fold_constants(&mut bytecode);
-  fold_conversions(&mut bytecode);
-  jump_threading(&mut bytecode);
-  let usage = analyze_usage(&bytecode);
-  eliminate_dead_stores(&mut bytecode, &usage);
-  bytecode = eliminate_dead_loops(bytecode);
-  bytecode = eliminate_redundant_loads(bytecode);
-  let mut current_idx = 0;
-  bytecode.retain(|instr| {
-    let keep = match instr {
-      Instructions::Jump(target) => *target != current_idx + 1,
-      Instructions::Nop => false,
-      _ => true,
-    };
-    current_idx += 1;
-    keep
-  });
+  loop {
+    let previous_bytecode = bytecode.clone();
+    specialized_instructions(&mut bytecode);
+    strength_reduction(&mut bytecode);
+    fold_constants(&mut bytecode);
+    fold_conversions(&mut bytecode);
+    jump_threading(&mut bytecode);
+    let usage = analyze_usage(&bytecode);
+    eliminate_dead_stores(&mut bytecode, &usage);
+    bytecode = eliminate_dead_loops(bytecode);
+    bytecode = eliminate_redundant_loads(bytecode);
+    let mut current_idx = 0;
+    bytecode.retain(|instr| {
+      let keep = match instr {
+        Instructions::Jump(target) => *target != current_idx + 1,
+        Instructions::Nop => false,
+        _ => true,
+      };
+      current_idx += 1;
+      keep
+    });
+    if bytecode == previous_bytecode {
+      break;
+    }
+  }
   bytecode
 }

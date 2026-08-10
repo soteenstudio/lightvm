@@ -18,7 +18,7 @@ use serde_json::Value as JsonValue;
 use smol_str::SmolStr;
 use std::sync::Arc;
 use ts_rs::TS;
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "snake_case")]
 #[repr(u16)]
 #[ts(export)]
