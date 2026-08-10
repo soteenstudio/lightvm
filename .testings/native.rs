@@ -18,13 +18,16 @@ fn main() {
   
   let raw = r#"[
     ["val", "x"],
-    ["push", 5],
+    ["push", 10],
     ["set", "x"],
+    ["val", "y"],
+    ["push", 5],
+    ["set", "y"],
     ["push", "Result is: "],
-    ["println"],
     ["get", "x"],
-    ["get", "x"],
+    ["get", "y"],
     ["add", "sht"],
+    ["concat"],
     ["println"]
   ]"#;
   let optimized_json = vm.tools().optimize_bytecode(raw);

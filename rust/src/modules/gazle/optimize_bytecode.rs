@@ -70,3 +70,43 @@ pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
   }
   bytecode
 }
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::types::{primitive_types::PrimitiveTypes, value::Value};
+  use smol_str::SmolStr;
+  #[test]
+  fn folds_constant_add_and_concat_to_correct_result() {
+    // x = 10, y = 5, push "Result is: ", Get x, Get y, Add(Sht), Concat, Println.
+    // Regression coverage for a reported bug where the optimizer produced
+    // "Result is: 16" instead of the correct "Result is: 15".
+    let bytecode = vec![
+      Instructions::Val(SmolStr::new("x")),
+      Instructions::Push(Value::Int16(10)),
+      Instructions::Set(SmolStr::new("x")),
+      Instructions::Val(SmolStr::new("y")),
+      Instructions::Push(Value::Int16(5)),
+      Instructions::Set(SmolStr::new("y")),
+      Instructions::PushString(SmolStr::new("Result is: ")),
+      Instructions::Get(SmolStr::new("x")),
+      Instructions::Get(SmolStr::new("y")),
+      Instructions::Add(PrimitiveTypes::Sht),
+      Instructions::Concat,
+      Instructions::Println,
+    ];
+    let optimized = optimize_bytecode(bytecode);
+    // The prefix is preserved, `10 + 5` correctly folds to `15`, and the
+    // constant string concatenation is fully folded alongside `Concat`,
+    // leaving only the final printed value and `Println`.
+    assert_eq!(
+      optimized,
+      vec![
+        Instructions::PushString(SmolStr::new("Result is: 15")),
+        Instructions::Println,
+      ]
+    );
+    assert!(!optimized.contains(&Instructions::Get(SmolStr::new("x"))));
+    assert!(!optimized.contains(&Instructions::Get(SmolStr::new("y"))));
+    assert!(!optimized.contains(&Instructions::Add(PrimitiveTypes::Sht)));
+  }
+}
