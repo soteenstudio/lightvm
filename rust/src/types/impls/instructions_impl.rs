@@ -16,6 +16,18 @@ use ahash::AHashMap;
 use serde_json::Value as JsonValue;
 use smol_str::SmolStr;
 use std::sync::Arc;
+#[inline]
+fn map_num_type(arg: Option<&str>, default: PrimitiveTypes) -> PrimitiveTypes {
+  match arg {
+    Some("int") => PrimitiveTypes::Int,
+    Some("flt") => PrimitiveTypes::Flt,
+    Some("lng") => PrimitiveTypes::Lng,
+    Some("dbl") => PrimitiveTypes::Dbl,
+    Some("oct") => PrimitiveTypes::Oct,
+    _ => default,
+  }
+}
+
 impl Instructions {
   #[inline]
   pub fn from_parts(op: String, args: Vec<serde_json::Value>) -> Self {
@@ -146,10 +158,13 @@ impl Instructions {
       Some(a) => a,
       None => return Ok(Instructions::Stop),
     };
-    let op = arr[0].as_str().ok_or_else(|| VMError::InvalidOpcode {
-      ip,
-      code: "OPCODE_NOT_STRING".into(),
-    })?;
+    let op = arr
+      .first()
+      .and_then(|v| v.as_str())
+      .ok_or_else(|| VMError::InvalidOpcode {
+        ip,
+        code: "OPCODE_NOT_STRING".into(),
+      })?;
     let op_bytes = op.as_bytes();
     let arg1 = arr.get(1);
     let arg2 = arr.get(2);
@@ -300,14 +315,7 @@ impl Instructions {
             ip,
             code: "INC_MISSING_VAR".into(),
           })?;
-        let num_type = match arg2.and_then(|v| v.as_str()) {
-          Some("int") => PrimitiveTypes::Int,
-          Some("flt") => PrimitiveTypes::Flt,
-          Some("lng") => PrimitiveTypes::Lng,
-          Some("dbl") => PrimitiveTypes::Dbl,
-          Some("oct") => PrimitiveTypes::Oct,
-          _ => PrimitiveTypes::Dbl,
-        };
+        let num_type = map_num_type(arg2.and_then(|v| v.as_str()), PrimitiveTypes::Dbl);
         Ok(Instructions::Inc(SmolStr::new(s), num_type))
       }
       b"dec" => {
@@ -317,13 +325,7 @@ impl Instructions {
             ip,
             code: "DEC_MISSING_VAR".into(),
           })?;
-        let num_type = match arg2.and_then(|v| v.as_str()) {
-          Some("int") => PrimitiveTypes::Int,
-          Some("flt") => PrimitiveTypes::Flt,
-          Some("lng") => PrimitiveTypes::Lng,
-          Some("dbl") => PrimitiveTypes::Dbl,
-          _ => PrimitiveTypes::Int,
-        };
+        let num_type = map_num_type(arg2.and_then(|v| v.as_str()), PrimitiveTypes::Int);
         Ok(Instructions::Dec(SmolStr::new(s), num_type))
       }
       b"func" => {
@@ -406,10 +408,16 @@ impl Instructions {
       b"import" => {
         let module_name = arg1
           .and_then(|v| v.as_str())
-          .expect("Module name must be string");
+          .ok_or(VMError::InvalidOpcode {
+            ip,
+            code: "IMPORT_MISSING_MODULE_NAME".into(),
+          })?;
         let idx = arg2
           .and_then(|v| v.as_u64())
-          .expect("Import alias index must be a number") as usize;
+          .ok_or(VMError::InvalidOpcode {
+            ip,
+            code: "IMPORT_MISSING_INDEX".into(),
+          })? as usize;
         Ok(Instructions::Import(SmolStr::new(module_name), idx))
       }
       b"break" => {
