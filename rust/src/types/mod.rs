@@ -27,6 +27,4 @@ pub(crate) mod var_stack;
 pub mod vmconfig;
 pub mod vmevent;
 pub(crate) mod vmstate;
-pub(crate) mod wasm_error_options;
-pub(crate) mod wasm_runtime_config;
-pub(crate) mod wasm_security_config;
+pub(crate) mod wasm;
