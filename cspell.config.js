@@ -77,7 +77,8 @@ export default {
     'lmod',
     'sbcs',
     'fract',
-    'ftype'
+    'ftype',
+    'impls'
   ],
   ignorePaths: [
     'node_modules/**',

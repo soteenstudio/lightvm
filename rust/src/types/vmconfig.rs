@@ -11,19 +11,19 @@
 use crate::types::capability::Capability;
 use crate::types::error_options::ErrorOptions;
 #[cfg(feature = "node")]
-use crate::types::js_error_options::JSErrorOptions;
+use crate::types::js::js_error_options::JSErrorOptions;
 #[cfg(feature = "node")]
-use crate::types::js_runtime_config::JSRuntimeConfig;
+use crate::types::js::js_runtime_config::JSRuntimeConfig;
 #[cfg(feature = "node")]
-use crate::types::js_security_config::JSSecurityConfig;
+use crate::types::js::js_security_config::JSSecurityConfig;
 use crate::types::runtime_config::RuntimeConfig;
 use crate::types::security_config::SecurityConfig;
 #[cfg(feature = "wasm")]
-use crate::types::wasm_error_options::WASMErrorOptions;
+use crate::types::wasm::wasm_error_options::WASMErrorOptions;
 #[cfg(feature = "wasm")]
-use crate::types::wasm_runtime_config::WASMRuntimeConfig;
+use crate::types::wasm::wasm_runtime_config::WASMRuntimeConfig;
 #[cfg(feature = "wasm")]
-use crate::types::wasm_security_config::WASMSecurityConfig;
+use crate::types::wasm::wasm_security_config::WASMSecurityConfig;
 #[cfg(feature = "node")]
 use napi_derive::napi;
 #[cfg(feature = "wasm")]
