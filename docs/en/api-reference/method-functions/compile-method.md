@@ -22,15 +22,20 @@ In **Rust**, you typically work with raw instruction strings, optimize them usin
 :::
 
 ## Target Architecture
-| Architecture | Compile |
-|--------------|---------|
-| AArch64      | ✓       |
+Here is the compilation status for supported hardware architectures:
+
+| Architecture | Status | Compile |
+| :--- | :--- | :--- |
+| `AArch64` | nightly | ✓ |
 
 ## File Type
+Overview of the supported file formats used throughout the pipeline:
+
 | Type | Description |
-|------|-------------|
-| `Assembly` |
-| `Binary` |
+| :--- | :--- |
+| `Assembly` | A human-readable textual representation of low-level machine instructions, serving as an intermediate step before final bytecode or machine code generation. |
+| `Binary` | A compiled, machine-ready execution format consisting of raw bytes and opcodes designed for direct execution by the runtime or hardware. |
+
 ::: info
 **Capability Required**: `Control`
 :::

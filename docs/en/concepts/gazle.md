@@ -13,6 +13,7 @@ Gazle employs a specialized transformation pipeline to refine your bytecode. It 
  * **Redundant Load Elimination**: Detects consecutive attempts to load identical values or variables onto the stack and replaces redundant operations with a high-performance `dup` instruction to minimize memory access overhead.
  * **Jump Optimization**: Detects and removes redundant Jump instructions that point to the very next line of code.
  * **Jump Threading**: Optimizes control flow by collapsing chains of redirection, where a jump leads directly to another jump, ensuring the instruction pointer bypasses intermediate hops to reach the final destination immediately.
+ * **Constant Propagation**: Optimizes bytecode by tracking variable assignments and replacing `get` operations with direct `push` instructions when values are known constants. It checks usage frequency and avoids inlining heavy objects like arrays or objects, clearing state across control flow jumps to ensure safe and efficient inlining.
 
 ::: info
 You can find how to use Gazle on the [Optimize Bytecode Method](../api-reference/method-functions/tools-method/optimize-bytecode-method) page.

@@ -12,7 +12,8 @@ Gazle menggunakan alur transformasi khusus untuk menyempurnakan bytecode Anda. I
  * **Penghapusan Loop Mati**: Mengidentifikasi dan memangkas loop "murni" yang tidak memiliki efek samping (tidak ada I/O, panggilan, atau pengembalian), sehingga mencegah siklus CPU yang tidak perlu.
  * **Penghapusan Pemuatan Berlebihan**: Mendeteksi upaya berulang untuk memuat nilai atau variabel identik ke dalam tumpukan dan mengganti operasi yang berlebihan dengan instruksi `dup` berkinerja tinggi untuk meminimalkan 
  * **Optimasi Lompatan**: Mendeteksi dan menghapus instruksi Lompatan yang berlebihan yang mengarah ke baris kode berikutnya.
- * **Jump Threading**: Mengoptimalkan alur kontrol dengan meruntuhkan rantai pengalihan, di mana sebuah lompatan mengarah langsung ke lompatan lain, memastikan penunjuk instruksi melewati lompatan perantara untuk mencapai tujuan.
+ * **Lompatan Threading**: Mengoptimalkan alur kontrol dengan meruntuhkan rantai pengalihan, di mana sebuah lompatan mengarah langsung ke lompatan lain, memastikan penunjuk instruksi melewati lompatan perantara untuk mencapai tujuan.
+ * **Perambatan Konstan**: Mengoptimalkan *bytecode* dengan melacak penugasan variabel dan mengganti operasi `get` dengan instruksi `push` langsung ketika nilainya berupa konstanta yang diketahui. Sistem ini memeriksa frekuensi penggunaan dan menghindari penyisipan (*inlining*) objek berat seperti *array* atau objek, serta membersihkan status di seluruh lompatan alur kontrol untuk memastikan penyisipan yang aman dan efisien.
 
 ::: info
 Anda dapat menemukan cara menggunakan Gazle di halaman [Metode Optimize Bytecode](../api-reference/method-functions/tools-method/optimize-bytecode-method).
