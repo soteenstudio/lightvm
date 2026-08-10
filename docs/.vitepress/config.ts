@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitepress';
 import { withMermaid } from 'vitepress-plugin-mermaid';
-import { enUs } from './en.js';
-import { idId } from './id.js';
+import { enUs, enUsSearch } from './en.js';
+import { idId, idIdSearch } from './id.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -113,6 +113,10 @@ export default withMermaid(
           appId: '7KAJIG4S68',
           apiKey: '113fdb221f76b5367d9bd85a868f1958',
           indexName: 'Yoush',
+          locales: {
+            root: enUsSearch,
+            id: idIdSearch,
+          },
         },
       },
 

@@ -7,6 +7,10 @@ export const sidebarMethodFunctions = {
       link: '/api-reference/method-functions/run-method',
     },
     {
+      text: 'Compile Method',
+      link: '/api-reference/method-functions/compile-method',
+    },
+    {
       text: 'Provide Method',
       link: '/api-reference/method-functions/provide-method',
     },

@@ -1,4 +1,2 @@
-declare const _default: import('vitepress').UserConfig<
-  import('vitepress').DefaultTheme.Config
->;
+declare const _default: import("vitepress").UserConfig<any>;
 export default _default;
