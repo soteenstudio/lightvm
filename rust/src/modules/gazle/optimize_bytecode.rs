@@ -60,15 +60,10 @@ pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
     // Remap jump targets using the index mapping
     for instr in bytecode.iter_mut() {
       match instr {
-        Instructions::Jump(target) => {
-          if (*target as usize) < index_mapping.len() {
-            *target = index_mapping[*target as usize];
-          }
-        }
-        Instructions::IfFalse(target) => {
-          if (*target as usize) < index_mapping.len() {
-            *target = index_mapping[*target as usize];
-          }
+        Instructions::Jump(target) | Instructions::IfFalse(target)
+          if *target < index_mapping.len() =>
+        {
+          *target = index_mapping[*target];
         }
         _ => {}
       }
