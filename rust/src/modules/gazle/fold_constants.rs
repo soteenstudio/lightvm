@@ -47,13 +47,7 @@ fn extract_value(instr: &Instructions) -> Option<Value> {
 fn value_to_instruction(val: Value) -> Instructions {
   match val {
     Value::Int16(v) => Instructions::PushInt16(v),
-    Value::Int32(v) => {
-      if v >= i16::MIN as i32 && v <= i16::MAX as i32 {
-        Instructions::PushInt16(v as i16)
-      } else {
-        Instructions::PushInt32(v)
-      }
-    }
+    Value::Int32(v) => Instructions::PushInt32(v),
     Value::Int64(v) => {
       if v >= i16::MIN as i64 && v <= i16::MAX as i64 {
         Instructions::PushInt16(v as i16)
