@@ -16,7 +16,7 @@ enum Demand {
   Drop,
 }
 #[inline]
-pub fn eliminate_dead_stores(bytecode: &mut Vec<Instructions>, usage: &Usage) {
+pub fn eliminate_dead_stores(bytecode: &mut [Instructions], usage: &Usage) {
   let mut stack_demands: Vec<Demand> = Vec::new();
   for i in (0..bytecode.len()).rev() {
     let inst = &mut bytecode[i];
@@ -51,7 +51,6 @@ pub fn eliminate_dead_stores(bytecode: &mut Vec<Instructions>, usage: &Usage) {
           *inst = Instructions::Nop;
           continue;
         }
-        stack_demands.push(Demand::Keep);
       }
       Instructions::ValIdx(_) => {
         stack_demands.push(Demand::Keep);
@@ -217,5 +216,4 @@ pub fn eliminate_dead_stores(bytecode: &mut Vec<Instructions>, usage: &Usage) {
       _ => {}
     }
   }
-  bytecode.retain(|x| !matches!(x, Instructions::Nop));
 }
