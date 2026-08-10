@@ -9,6 +9,7 @@
  */
 
 pub(crate) mod analyze_usage;
+pub(crate) mod constant_propagation;
 pub(crate) mod eliminate_dead_loops;
 pub(crate) mod eliminate_dead_stores;
 pub(crate) mod eliminate_redundant_loads;
@@ -19,3 +20,4 @@ pub(crate) mod jump_threading;
 pub(crate) mod optimize_bytecode;
 pub(crate) mod specialized_instructions;
 pub(crate) mod strength_reduction;
+pub(crate) mod utils;

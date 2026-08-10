@@ -21,219 +21,70 @@ use crate::instructions::{
   },
   stack::concat_func::concat_values,
 };
-use crate::types::{instructions::Instructions, value::Value};
+use crate::modules::gazle::utils::{
+  extract_value::extract_value, value_to_instruction::value_to_instruction,
+};
+use crate::types::instructions::Instructions;
 #[inline(always)]
 pub fn fold_constants(bytecode: &mut [Instructions]) {
   let mut i = 0;
   while i < bytecode.len().saturating_sub(2) {
-    let mut instr1 = std::mem::replace(&mut bytecode[i], Instructions::Nop);
-    let mut instr2 = std::mem::replace(&mut bytecode[i + 1], Instructions::Nop);
-    let mut instr3 = std::mem::replace(&mut bytecode[i + 2], Instructions::Nop);
-    match (&mut instr1, &mut instr2, &mut instr3) {
-      (Instructions::Push(v1), Instructions::Push(v2), Instructions::Add(t)) => {
-        let val1 = std::mem::replace(v1, Value::Null);
-        let val2 = std::mem::replace(v2, Value::Null);
-        let res = add_values(val1, val2, *t);
-        bytecode[i] = Instructions::Push(res);
+    let instr1 = &bytecode[i];
+    let instr2 = &bytecode[i + 1];
+    let instr3 = &bytecode[i + 2];
+    if let (Some(val1), Some(val2)) = (extract_value(instr1), extract_value(instr2)) {
+      let result = match instr3 {
+        Instructions::Add(t) => Some(add_values(val1, val2, *t)),
+        Instructions::Sub(t) => Some(sub_values(val1, val2, *t)),
+        Instructions::Div(t) => Some(div_values(val1, val2, *t)),
+        Instructions::Mul(t) => Some(mul_values(val1, val2, *t)),
+        Instructions::Mod(t) => Some(mod_values(val1, val2, *t)),
+        Instructions::Gt(t) => Some(gt_values(val1, val2, *t)),
+        Instructions::Lt(t) => Some(lt_values(val1, val2, *t)),
+        Instructions::Ge(t) => Some(ge_values(val1, val2, *t)),
+        Instructions::Le(t) => Some(le_values(val1, val2, *t)),
+        Instructions::Eq(t) => Some(eq_values(val1, val2, *t)),
+        Instructions::Neq(t) => Some(neq_values(val1, val2, *t)),
+        Instructions::Shl(t) => Some(shl_values(val1, val2, *t)),
+        Instructions::Shr(t) => Some(shr_values(val1, val2, *t)),
+        Instructions::Rol(t) => Some(rol_values(val1, val2, *t)),
+        Instructions::Ror(t) => Some(ror_values(val1, val2, *t)),
+        Instructions::And => Some(and_values(val1, val2)),
+        Instructions::Or => Some(or_values(val1, val2)),
+        Instructions::Xor => Some(xor_values(val1, val2)),
+        Instructions::Concat => Some(concat_values(&val1, &val2)),
+        Instructions::Pow(t) => Some(pow_values(val1, val2, *t)),
+        Instructions::Powi(t) => Some(powi_values(val1, val2, *t)),
+        Instructions::Powf(t) => Some(powf_values(val1, val2, *t)),
+        _ => None,
+      };
+      if let Some(res_val) = result {
+        bytecode[i] = value_to_instruction(res_val);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
         i += 3;
-      }
-      (Instructions::Push(v1), Instructions::Push(v2), Instructions::Sub(t)) => {
-        let val1 = std::mem::replace(v1, Value::Null);
-        let val2 = std::mem::replace(v2, Value::Null);
-        let res = sub_values(val1, val2, *t);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        bytecode[i + 2] = Instructions::Nop;
-        i += 3;
-      }
-      (Instructions::Push(v1), Instructions::Push(v2), Instructions::Div(t)) => {
-        let val1 = std::mem::replace(v1, Value::Null);
-        let val2 = std::mem::replace(v2, Value::Null);
-        let res = div_values(val1, val2, *t);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        bytecode[i + 2] = Instructions::Nop;
-        i += 3;
-      }
-      (Instructions::Push(v1), Instructions::Push(v2), Instructions::Mul(t)) => {
-        let val1 = std::mem::replace(v1, Value::Null);
-        let val2 = std::mem::replace(v2, Value::Null);
-        let res = mul_values(val1, val2, *t);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        bytecode[i + 2] = Instructions::Nop;
-        i += 3;
-      }
-      (Instructions::Push(v1), Instructions::Push(v2), Instructions::Mod(t)) => {
-        let val1 = std::mem::replace(v1, Value::Null);
-        let val2 = std::mem::replace(v2, Value::Null);
-        let res = mod_values(val1, val2, *t);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        bytecode[i + 2] = Instructions::Nop;
-        i += 3;
-      }
-      (Instructions::Push(v1), Instructions::Push(v2), Instructions::Gt(t)) => {
-        let val1 = std::mem::replace(v1, Value::Null);
-        let val2 = std::mem::replace(v2, Value::Null);
-        let res = gt_values(val1, val2, *t);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        bytecode[i + 2] = Instructions::Nop;
-        i += 3;
-      }
-      (Instructions::Push(v1), Instructions::Push(v2), Instructions::Lt(t)) => {
-        let val1 = std::mem::replace(v1, Value::Null);
-        let val2 = std::mem::replace(v2, Value::Null);
-        let res = lt_values(val1, val2, *t);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        bytecode[i + 2] = Instructions::Nop;
-        i += 3;
-      }
-      (Instructions::Push(v1), Instructions::Push(v2), Instructions::Ge(t)) => {
-        let val1 = std::mem::replace(v1, Value::Null);
-        let val2 = std::mem::replace(v2, Value::Null);
-        let res = ge_values(val1, val2, *t);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        bytecode[i + 2] = Instructions::Nop;
-        i += 3;
-      }
-      (Instructions::Push(v1), Instructions::Push(v2), Instructions::Le(t)) => {
-        let val1 = std::mem::replace(v1, Value::Null);
-        let val2 = std::mem::replace(v2, Value::Null);
-        let res = le_values(val1, val2, *t);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        bytecode[i + 2] = Instructions::Nop;
-        i += 3;
-      }
-      (Instructions::Push(v1), Instructions::Push(v2), Instructions::Eq(t)) => {
-        let val1 = std::mem::replace(v1, Value::Null);
-        let val2 = std::mem::replace(v2, Value::Null);
-        let res = eq_values(val1, val2, *t);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        bytecode[i + 2] = Instructions::Nop;
-        i += 3;
-      }
-      (Instructions::Push(v1), Instructions::Push(v2), Instructions::Neq(t)) => {
-        let val1 = std::mem::replace(v1, Value::Null);
-        let val2 = std::mem::replace(v2, Value::Null);
-        let res = neq_values(val1, val2, *t);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        bytecode[i + 2] = Instructions::Nop;
-        i += 3;
-      }
-      (Instructions::Push(v1), Instructions::Push(v2), Instructions::Shl(t)) => {
-        let val1 = std::mem::replace(v1, Value::Null);
-        let val2 = std::mem::replace(v2, Value::Null);
-        let res = shl_values(val1, val2, *t);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        bytecode[i + 2] = Instructions::Nop;
-        i += 3;
-      }
-      (Instructions::Push(v1), Instructions::Push(v2), Instructions::Shr(t)) => {
-        let val1 = std::mem::replace(v1, Value::Null);
-        let val2 = std::mem::replace(v2, Value::Null);
-        let res = shr_values(val1, val2, *t);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        bytecode[i + 2] = Instructions::Nop;
-        i += 3;
-      }
-      (Instructions::Push(v1), Instructions::Push(v2), Instructions::Rol(t)) => {
-        let val1 = std::mem::replace(v1, Value::Null);
-        let val2 = std::mem::replace(v2, Value::Null);
-        let res = rol_values(val1, val2, *t);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        bytecode[i + 2] = Instructions::Nop;
-        i += 3;
-      }
-      (Instructions::Push(v1), Instructions::Push(v2), Instructions::Ror(t)) => {
-        let val1 = std::mem::replace(v1, Value::Null);
-        let val2 = std::mem::replace(v2, Value::Null);
-        let res = ror_values(val1, val2, *t);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        bytecode[i + 2] = Instructions::Nop;
-        i += 3;
-      }
-      (Instructions::Push(v1), Instructions::Push(v2), Instructions::And) => {
-        let val1 = std::mem::replace(v1, Value::Null);
-        let val2 = std::mem::replace(v2, Value::Null);
-        let res = and_values(val1, val2);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        bytecode[i + 2] = Instructions::Nop;
-        i += 3;
-      }
-      (Instructions::Push(v1), Instructions::Push(v2), Instructions::Or) => {
-        let val1 = std::mem::replace(v1, Value::Null);
-        let val2 = std::mem::replace(v2, Value::Null);
-        let res = or_values(val1, val2);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        bytecode[i + 2] = Instructions::Nop;
-        i += 3;
-      }
-      (Instructions::Push(v1), Instructions::Push(v2), Instructions::Xor) => {
-        let val1 = std::mem::replace(v1, Value::Null);
-        let val2 = std::mem::replace(v2, Value::Null);
-        let res = xor_values(val1, val2);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        bytecode[i + 2] = Instructions::Nop;
-        i += 3;
-      }
-      (Instructions::Push(v1), Instructions::Push(v2), Instructions::Concat) => {
-        let val1 = std::mem::replace(v1, Value::Null);
-        let val2 = std::mem::replace(v2, Value::Null);
-        let res = concat_values(&val1, &val2);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        bytecode[i + 2] = Instructions::Nop;
-        i += 3;
-      }
-      (Instructions::Push(v1), Instructions::Push(v2), Instructions::Pow(t)) => {
-        let val1 = std::mem::replace(v1, Value::Null);
-        let val2 = std::mem::replace(v2, Value::Null);
-        let res = pow_values(val1, val2, *t);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        bytecode[i + 2] = Instructions::Nop;
-        i += 3;
-      }
-      (Instructions::Push(v1), Instructions::Push(v2), Instructions::Powi(t)) => {
-        let val1 = std::mem::replace(v1, Value::Null);
-        let val2 = std::mem::replace(v2, Value::Null);
-        let res = powi_values(val1, val2, *t);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        bytecode[i + 2] = Instructions::Nop;
-        i += 3;
-      }
-      (Instructions::Push(v1), Instructions::Push(v2), Instructions::Powf(t)) => {
-        let val1 = std::mem::replace(v1, Value::Null);
-        let val2 = std::mem::replace(v2, Value::Null);
-        let res = powf_values(val1, val2, *t);
-        bytecode[i] = Instructions::Push(res);
-        bytecode[i + 1] = Instructions::Nop;
-        bytecode[i + 2] = Instructions::Nop;
-        i += 3;
-      }
-      _ => {
-        bytecode[i] = instr1;
-        bytecode[i + 1] = instr2;
-        bytecode[i + 2] = instr3;
-        i += 1;
+        continue;
       }
     }
+    if let Some(val1) = extract_value(instr1)
+      && let Instructions::Dup = instr2
+    {
+      let result = match instr3 {
+        Instructions::Add(t) => Some(add_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Sub(t) => Some(sub_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Mul(t) => Some(mul_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Eq(t) => Some(eq_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Neq(t) => Some(neq_values(val1.clone(), val1.clone(), *t)),
+        _ => None,
+      };
+      if let Some(res_val) = result {
+        bytecode[i] = value_to_instruction(res_val);
+        bytecode[i + 1] = Instructions::Nop;
+        bytecode[i + 2] = Instructions::Nop;
+        i += 3;
+        continue;
+      }
+    }
+    i += 1;
   }
 }
