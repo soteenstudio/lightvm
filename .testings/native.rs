@@ -18,8 +18,7 @@ fn main() {
   
   let raw = r#"[
     ["push", 5],
-    ["jump", 0],
-    ["instantiate"]
+    ["jump", 0]
   ]"#;
   let optimized_json = vm.tools().optimize_bytecode(raw);
   
