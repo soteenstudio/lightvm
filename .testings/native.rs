@@ -17,9 +17,14 @@ fn main() {
   }).set_max_io(5000000).set_max_ticks(200).set_max_stack_size(0).with_nightly(false).with_backtrace(false).with_explain(false).with_hint(true);
   
   let raw = r#"[
-    ["push", 283892733993939],
-    ["push", 83838],
-    ["add", ""],
+    ["val", "x"],
+    ["push", 5],
+    ["set", "x"],
+    ["push", "Result is: "],
+    ["println"],
+    ["get", "x"],
+    ["get", "x"],
+    ["add", "sht"],
     ["println"]
   ]"#;
   let optimized_json = vm.tools().optimize_bytecode(raw);

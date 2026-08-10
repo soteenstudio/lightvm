@@ -122,6 +122,25 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         continue;
       }
     }
+    if let Some(val1) = extract_value(instr1)
+      && let Instructions::Dup = instr2
+    {
+      let result = match instr3 {
+        Instructions::Add(t) => Some(add_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Sub(t) => Some(sub_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Mul(t) => Some(mul_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Eq(t) => Some(eq_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Neq(t) => Some(neq_values(val1.clone(), val1.clone(), *t)),
+        _ => None,
+      };
+      if let Some(res_val) = result {
+        bytecode[i] = value_to_instruction(res_val);
+        bytecode[i + 1] = Instructions::Nop;
+        bytecode[i + 2] = Instructions::Nop;
+        i += 3;
+        continue;
+      }
+    }
     i += 1;
   }
 }

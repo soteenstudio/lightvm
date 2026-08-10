@@ -9,8 +9,8 @@
  */
 
 use crate::modules::gazle::{
-  analyze_usage::analyze_usage, eliminate_dead_loops::eliminate_dead_loops,
-  eliminate_dead_stores::eliminate_dead_stores,
+  analyze_usage::analyze_usage, constant_propagation::constant_propagation,
+  eliminate_dead_loops::eliminate_dead_loops, eliminate_dead_stores::eliminate_dead_stores,
   eliminate_redundant_loads::eliminate_redundant_loads, fold_constants::fold_constants,
   fold_conversions::fold_conversions, jump_threading::jump_threading,
   specialized_instructions::specialized_instructions, strength_reduction::strength_reduction,
@@ -24,11 +24,11 @@ pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
     fold_constants(&mut bytecode);
     fold_conversions(&mut bytecode);
     jump_threading(&mut bytecode);
+    constant_propagation(&mut bytecode);
     let usage = analyze_usage(&bytecode);
     eliminate_dead_stores(&mut bytecode, &usage);
     bytecode = eliminate_dead_loops(bytecode);
     bytecode = eliminate_redundant_loads(bytecode);
-    // Build old-index-to-new-index mapping while removing Nop instructions
     let mut index_mapping = Vec::with_capacity(bytecode.len());
     let mut new_idx = 0;
     for (old_idx, instr) in bytecode.iter().enumerate() {
@@ -41,11 +41,9 @@ pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
         index_mapping.push(new_idx);
         new_idx += 1;
       } else {
-        index_mapping.push(new_idx); // Point to next valid instruction
+        index_mapping.push(new_idx);
       }
     }
-
-    // Remove Nop instructions and redundant jumps
     let mut current_idx = 0;
     bytecode.retain(|instr| {
       let keep = match instr {
@@ -56,8 +54,6 @@ pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
       current_idx += 1;
       keep
     });
-
-    // Remap jump targets using the index mapping
     for instr in bytecode.iter_mut() {
       match instr {
         Instructions::Jump(target) | Instructions::IfFalse(target)

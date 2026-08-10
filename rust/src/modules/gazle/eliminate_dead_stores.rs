@@ -21,7 +21,23 @@ pub fn eliminate_dead_stores(bytecode: &mut Vec<Instructions>, usage: &Usage) {
   for i in (0..bytecode.len()).rev() {
     let inst = &mut bytecode[i];
     match inst {
-      Instructions::Push(_) | Instructions::Get(_) | Instructions::GetIdx(_) => {
+      Instructions::Push(_)
+      | Instructions::PushInt16(_)
+      | Instructions::PushInt32(_)
+      | Instructions::PushInt64(_)
+      | Instructions::PushInt128(_)
+      | Instructions::PushFloat16(_)
+      | Instructions::PushFloat32(_)
+      | Instructions::PushFloat64(_)
+      | Instructions::PushString(_)
+      | Instructions::PushArray(_)
+      | Instructions::PushObject(_)
+      | Instructions::PushBool(_)
+      | Instructions::PushNull
+      | Instructions::PushUndefined
+      | Instructions::PushNaN
+      | Instructions::Get(_)
+      | Instructions::GetIdx(_) => {
         if let Some(demand) = stack_demands.pop() {
           if demand == Demand::Drop {
             *inst = Instructions::Nop;
@@ -30,7 +46,14 @@ pub fn eliminate_dead_stores(bytecode: &mut Vec<Instructions>, usage: &Usage) {
           *inst = Instructions::Nop;
         }
       }
-      Instructions::Val(_) | Instructions::ValIdx(_) => {
+      Instructions::Val(arg) => {
+        if !usage.read.contains(arg.as_str()) {
+          *inst = Instructions::Nop;
+          continue;
+        }
+        stack_demands.push(Demand::Keep);
+      }
+      Instructions::ValIdx(_) => {
         stack_demands.push(Demand::Keep);
       }
       Instructions::Set(arg) => {

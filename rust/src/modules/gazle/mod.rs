@@ -9,6 +9,7 @@
  */
 
 pub(crate) mod analyze_usage;
+pub(crate) mod constant_propagation;
 pub(crate) mod eliminate_dead_loops;
 pub(crate) mod eliminate_dead_stores;
 pub(crate) mod eliminate_redundant_loads;
