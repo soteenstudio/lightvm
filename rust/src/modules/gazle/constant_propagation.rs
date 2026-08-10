@@ -30,32 +30,46 @@ fn extract_push_value(instr: &Instructions) -> Option<Value> {
   }
 }
 pub fn constant_propagation(bytecode: &mut [Instructions]) {
+  const MAX_INLINE_USES: usize = 8;
   let mut get_counts: AHashMap<SmolStr, usize> = AHashMap::new();
   for instr in bytecode.iter() {
     if let Instructions::Get(name) = instr {
       *get_counts.entry(name.clone()).or_insert(0) += 1;
     }
   }
-  const MAX_INLINE_USES: usize = 8;
-  let mut const_map: AHashMap<SmolStr, Value> = AHashMap::new();
-  let mut i = 0;
-  while i + 1 < bytecode.len() {
-    if let Some(val) = extract_push_value(&bytecode[i])
-      && let Instructions::Set(ref name) = bytecode[i + 1]
-    {
-      let usage_count = get_counts.get(name).copied().unwrap_or(0);
-      let is_heavy = matches!(val, Value::Array(_) | Value::Object(_));
-      if usage_count <= MAX_INLINE_USES && !is_heavy {
-        const_map.insert(name.clone(), val);
+  let mut const_map: AHashMap<SmolStr, Option<Value>> = AHashMap::new();
+  for i in 0..bytecode.len() {
+    match &bytecode[i] {
+      Instructions::Get(name) => {
+        if let Some(Some(val)) = const_map.get(name) {
+          bytecode[i] = Instructions::Push(val.clone());
+        }
       }
-    }
-    i += 1;
-  }
-  for instr in bytecode.iter_mut() {
-    if let Instructions::Get(name) = instr
-      && let Some(val) = const_map.get(name)
-    {
-      *instr = Instructions::Push(val.clone());
+      _ => {
+        if i + 1 < bytecode.len()
+          && let Some(val) = extract_push_value(&bytecode[i])
+          && let Instructions::Set(ref name) = bytecode[i + 1]
+        {
+          let usage_count = get_counts.get(name).copied().unwrap_or(0);
+          let is_heavy = matches!(val, Value::Array(_) | Value::Object(_));
+          if usage_count <= MAX_INLINE_USES && !is_heavy {
+            const_map.insert(name.clone(), Some(val));
+          } else {
+            const_map.insert(name.clone(), None);
+          }
+        }
+        match &bytecode[i] {
+          Instructions::Set(name) | Instructions::Inc(name, _) | Instructions::Dec(name, _) => {
+            if i == 0 || !extract_push_value(&bytecode[i - 1]).is_some() {
+              const_map.insert(name.clone(), None);
+            }
+          }
+          Instructions::IfFalse(_) | Instructions::Jump(_) => {
+            const_map.clear();
+          }
+          _ => {}
+        }
+      }
     }
   }
 }

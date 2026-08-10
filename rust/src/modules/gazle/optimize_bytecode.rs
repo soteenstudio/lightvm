@@ -25,10 +25,10 @@ pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
     fold_conversions(&mut bytecode);
     jump_threading(&mut bytecode);
     constant_propagation(&mut bytecode);
-    let usage = analyze_usage(&bytecode);
-    eliminate_dead_stores(&mut bytecode, &usage);
     bytecode = eliminate_dead_loops(bytecode);
     bytecode = eliminate_redundant_loads(bytecode);
+    let usage = analyze_usage(&bytecode);
+    eliminate_dead_stores(&mut bytecode, &usage);
     let mut index_mapping = Vec::with_capacity(bytecode.len());
     let mut new_idx = 0;
     for (old_idx, instr) in bytecode.iter().enumerate() {
