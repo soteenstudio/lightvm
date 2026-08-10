@@ -9,6 +9,7 @@
  */
 import { Instructions } from './generated/Instructions.js';
 import { VMConfig } from './generated/VMConfig.js';
+import { CompileConfig } from './generated/CompileConfig.js';
 import { loadNapi } from './utils/loadNapi.js';
 import { isMusl } from './utils/isMusl.js';
 import { VMSystemError as VMError } from './utils/vmerror.js';
@@ -28,6 +29,13 @@ export declare enum VMEvent {
     Tick = 0,
     Halt = 1,
     Panic = 2
+}
+export declare enum TargetArch {
+    AArch64 = 0
+}
+export declare enum FileType {
+    Assembly = 0,
+    Binary = 1
 }
 export declare class LightVM {
     private native;
@@ -55,6 +63,7 @@ export declare class LightVM {
     withHint(enabled: boolean): this;
     load(source: Instructions[] | string): this;
     run(options?: any): any;
+    compile(config: CompileConfig): any;
     export(name: string): (...args: any[]) => any;
     provide(nameOrObj: string | any, value?: any): this;
     halt(): void;

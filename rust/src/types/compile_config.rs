@@ -9,10 +9,14 @@
  */
 
 use crate::types::{file_type::FileType, target_arch::TargetArch};
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, ts_rs::TS)]
+#[ts(export, rename = "CompileConfig")]
 pub struct CompileConfig<'a> {
+  #[ts(rename = "targetArch", type = "number")]
   pub target_arch: TargetArch,
+  #[ts(rename = "fileType", type = "number")]
   pub file_type: FileType,
+  #[ts(type = "string")]
   pub path: &'a str,
 }
 impl<'a> Default for CompileConfig<'a> {
