@@ -60,7 +60,7 @@ pub fn constant_propagation(bytecode: &mut [Instructions]) {
         }
         match &bytecode[i] {
           Instructions::Set(name) | Instructions::Inc(name, _) | Instructions::Dec(name, _) => {
-            if i == 0 || !extract_push_value(&bytecode[i - 1]).is_some() {
+            if i == 0 || extract_push_value(&bytecode[i - 1]).is_none() {
               const_map.insert(name.clone(), None);
             }
           }

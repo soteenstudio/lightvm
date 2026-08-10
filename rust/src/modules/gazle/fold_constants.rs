@@ -21,66 +21,10 @@ use crate::instructions::{
   },
   stack::concat_func::concat_values,
 };
-use crate::types::{instructions::Instructions, value::Value};
-#[inline(always)]
-fn extract_value(instr: &Instructions) -> Option<Value> {
-  match instr {
-    Instructions::PushInt16(v) => Some(Value::Int16(*v)),
-    Instructions::PushInt32(v) => Some(Value::Int32(*v)),
-    Instructions::PushInt64(v) => Some(Value::Int64(*v)),
-    Instructions::PushInt128(v) => Some(Value::Int128(*v)),
-    Instructions::PushFloat16(v) => Some(Value::Float16(*v)),
-    Instructions::PushFloat32(v) => Some(Value::Float32(*v)),
-    Instructions::PushFloat64(v) => Some(Value::Float64(*v)),
-    Instructions::PushString(v) => Some(Value::String(v.clone())),
-    Instructions::PushArray(v) => Some(Value::Array(v.clone())),
-    Instructions::PushObject(v) => Some(Value::Object(v.clone())),
-    Instructions::PushBool(v) => Some(Value::Bool(*v)),
-    Instructions::PushNull => Some(Value::Null),
-    Instructions::PushUndefined => Some(Value::Undefined),
-    Instructions::PushNaN => Some(Value::NaN),
-    Instructions::Push(v) => Some(v.clone()),
-    _ => None,
-  }
-}
-#[inline(always)]
-fn value_to_instruction(val: Value) -> Instructions {
-  match val {
-    Value::Int16(v) => Instructions::PushInt16(v),
-    Value::Int32(v) => Instructions::PushInt32(v),
-    Value::Int64(v) => {
-      if v >= i16::MIN as i64 && v <= i16::MAX as i64 {
-        Instructions::PushInt16(v as i16)
-      } else if v >= i32::MIN as i64 && v <= i32::MAX as i64 {
-        Instructions::PushInt32(v as i32)
-      } else {
-        Instructions::PushInt64(v)
-      }
-    }
-    Value::Int128(v) => {
-      if v >= i16::MIN as i128 && v <= i16::MAX as i128 {
-        Instructions::PushInt16(v as i16)
-      } else if v >= i32::MIN as i128 && v <= i32::MAX as i128 {
-        Instructions::PushInt32(v as i32)
-      } else if v >= i64::MIN as i128 && v <= i64::MAX as i128 {
-        Instructions::PushInt64(v as i64)
-      } else {
-        Instructions::PushInt128(v)
-      }
-    }
-    Value::Float16(v) => Instructions::PushFloat16(v),
-    Value::Float32(v) => Instructions::PushFloat32(v),
-    Value::Float64(v) => Instructions::PushFloat64(v),
-    Value::String(v) => Instructions::PushString(v),
-    Value::Array(v) => Instructions::PushArray(v),
-    Value::Object(v) => Instructions::PushObject(v),
-    Value::Bool(v) => Instructions::PushBool(v),
-    Value::Null => Instructions::PushNull,
-    Value::Undefined => Instructions::PushUndefined,
-    Value::NaN => Instructions::PushNaN,
-    other => Instructions::Push(other),
-  }
-}
+use crate::modules::gazle::utils::{
+  extract_value::extract_value, value_to_instruction::value_to_instruction,
+};
+use crate::types::instructions::Instructions;
 #[inline(always)]
 pub fn fold_constants(bytecode: &mut [Instructions]) {
   let mut i = 0;

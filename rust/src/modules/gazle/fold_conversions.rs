@@ -18,173 +18,41 @@ use crate::instructions::{
   math::{cos_func::cos_values, neg_func::neg_values, sin_func::sin_values, tan_func::tan_values},
   metadata::typeof_func::typeof_values,
 };
-use crate::types::{instructions::Instructions, value::Value};
+use crate::modules::gazle::utils::{
+  extract_value::extract_value, value_to_instruction::value_to_instruction,
+};
+use crate::types::instructions::Instructions;
 #[inline(always)]
 pub fn fold_conversions(bytecode: &mut [Instructions]) {
   let mut i = 0;
   while i < bytecode.len().saturating_sub(1) {
-    let mut instr1 = std::mem::replace(&mut bytecode[i], Instructions::Nop);
-    let mut instr2 = std::mem::replace(&mut bytecode[i + 1], Instructions::Nop);
-    match (&mut instr1, &mut instr2) {
-      (Instructions::Push(v), Instructions::Not) => {
-        let val = std::mem::replace(v, Value::Null);
-        let res = not_values(val);
-        bytecode[i] = Instructions::Push(res);
+    let instr1 = &bytecode[i];
+    let instr2 = &bytecode[i + 1];
+    if let Some(val) = extract_value(instr1) {
+      let folded = match instr2 {
+        Instructions::Not => Some(not_values(val)),
+        Instructions::TypeOf => Some(typeof_values(val)),
+        Instructions::ToShort => to_short_values(val).ok(),
+        Instructions::ToInteger => to_integer_values(val).ok(),
+        Instructions::ToLong => to_long_values(val).ok(),
+        Instructions::ToOcta => to_octa_values(val).ok(),
+        Instructions::ToHalf => to_half_values(val).ok(),
+        Instructions::ToFloat => to_float_values(val).ok(),
+        Instructions::ToDouble => to_double_values(val).ok(),
+        Instructions::ToString => to_string_values(val).ok(),
+        Instructions::Sin(t) => Some(sin_values(val, *t)),
+        Instructions::Cos(t) => Some(cos_values(val, *t)),
+        Instructions::Tan(t) => Some(tan_values(val, *t)),
+        Instructions::Neg(t) => Some(neg_values(val, *t)),
+        _ => None,
+      };
+      if let Some(res_val) = folded {
+        bytecode[i] = value_to_instruction(res_val);
         bytecode[i + 1] = Instructions::Nop;
         i += 2;
-      }
-      (Instructions::Push(v), Instructions::ToShort) => {
-        let owned_val = std::mem::replace(v, Value::Null);
-        if let Ok(converted_val) = to_short_values(owned_val) {
-          bytecode[i] = Instructions::Push(converted_val);
-          bytecode[i + 1] = Instructions::Nop;
-          i += 2;
-        } else {
-          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
-          i += 1;
-        }
-      }
-      (Instructions::Push(v), Instructions::ToInteger) => {
-        let owned_val = std::mem::replace(v, Value::Null);
-        if let Ok(converted_val) = to_integer_values(owned_val) {
-          bytecode[i] = Instructions::Push(converted_val);
-          bytecode[i + 1] = Instructions::Nop;
-          i += 2;
-        } else {
-          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
-          i += 1;
-        }
-      }
-      (Instructions::Push(v), Instructions::ToLong) => {
-        let owned_val = std::mem::replace(v, Value::Null);
-        if let Ok(converted_val) = to_long_values(owned_val) {
-          bytecode[i] = Instructions::Push(converted_val);
-          bytecode[i + 1] = Instructions::Nop;
-          i += 2;
-        } else {
-          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
-          i += 1;
-        }
-      }
-      (Instructions::Push(v), Instructions::ToOcta) => {
-        let owned_val = std::mem::replace(v, Value::Null);
-        if let Ok(converted_val) = to_octa_values(owned_val) {
-          bytecode[i] = Instructions::Push(converted_val);
-          bytecode[i + 1] = Instructions::Nop;
-          i += 2;
-        } else {
-          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
-          i += 1;
-        }
-      }
-      (Instructions::Push(v), Instructions::ToHalf) => {
-        let owned_val = std::mem::replace(v, Value::Null);
-        if let Ok(converted_val) = to_half_values(owned_val) {
-          bytecode[i] = Instructions::Push(converted_val);
-          bytecode[i + 1] = Instructions::Nop;
-          i += 2;
-        } else {
-          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
-          i += 1;
-        }
-      }
-      (Instructions::Push(v), Instructions::ToFloat) => {
-        let owned_val = std::mem::replace(v, Value::Null);
-        if let Ok(converted_val) = to_float_values(owned_val) {
-          bytecode[i] = Instructions::Push(converted_val);
-          bytecode[i + 1] = Instructions::Nop;
-          i += 2;
-        } else {
-          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
-          i += 1;
-        }
-      }
-      (Instructions::Push(v), Instructions::ToDouble) => {
-        let owned_val = std::mem::replace(v, Value::Null);
-        if let Ok(converted_val) = to_double_values(owned_val) {
-          bytecode[i] = Instructions::Push(converted_val);
-          bytecode[i + 1] = Instructions::Nop;
-          i += 2;
-        } else {
-          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
-          i += 1;
-        }
-      }
-      (Instructions::Push(v), Instructions::ToString) => {
-        let owned_val = std::mem::replace(v, Value::Null);
-        if let Ok(converted_val) = to_string_values(owned_val) {
-          bytecode[i] = Instructions::Push(converted_val);
-          bytecode[i + 1] = Instructions::Nop;
-          i += 2;
-        } else {
-          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
-          i += 1;
-        }
-      }
-      (Instructions::Push(v), Instructions::TypeOf) => {
-        let owned_val = std::mem::replace(v, Value::Null);
-        let converted_val = typeof_values(owned_val);
-        bytecode[i] = Instructions::Push(converted_val);
-        bytecode[i + 1] = Instructions::Nop;
-        i += 2;
-      }
-      (Instructions::Push(v), Instructions::Sin(t)) => {
-        let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
-        let res = sin_values(tmp_stack.pop().unwrap(), *t);
-        tmp_stack.push(res);
-        if let Some(converted_val) = tmp_stack.pop() {
-          bytecode[i] = Instructions::Push(converted_val);
-          bytecode[i + 1] = Instructions::Nop;
-          i += 2;
-        } else {
-          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
-          i += 1;
-        }
-      }
-      (Instructions::Push(v), Instructions::Cos(t)) => {
-        let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
-        let res = cos_values(tmp_stack.pop().unwrap(), *t);
-        tmp_stack.push(res);
-        if let Some(converted_val) = tmp_stack.pop() {
-          bytecode[i] = Instructions::Push(converted_val);
-          bytecode[i + 1] = Instructions::Nop;
-          i += 2;
-        } else {
-          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
-          i += 1;
-        }
-      }
-      (Instructions::Push(v), Instructions::Tan(t)) => {
-        let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
-        let res = tan_values(tmp_stack.pop().unwrap(), *t);
-        tmp_stack.push(res);
-        if let Some(converted_val) = tmp_stack.pop() {
-          bytecode[i] = Instructions::Push(converted_val);
-          bytecode[i + 1] = Instructions::Nop;
-          i += 2;
-        } else {
-          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
-          i += 1;
-        }
-      }
-      (Instructions::Push(v), Instructions::Neg(t)) => {
-        let mut tmp_stack = vec![std::mem::replace(v, Value::Null)];
-        let res = neg_values(tmp_stack.pop().unwrap(), *t);
-        tmp_stack.push(res);
-        if let Some(converted_val) = tmp_stack.pop() {
-          bytecode[i] = Instructions::Push(converted_val);
-          bytecode[i + 1] = Instructions::Nop;
-          i += 2;
-        } else {
-          bytecode[i] = Instructions::Push(std::mem::replace(v, Value::Null));
-          i += 1;
-        }
-      }
-      _ => {
-        bytecode[i] = instr1;
-        bytecode[i + 1] = instr2;
-        i += 1;
+        continue;
       }
     }
+    i += 1;
   }
 }

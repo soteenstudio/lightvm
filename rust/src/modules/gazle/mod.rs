@@ -20,3 +20,4 @@ pub(crate) mod jump_threading;
 pub(crate) mod optimize_bytecode;
 pub(crate) mod specialized_instructions;
 pub(crate) mod strength_reduction;
+pub(crate) mod utils;

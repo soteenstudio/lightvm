@@ -28,6 +28,14 @@ fn main() {
     ["get", "y"],
     ["add", "sht"],
     ["concat"],
+    ["println"],
+    ["push", 6],
+    ["set", "y"],
+    ["push", "Type is: "],
+    ["get", "x"],
+    ["typeof"],
+    ["access", "type"],
+    ["concat"],
     ["println"]
   ]"#;
   let optimized_json = vm.tools().optimize_bytecode(raw);
@@ -36,11 +44,11 @@ fn main() {
   vm.load(optimized_json);
   
   vm.run(None);
-  vm.compile(CompileConfig {
+  /*vm.compile(CompileConfig {
     target_arch: TargetArch::AArch64,
     file_type: FileType::Binary,
     path: "./test"
-  });
+  });*/
 
   /*let assembly_result = vm.compile(CompileConfig {
     target_arch: TargetArch::AArch64,
