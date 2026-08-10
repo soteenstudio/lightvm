@@ -11,11 +11,11 @@
 use crate::types::capability::Capability;
 use crate::types::error_options::ErrorOptions;
 #[cfg(feature = "node")]
-use crate::types::js_error_options::JSErrorOptions;
+use crate::types::js::js_error_options::JSErrorOptions;
 #[cfg(feature = "node")]
-use crate::types::js_runtime_config::JSRuntimeConfig;
+use crate::types::js::js_runtime_config::JSRuntimeConfig;
 #[cfg(feature = "node")]
-use crate::types::js_security_config::JSSecurityConfig;
+use crate::types::js::js_security_config::JSSecurityConfig;
 use crate::types::runtime_config::RuntimeConfig;
 use crate::types::security_config::SecurityConfig;
 #[cfg(feature = "wasm")]
