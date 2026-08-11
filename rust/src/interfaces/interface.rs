@@ -10,7 +10,8 @@
 
 use crate::codegen::compile::compile;
 use crate::modules::{
-  gazle::optimize_bytecode::optimize_bytecode, krates::has_nightly_opcodes::has_nightly_opcodes,
+  gazle::optimize_bytecode::optimize_bytecode, itme::benchmark::Benchmark,
+  krates::has_nightly_opcodes::has_nightly_opcodes,
 };
 use crate::types::{
   capability::Capability,
@@ -395,6 +396,9 @@ impl LightVM {
     self.require(Capability::Control)?;
     self._outputs.clear();
     Ok(())
+  }
+  pub fn bench(&mut self, name: &str) -> Benchmark {
+    Benchmark::new(name)
   }
   pub fn optimize_bytecode_internal(
     &mut self,

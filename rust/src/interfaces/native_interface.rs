@@ -30,6 +30,7 @@ use std::collections::HashSet;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use unescape::unescape;
+//use crate::modules::itme::benchmark::Benchmark;
 #[cfg(not(feature = "node"))]
 impl LightVM {
   pub fn new<C: Into<VmConfig>>(config: C) -> Self {
@@ -303,6 +304,10 @@ pub struct LightVMTools {
 }
 #[cfg(not(feature = "node"))]
 impl LightVMTools {
+  pub fn bench(&self, _name: &str) {
+    // element the code here
+    // change the return type to Benchmark
+  }
   /// Optimizes raw JSON bytecode and serializes it to a string
   ///
   /// # Examples
