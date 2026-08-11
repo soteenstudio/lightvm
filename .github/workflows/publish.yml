@@ -188,6 +188,8 @@ jobs:
           cache: 'npm'
 
       - name: Build JavaScript Interface
+        env:
+          SIGNING_PRIVATE_KEY: ${{ secrets.SIGNING_PRIVATE_KEY }}
         run: |
           npm install
           npm run build
@@ -199,6 +201,7 @@ jobs:
           INPUT_VERSION: ${{ github.event.inputs.version_override }}
           INPUT_RAW_VERSION: ${{ github.event.release.tag_name }}
           EVENT_NAME: ${{ github.event_name }}
+          SIGNING_PRIVATE_KEY: ${{ secrets.SIGNING_PRIVATE_KEY }}
 
       - name: Upload Test Tarballs (Only on Manual Run)
         if: github.event_name == 'workflow_dispatch'
