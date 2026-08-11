@@ -78,7 +78,8 @@ export default {
     'sbcs',
     'fract',
     'ftype',
-    'impls'
+    'impls',
+    'itme'
   ],
   ignorePaths: [
     'node_modules/**',
