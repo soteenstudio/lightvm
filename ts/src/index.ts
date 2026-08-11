@@ -280,14 +280,12 @@ export class LightVM {
         return this.wrap(() => this.native.LightVM.blackBox(value));
       },
       bench: (name: string) => {
-        let bytesVal: number | undefined = undefined;
         return {
           bytes: (b: number) => {
-            bytesVal = b;
             return {
               run: (setup: () => any, fn: (state: any) => any) => {
                 return this.wrap(() =>
-                  this.native.LightVM.bench(name, setup, fn, bytesVal ?? null),
+                  this.native.LightVM.bench(name, setup, fn, b),
                 );
               },
             };
