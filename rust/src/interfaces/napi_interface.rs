@@ -312,6 +312,27 @@ impl NodeLightVM {
       ))
     }
   }
+  #[napi(js_name = "blackBox")]
+  pub fn napi_black_box(value: serde_json::Value) -> Result<serde_json::Value> {
+    Ok(LightVM::black_box(value))
+  }
+  #[napi(js_name = "bench")]
+  pub fn napi_bench(
+    name: String,
+    mut setup: Function<(), serde_json::Value>,
+    mut f: Function<serde_json::Value, serde_json::Value>,
+    bytes: Option<u32>,
+  ) -> Result<()> {
+    let mut bench_obj = LightVM::bench(&name);
+    if let Some(b) = bytes {
+      bench_obj = bench_obj.bytes(b as usize);
+    }
+    bench_obj.run(
+      || setup.call(()).unwrap_or(serde_json::Value::Null),
+      |state| f.call(state.clone()).unwrap_or(serde_json::Value::Null),
+    );
+    Ok(())
+  }
   #[napi(js_name = "optimizeBytecode")]
   pub fn napi_optimize_bytecode(
     bytecode: serde_json::Value,
