@@ -279,15 +279,25 @@ export class LightVM {
       blackBox: (value: any) => {
         return this.wrap(() => this.native.LightVM.blackBox(value));
       },
-      bench: (
-        name: string,
-        setup: () => any,
-        fn: (state: any) => any,
-        bytes?: number,
-      ) => {
-        return this.wrap(() =>
-          this.native.LightVM.bench(name, setup, fn, bytes ?? null),
-        );
+      bench: (name: string) => {
+        let bytesVal: number | undefined = undefined;
+        return {
+          bytes: (b: number) => {
+            bytesVal = b;
+            return {
+              run: (setup: () => any, fn: (state: any) => any) => {
+                return this.wrap(() =>
+                  this.native.LightVM.bench(name, setup, fn, bytesVal ?? null),
+                );
+              },
+            };
+          },
+          run: (setup: () => any, fn: (state: any) => any) => {
+            return this.wrap(() =>
+              this.native.LightVM.bench(name, setup, fn, null),
+            );
+          },
+        };
       },
       optimizeBytecode: (bytecode: any) => {
         return this.wrap(() =>

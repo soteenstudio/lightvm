@@ -71,6 +71,13 @@ export declare class LightVM {
     inspect(): any;
     embedded(): VMResult;
     tools(): {
+        blackBox: (value: any) => any;
+        bench: (name: string) => {
+            bytes: (b: number) => {
+                run: (setup: () => any, fn: (state: any) => any) => any;
+            };
+            run: (setup: () => any, fn: (state: any) => any) => any;
+        };
         optimizeBytecode: (bytecode: any) => any;
         stringifyLTC: (json: Instructions[]) => any;
         parseLTC: (code: string) => any;
