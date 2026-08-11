@@ -5,10 +5,10 @@ rust/benches/**      linguist-detectable=false
 ts/tests/**          linguist-detectable=false
 ts/benchmarks/**     linguist-detectable=false
 ts/src/generated/**  linguist-detectable=false
+ts/src/utils/**      linguist-detectable=false
 types/**             linguist-detectable=false
 .testings/**         linguist-detectable=false
 docs/**              linguist-detectable=false
 api/**               linguist-detectable=false
 *.sh                 linguist-detectable=false
 *.d.ts               linguist-detectable=false
-ts/src/utils/**      linguist-vendored
