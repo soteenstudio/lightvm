@@ -31,7 +31,6 @@ use std::collections::HashSet;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use unescape::unescape;
-//use crate::modules::itme::benchmark::Benchmark;
 #[cfg(not(feature = "node"))]
 impl LightVM {
   pub fn new<C: Into<VmConfig>>(config: C) -> Self {
