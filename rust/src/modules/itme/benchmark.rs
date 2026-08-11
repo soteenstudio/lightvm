@@ -112,24 +112,31 @@ impl Benchmark {
     let per_op = median / iterations as u32;
     let min_op = min_dur / iterations as u32;
     let max_op = max_dur / iterations as u32;
-    print!(
-      "[BENCH] {:<20} | {:>10} per op | range [{}, {}] | ±{:>4.1}%",
+    let throughput_str = if let Some(bytes) = self.bytes_per_iter {
+      let secs = per_op.as_secs_f64();
+      if secs > 0.0 {
+        let mib_per_sec = (bytes as f64 / (1024.0 * 1024.0)) / secs;
+        format!("\n   ├─ throughput:     {:>8.2} MiB/s", mib_per_sec)
+      } else {
+        String::new()
+      }
+    } else {
+      String::new()
+    };
+    let status_line = if stability_pct > 15.0 {
+      "\n   └─ warning:        \x1b[33m[NOISY] High variance detected\x1b[0m"
+    } else {
+      "\n   └─ status:         \x1b[32mStable execution\x1b[0m"
+    };
+    println!(
+      "\x1b[1m\x1b[36mBenchmark\x1b[0m[\x1b[1m\x1b[35m{:<20}\x1b[0m]\n   │\n   ├─ time per op:    {}\n   ├─ range:          [{}, {}]\n   ├─ stability:      ±{:>4.1}%{}{}",
       self.name,
       format_duration(per_op),
       format_duration(min_op),
       format_duration(max_op),
-      stability_pct
+      stability_pct,
+      throughput_str,
+      status_line
     );
-    if stability_pct > 15.0 {
-      print!(" ⚠️ [NOISY]");
-    }
-    if let Some(bytes) = self.bytes_per_iter {
-      let secs = per_op.as_secs_f64();
-      if secs > 0.0 {
-        let mib_per_sec = (bytes as f64 / (1024.0 * 1024.0)) / secs;
-        print!(" | {:>8.2} MiB/s", mib_per_sec);
-      }
-    }
-    println!();
   }
 }

@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use lightvm::{LightVM, types::{vmconfig::VmConfig, capability::Capability, vmevent::VmEvent, compile_config::CompileConfig, target_arch::TargetArch, file_type::FileType}};  
+use lightvm::{LightVM, types::{vmconfig::VmConfig, capability::Capability, vmevent::VmEvent, compile_config::CompileConfig, target_arch::TargetArch, file_type::FileType}};
 
 fn main() {
   let mut vm = LightVM::new(VmConfig {
@@ -42,13 +42,21 @@ fn main() {
   
   println!("{}", optimized_json);
   vm.load(optimized_json);
-  
-  vm.run(None);
-  /*vm.compile(CompileConfig {
+
+  let ben = vm.tools().bench("testing")
+    .bytes(1024)
+    .run(
+      || vec![1, 2, 3, 4, 5],
+      |state| {
+        vm.tools().black_box(vm.run(None))
+      },
+    );
+
+  vm.compile(CompileConfig {
     target_arch: TargetArch::AArch64,
     file_type: FileType::Binary,
     path: "./test"
-  });*/
+  });
 
   /*let assembly_result = vm.compile(CompileConfig {
     target_arch: TargetArch::AArch64,
