@@ -21,7 +21,13 @@ export function loadNapi(explain: boolean, hint: boolean) {
   if (cachedNative) return cachedNative;
   try {
     const localPath = join(__dirname, '../binaries/lightvm.node');
-    cachedNative = require(localPath);
+    // First, load the native module to access verify_binary_integrity
+    const tempNative = require(localPath);
+    // Verify binary integrity before using it
+    if (tempNative.verify_binary_integrity) {
+      tempNative.verify_binary_integrity(localPath);
+    }
+    cachedNative = tempNative;
     return cachedNative;
   } catch (err) {}
   const { platform, arch } = process;
@@ -64,7 +70,36 @@ export function loadNapi(explain: boolean, hint: boolean) {
     process.exit(65);
   }
   try {
+    // For platform-specific packages, the main field points directly to the .node file
+    // We need to get the full path to verify it
+    let binaryPath: string;
+    try {
+      binaryPath = require.resolve(packageName);
+    } catch {
+      // Fallback: if resolve fails, just require and skip verification
+      cachedNative = require(packageName);
+      return cachedNative;
+    }
+
+    // Load the native module
     cachedNative = require(packageName);
+
+    // Verify binary integrity for platform-specific packages
+    if (cachedNative.verify_binary_integrity && binaryPath.endsWith('.node')) {
+      try {
+        cachedNative.verify_binary_integrity(binaryPath);
+      } catch (verifyErr: any) {
+        const error = new VMSystemError(
+          `Binary integrity verification failed for ${packageName}`,
+          [
+            'The native binary signature verification failed. This could indicate tampering or corruption.',
+            'Please reinstall the package from a trusted source.',
+          ],
+        );
+        error.print(explain, hint);
+        process.exit(70);
+      }
+    }
     return cachedNative;
   } catch (err) {
     const error = new VMSystemError(

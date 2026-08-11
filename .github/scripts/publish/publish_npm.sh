@@ -74,8 +74,88 @@ for item in "${PLATFORMS[@]}"; do
       FILES_FIELD=$(jq -nc '["index.wasm", "index.js", "*.d.ts", "README.md", "LICENSE"]')
   else
       find "binaries/$ARTIFACT" -type f \( -name "*.node" -o -name "*.dll" -o -name "*.so" -o -name "*.dylib" \) -exec cp {} "publish/$PLATFORM/$BIN_NAME" \;
+
+      # Sign the native binary
+      BINARY_PATH="publish/$PLATFORM/$BIN_NAME"
+
+      if [ ! -f "$BINARY_PATH" ]; then
+        echo "ERROR: Binary file not found at $BINARY_PATH for signing"
+        exit 1
+      fi
+
+      # Check if signing is required (for release/nightly builds)
+      if [[ "$EVENT_NAME" == "release" ]] || [[ "$EVENT_NAME" == "workflow_dispatch" && "$VERSION" == *"nightly"* ]]; then
+        # Production release: signing is REQUIRED
+        if [ -z "$SIGNING_PRIVATE_KEY" ]; then
+          echo "ERROR: SIGNING_PRIVATE_KEY is required for production releases but not set"
+          exit 1
+        fi
+      fi
+
+      if [ -n "$SIGNING_PRIVATE_KEY" ]; then
+        SIG_PATH="${BINARY_PATH}.sig"
+
+        # Create a temporary Rust script to sign the binary
+        cat > /tmp/sign_binary.rs << 'RUST_EOF'
+use ed25519_dalek::{Signer, SigningKey};
+use std::env;
+use std::fs;
+
+fn main() {
+  let args: Vec<String> = env::args().collect();
+  if args.len() != 4 {
+    eprintln!("Usage: sign_binary <private_key_hex> <binary_path> <sig_output_path>");
+    std::process::exit(1);
+  }
+
+  let secret_hex = &args[1];
+  let binary_path = &args[2];
+  let sig_output_path = &args[3];
+
+  let secret_bytes = hex::decode(secret_hex).expect("Invalid hex secret format");
+  let secret_array: [u8; 32] = secret_bytes.try_into().expect("Private key must be 32 bytes");
+  let signing_key = SigningKey::from_bytes(&secret_array);
+
+  let binary_data = fs::read(binary_path).expect("Failed to read binary file");
+  let signature = signing_key.sign(&binary_data);
+
+  fs::write(sig_output_path, signature.to_bytes()).expect("Failed to write signature file");
+  println!("Successfully signed: {}", binary_path);
+}
+RUST_EOF
+
+        # Compile and run the signing script
+        cd /tmp
+        cargo new --bin sign_temp --quiet
+        cd sign_temp
+        echo 'ed25519-dalek = "2.1"' >> Cargo.toml
+        echo 'hex = "0.4"' >> Cargo.toml
+        cp /tmp/sign_binary.rs src/main.rs
+
+        if ! cargo run --release --quiet -- "$SIGNING_PRIVATE_KEY" "$(pwd)/../../$BINARY_PATH" "$(pwd)/../../$SIG_PATH" 2>&1; then
+          echo "ERROR: Failed to sign binary $BINARY_PATH"
+          exit 1
+        fi
+
+        cd - > /dev/null
+        rm -rf /tmp/sign_temp /tmp/sign_binary.rs
+
+        if [ ! -f "$SIG_PATH" ]; then
+          echo "ERROR: Signature file was not created at $SIG_PATH"
+          exit 1
+        fi
+
+        echo "Binary signed successfully: $BINARY_PATH"
+      else
+        echo "WARNING: SIGNING_PRIVATE_KEY not set, skipping binary signature for $BIN_NAME (non-production build)"
+      fi
+
       MAIN_FIELD="$BIN_NAME"
-      FILES_FIELD=$(jq -nc --arg bin "$BIN_NAME" '[$bin, "README.md", "LICENSE"]')
+      if [ -n "$SIGNING_PRIVATE_KEY" ]; then
+        FILES_FIELD=$(jq -nc --arg bin "$BIN_NAME" --arg sig "${BIN_NAME}.sig" '[$bin, $sig, "README.md", "LICENSE"]')
+      else
+        FILES_FIELD=$(jq -nc --arg bin "$BIN_NAME" '[$bin, "README.md", "LICENSE"]')
+      fi
   fi
   
   cp -f README.md "publish/$PLATFORM/" || true
