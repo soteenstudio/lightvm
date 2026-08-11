@@ -44,6 +44,10 @@ PLATFORMS=(
 
 sudo apt-get install -y jq
 
+# Array to track all temporary signing directories for cleanup
+SIGN_TEMP_DIRS=()
+trap 'rm -rf "${SIGN_TEMP_DIRS[@]}"' EXIT
+
 for item in "${PLATFORMS[@]}"; do
   IFS="|" read -r ARTIFACT PLATFORM BIN_NAME CPU <<< "$item"
   PKG_NAME="@lightvm/core-$PLATFORM"
@@ -73,30 +77,39 @@ for item in "${PLATFORMS[@]}"; do
       MAIN_FIELD="index.js" 
       FILES_FIELD=$(jq -nc '["index.wasm", "index.js", "*.d.ts", "README.md", "LICENSE"]')
   else
-      find "binaries/$ARTIFACT" -type f \( -name "*.node" -o -name "*.dll" -o -name "*.so" -o -name "*.dylib" \) -exec cp {} "publish/$PLATFORM/$BIN_NAME" \;
+    find "binaries/$ARTIFACT" -type f \( -name "*.node" -o -name "*.dll" -o -name "*.so" -o -name "*.dylib" \) -exec cp {} "publish/$PLATFORM/$BIN_NAME" \;
 
-      # Sign the native binary
-      BINARY_PATH="publish/$PLATFORM/$BIN_NAME"
+    # Sign the native binary
+    BINARY_PATH="publish/$PLATFORM/$BIN_NAME"
 
-      if [ ! -f "$BINARY_PATH" ]; then
-        echo "ERROR: Binary file not found at $BINARY_PATH for signing"
+    if [ ! -f "$BINARY_PATH" ]; then
+      echo "ERROR: Binary file not found at $BINARY_PATH for signing"
+      exit 1
+    fi
+
+    # Check if signing is required (for release/nightly builds)
+    if [[ "$EVENT_NAME" == "release" ]] || [[ "$EVENT_NAME" == "workflow_dispatch" && "$VERSION" == *"nightly"* ]]; then
+      # Production release: signing is REQUIRED
+      if [ -z "$SIGNING_PRIVATE_KEY" ]; then
+        echo "ERROR: SIGNING_PRIVATE_KEY is required for production releases but not set"
         exit 1
       fi
+    fi
 
-      # Check if signing is required (for release/nightly builds)
-      if [[ "$EVENT_NAME" == "release" ]] || [[ "$EVENT_NAME" == "workflow_dispatch" && "$VERSION" == *"nightly"* ]]; then
-        # Production release: signing is REQUIRED
-        if [ -z "$SIGNING_PRIVATE_KEY" ]; then
-          echo "ERROR: SIGNING_PRIVATE_KEY is required for production releases but not set"
-          exit 1
-        fi
-      fi
+    if [ -n "$SIGNING_PRIVATE_KEY" ]; then
+      SIG_PATH="${BINARY_PATH}.sig"
 
-      if [ -n "$SIGNING_PRIVATE_KEY" ]; then
-        SIG_PATH="${BINARY_PATH}.sig"
+      # Capture absolute paths before changing directories
+      REPO_DIR="$(pwd)"
+      ABS_BINARY_PATH="$REPO_DIR/$BINARY_PATH"
+      ABS_SIG_PATH="$REPO_DIR/$SIG_PATH"
 
-        # Create a temporary Rust script to sign the binary
-        cat > /tmp/sign_binary.rs << 'RUST_EOF'
+      # Create a unique temporary directory for signing
+      SIGN_TEMP_DIR=$(mktemp -d)
+      SIGN_TEMP_DIRS+=("$SIGN_TEMP_DIR")
+
+      # Create a temporary Rust script to sign the binary
+      cat > "$SIGN_TEMP_DIR/sign_binary.rs" << 'RUST_EOF'
 use ed25519_dalek::{Signer, SigningKey};
 use std::env;
 use std::fs;
@@ -124,38 +137,37 @@ fn main() {
 }
 RUST_EOF
 
-        # Compile and run the signing script
-        cd /tmp
-        cargo new --bin sign_temp --quiet
-        cd sign_temp
-        echo 'ed25519-dalek = "2.1"' >> Cargo.toml
-        echo 'hex = "0.4"' >> Cargo.toml
-        cp /tmp/sign_binary.rs src/main.rs
+      # Compile and run the signing script
+      cd "$SIGN_TEMP_DIR"
+      cargo new --bin sign_temp --quiet
+      cd sign_temp
+      echo 'ed25519-dalek = "2.1"' >> Cargo.toml
+      echo 'hex = "0.4"' >> Cargo.toml
+      cp "$SIGN_TEMP_DIR/sign_binary.rs" src/main.rs
 
-        if ! cargo run --release --quiet -- "$SIGNING_PRIVATE_KEY" "$(pwd)/../../$BINARY_PATH" "$(pwd)/../../$SIG_PATH" 2>&1; then
-          echo "ERROR: Failed to sign binary $BINARY_PATH"
-          exit 1
-        fi
-
-        cd - > /dev/null
-        rm -rf /tmp/sign_temp /tmp/sign_binary.rs
-
-        if [ ! -f "$SIG_PATH" ]; then
-          echo "ERROR: Signature file was not created at $SIG_PATH"
-          exit 1
-        fi
-
-        echo "Binary signed successfully: $BINARY_PATH"
-      else
-        echo "WARNING: SIGNING_PRIVATE_KEY not set, skipping binary signature for $BIN_NAME (non-production build)"
+      if ! cargo run --release --quiet -- "$SIGNING_PRIVATE_KEY" "$ABS_BINARY_PATH" "$ABS_SIG_PATH" 2>&1; then
+        echo "ERROR: Failed to sign binary $BINARY_PATH"
+        exit 1
       fi
 
-      MAIN_FIELD="$BIN_NAME"
-      if [ -n "$SIGNING_PRIVATE_KEY" ]; then
-        FILES_FIELD=$(jq -nc --arg bin "$BIN_NAME" --arg sig "${BIN_NAME}.sig" '[$bin, $sig, "README.md", "LICENSE"]')
-      else
-        FILES_FIELD=$(jq -nc --arg bin "$BIN_NAME" '[$bin, "README.md", "LICENSE"]')
+      cd "$REPO_DIR"
+
+      if [ ! -f "$SIG_PATH" ]; then
+        echo "ERROR: Signature file was not created at $SIG_PATH"
+        exit 1
       fi
+
+      echo "Binary signed successfully: $BINARY_PATH"
+    else
+      echo "WARNING: SIGNING_PRIVATE_KEY not set, skipping binary signature for $BIN_NAME (non-production build)"
+    fi
+
+    MAIN_FIELD="$BIN_NAME"
+    if [ -n "$SIGNING_PRIVATE_KEY" ]; then
+      FILES_FIELD=$(jq -nc --arg bin "$BIN_NAME" --arg sig "${BIN_NAME}.sig" '[$bin, $sig, "README.md", "LICENSE"]')
+    else
+      FILES_FIELD=$(jq -nc --arg bin "$BIN_NAME" '[$bin, "README.md", "LICENSE"]')
+    fi
   fi
   
   cp -f README.md "publish/$PLATFORM/" || true
