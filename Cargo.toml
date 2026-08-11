@@ -3,6 +3,7 @@ name = "lightvm"
 version = "0.1.0-alpha.8-nightly.20260810.c1644bd"
 authors = ["SoTeen Studio <soteenstudio@gmail.com>"]
 edition = "2024"
+build = "build.rs"
 description = "A capability-based virtual machine designed for secure, predictable, and optimized bytecode execution."
 license = "Apache-2.0"
 repository = "https://github.com/soteenstudio/lightvm"
@@ -119,6 +120,12 @@ wasm-bindgen = { version = "0.2.122", optional = true }
 serde-wasm-bindgen = { version = "0.6.5", optional = true }
 js-sys = { version = "0.3.100", optional = true }
 backtrace = "0.3.76"
+ed25519-dalek = "2.1"
+hex = "0.4"
+
+[build-dependencies]
+ed25519-dalek = "2.1"
+hex = "0.4"
 
 [dev-dependencies]
 criterion = "0.8.2"
