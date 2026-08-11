@@ -33,7 +33,7 @@ impl Benchmark {
   pub fn new(name: &str) -> Self {
     Self {
       name: name.to_string(),
-      samples: 10,
+      samples: 15,
       target_time: Duration::from_millis(50),
       bytes_per_iter: None,
     }
@@ -42,10 +42,6 @@ impl Benchmark {
     self.bytes_per_iter = Some(bytes);
     self
   }
-  /// Run the benchmark.
-  ///
-  /// The benchmark callback `f` must return the calculated value to prevent
-  /// the operation from being optimized away by the compiler.
   pub fn run<F, S, T, R>(&self, mut setup: S, mut f: F)
   where
     S: FnMut() -> T,
@@ -69,10 +65,19 @@ impl Benchmark {
         iterations = (iterations * 10).min(1_000_000_000);
       }
     }
-    for _ in 0..10 {
+    for _ in 0..25 {
       let mut state = black_box(setup());
-      black_box(f(black_box(&mut state)));
+      for _ in 0..iterations {
+        black_box(f(black_box(&mut state)));
+      }
     }
+    let overhead = {
+      let start = Instant::now();
+      for _ in 0..iterations {
+        black_box(());
+      }
+      start.elapsed()
+    };
     let mut durations = Vec::with_capacity(self.samples);
     for _ in 0..self.samples {
       let mut state = black_box(setup());
@@ -80,17 +85,67 @@ impl Benchmark {
       for _ in 0..iterations {
         black_box(f(black_box(&mut state)));
       }
-      durations.push(start.elapsed());
+      let elapsed = start.elapsed();
+      let net_elapsed = if elapsed > overhead {
+        elapsed - overhead
+      } else {
+        elapsed
+      };
+      durations.push(net_elapsed);
     }
     durations.sort();
-    let median = durations[durations.len() / 2];
+    let q1_idx = durations.len() / 4;
+    let q3_idx = (durations.len() * 3) / 4;
+    let q1 = durations[q1_idx].as_nanos() as f64;
+    let q3 = durations[q3_idx].as_nanos() as f64;
+    let iqr = q3 - q1;
+    let lower_bound = q1 - 1.5 * iqr;
+    let upper_bound = q3 + 1.5 * iqr;
+    let filtered_durations: Vec<Duration> = durations
+      .iter()
+      .cloned()
+      .filter(|d| {
+        let ns = d.as_nanos() as f64;
+        ns >= lower_bound && ns <= upper_bound
+      })
+      .collect();
+    let effective_durations = if filtered_durations.len() >= 3 {
+      filtered_durations
+    } else {
+      durations.clone()
+    };
+    let min_dur = *effective_durations.first().unwrap();
+    let max_dur = *effective_durations.last().unwrap();
+    let median = effective_durations[effective_durations.len() / 2];
+    let mean_ns = effective_durations
+      .iter()
+      .map(|d| d.as_nanos() as f64)
+      .sum::<f64>()
+      / effective_durations.len() as f64;
+    let variance = effective_durations
+      .iter()
+      .map(|d| {
+        let diff = d.as_nanos() as f64 - mean_ns;
+        diff * diff
+      })
+      .sum::<f64>()
+      / effective_durations.len() as f64;
+    let std_dev_ns = variance.sqrt();
+    let stability_pct = (std_dev_ns / mean_ns) * 100.0;
     let per_op = median / iterations as u32;
+    let min_op = min_dur / iterations as u32;
+    let max_op = max_dur / iterations as u32;
     print!(
-      "[BENCH] {:<20} | {:>10} per op ({} iters)",
+      "[BENCH] {:<20} | {:>10} per op | range [{}, {}] | ±{:>4.1}%",
       self.name,
       format_duration(per_op),
-      iterations
+      format_duration(min_op),
+      format_duration(max_op),
+      stability_pct
     );
+    if stability_pct > 15.0 {
+      print!(" ⚠️ [NOISY]");
+    }
     if let Some(bytes) = self.bytes_per_iter {
       let secs = per_op.as_secs_f64();
       if secs > 0.0 {
