@@ -276,6 +276,27 @@ export class LightVM {
     const runtimeConfig = this.config?.runtimeConfig;
     const errorOptions = this.config?.errorOptions;
     return {
+      blackBox: (value: any) => {
+        return this.wrap(() => this.native.LightVM.blackBox(value));
+      },
+      bench: (name: string) => {
+        return {
+          bytes: (b: number) => {
+            return {
+              run: (setup: () => any, fn: (state: any) => any) => {
+                return this.wrap(() =>
+                  this.native.LightVM.bench(name, setup, fn, b),
+                );
+              },
+            };
+          },
+          run: (setup: () => any, fn: (state: any) => any) => {
+            return this.wrap(() =>
+              this.native.LightVM.bench(name, setup, fn, null),
+            );
+          },
+        };
+      },
       optimizeBytecode: (bytecode: any) => {
         return this.wrap(() =>
           this.native.LightVM.optimizeBytecode(

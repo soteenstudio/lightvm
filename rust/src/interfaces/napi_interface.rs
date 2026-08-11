@@ -312,6 +312,51 @@ impl NodeLightVM {
       ))
     }
   }
+  #[napi(js_name = "blackBox")]
+  pub fn napi_black_box(value: serde_json::Value) -> Result<serde_json::Value> {
+    Ok(LightVM::black_box(value))
+  }
+  #[napi(js_name = "bench")]
+  pub fn napi_bench(
+    name: String,
+    mut setup: Function<(), serde_json::Value>,
+    mut f: Function<serde_json::Value, serde_json::Value>,
+    bytes: Option<u32>,
+  ) -> Result<()> {
+    let mut bench_obj = LightVM::bench(&name);
+    if let Some(b) = bytes {
+      bench_obj = bench_obj.bytes(b as usize);
+    }
+    let mut setup_error: Option<napi::Error> = None;
+    let mut f_error: Option<napi::Error> = None;
+    bench_obj.run(
+      || match setup.call(()) {
+        Ok(val) => val,
+        Err(e) => {
+          if setup_error.is_none() {
+            setup_error = Some(e);
+          }
+          serde_json::Value::Null
+        }
+      },
+      |state| match f.call(state.clone()) {
+        Ok(val) => val,
+        Err(e) => {
+          if f_error.is_none() {
+            f_error = Some(e);
+          }
+          serde_json::Value::Null
+        }
+      },
+    );
+    if let Some(e) = setup_error {
+      return Err(e);
+    }
+    if let Some(e) = f_error {
+      return Err(e);
+    }
+    Ok(())
+  }
   #[napi(js_name = "optimizeBytecode")]
   pub fn napi_optimize_bytecode(
     bytecode: serde_json::Value,

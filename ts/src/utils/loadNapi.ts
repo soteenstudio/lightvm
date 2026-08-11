@@ -29,13 +29,12 @@ const PUBLIC_KEY_BYTES = new Uint8Array([
 /**
  * Verifies the Ed25519 signature of a native binary BEFORE loading it.
  * This is the external trust anchor - verification happens before any untrusted code executes.
- * Returns true if verification succeeds, false if it fails.
  */
 function verifyBinarySignature(
   binaryPath: string,
   explain: boolean,
   hint: boolean,
-): boolean {
+): void {
   try {
     // Read the binary file
     const binaryData = readFileSync(binaryPath);
@@ -46,7 +45,15 @@ function verifyBinarySignature(
     try {
       sigData = readFileSync(sigPath);
     } catch (err) {
-      return false;
+      const error = new VMSystemError(
+        `Signature file not found for ${binaryPath}`,
+        [
+          'The native binary is missing its cryptographic signature (.sig file). This indicates an incomplete installation or potential tampering.',
+          'Please reinstall the package from a trusted source (npm registry).',
+        ],
+      );
+      error.print(explain, hint);
+      process.exit(70);
     }
 
     // Create Ed25519 public key using Node's crypto module
@@ -62,10 +69,53 @@ function verifyBinarySignature(
     // Verify the signature
     const isValid = verify(null, binaryData, publicKey, sigData);
 
-    return isValid;
+    if (!isValid) {
+      const error = new VMSystemError(
+        `Binary signature verification failed for ${binaryPath}`,
+        [
+          'The native binary cryptographic signature is invalid. This indicates the binary has been modified, corrupted, or is from an untrusted source.',
+          'Please reinstall the package from a trusted source (npm registry). If the problem persists, report this as a security issue.',
+        ],
+      );
+      error.print(explain, hint);
+      process.exit(70);
+    }
   } catch (err: any) {
-    // Any error during verification is treated as a failed verification
-    return false;
+    // If we get here, it's an unexpected error (not the controlled exits above)
+    if (err.code === 'ENOENT' && err.path && err.path.endsWith('.sig')) {
+      // Signature file missing - already handled above, but catch here too
+      const error = new VMSystemError(
+        `Signature file not found for ${binaryPath}`,
+        [
+          'The native binary is missing its cryptographic signature (.sig file). This indicates an incomplete installation or potential tampering.',
+          'Please reinstall the package from a trusted source (npm registry).',
+        ],
+      );
+      error.print(explain, hint);
+      process.exit(70);
+    } else if (err.code === 'ENOENT') {
+      // Binary file itself missing
+      const error = new VMSystemError(
+        `Binary file not found at ${binaryPath}`,
+        [
+          'The native binary file is missing. This indicates an incomplete installation.',
+          'Please reinstall the package from a trusted source (npm registry).',
+        ],
+      );
+      error.print(explain, hint);
+      process.exit(70);
+    } else {
+      // Other unexpected errors during verification
+      const error = new VMSystemError(
+        `Unexpected error during signature verification: ${err.message}`,
+        [
+          'An unexpected error occurred while verifying the binary signature.',
+          'Please reinstall the package and report this issue if it persists.',
+        ],
+      );
+      error.print(explain, hint);
+      process.exit(70);
+    }
   }
 }
 export function loadNapi(explain: boolean, hint: boolean) {
@@ -76,12 +126,11 @@ export function loadNapi(explain: boolean, hint: boolean) {
 
   try {
     const localPath = join(__dirname, '../binaries/lightvm.node');
-    // Try to verify and load local binary - non-fatal if it fails (for development)
-    // Allow falling through to platform-package resolution if local binary is missing/unsigned
-    if (skipVerification || verifyBinarySignature(localPath, explain, hint)) {
-      cachedNative = require(localPath);
-      return cachedNative;
-    }
+    // CRITICAL: Verify signature BEFORE loading the binary
+    verifyBinarySignature(localPath, explain, hint);
+    // Only after verification passes, load the binary
+    cachedNative = require(localPath);
+    return cachedNative;
   } catch (err) {}
   const { platform, arch } = process;
   let packageName = '';
@@ -143,18 +192,8 @@ export function loadNapi(explain: boolean, hint: boolean) {
 
     // CRITICAL: Verify signature BEFORE loading the binary
     // Only verify .node files (native addons), not JavaScript files
-    if (binaryPath.endsWith('.node') && !skipVerification) {
-      if (!verifyBinarySignature(binaryPath, explain, hint)) {
-        const error = new VMSystemError(
-          `Binary signature verification failed for ${binaryPath}`,
-          [
-            'The native binary cryptographic signature is invalid or missing. This indicates the binary has been modified, corrupted, or is from an untrusted source.',
-            'Please reinstall the package from a trusted source (npm registry). If the problem persists, report this as a security issue.',
-          ],
-        );
-        error.print(explain, hint);
-        process.exit(70);
-      }
+    if (binaryPath.endsWith('.node')) {
+      verifyBinarySignature(binaryPath, explain, hint);
     }
 
     // Only after verification passes (or if it's not a .node file), load the module

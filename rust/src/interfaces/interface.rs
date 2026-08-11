@@ -397,7 +397,12 @@ impl LightVM {
     self._outputs.clear();
     Ok(())
   }
-  pub fn bench(&mut self, name: &str) -> Benchmark {
+  #[inline]
+  pub fn black_box<T>(value: T) -> T {
+    std::hint::black_box(value)
+  }
+  #[inline]
+  pub fn bench(name: &str) -> Benchmark {
     Benchmark::new(name)
   }
   pub fn optimize_bytecode_internal(

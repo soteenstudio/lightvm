@@ -10,6 +10,7 @@
 
 #![cfg(not(feature = "node"))]
 use crate::interfaces::interface::LightVM;
+use crate::modules::itme::benchmark::Benchmark;
 use crate::traits::{json_value_trait::IntoJsonValue, vmevent_trait::IntoVmEvent};
 #[allow(unused_imports)]
 use crate::types::vmevent::VmEvent;
@@ -304,9 +305,11 @@ pub struct LightVMTools {
 }
 #[cfg(not(feature = "node"))]
 impl LightVMTools {
-  pub fn bench(&self, _name: &str) {
-    // element the code here
-    // change the return type to Benchmark
+  pub fn black_box<T>(&self, value: T) -> T {
+    LightVM::black_box(value)
+  }
+  pub fn bench(&self, name: &str) -> Benchmark {
+    LightVM::bench(name)
   }
   /// Optimizes raw JSON bytecode and serializes it to a string
   ///
