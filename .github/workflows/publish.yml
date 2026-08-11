@@ -188,6 +188,8 @@ jobs:
           cache: 'npm'
 
       - name: Build JavaScript Interface
+        env:
+          SIGNING_PRIVATE_KEY: ${{ secrets.SIGNING_PRIVATE_KEY }}
         run: |
           npm install
           npm run build

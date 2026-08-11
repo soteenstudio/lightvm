@@ -27,7 +27,6 @@ fn map_num_type(arg: Option<&str>, default: PrimitiveTypes) -> PrimitiveTypes {
     _ => default,
   }
 }
-
 impl Instructions {
   #[inline]
   pub fn from_parts(op: String, args: Vec<serde_json::Value>) -> Self {
