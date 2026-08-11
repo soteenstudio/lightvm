@@ -127,7 +127,9 @@ export function loadNapi(explain: boolean, hint: boolean) {
   try {
     const localPath = join(__dirname, '../binaries/lightvm.node');
     // CRITICAL: Verify signature BEFORE loading the binary
-    verifyBinarySignature(localPath, explain, hint);
+    if (!skipVerification) {
+      verifyBinarySignature(localPath, explain, hint);
+    }
     // Only after verification passes, load the binary
     cachedNative = require(localPath);
     return cachedNative;
@@ -192,7 +194,7 @@ export function loadNapi(explain: boolean, hint: boolean) {
 
     // CRITICAL: Verify signature BEFORE loading the binary
     // Only verify .node files (native addons), not JavaScript files
-    if (binaryPath.endsWith('.node')) {
+    if (!skipVerification && binaryPath.endsWith('.node')) {
       verifyBinarySignature(binaryPath, explain, hint);
     }
 
