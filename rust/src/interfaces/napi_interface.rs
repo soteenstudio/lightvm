@@ -327,10 +327,34 @@ impl NodeLightVM {
     if let Some(b) = bytes {
       bench_obj = bench_obj.bytes(b as usize);
     }
+    let mut setup_error: Option<napi::Error> = None;
+    let mut f_error: Option<napi::Error> = None;
     bench_obj.run(
-      || setup.call(()).unwrap_or(serde_json::Value::Null),
-      |state| f.call(state.clone()).unwrap_or(serde_json::Value::Null),
+      || match setup.call(()) {
+        Ok(val) => val,
+        Err(e) => {
+          if setup_error.is_none() {
+            setup_error = Some(e);
+          }
+          serde_json::Value::Null
+        }
+      },
+      |state| match f.call(state.clone()) {
+        Ok(val) => val,
+        Err(e) => {
+          if f_error.is_none() {
+            f_error = Some(e);
+          }
+          serde_json::Value::Null
+        }
+      },
     );
+    if let Some(e) = setup_error {
+      return Err(e);
+    }
+    if let Some(e) = f_error {
+      return Err(e);
+    }
     Ok(())
   }
   #[napi(js_name = "optimizeBytecode")]
