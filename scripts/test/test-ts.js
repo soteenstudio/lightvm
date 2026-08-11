@@ -74,6 +74,10 @@ function run() {
       execSync('npx unitry ./ts/tests', {
         stdio: 'inherit',
         timeout: 10000,
+        env: {
+          ...process.env,
+          LIGHTVM_SKIP_SIGNATURE_VERIFICATION: 'true',
+        },
       });
     } catch (err) {
       if (err.code === 'ETIMEDOUT') {

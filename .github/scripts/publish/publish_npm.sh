@@ -138,9 +138,9 @@ fn main() {
 RUST_EOF
 
       # Compile and run the signing script
-      cd "$SIGN_TEMP_DIR"
+      cd "$SIGN_TEMP_DIR" || { echo "ERROR: Failed to change to signing temp directory"; exit 1; }
       cargo new --bin sign_temp --quiet
-      cd sign_temp
+      cd sign_temp || { echo "ERROR: Failed to change to sign_temp directory"; exit 1; }
       echo 'ed25519-dalek = "2.1"' >> Cargo.toml
       echo 'hex = "0.4"' >> Cargo.toml
       cp "$SIGN_TEMP_DIR/sign_binary.rs" src/main.rs
@@ -150,7 +150,7 @@ RUST_EOF
         exit 1
       fi
 
-      cd "$REPO_DIR"
+      cd "$REPO_DIR" || { echo "ERROR: Failed to change back to repository directory"; exit 1; }
 
       if [ ! -f "$SIG_PATH" ]; then
         echo "ERROR: Signature file was not created at $SIG_PATH"

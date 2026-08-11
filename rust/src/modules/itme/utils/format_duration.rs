@@ -13,9 +13,11 @@ pub fn format_duration(d: Duration) -> String {
   let ns = d.as_nanos();
   if ns < 1_000 {
     format!("{} ns", ns)
-  } else if ns < 1_000_000 {
+  } else if ns < 999_500 {
+    // Promote to microseconds before rounding would reach 1000 µs
     format!("{:.2} µs", ns as f64 / 1_000.0)
-  } else if ns < 1_000_000_000 {
+  } else if ns < 999_500_000 {
+    // Promote to milliseconds before rounding would reach 1000 ms
     format!("{:.2} ms", ns as f64 / 1_000_000.0)
   } else {
     format!("{:.2} s", d.as_secs_f64())
