@@ -71,13 +71,6 @@ impl Benchmark {
         black_box(f(black_box(&mut state)));
       }
     }
-    let overhead = {
-      let start = Instant::now();
-      for _ in 0..iterations {
-        black_box(());
-      }
-      start.elapsed()
-    };
     let mut durations = Vec::with_capacity(self.samples);
     for _ in 0..self.samples {
       let mut state = black_box(setup());
@@ -86,12 +79,7 @@ impl Benchmark {
         black_box(f(black_box(&mut state)));
       }
       let elapsed = start.elapsed();
-      let net_elapsed = if elapsed > overhead {
-        elapsed - overhead
-      } else {
-        elapsed
-      };
-      durations.push(net_elapsed);
+      durations.push(elapsed);
     }
     durations.sort();
     let q1_idx = durations.len() / 4;
