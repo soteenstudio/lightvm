@@ -8,20 +8,9 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::modules::itme::utils::format_duration::format_duration;
 use std::hint::black_box;
 use std::time::{Duration, Instant};
-fn format_duration(d: Duration) -> String {
-  let ns = d.as_nanos();
-  if ns < 1_000 {
-    format!("{} ns", ns)
-  } else if ns < 1_000_000 {
-    format!("{:.2} µs", ns as f64 / 1_000.0)
-  } else if ns < 1_000_000_000 {
-    format!("{:.2} ms", ns as f64 / 1_000_000.0)
-  } else {
-    format!("{:.2} s", d.as_secs_f64())
-  }
-}
 pub struct Benchmark {
   name: String,
   samples: usize,

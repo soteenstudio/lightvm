@@ -8,5 +8,4 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub(crate) mod benchmark;
-pub(crate) mod utils;
+pub(crate) mod format_duration;
