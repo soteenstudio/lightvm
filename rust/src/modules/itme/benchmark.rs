@@ -28,10 +28,12 @@ impl Benchmark {
     }
   }
   pub fn samples(mut self, samples: usize) -> Self {
+    assert!(samples > 0, "Benchmark samples must be greater than zero");
     self.samples = samples;
     self
   }
   pub fn target_time(mut self, target_time: Duration) -> Self {
+    assert!(!target_time.is_zero(), "Benchmark target_time must be greater than zero");
     self.target_time = target_time;
     self
   }
