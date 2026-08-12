@@ -32,15 +32,17 @@ function runLoadNapiInSubprocess() {
 
 describe("loadNapi Utility", () => {
 
-  test("loadNapi: should load and return native module (cached)", () => {
+  if (scenario !== "reject-invalid-sig") {
+    test("loadNapi: should load and return native module (cached)", () => {
 
-    const native1 = loadNapi();
+      const native1 = loadNapi();
 
-    const native2 = loadNapi();
+      const native2 = loadNapi();
 
-    expect(native1).toBe(native2);
-    expect(native1).toBeDefined();
-  });
+      expect(native1).toBe(native2);
+      expect(native1).toBeDefined();
+    });
+  }
 
   if (scenario === "priority") {
     test("loadNapi: should prioritize the platform package over the local lightvm-test fallback", () => {
@@ -64,7 +66,7 @@ describe("loadNapi Utility", () => {
       // loadNapi() calls process.exit() on verification failure, so it must
       // be exercised in a subprocess rather than in-process.
       const result = runLoadNapiInSubprocess();
-      expect(result.status).not.toBe(0);
+      expect(result.status).toBe(70);
     });
   }
 });
