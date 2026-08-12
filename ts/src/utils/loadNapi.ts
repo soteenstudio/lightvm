@@ -158,6 +158,20 @@ export function loadNapi(explain: boolean, hint: boolean) {
     error.print(explain, hint);
     process.exit(65);
   }
+
+  // Validate packageName before attempting resolution
+  if (!packageName) {
+    const error = new VMSystemError(
+      `Platform ${platform} ${arch} is not supported`,
+      [
+        'The LightVM engine has not been ported to your current environment; this occurs when the operating system or processor architecture is not included in our prebuilt binary distribution, requiring a custom build from source to enable compatibility.',
+        'Check the official documentation for a list of supported platforms and architectures.',
+      ],
+    );
+    error.print(explain, hint);
+    process.exit(65);
+  }
+
   // Local testing fallback: only used when the platform package cannot be
   // resolved at all. Once a package resolves, the fallback is never
   // consulted again, even if verification or loading of that package fails.

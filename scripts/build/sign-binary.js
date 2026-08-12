@@ -22,14 +22,14 @@ use std::fs;
 
 fn main() {
   let args: Vec<String> = env::args().collect();
-  if args.len() != 4 {
-    eprintln!("Usage: sign_binary <private_key_hex> <binary_path> <sig_output_path>");
+  if args.len() != 3 {
+    eprintln!("Usage: sign_binary <binary_path> <sig_output_path>");
     std::process::exit(1);
   }
 
-  let secret_hex = &args[1];
-  let binary_path = &args[2];
-  let sig_output_path = &args[3];
+  let secret_hex = env::var("LIGHTVM_SIGNING_KEY").expect("LIGHTVM_SIGNING_KEY environment variable is required");
+  let binary_path = &args[1];
+  let sig_output_path = &args[2];
 
   let secret_bytes = hex::decode(secret_hex).expect("Invalid hex secret format");
   let secret_array: [u8; 32] = secret_bytes.try_into().expect("Private key must be 32 bytes");
@@ -86,8 +86,12 @@ export function signBinary(privateKeyHex, binaryPath, sigOutputPath) {
 
     execFileSync(
       'cargo',
-      ['run', '--release', '--quiet', '--', privateKeyHex, absBinaryPath, absSigPath],
-      { cwd: signProjectDir, stdio: 'inherit' },
+      ['run', '--release', '--quiet', '--', absBinaryPath, absSigPath],
+      {
+        cwd: signProjectDir,
+        stdio: 'inherit',
+        env: { ...process.env, LIGHTVM_SIGNING_KEY: privateKeyHex },
+      },
     );
 
     if (!fs.existsSync(sigOutputPath)) {
