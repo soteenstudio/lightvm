@@ -11,7 +11,7 @@ Konfigurasi benchmark menerima parameter berikut:
 
 ::: code-group
 
-<<< @/examples/methodFunctions/toolsMethod/benchCode.ts{ts:line-numbers}[Code]
+<<< @/examples/methodFunctions/toolsMethod/benchCode.ts{ts:line-numbers}[Kode]
 
 :::
 
@@ -25,7 +25,7 @@ Konfigurasi benchmark menerima parameter berikut:
 
 ::: code-group
 
-<<< @/examples/methodFunctions/toolsMethod/bench_code.rs{rust:line-numbers}[Code]
+<<< @/examples/methodFunctions/toolsMethod/bench_code.rs{rust:line-numbers}[Kode]
 
 :::
 

@@ -20,7 +20,7 @@ LightVM mencapai kecepatannya melalui *pipeline* pra-eksekusi yang canggih. Sebe
 ### 3. Krates: Lapisan Validasi & Keamanan
 **Krates** bertindak sebagai penjaga gerbang terakhir yang memeriksa bytecode sebelum eksekusi, memastikan runtime tetap terlindungi dari instruksi yang cacat, fitur yang tidak sah, dan pelanggaran akses memori. Dengan menerapkan protokol keamanan yang ketat melalui alur verifikasi yang komprehensif, Krates menjamin bahwa hanya bytecode yang aman dan deterministik yang mencapai mesin eksekusi. Krates menangani tugas-tugas keamanan penting, termasuk verifikasi batas untuk mencegah luapan memori, pemeriksaan keamanan variabel, dan validasi integritas fungsi. Selain itu, Krates memantau fitur-fitur yang dibatasi, menegakkan kuota sumber daya melalui pemantauan gas (tick) untuk mencegah loop tak terbatas, serta memelihara daftar putih modul yang ketat. Krates juga melakukan analisis pola instruksi untuk mendeteksi bytecode yang berpotensi berbahaya, sekaligus menawarkan konfigurasi `unsafe_mode` untuk melewati pemeriksaan ini pada lingkungan tepercaya yang mengutamakan performa tinggi.
 
-## Itme: Utilitas Benchmarking
+### 4. Itme: Utilitas Benchmarking
 **Itme** adalah utilitas benchmarking presisi tinggi yang dirancang untuk mengukur dan menganalisis performa kode. Dengan memanfaatkan siklus iterasi adaptif, fase pemanasan (warm-up), dan analisis statistik yang ketat menggunakan metode Interquartile Range (IQR), Itme menyaring gangguan (noise) dan mengevaluasi konsistensi eksekusi. Alat ini secara otomatis menghitung waktu per operasi yang presisi, simpangan baku, throughput dalam MiB/s, serta persentase stabilitas, guna memastikan metrik performa kode Anda dapat diandalkan dan direproduksi dengan akurat.
 
 ::: tip
