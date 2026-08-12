@@ -27,6 +27,14 @@ impl Benchmark {
       bytes_per_iter: None,
     }
   }
+  pub fn samples(mut self, samples: usize) -> Self {
+    self.samples = samples;
+    self
+  }
+  pub fn target_time(mut self, target_time: Duration) -> Self {
+    self.target_time = target_time;
+    self
+  }
   pub fn bytes(mut self, bytes: usize) -> Self {
     self.bytes_per_iter = Some(bytes);
     self

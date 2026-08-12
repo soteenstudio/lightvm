@@ -322,10 +322,18 @@ impl NodeLightVM {
     mut setup: Function<(), serde_json::Value>,
     mut f: Function<serde_json::Value, serde_json::Value>,
     bytes: Option<u32>,
+    samples: Option<u32>,
+    target_time: Option<u32>,
   ) -> Result<()> {
     let mut bench_obj = LightVM::bench(&name);
     if let Some(b) = bytes {
       bench_obj = bench_obj.bytes(b as usize);
+    }
+    if let Some(s) = samples {
+      bench_obj = bench_obj.samples(s as usize);
+    }
+    if let Some(t) = target_time {
+      bench_obj = bench_obj.target_time(std::time::Duration::from_millis(t as u64));
     }
     let mut setup_error: Option<napi::Error> = None;
     let mut f_error: Option<napi::Error> = None;
