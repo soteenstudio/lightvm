@@ -11,6 +11,7 @@
 import fs from 'fs';
 import { execSync } from 'child_process';
 import { join } from 'path';
+import { signBinary } from './sign-binary.js';
 
 const args = process.argv.slice(2);
 const isLocal = args.includes('--local');
@@ -18,6 +19,7 @@ const isDebug = args.includes('--debug');
 const isProduction = args.includes('--production');
 const isPublish = args.includes('--publish');
 const isSilent = args.includes('--silent');
+const SIGNING_PRIVATE_KEY = process.env.SIGNING_PRIVATE_KEY;
 
 const STDIO_MODE = isSilent ? 'ignore' : 'inherit';
 const PKG_PATH = join(process.cwd(), 'package.json');
@@ -79,6 +81,14 @@ function modifyPackageJson(mode) {
   }
 }
 
+if (isLocal && !SIGNING_PRIVATE_KEY) {
+  logger.error(
+    'SIGNING_PRIVATE_KEY is required to build a local package (--local).',
+    'Set the SIGNING_PRIVATE_KEY environment variable before running this command.',
+  );
+  process.exit(1);
+}
+
 function cleanup() {
   logger.cleanup('Cleaning up build directories...');
 
@@ -124,6 +134,11 @@ try {
     } else {
       throw new Error(`Binary not found at ${SOURCE_PATH}`);
     }
+
+    signBinary(SIGNING_PRIVATE_KEY, DEST_PATH, `${DEST_PATH}.sig`);
+    logger.step(
+      `${s.dim}Binary signed:${s.reset} ${s.bold}./binaries/${TARGET_NAME}.sig${s.reset}\n`,
+    );
 
     modifyPackageJson('local');
 
