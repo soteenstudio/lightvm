@@ -120,11 +120,11 @@ wasm-bindgen = { version = "0.2.122", optional = true }
 serde-wasm-bindgen = { version = "0.6.5", optional = true }
 js-sys = { version = "0.3.100", optional = true }
 backtrace = "0.3.76"
-ed25519-dalek = "2.1"
+ed25519-dalek = "3.0"
 hex = "0.4"
 
 [build-dependencies]
-ed25519-dalek = "2.1"
+ed25519-dalek = "3.0"
 hex = "0.4"
 
 [dev-dependencies]
