@@ -26,6 +26,56 @@ const s = {
   red: '\x1b[31m',
 };
 
+function isMusl() {
+  try {
+    const report = process.report.getReport();
+    if (report && report.header && !report.header.glibcVersionRuntime) {
+      return true;
+    }
+  } catch (e) {}
+  try {
+    const output = execSync('ldd --version', {
+      stdio: ['pipe', 'pipe', 'ignore'],
+    }).toString();
+    return output.includes('musl');
+  } catch (e) {
+    return false;
+  }
+}
+
+function getPlatformPackageName() {
+  const { platform, arch } = process;
+  let packageName = '';
+  if (platform === 'linux') {
+    if (arch === 'x64') {
+      packageName = isMusl()
+        ? '@lightvm/core-linux-musl-x64'
+        : '@lightvm/core-linux-x64';
+    } else if (arch === 'ia32') {
+      packageName = isMusl()
+        ? '@lightvm/core-linux-musl-ia32'
+        : '@lightvm/core-linux-ia32';
+    }
+  } else if (platform === 'win32') {
+    packageName =
+      arch === 'x64'
+        ? '@lightvm/core-win32-x64'
+        : arch === 'ia32'
+          ? '@lightvm/core-win32-ia32'
+          : '';
+  } else if (platform === 'darwin' && arch === 'x64') {
+    packageName = '@lightvm/core-darwin-x64';
+  } else if (platform === 'android') {
+    packageName =
+      arch === 'arm64'
+        ? '@lightvm/core-android-arm64'
+        : arch === 'arm'
+          ? '@lightvm/core-android-arm'
+          : '';
+  }
+  return packageName;
+}
+
 function run() {
   try {
     console.log(
@@ -40,24 +90,37 @@ function run() {
     );
 
     const rootDir = path.resolve(__dirname, '../..');
-    const binariesDir = path.join(rootDir, 'binaries');
     const sourcePath = path.join(rootDir, 'target/release/liblightvm.so');
-    const destPath = path.join(binariesDir, 'lightvm.node');
 
-    if (!fs.existsSync(binariesDir)) {
-      fs.mkdirSync(binariesDir);
-    }
-
-    if (fs.existsSync(sourcePath)) {
-      fs.copyFileSync(sourcePath, destPath);
-
-      const relativeDest = destPath.replace(rootDir, '.');
-      console.log(
-        `${s.bold}${s.cyan}ℹ${s.reset} ${s.dim}Binary moved to:${s.reset} ${s.bold}${relativeDest}${s.reset}\n`,
-      );
-    } else {
+    if (!fs.existsSync(sourcePath)) {
       throw new Error(`Binary not found in ${sourcePath}`);
     }
+
+    const packageName = getPlatformPackageName();
+    if (!packageName) {
+      throw new Error(
+        `Platform ${process.platform} ${process.arch} is not supported`,
+      );
+    }
+
+    const stagedPackageDir = path.join(
+      rootDir,
+      'node_modules/@lightvm',
+      packageName.replace('@lightvm/', ''),
+    );
+    const destPath = path.join(stagedPackageDir, 'lightvm.node');
+
+    fs.mkdirSync(stagedPackageDir, { recursive: true });
+    fs.copyFileSync(sourcePath, destPath);
+    fs.writeFileSync(
+      path.join(stagedPackageDir, 'package.json'),
+      JSON.stringify({ name: packageName, main: 'lightvm.node' }, null, 2),
+    );
+
+    const relativeDest = destPath.replace(rootDir, '.');
+    console.log(
+      `${s.bold}${s.cyan}ℹ${s.reset} ${s.dim}Binary staged at:${s.reset} ${s.bold}${relativeDest}${s.reset}\n`,
+    );
 
     console.log(
       `${s.bold}${s.cyan}⠋${s.reset} ${s.bold}Building project${s.reset} ${s.dim}(npm run build)...${s.reset}`,
@@ -101,11 +164,14 @@ function run() {
       );
     }
 
-    const binariesPath = path.resolve(__dirname, '../binaries');
-    if (fs.existsSync(binariesPath)) {
-      fs.rmSync(binariesPath, { recursive: true, force: true });
+    const stagedScopeDir = path.resolve(
+      __dirname,
+      '../../node_modules/@lightvm',
+    );
+    if (fs.existsSync(stagedScopeDir)) {
+      fs.rmSync(stagedScopeDir, { recursive: true, force: true });
       console.log(
-        `${s.bold}${s.dim}🧹 Cleanup complete: ./binaries deleted.${s.reset}`,
+        `${s.bold}${s.dim}🧹 Cleanup complete: ./node_modules/@lightvm deleted.${s.reset}`,
       );
     }
 

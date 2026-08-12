@@ -9,14 +9,10 @@
  */
 
 import { createRequire } from 'module';
-import { join } from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 import { readFileSync } from 'fs';
 import { createPublicKey, verify } from 'crypto';
 import { VMSystemError } from './vmerror.js';
 import { isMusl } from './isMusl.js';
-const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 let cachedNative: any = null;
 
@@ -120,16 +116,6 @@ export function loadNapi(explain: boolean, hint: boolean) {
   // Allow skipping signature verification during local development/testing
   const skipVerification = process.env.LIGHTVM_SKIP_SIGNATURE_VERIFICATION === 'true';
 
-  try {
-    const localPath = join(__dirname, '../binaries/lightvm.node');
-    // CRITICAL: Verify signature BEFORE loading the binary
-    if (!skipVerification) {
-      verifyBinarySignature(localPath, explain, hint);
-    }
-    // Only after verification passes, load the binary
-    cachedNative = require(localPath);
-    return cachedNative;
-  } catch (err) {}
   const { platform, arch } = process;
   let packageName = '';
   if (platform === 'linux') {
@@ -192,8 +178,8 @@ export function loadNapi(explain: boolean, hint: boolean) {
     if (!skipVerification && binaryPath.endsWith('.node')) {
       verifyBinarySignature(binaryPath, explain, hint);
     }
-    
-    cachedNative = require(packageName);
+
+    cachedNative = require(binaryPath);
     return cachedNative;
   } catch (err) {
     const error = new VMSystemError(
