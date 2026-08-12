@@ -119,7 +119,7 @@ jobs:
           matrix.platform == 'win32-x64' || 
           matrix.platform == 'win32-ia32' || 
           matrix.platform == 'darwin-x64'
-        run: cargo build --release --target ${{ matrix.target }}
+        run: cargo build --release --target ${{ matrix.target }} --features node
 
       - name: Install Linker
         if: |

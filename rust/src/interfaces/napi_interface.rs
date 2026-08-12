@@ -93,57 +93,67 @@ impl NodeLightVM {
       },
     })
   }
-  #[napi]
+  #[napi(js_name = "setMaxIo")]
   pub fn set_max_io(&mut self, value: u32) -> Result<()> {
     self.inner.max_io = value as usize;
     Ok(())
   }
-  #[napi]
+  #[napi(js_name = "setMaxImport")]
   pub fn set_max_import(&mut self, value: u32) -> Result<()> {
     self.inner.max_import = value as usize;
     Ok(())
   }
-  #[napi]
+  #[napi(js_name = "setMaxAlloc")]
   pub fn set_max_alloc(&mut self, value: u32) -> Result<()> {
     self.inner.max_alloc = value as usize;
     Ok(())
   }
-  #[napi]
+  #[napi(js_name = "setMaxCall")]
   pub fn set_max_call(&mut self, value: u32) -> Result<()> {
     self.inner.max_call = value as usize;
     Ok(())
   }
-  #[napi]
+  #[napi(js_name = "setMaxJump")]
   pub fn set_max_jump(&mut self, value: u32) -> Result<()> {
     self.inner.max_jump = value as usize;
     Ok(())
   }
-  #[napi]
+  #[napi(js_name = "setMaxTicks")]
+  pub fn set_max_ticks(&mut self, value: u32) -> Result<()> {
+    self.inner.max_ticks = value as u64;
+    Ok(())
+  }
+  #[napi(js_name = "setMaxStackSize")]
+  pub fn set_max_stack_size(&mut self, value: u32) -> Result<()> {
+    self.inner.max_stack_size = value as usize;
+    Ok(())
+  }
+  #[napi(js_name = "setAllowedImports")]
   pub fn set_allowed_imports(&mut self, value: Vec<String>) -> Result<()> {
     self.inner.allowed_imports = value;
     Ok(())
   }
-  #[napi]
+  #[napi(js_name = "withUnsafeMode")]
   pub fn with_unsafe_mode(&mut self, enabled: bool) -> Result<()> {
     self.inner.unsafe_mode = enabled;
     Ok(())
   }
-  #[napi]
+  #[napi(js_name = "withNightly")]
   pub fn with_nightly(&mut self, enabled: bool) -> Result<()> {
     self.inner.nightly = enabled;
     Ok(())
   }
-  #[napi]
+  #[napi(js_name = "withBacktrace")]
   pub fn with_backtrace(&mut self, enabled: bool) -> Result<()> {
     self.inner.backtrace = enabled;
     Ok(())
   }
-  #[napi]
+  #[napi(js_name = "withExplain")]
   pub fn with_explain(&mut self, enabled: bool) -> Result<()> {
     self.inner.explain = enabled;
     Ok(())
   }
-  #[napi]
+  #[napi(js_name = "withHint")]
   pub fn with_hint(&mut self, enabled: bool) -> Result<()> {
     self.inner.hint = enabled;
     Ok(())
