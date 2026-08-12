@@ -327,12 +327,16 @@ impl NodeLightVM {
   ) -> Result<()> {
     if let Some(s) = samples {
       if s == 0 {
-        return Err(Error::from_reason("Benchmark samples must be greater than zero"));
+        return Err(Error::from_reason(
+          "Benchmark samples must be greater than zero",
+        ));
       }
     }
     if let Some(t) = target_time {
       if t == 0 {
-        return Err(Error::from_reason("Benchmark target_time must be greater than zero"));
+        return Err(Error::from_reason(
+          "Benchmark target_time must be greater than zero",
+        ));
       }
     }
     let mut bench_obj = LightVM::bench(&name);
