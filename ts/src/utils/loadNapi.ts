@@ -9,10 +9,13 @@
  */
 
 import { createRequire } from 'module';
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { createPublicKey, verify } from 'crypto';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 import { VMSystemError } from './vmerror.js';
 import { isMusl } from './isMusl.js';
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 let cachedNative: any = null;
 
@@ -155,22 +158,32 @@ export function loadNapi(explain: boolean, hint: boolean) {
     error.print(explain, hint);
     process.exit(65);
   }
+  // Local testing fallback: only used when the platform package cannot be
+  // resolved at all. Once a package resolves, the fallback is never
+  // consulted again, even if verification or loading of that package fails.
+  const fallbackPath = join(__dirname, '../binaries/lightvm.node');
+  let usedFallback = false;
+
   try {
-    
     let binaryPath: string;
     try {
       binaryPath = require.resolve(packageName);
     } catch (resolveErr: any) {
-      
-      const error = new VMSystemError(
-        `Failed to resolve binary package ${packageName}`,
-        [
-          'The system failed to locate the native binary package. This indicates a failed package installation or a registry synchronization error.',
-          `Run 'npm install ${packageName}' to verify your installation.`,
-        ],
-      );
-      error.print(explain, hint);
-      process.exit(69);
+
+      if (!existsSync(fallbackPath)) {
+        const error = new VMSystemError(
+          `Failed to resolve binary package ${packageName}`,
+          [
+            `The system failed to locate the native binary package '${packageName}', and no local 'lightvm-test' testing binary was found at '${fallbackPath}'. This indicates a failed package installation or a registry synchronization error.`,
+            `Run 'npm install ${packageName}' to verify your installation.`,
+          ],
+        );
+        error.print(explain, hint);
+        process.exit(69);
+      }
+
+      usedFallback = true;
+      binaryPath = fallbackPath;
     }
 
     // CRITICAL: Verify signature BEFORE loading the binary
@@ -182,13 +195,21 @@ export function loadNapi(explain: boolean, hint: boolean) {
     cachedNative = require(binaryPath);
     return cachedNative;
   } catch (err) {
-    const error = new VMSystemError(
-      `Failed to load binary for ${packageName}. Please ensure a secure connection during installation.`,
-      [
-        '    The system failed to load the necessary N-API bridge because the prebuilt binary module for your specific platform could not be resolved; this usually indicates a failed package installation, a registry synchronization error, or a platform mismatch between the installed dependencies and your current environment.',
-        `Run 'npm install ${packageName}' to verify your installation.`,
-      ],
-    );
+    const error = usedFallback
+      ? new VMSystemError(
+          `Failed to load local 'lightvm-test' testing binary at ${fallbackPath}.`,
+          [
+            'The local lightvm-test fallback binary could not be loaded. This indicates the binary is missing, corrupted, or was not built for this platform.',
+            "Rebuild the local package with 'npm run build:release' (or 'npm run build:debug') with SIGNING_PRIVATE_KEY set.",
+          ],
+        )
+      : new VMSystemError(
+          `Failed to load binary for ${packageName}. Please ensure a secure connection during installation.`,
+          [
+            '    The system failed to load the necessary N-API bridge because the prebuilt binary module for your specific platform could not be resolved; this usually indicates a failed package installation, a registry synchronization error, or a platform mismatch between the installed dependencies and your current environment.',
+            `Run 'npm install ${packageName}' to verify your installation.`,
+          ],
+        );
     error.print(explain, hint);
     process.exit(69);
   }
