@@ -7,6 +7,7 @@ export const sidebarConcepts = [
       { text: 'Torja (Penyelesai Simbol)', link: '/id/concepts/torja' },
       { text: 'Gazle (Pengoptimal)', link: '/id/concepts/gazle' },
       { text: 'Krates (Validasi & Keamanan)', link: '/id/concepts/krates' },
+      { text: 'Itme (Alat Benchmarking)', link: '/id/concepts/itme' },
     ],
   },
 ];
