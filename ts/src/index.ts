@@ -280,22 +280,26 @@ export class LightVM {
         return this.wrap(() => this.native.LightVM.blackBox(value));
       },
       bench: (name: string) => {
-        return {
-          bytes: (b: number) => {
-            return {
-              run: (setup: () => any, fn: (state: any) => any) => {
-                return this.wrap(() =>
-                  this.native.LightVM.bench(name, setup, fn, b),
-                );
-              },
-            };
-          },
-          run: (setup: () => any, fn: (state: any) => any) => {
-            return this.wrap(() =>
-              this.native.LightVM.bench(name, setup, fn, null),
-            );
-          },
+        let b: number | null = null,
+          samples: number | null = null,
+          targetTime: number | null = null;
+        const builder = {
+          bytes: (val: number) => ((b = val), builder),
+          samples: (val: number) => ((samples = val), builder),
+          targetTime: (val: number) => ((targetTime = val), builder),
+          run: (setup: () => any, fn: (state: any) => any) =>
+            this.wrap(() =>
+              this.native.LightVM.bench(
+                name,
+                setup,
+                fn,
+                b,
+                samples,
+                targetTime,
+              ),
+            ),
         };
+        return builder;
       },
       optimizeBytecode: (bytecode: any) => {
         return this.wrap(() =>

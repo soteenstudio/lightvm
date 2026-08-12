@@ -73,9 +73,9 @@ export declare class LightVM {
     tools(): {
         blackBox: (value: any) => any;
         bench: (name: string) => {
-            bytes: (b: number) => {
-                run: (setup: () => any, fn: (state: any) => any) => any;
-            };
+            bytes: (val: number) => /*elided*/ any;
+            samples: (val: number) => /*elided*/ any;
+            targetTime: (val: number) => /*elided*/ any;
             run: (setup: () => any, fn: (state: any) => any) => any;
         };
         optimizeBytecode: (bytecode: any) => any;

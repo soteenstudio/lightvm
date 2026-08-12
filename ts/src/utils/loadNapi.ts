@@ -20,7 +20,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 let cachedNative: any = null;
 
-// Ed25519 public key (matches public.key and rust/src/lib.rs PUBLIC_KEY_BYTES)
 const PUBLIC_KEY_BYTES = new Uint8Array([
   16, 241, 151, 48, 19, 252, 107, 117, 224, 89, 203, 89, 162, 96, 43, 50, 13,
   24, 97, 169, 163, 224, 167, 57, 130, 253, 237, 62, 84, 166, 179, 96,
@@ -36,10 +35,9 @@ function verifyBinarySignature(
   hint: boolean,
 ): void {
   try {
-    // Read the binary file
+    
     const binaryData = readFileSync(binaryPath);
-
-    // Read the signature file
+    
     const sigPath = `${binaryPath}.sig`;
     let sigData: Buffer;
     try {
@@ -55,8 +53,7 @@ function verifyBinarySignature(
       error.print(explain, hint);
       process.exit(70);
     }
-
-    // Create Ed25519 public key using Node's crypto module
+    
     const publicKey = createPublicKey({
       key: {
         kty: 'OKP',
@@ -65,8 +62,7 @@ function verifyBinarySignature(
       },
       format: 'jwk',
     });
-
-    // Verify the signature
+    
     const isValid = verify(null, binaryData, publicKey, sigData);
 
     if (!isValid) {
@@ -81,9 +77,9 @@ function verifyBinarySignature(
       process.exit(70);
     }
   } catch (err: any) {
-    // If we get here, it's an unexpected error (not the controlled exits above)
+    
     if (err.code === 'ENOENT' && err.path && err.path.endsWith('.sig')) {
-      // Signature file missing - already handled above, but catch here too
+      
       const error = new VMSystemError(
         `Signature file not found for ${binaryPath}`,
         [
@@ -94,7 +90,7 @@ function verifyBinarySignature(
       error.print(explain, hint);
       process.exit(70);
     } else if (err.code === 'ENOENT') {
-      // Binary file itself missing
+      
       const error = new VMSystemError(
         `Binary file not found at ${binaryPath}`,
         [
@@ -105,7 +101,7 @@ function verifyBinarySignature(
       error.print(explain, hint);
       process.exit(70);
     } else {
-      // Other unexpected errors during verification
+      
       const error = new VMSystemError(
         `Unexpected error during signature verification: ${err.message}`,
         [
@@ -122,9 +118,9 @@ export function loadNapi(explain: boolean, hint: boolean) {
   if (cachedNative) return cachedNative;
   try {
     const localPath = join(__dirname, '../binaries/lightvm.node');
-    // CRITICAL: Verify signature BEFORE loading the binary
+    
     verifyBinarySignature(localPath, explain, hint);
-    // Only after verification passes, load the binary
+    
     cachedNative = require(localPath);
     return cachedNative;
   } catch (err) {}
@@ -168,13 +164,12 @@ export function loadNapi(explain: boolean, hint: boolean) {
     process.exit(65);
   }
   try {
-    // For platform-specific packages, the main field points directly to the .node file
-    // We need to get the full path to verify it BEFORE loading
+    
     let binaryPath: string;
     try {
       binaryPath = require.resolve(packageName);
     } catch (resolveErr: any) {
-      // If we can't resolve the package, it's a fatal error - do not load unverified code
+      
       const error = new VMSystemError(
         `Failed to resolve binary package ${packageName}`,
         [
@@ -185,14 +180,11 @@ export function loadNapi(explain: boolean, hint: boolean) {
       error.print(explain, hint);
       process.exit(69);
     }
-
-    // CRITICAL: Verify signature BEFORE loading the binary
-    // Only verify .node files (native addons), not JavaScript files
+    
     if (binaryPath.endsWith('.node')) {
       verifyBinarySignature(binaryPath, explain, hint);
     }
-
-    // Only after verification passes (or if it's not a .node file), load the module
+    
     cachedNative = require(packageName);
     return cachedNative;
   } catch (err) {

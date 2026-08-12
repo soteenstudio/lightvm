@@ -50,6 +50,10 @@ export const sidebarMethodFunctions = {
           text: 'Metode Parse Array',
           link: '/id/api-reference/method-functions/tools-method/parse-array-method',
         },
+        {
+          text: 'Metode Bench',
+          link: '/id/api-reference/method-functions/tools-method/bench-method',
+        },
       ],
     },
   ],
