@@ -152,6 +152,8 @@ pub fn execute(
       | Instructions::Asinh(_)
       | Instructions::Acosh(_)
       | Instructions::Atanh(_)
+      | Instructions::Sqrt(_)
+      | Instructions::Cbrt(_)
       | Instructions::Neg(_)
       | Instructions::IncIdx(_, _)
       | Instructions::DecIdx(_, _) => {

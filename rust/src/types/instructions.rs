@@ -71,6 +71,8 @@ pub enum Instructions {
   Asinh(PrimitiveTypes),
   Acosh(PrimitiveTypes),
   Atanh(PrimitiveTypes),
+  Sqrt(PrimitiveTypes),
+  Cbrt(PrimitiveTypes),
   Neg(PrimitiveTypes),
   Pow(PrimitiveTypes),
   Powi(PrimitiveTypes),

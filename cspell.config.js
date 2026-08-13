@@ -82,7 +82,9 @@ export default {
     'itme',
     'asinh',
     'acosh',
-    'atanh'
+    'atanh',
+    'sqrt',
+    'cbrt'
   ],
   ignorePaths: [
     'node_modules/**',
