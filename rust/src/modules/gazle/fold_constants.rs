@@ -15,9 +15,10 @@ use crate::instructions::{
   },
   logic::{and_func::and_values, or_func::or_values, xor_func::xor_values},
   math::{
-    add_func::add_values, div_func::div_values, mod_func::mod_values, mul_func::mul_values,
-    pow_func::pow_values, powf_func::powf_values, powi_func::powi_values, rol_func::rol_values,
-    ror_func::ror_values, shl_func::shl_values, shr_func::shr_values, sub_func::sub_values,
+    add_func::add_values, atan2_func::atan2_values, div_func::div_values, mod_func::mod_values,
+    mul_func::mul_values, pow_func::pow_values, powf_func::powf_values, powi_func::powi_values,
+    rol_func::rol_values, ror_func::ror_values, shl_func::shl_values, shr_func::shr_values,
+    sub_func::sub_values,
   },
   stack::concat_func::concat_values,
 };
@@ -56,6 +57,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         Instructions::Pow(t) => Some(pow_values(val1, val2, *t)),
         Instructions::Powi(t) => Some(powi_values(val1, val2, *t)),
         Instructions::Powf(t) => Some(powf_values(val1, val2, *t)),
+        Instructions::Atan2(t) => Some(atan2_values(val1, val2, *t)),
         _ => None,
       };
       if let Some(res_val) = result {

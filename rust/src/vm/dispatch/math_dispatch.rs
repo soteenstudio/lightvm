@@ -9,8 +9,17 @@
  */
 
 use crate::instructions::math::{
+  acos_func::acos_func,
+  acosh_func::acosh_func,
   add_func::add_func,
+  asin_func::asin_func,
+  asinh_func::asinh_func,
+  atan_func::atan_func,
+  atan2_func::atan2_func,
+  atanh_func::atanh_func,
+  cbrt_func::cbrt_func,
   cos_func::cos_func,
+  cosh_func::cosh_func,
   div_func::div_func,
   inc_dec::{dec_func, inc_func},
   mod_func::mod_func,
@@ -24,8 +33,11 @@ use crate::instructions::math::{
   shl_func::shl_func,
   shr_func::shr_func,
   sin_func::sin_func,
+  sinh_func::sinh_func,
+  sqrt_func::sqrt_func,
   sub_func::sub_func,
   tan_func::tan_func,
+  tanh_func::tanh_func,
 };
 use crate::types::stack::Stack;
 use crate::types::{instructions::Instructions, var_stack::VarStack};
@@ -53,6 +65,18 @@ pub fn math_dispatch(
     Instructions::Sin(num_type) => sin_func(stack, *num_type, ip),
     Instructions::Cos(num_type) => cos_func(stack, *num_type, ip),
     Instructions::Tan(num_type) => tan_func(stack, *num_type, ip),
+    Instructions::Asin(num_type) => asin_func(stack, *num_type, ip),
+    Instructions::Acos(num_type) => acos_func(stack, *num_type, ip),
+    Instructions::Atan(num_type) => atan_func(stack, *num_type, ip),
+    Instructions::Atan2(num_type) => atan2_func(stack, *num_type, ip),
+    Instructions::Sinh(num_type) => sinh_func(stack, *num_type, ip),
+    Instructions::Cosh(num_type) => cosh_func(stack, *num_type, ip),
+    Instructions::Tanh(num_type) => tanh_func(stack, *num_type, ip),
+    Instructions::Asinh(num_type) => asinh_func(stack, *num_type, ip),
+    Instructions::Acosh(num_type) => acosh_func(stack, *num_type, ip),
+    Instructions::Atanh(num_type) => atanh_func(stack, *num_type, ip),
+    Instructions::Sqrt(num_type) => sqrt_func(stack, *num_type, ip),
+    Instructions::Cbrt(num_type) => cbrt_func(stack, *num_type, ip),
     Instructions::Neg(num_type) => neg_func(stack, *num_type, ip),
     Instructions::IncIdx(idx, num_type) => Ok(inc_func(vars, stack, *idx, *num_type, ip)?),
     Instructions::DecIdx(idx, num_type) => Ok(dec_func(vars, *idx, *num_type, ip)?),

@@ -21,3 +21,11 @@ These instructions provide the necessary operations for numerical and logical ca
 | `powf` | type | val1, val2 | Power with floating-point exponent |
 | `sin` / `cos` | type | val1, val2 | Sine or Cosine trigonometric operation |
 | `tan` | type | val1, val2 | Tangent trigonometric operation |
+| `sinh` / `cosh` | type | val | Hyperbolic Sine or Cosine operation |
+| `tanh` | type | val | Hyperbolic Tangent operation |
+| `asin` / `acos` | type | val | Arcsine or Arccosine trigonometric operation |
+| `atan` | type | val | Arctangent trigonometric operation |
+| `atan2` | type | val1, val2 | Two-argument Arctangent operation |
+| `asinh` / `acosh` | type | val | Inverse Hyperbolic Sine or Cosine operation |
+| `atanh` | type | val | Inverse Hyperbolic Tangent operation |
+| `sqrt` / `cbrt` | type | val | Square Root or Cube Root operation |

@@ -15,7 +15,13 @@ use crate::instructions::{
     to_short_func::to_short_values, to_string_func::to_string_values,
   },
   logic::not_func::not_values,
-  math::{cos_func::cos_values, neg_func::neg_values, sin_func::sin_values, tan_func::tan_values},
+  math::{
+    acos_func::acos_values, acosh_func::acosh_values, asin_func::asin_values,
+    asinh_func::asinh_values, atan_func::atan_values, atanh_func::atanh_values,
+    cbrt_func::cbrt_values, cos_func::cos_values, cosh_func::cosh_values, neg_func::neg_values,
+    sin_func::sin_values, sinh_func::sinh_values, sqrt_func::sqrt_values, tan_func::tan_values,
+    tanh_func::tanh_values,
+  },
   metadata::typeof_func::typeof_values,
 };
 use crate::modules::gazle::utils::{
@@ -43,6 +49,17 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         Instructions::Sin(t) => Some(sin_values(val, *t)),
         Instructions::Cos(t) => Some(cos_values(val, *t)),
         Instructions::Tan(t) => Some(tan_values(val, *t)),
+        Instructions::Asin(t) => Some(asin_values(val, *t)),
+        Instructions::Acos(t) => Some(acos_values(val, *t)),
+        Instructions::Atan(t) => Some(atan_values(val, *t)),
+        Instructions::Sinh(t) => Some(sinh_values(val, *t)),
+        Instructions::Cosh(t) => Some(cosh_values(val, *t)),
+        Instructions::Tanh(t) => Some(tanh_values(val, *t)),
+        Instructions::Asinh(t) => Some(asinh_values(val, *t)),
+        Instructions::Acosh(t) => Some(acosh_values(val, *t)),
+        Instructions::Atanh(t) => Some(atanh_values(val, *t)),
+        Instructions::Sqrt(t) => Some(sqrt_values(val, *t)),
+        Instructions::Cbrt(t) => Some(cbrt_values(val, *t)),
         Instructions::Neg(t) => Some(neg_values(val, *t)),
         _ => None,
       };
