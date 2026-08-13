@@ -6,7 +6,7 @@ else
   LOGS=$(git log --pretty=format:"%s")
 fi
 
-HAS_SIGNIFICANT=$(echo "$LOGS" | grep -E "^(feat|fix)(\(.*\))?:" || echo "")
+HAS_SIGNIFICANT=$(echo "$LOGS" | grep -E "^(feat|fix|perf)(\(.*\))?:" || echo "")
 
 if [ -n "$HAS_SIGNIFICANT" ]; then
   echo "significant=true" >> $GITHUB_OUTPUT
