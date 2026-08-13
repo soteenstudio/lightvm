@@ -21,3 +21,11 @@ Instruksi-instruksi ini menyediakan operasi yang diperlukan untuk perhitungan nu
 | `powf` | type | val1, val2 | Pangkat dengan eksponen floating point |
 | `sin` / `cos` | type | val1, val2 | Operasi trigonometri Sine atau Cosine |
 | `tan` | type | val1, val2 | Operasi trigonometri Tangent |
+| `sinh` / `cosh` | type | val | Operasi Sinus atau Kosinus Hiperbolik |
+| `tanh` | type | val | Operasi Tangen Hiperbolik |
+| `asin` / `acos` | type | val | Operasi Trigonometri Arcsinus atau Arccosinus |
+| `atan` | type | val | Operasi Trigonometri Arctangen |
+| `atan2` | type | val1, val2 | Operasi Arctangen dua argumen |
+| `asinh` / `acosh` | type | val | Operasi Invers Sinus atau Kosinus Hiperbolik |
+| `atanh` | type | val | Operasi Invers Tangen Hiperbolik |
+| `sqrt` / `cbrt` | type | val | Operasi Akar Kuadrat atau Akar Pangkat Tiga |
