@@ -15,6 +15,7 @@ use crate::instructions::math::{
   atan_func::atan_func,
   atan2_func::atan2_func,
   cos_func::cos_func,
+  cosh_func::cosh_func,
   div_func::div_func,
   inc_dec::{dec_func, inc_func},
   mod_func::mod_func,
@@ -28,8 +29,10 @@ use crate::instructions::math::{
   shl_func::shl_func,
   shr_func::shr_func,
   sin_func::sin_func,
+  sinh_func::sinh_func,
   sub_func::sub_func,
   tan_func::tan_func,
+  tanh_func::tanh_func,
 };
 use crate::types::stack::Stack;
 use crate::types::{instructions::Instructions, var_stack::VarStack};
@@ -61,6 +64,9 @@ pub fn math_dispatch(
     Instructions::Acos(num_type) => acos_func(stack, *num_type, ip),
     Instructions::Atan(num_type) => atan_func(stack, *num_type, ip),
     Instructions::Atan2(num_type) => atan2_func(stack, *num_type, ip),
+    Instructions::Sinh(num_type) => sinh_func(stack, *num_type, ip),
+    Instructions::Cosh(num_type) => cosh_func(stack, *num_type, ip),
+    Instructions::Tanh(num_type) => tanh_func(stack, *num_type, ip),
     Instructions::Neg(num_type) => neg_func(stack, *num_type, ip),
     Instructions::IncIdx(idx, num_type) => Ok(inc_func(vars, stack, *idx, *num_type, ip)?),
     Instructions::DecIdx(idx, num_type) => Ok(dec_func(vars, *idx, *num_type, ip)?),

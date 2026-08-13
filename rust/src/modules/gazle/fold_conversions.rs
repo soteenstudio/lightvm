@@ -17,7 +17,8 @@ use crate::instructions::{
   logic::not_func::not_values,
   math::{
     acos_func::acos_values, asin_func::asin_values, atan_func::atan_values, cos_func::cos_values,
-    neg_func::neg_values, sin_func::sin_values, tan_func::tan_values,
+    cosh_func::cosh_values, neg_func::neg_values, sin_func::sin_values, sinh_func::sinh_values,
+    tan_func::tan_values, tanh_func::tanh_values,
   },
   metadata::typeof_func::typeof_values,
 };
@@ -49,6 +50,9 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         Instructions::Asin(t) => Some(asin_values(val, *t)),
         Instructions::Acos(t) => Some(acos_values(val, *t)),
         Instructions::Atan(t) => Some(atan_values(val, *t)),
+        Instructions::Sinh(t) => Some(sinh_values(val, *t)),
+        Instructions::Cosh(t) => Some(cosh_values(val, *t)),
+        Instructions::Tanh(t) => Some(tanh_values(val, *t)),
         Instructions::Neg(t) => Some(neg_values(val, *t)),
         _ => None,
       };

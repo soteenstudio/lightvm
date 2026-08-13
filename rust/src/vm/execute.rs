@@ -146,6 +146,9 @@ pub fn execute(
       | Instructions::Acos(_)
       | Instructions::Atan(_)
       | Instructions::Atan2(_)
+      | Instructions::Sinh(_)
+      | Instructions::Cosh(_)
+      | Instructions::Tanh(_)
       | Instructions::Neg(_)
       | Instructions::IncIdx(_, _)
       | Instructions::DecIdx(_, _) => {
