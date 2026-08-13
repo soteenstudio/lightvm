@@ -58,6 +58,7 @@
     "cleaner": "node ./scripts/utils/cleaner.js",
     "server": "node ./scripts/utils/server.js",
     "sync:agents": "node ./scripts/utils/sync-agents.js",
+    "generate:keys": "node ./scripts/utils/generate-keys.js",
     "docs:dev": "vitepress dev docs",
     "docs:build": "node ./scripts/utils/fetch-stats.js && vitepress build docs",
     "docs:preview": "vitepress preview docs",

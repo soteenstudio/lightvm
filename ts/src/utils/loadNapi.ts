@@ -19,10 +19,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 let cachedNative: any = null;
 
-const PUBLIC_KEY_BYTES = new Uint8Array([
-  16, 241, 151, 48, 19, 252, 107, 117, 224, 89, 203, 89, 162, 96, 43, 50, 13,
-  24, 97, 169, 163, 224, 167, 57, 130, 253, 237, 62, 84, 166, 179, 96,
-]);
+const PUBLIC_KEY_BYTES = new Uint8Array([133,84,86,32,79,104,138,174,32,175,89,111,220,54,110,81,54,126,252,100,51,123,144,153,7,49,95,189,129,82,31,62]);
 
 /**
  * Verifies the Ed25519 signature of a native binary BEFORE loading it.
