@@ -116,87 +116,36 @@ export class LightVM {
     return this;
   }
 
-  setMaxIo(value: number) {
-    return this.updateConfig('securityConfig', 'maxIo', value, 'setMaxIo');
-  }
-
-  setMaxImport(value: number) {
-    return this.updateConfig(
-      'securityConfig',
-      'maxImport',
-      value,
-      'setMaxImport',
-    );
-  }
-
-  setMaxAlloc(value: number) {
-    return this.updateConfig(
-      'securityConfig',
-      'maxAlloc',
-      value,
-      'setMaxAlloc',
-    );
-  }
-
-  setMaxCall(value: number) {
-    return this.updateConfig('securityConfig', 'maxCall', value, 'setMaxCall');
-  }
-
-  setMaxJump(value: number) {
-    return this.updateConfig('securityConfig', 'maxJump', value, 'setMaxJump');
-  }
-
-  setMaxTicks(value: number) {
-    return this.updateConfig(
-      'securityConfig',
-      'maxTicks',
-      value,
-      'setMaxTicks',
-    );
-  }
-
-  setMaxStackSize(value: number) {
-    return this.updateConfig(
-      'securityConfig',
-      'maxStackSize',
-      value,
-      'setMaxStackSize',
-    );
-  }
-
-  setAllowedImports(value: Array<string>) {
-    return this.updateConfig(
+  setMaxIo = (val: number) =>
+    this.updateConfig('securityConfig', 'maxIo', val, 'setMaxIo');
+  setMaxImport = (val: number) =>
+    this.updateConfig('securityConfig', 'maxImport', val, 'setMaxImport');
+  setMaxAlloc = (val: number) =>
+    this.updateConfig('securityConfig', 'maxAlloc', val, 'setMaxAlloc');
+  setMaxCall = (val: number) =>
+    this.updateConfig('securityConfig', 'maxCall', val, 'setMaxCall');
+  setMaxJump = (val: number) =>
+    this.updateConfig('securityConfig', 'maxJump', val, 'setMaxJump');
+  setMaxTicks = (val: number) =>
+    this.updateConfig('securityConfig', 'maxTicks', val, 'setMaxTicks');
+  setMaxStackSize = (val: number) =>
+    this.updateConfig('securityConfig', 'maxStackSize', val, 'setMaxStackSize');
+  setAllowedImports = (val: string[]) =>
+    this.updateConfig(
       'securityConfig',
       'allowedImports',
-      value,
+      val,
       'setAllowedImports',
     );
-  }
-
-  withUnsafeMode(enabled: boolean) {
-    return this.updateConfig(
-      'securityConfig',
-      'unsafeMode',
-      enabled,
-      'withUnsafeMode',
-    );
-  }
-
-  withNightly(enabled: boolean) {
-    return this.updateConfig('runtimeConfig', 'nightly', enabled);
-  }
-
-  withBacktrace(enabled: boolean) {
-    return this.updateConfig('errorOptions', 'backtrace', enabled);
-  }
-
-  withExplain(enabled: boolean) {
-    return this.updateConfig('errorOptions', 'explain', enabled);
-  }
-
-  withHint(enabled: boolean) {
-    return this.updateConfig('errorOptions', 'hint', enabled);
-  }
+  withUnsafeMode = (en: boolean) =>
+    this.updateConfig('securityConfig', 'unsafeMode', en, 'withUnsafeMode');
+  withNightly = (en: boolean) =>
+    this.updateConfig('runtimeConfig', 'nightly', en);
+  withBacktrace = (en: boolean) =>
+    this.updateConfig('errorOptions', 'backtrace', en);
+  withExplain = (en: boolean) =>
+    this.updateConfig('errorOptions', 'explain', en);
+  withHint = (en: boolean) => this.updateConfig('errorOptions', 'hint', en);
 
   load(source: Instructions[] | string) {
     const payload =
@@ -233,11 +182,11 @@ export class LightVM {
     };
   }
 
-  provide(nameOrObj: string | any, value?: any) {
+  provide(nameOrObj: string | Record<string, any>, value?: any) {
     if (typeof nameOrObj === 'object') {
-      for (const [key, val] of Object.entries(nameOrObj)) {
-        this.instance.provide(key, val);
-      }
+      Object.entries(nameOrObj).forEach(([k, v]) =>
+        this.instance.provide(k, v),
+      );
     } else {
       this.instance.provide(nameOrObj, value);
     }
