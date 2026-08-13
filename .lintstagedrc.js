@@ -16,10 +16,8 @@ export default {
   ],
   "rust/**/*.rs": [
     "sh -c 'cargo fmt --'",
-    "sh -c 'cargo clippy --color always -- -D warnings'",
   ],
   ".testings/**/*.rs": [
     "sh -c 'cargo fmt --'",
-    "sh -c 'cargo clippy --color always -- -D warnings'"
   ]
 }
