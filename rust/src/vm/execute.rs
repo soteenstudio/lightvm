@@ -142,6 +142,10 @@ pub fn execute(
       | Instructions::Sin(_)
       | Instructions::Cos(_)
       | Instructions::Tan(_)
+      | Instructions::Asin(_)
+      | Instructions::Acos(_)
+      | Instructions::Atan(_)
+      | Instructions::Atan2(_)
       | Instructions::Neg(_)
       | Instructions::IncIdx(_, _)
       | Instructions::DecIdx(_, _) => {

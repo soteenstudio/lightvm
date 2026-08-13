@@ -15,7 +15,10 @@ use crate::instructions::{
     to_short_func::to_short_values, to_string_func::to_string_values,
   },
   logic::not_func::not_values,
-  math::{cos_func::cos_values, neg_func::neg_values, sin_func::sin_values, tan_func::tan_values},
+  math::{
+    acos_func::acos_values, asin_func::asin_values, atan_func::atan_values, cos_func::cos_values,
+    neg_func::neg_values, sin_func::sin_values, tan_func::tan_values,
+  },
   metadata::typeof_func::typeof_values,
 };
 use crate::modules::gazle::utils::{
@@ -43,6 +46,9 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         Instructions::Sin(t) => Some(sin_values(val, *t)),
         Instructions::Cos(t) => Some(cos_values(val, *t)),
         Instructions::Tan(t) => Some(tan_values(val, *t)),
+        Instructions::Asin(t) => Some(asin_values(val, *t)),
+        Instructions::Acos(t) => Some(acos_values(val, *t)),
+        Instructions::Atan(t) => Some(atan_values(val, *t)),
         Instructions::Neg(t) => Some(neg_values(val, *t)),
         _ => None,
       };

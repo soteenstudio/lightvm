@@ -8,8 +8,16 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+pub(crate) mod acos;
+pub(crate) mod acos_func;
 pub(crate) mod add;
 pub(crate) mod add_func;
+pub(crate) mod asin;
+pub(crate) mod asin_func;
+pub(crate) mod atan;
+pub(crate) mod atan2;
+pub(crate) mod atan2_func;
+pub(crate) mod atan_func;
 pub(crate) mod cos;
 pub(crate) mod cos_func;
 pub(crate) mod div;
