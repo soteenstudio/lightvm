@@ -10,10 +10,13 @@
 
 use crate::instructions::math::{
   acos_func::acos_func,
+  acosh_func::acosh_func,
   add_func::add_func,
   asin_func::asin_func,
+  asinh_func::asinh_func,
   atan_func::atan_func,
   atan2_func::atan2_func,
+  atanh_func::atanh_func,
   cos_func::cos_func,
   cosh_func::cosh_func,
   div_func::div_func,
@@ -67,6 +70,9 @@ pub fn math_dispatch(
     Instructions::Sinh(num_type) => sinh_func(stack, *num_type, ip),
     Instructions::Cosh(num_type) => cosh_func(stack, *num_type, ip),
     Instructions::Tanh(num_type) => tanh_func(stack, *num_type, ip),
+    Instructions::Asinh(num_type) => asinh_func(stack, *num_type, ip),
+    Instructions::Acosh(num_type) => acosh_func(stack, *num_type, ip),
+    Instructions::Atanh(num_type) => atanh_func(stack, *num_type, ip),
     Instructions::Neg(num_type) => neg_func(stack, *num_type, ip),
     Instructions::IncIdx(idx, num_type) => Ok(inc_func(vars, stack, *idx, *num_type, ip)?),
     Instructions::DecIdx(idx, num_type) => Ok(dec_func(vars, *idx, *num_type, ip)?),

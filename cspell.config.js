@@ -79,7 +79,10 @@ export default {
     'fract',
     'ftype',
     'impls',
-    'itme'
+    'itme',
+    'asinh',
+    'acosh',
+    'atanh'
   ],
   ignorePaths: [
     'node_modules/**',

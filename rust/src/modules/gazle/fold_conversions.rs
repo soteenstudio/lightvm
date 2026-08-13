@@ -16,9 +16,10 @@ use crate::instructions::{
   },
   logic::not_func::not_values,
   math::{
-    acos_func::acos_values, asin_func::asin_values, atan_func::atan_values, cos_func::cos_values,
-    cosh_func::cosh_values, neg_func::neg_values, sin_func::sin_values, sinh_func::sinh_values,
-    tan_func::tan_values, tanh_func::tanh_values,
+    acos_func::acos_values, acosh_func::acosh_values, asin_func::asin_values,
+    asinh_func::asinh_values, atan_func::atan_values, atanh_func::atanh_values,
+    cos_func::cos_values, cosh_func::cosh_values, neg_func::neg_values, sin_func::sin_values,
+    sinh_func::sinh_values, tan_func::tan_values, tanh_func::tanh_values,
   },
   metadata::typeof_func::typeof_values,
 };
@@ -53,6 +54,9 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         Instructions::Sinh(t) => Some(sinh_values(val, *t)),
         Instructions::Cosh(t) => Some(cosh_values(val, *t)),
         Instructions::Tanh(t) => Some(tanh_values(val, *t)),
+        Instructions::Asinh(t) => Some(asinh_values(val, *t)),
+        Instructions::Acosh(t) => Some(acosh_values(val, *t)),
+        Instructions::Atanh(t) => Some(atanh_values(val, *t)),
         Instructions::Neg(t) => Some(neg_values(val, *t)),
         _ => None,
       };

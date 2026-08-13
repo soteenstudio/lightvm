@@ -149,6 +149,9 @@ pub fn execute(
       | Instructions::Sinh(_)
       | Instructions::Cosh(_)
       | Instructions::Tanh(_)
+      | Instructions::Asinh(_)
+      | Instructions::Acosh(_)
+      | Instructions::Atanh(_)
       | Instructions::Neg(_)
       | Instructions::IncIdx(_, _)
       | Instructions::DecIdx(_, _) => {
