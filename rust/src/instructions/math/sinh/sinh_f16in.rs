@@ -13,7 +13,7 @@ use num_traits::Float;
 #[inline(always)]
 pub fn sinh_f16in(a: f16) -> f16 {
   let res = a.sinh();
-  if res.is_infinite() || res.is_nan() {
+  if res.is_nan() {
     return f16::NAN;
   }
   res

@@ -11,7 +11,7 @@
 #[inline(always)]
 pub fn sinh_f32in(a: f32) -> f32 {
   let res = a.sinh();
-  if res.is_infinite() || res.is_nan() {
+  if res.is_nan() {
     return f32::NAN;
   }
   res
