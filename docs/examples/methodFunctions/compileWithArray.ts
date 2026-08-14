@@ -1,4 +1,4 @@
-import { TargetArch, FileType } from "lightvm";
+import { TargetArch, FileType } from 'lightvm';
 
 const raw = [
   ['push', 5],
@@ -6,9 +6,8 @@ const raw = [
   ['set', 'x'],
 ];
 const optimized = tools.optimizeBytecode(raw);
-vm.load(optimized)
-  .compile({
-    targetArch: TargetArch.AArch64,
-    fileType: FileType.Binary,
-    path: "./bin/output",
-  });
+vm.load(optimized).compile({
+  targetArch: TargetArch.AArch64,
+  fileType: FileType.Binary,
+  path: './bin/output',
+});

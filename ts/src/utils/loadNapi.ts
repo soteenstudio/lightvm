@@ -34,9 +34,8 @@ function verifyBinarySignature(
   hint: boolean,
 ): void {
   try {
-    
     const binaryData = readFileSync(binaryPath);
-    
+
     const sigPath = `${binaryPath}.sig`;
     let sigData: Buffer;
     try {
@@ -52,7 +51,7 @@ function verifyBinarySignature(
       error.print(explain, hint);
       process.exit(70);
     }
-    
+
     const publicKey = createPublicKey({
       key: {
         kty: 'OKP',
@@ -61,7 +60,7 @@ function verifyBinarySignature(
       },
       format: 'jwk',
     });
-    
+
     const isValid = verify(null, binaryData, publicKey, sigData);
 
     if (!isValid) {
@@ -76,9 +75,7 @@ function verifyBinarySignature(
       process.exit(70);
     }
   } catch (err: any) {
-    
     if (err.code === 'ENOENT' && err.path && err.path.endsWith('.sig')) {
-      
       const error = new VMSystemError(
         `Signature file not found for ${binaryPath}`,
         [
@@ -89,7 +86,6 @@ function verifyBinarySignature(
       error.print(explain, hint);
       process.exit(70);
     } else if (err.code === 'ENOENT') {
-      
       const error = new VMSystemError(
         `Binary file not found at ${binaryPath}`,
         [
@@ -100,7 +96,6 @@ function verifyBinarySignature(
       error.print(explain, hint);
       process.exit(70);
     } else {
-      
       const error = new VMSystemError(
         `Unexpected error during signature verification: ${err.message}`,
         [
@@ -117,7 +112,8 @@ export function loadNapi(explain: boolean, hint: boolean) {
   if (cachedNative) return cachedNative;
 
   // Allow skipping signature verification during local development/testing
-  const skipVerification = process.env.LIGHTVM_SKIP_SIGNATURE_VERIFICATION === 'true';
+  const skipVerification =
+    process.env.LIGHTVM_SKIP_SIGNATURE_VERIFICATION === 'true';
 
   const { platform, arch } = process;
   let packageName = '';
@@ -183,7 +179,6 @@ export function loadNapi(explain: boolean, hint: boolean) {
     try {
       binaryPath = require.resolve(packageName);
     } catch (resolveErr: any) {
-
       if (!existsSync(fallbackPath)) {
         const error = new VMSystemError(
           `Failed to resolve binary package ${packageName}`,
