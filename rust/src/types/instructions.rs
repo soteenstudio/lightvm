@@ -74,6 +74,8 @@ pub enum Instructions {
   Sqrt(PrimitiveTypes),
   Cbrt(PrimitiveTypes),
   Neg(PrimitiveTypes),
+  Ln(PrimitiveTypes),
+  Exp(PrimitiveTypes),
   Pow(PrimitiveTypes),
   Powi(PrimitiveTypes),
   Powf(PrimitiveTypes),

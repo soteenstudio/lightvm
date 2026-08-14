@@ -245,6 +245,8 @@ impl Instructions {
       b"atanh" => Ok(Instructions::Atanh(map_primitive(arg1))),
       b"sqrt" => Ok(Instructions::Sqrt(map_primitive(arg1))),
       b"cbrt" => Ok(Instructions::Cbrt(map_primitive(arg1))),
+      b"ln" => Ok(Instructions::Ln(map_primitive(arg1))),
+      b"exp" => Ok(Instructions::Exp(map_primitive(arg1))),
       b"neg" => Ok(Instructions::Neg(map_primitive(arg1))),
       b"pow" => Ok(Instructions::Pow(map_primitive(arg1))),
       b"powi" => Ok(Instructions::Powi(map_primitive(arg1))),
