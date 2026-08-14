@@ -76,6 +76,8 @@ pub enum Instructions {
   Neg(PrimitiveTypes),
   Ln(PrimitiveTypes),
   Exp(PrimitiveTypes),
+  Log2(PrimitiveTypes),
+  Log10(PrimitiveTypes),
   Pow(PrimitiveTypes),
   Powi(PrimitiveTypes),
   Powf(PrimitiveTypes),

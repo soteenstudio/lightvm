@@ -157,6 +157,8 @@ pub fn execute(
       | Instructions::Neg(_)
       | Instructions::Ln(_)
       | Instructions::Exp(_)
+      | Instructions::Log2(_)
+      | Instructions::Log10(_)
       | Instructions::IncIdx(_, _)
       | Instructions::DecIdx(_, _) => {
         math_dispatch(instr, &mut stack, &mut vars, ip)?;
