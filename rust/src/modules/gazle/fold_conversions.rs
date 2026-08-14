@@ -18,9 +18,9 @@ use crate::instructions::{
   math::{
     acos_func::acos_values, acosh_func::acosh_values, asin_func::asin_values,
     asinh_func::asinh_values, atan_func::atan_values, atanh_func::atanh_values,
-    cbrt_func::cbrt_values, cos_func::cos_values, cosh_func::cosh_values, neg_func::neg_values,
-    sin_func::sin_values, sinh_func::sinh_values, sqrt_func::sqrt_values, tan_func::tan_values,
-    tanh_func::tanh_values,
+    cbrt_func::cbrt_values, cos_func::cos_values, cosh_func::cosh_values, exp_func::exp_values,
+    ln_func::ln_values, neg_func::neg_values, sin_func::sin_values, sinh_func::sinh_values,
+    sqrt_func::sqrt_values, tan_func::tan_values, tanh_func::tanh_values,
   },
   metadata::typeof_func::typeof_values,
 };
@@ -61,6 +61,8 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         Instructions::Sqrt(t) => Some(sqrt_values(val, *t)),
         Instructions::Cbrt(t) => Some(cbrt_values(val, *t)),
         Instructions::Neg(t) => Some(neg_values(val, *t)),
+        Instructions::Ln(t) => Some(ln_values(val, *t)),
+        Instructions::Exp(t) => Some(exp_values(val, *t)),
         _ => None,
       };
       if let Some(res_val) = folded {

@@ -7,4 +7,11 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
-export declare function isMusl(reportProvider?: NodeJS.ProcessReport): boolean;
+export interface ProcessReportProvider {
+  getReport(): {
+    header?: {
+      glibcVersionRuntime?: string;
+    };
+  };
+}
+export declare function isMusl(reportProvider?: ProcessReportProvider): boolean;

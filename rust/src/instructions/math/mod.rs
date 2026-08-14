@@ -32,7 +32,15 @@ pub(crate) mod cosh;
 pub(crate) mod cosh_func;
 pub(crate) mod div;
 pub(crate) mod div_func;
+pub(crate) mod exp;
+pub(crate) mod exp_func;
 pub(crate) mod inc_dec;
+pub(crate) mod ln;
+pub(crate) mod ln_func;
+pub(crate) mod log10;
+pub(crate) mod log10_func;
+pub(crate) mod log2;
+pub(crate) mod log2_func;
 #[path = "mod/mod.rs"]
 pub(crate) mod r#mod;
 pub(crate) mod mod_func;

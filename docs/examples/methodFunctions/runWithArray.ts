@@ -4,5 +4,4 @@ const raw = [
   ['set', 'x'],
 ];
 const optimized = tools.optimizeBytecode(raw);
-vm.load(optimized)
-  .run();
+vm.load(optimized).run();

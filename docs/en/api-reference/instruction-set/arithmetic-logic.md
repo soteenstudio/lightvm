@@ -29,3 +29,6 @@ These instructions provide the necessary operations for numerical and logical ca
 | `asinh` / `acosh` | type | val | Inverse Hyperbolic Sine or Cosine operation |
 | `atanh` | type | val | Inverse Hyperbolic Tangent operation |
 | `sqrt` / `cbrt` | type | val | Square Root or Cube Root operation |
+| `ln` | type | val | Natural Logarithm operation with mathematical constant base e |
+| `log2` / `log10` | type | val | Logarithm operation with base 2 or base 10 option |
+| `exp` | type | val | Natural Exponential function operation based on constant e |
