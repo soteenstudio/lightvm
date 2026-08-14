@@ -29,3 +29,6 @@ Instruksi-instruksi ini menyediakan operasi yang diperlukan untuk perhitungan nu
 | `asinh` / `acosh` | type | val | Operasi Invers Sinus atau Kosinus Hiperbolik |
 | `atanh` | type | val | Operasi Invers Tangen Hiperbolik |
 | `sqrt` / `cbrt` | type | val | Operasi Akar Kuadrat atau Akar Pangkat Tiga |
+| `ln` | type | val | Operasi Logaritma Natural dengan basis konstanta matematika e |
+| `log2` / `log10` | type | val | Operasi Logaritma dengan pilihan basis 2 atau basis 10 |
+| `exp` | type | val | Operasi Fungsi Eksponensial natural berbasis konstanta e |
