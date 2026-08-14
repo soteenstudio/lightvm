@@ -8,7 +8,9 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::exp::{exp_f16in::exp_f16in, exp_f32in::exp_f32in, exp_f64in::exp_f64in};
+use crate::instructions::math::exp::{
+  exp_f16in::exp_f16in, exp_f32in::exp_f32in, exp_f64in::exp_f64in,
+};
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
