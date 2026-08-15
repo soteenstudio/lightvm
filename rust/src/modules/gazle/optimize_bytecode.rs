@@ -8,11 +8,15 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::modules::gazle::utils::run_pass::run_pass;
+use crate::modules::gazle::utils::{run_pass::run_pass, time_budget::TimeBudget};
 use crate::types::instructions::Instructions;
 pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
   let mut pass_weights: [i32; 9] = [1; 9];
+  let budget = TimeBudget::new(200);
   loop {
+    if budget.is_expired() {
+      break;
+    }
     let mut changed = false;
     let len_before = bytecode.len();
     let mut order: [usize; 9] = [0, 1, 2, 3, 4, 5, 6, 7, 8];
