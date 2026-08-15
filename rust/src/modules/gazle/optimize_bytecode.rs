@@ -52,13 +52,13 @@ pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
     }
     for instr in &mut new_bytecode {
       match instr {
-        Instructions::Jump(target) | Instructions::IfFalse(target) => {
-          if *target < index_mapping.len() {
-            let mapped = index_mapping[*target];
-            if *target != mapped {
-              *target = mapped;
-              changed = true;
-            }
+        Instructions::Jump(target) | Instructions::IfFalse(target)
+          if *target < index_mapping.len() =>
+        {
+          let mapped = index_mapping[*target];
+          if *target != mapped {
+            *target = mapped;
+            changed = true;
           }
         }
         _ => {}
