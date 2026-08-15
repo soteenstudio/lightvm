@@ -22,6 +22,9 @@ pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
     let mut order: [usize; 9] = [0, 1, 2, 3, 4, 5, 6, 7, 8];
     order.sort_by(|a, b| pass_weights[*b].cmp(&pass_weights[*a]));
     for &pass_id in &order {
+      if budget.is_expired() {
+        break;
+      }
       let len_before_pass = bytecode.len();
       let prev_bytes_debug = bytecode.clone();
       run_pass(pass_id, &mut bytecode);
@@ -34,6 +37,9 @@ pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
       } else {
         pass_weights[pass_id] = pass_weights[pass_id].saturating_sub(1).max(1);
       }
+    }
+    if budget.is_expired() {
+      break;
     }
     let len = bytecode.len();
     let mut index_mapping = Vec::with_capacity(len);
