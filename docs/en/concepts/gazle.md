@@ -1,8 +1,8 @@
 # Gazle (Optimizer)
-**Gazle** is a built-in optimizer that comes with **LightVM** to perform optimizations before your bytecode is executed through a multi-pass optimization method to ensure maximum performance and minimal footprint.
+**Gazle** is a built-in optimizer that comes with **LightVM** to perform optimizations before your bytecode is executed through an adaptive multi-pass optimization method to ensure maximum performance, minimal footprint, and reliable safety execution.
 
 ## How Gazle Works
-Gazle employs a specialized transformation pipeline to refine your bytecode. It processes the instruction stream through multiple passes, systematically identifying and eliminating inefficiencies before the VM runtime even begins.
+Gazle employs a specialized transformation pipeline and a **Time-Budgeted Optimization** mechanism to refine your bytecode safely. It processes the instruction stream through multiple passes dynamically sorted by success-based weights (`pass_weights`), systematically identifying, rewarding effective optimization passes, and eliminating inefficiencies before the VM runtime even begins.
 
   * **Specialized Instructions**: Gazle optimizes memory usage and execution speed by converting generic `push` instructions into type-specific counterparts (e.g., `push_int16`, `push_string`, `push_bool`). This allows the VM to process data with predefined sizes and types, significantly reducing the overhead of runtime type inspection and allocation.
  * **Constant Folding**: Pre-calculates math and logic operations (e.g., `add`, `sub`, `xor`, `concat`) if the values are known at compile-time.

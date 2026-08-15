@@ -1,8 +1,8 @@
 # Gazle (Pengoptimal)
-**Gazle** adalah pengoptimal bawaan yang disertakan dengan **LightVM** untuk melakukan pengoptimalan sebelum bytecode Anda dieksekusi melalui metode pengoptimalan multi-pass untuk memastikan kinerja maksimum dan meminimalkan
+**Gazle** adalah pengoptimal bawaan yang disertakan dengan **LightVM** untuk melakukan pengoptimalan sebelum bytecode Anda dieksekusi melalui metode *adaptive multi-pass optimization* untuk memastikan kinerja maksimum, meminimalkan *footprint*, serta menjamin keamanan eksekusi.
 
 ## Cara Kerja Gazle
-Gazle menggunakan alur transformasi khusus untuk menyempurnakan bytecode Anda. Ia memproses aliran instruksi melalui beberapa tahapan, secara sistematis mengidentifikasi dan menghilangkan ketidakefisienan sebelum.
+Gazle menggunakan alur transformasi khusus yang didukung oleh mekanisme *Time-Budgeted Optimization* untuk menyempurnakan bytecode Anda secara aman. Ia memproses aliran instruksi melalui beberapa tahapan dinamis yang diatur berdasarkan bobot keberhasilan (`pass_weights`), secara sistematis mengidentifikasi, memberi *reward* pada pass yang efektif, dan menghilangkan ketidakefisienan sebelum runtime VM dimulai.
 
   * **Instruksi Terspesialisasi**: Gazle mengoptimalkan penggunaan memori dan kecepatan eksekusi dengan mengubah instruksi `push` yang generik menjadi pasangan yang spesifik menurut tipenya (contohnya: `push_int16`, `push_string`, `push_bool`). Hal ini memungkinkan VM untuk memproses data dengan ukuran dan tipe yang sudah ditentukan sebelumnya, sehingga secara signifikan mengurangi overhead untuk pengecekan tipe dan alokasi saat runtime.
  * **Pelipatan Konstanta**: Melakukan pra-hitung operasi matematika dan logika (misalnya, `add`, `sub`, `xor`, `concat`) jika nilainya diketahui pada saat kompilasi.
