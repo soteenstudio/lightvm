@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use lightvm::{LightVM, types::{vmconfig::VmConfig, capability::Capability, vmevent::VmEvent, compile_config::CompileConfig, target_arch::TargetArch, file_type::FileType}};
+use lightvm::{LightVM, types::{vmconfig::VmConfig, capability::Capability}};
 
 fn main() {
   let mut vm = LightVM::new(VmConfig {
@@ -17,55 +17,13 @@ fn main() {
   }).set_max_io(5000000).set_max_ticks(200).set_max_stack_size(0).with_nightly(false).with_backtrace(false).with_explain(false).with_hint(true);
   
   let raw = r#"[
-    ["val", "x"],
-    ["push", 10],
-    ["set", "x"],
-    ["val", "y"],
     ["push", 5],
-    ["set", "y"],
-    ["push", "Result is: "],
-    ["get", "x"],
-    ["get", "y"],
-    ["add", "sht"],
-    ["concat"],
-    ["println"],
-    ["push", 6],
-    ["set", "y"],
-    ["push", "Type is: "],
-    ["get", "x"],
-    ["typeof"],
-    ["access", "type"],
-    ["concat"],
+    ["asinh", "flt"],
     ["println"]
   ]"#;
   let optimized_json = vm.tools().optimize_bytecode(raw);
-  
   println!("{}", optimized_json);
-  vm.load(optimized_json);
-
-  let ben = vm.tools().bench("testing")
-    .bytes(1024)
-    .run(
-      || vec![1, 2, 3, 4, 5],
-      |state| {
-        vm.tools().black_box(vm.run(None))
-      },
-    );
-
-  vm.compile(CompileConfig {
-    target_arch: TargetArch::AArch64,
-    file_type: FileType::Binary,
-    path: "./test"
-  });
-
-  /*let assembly_result = vm.compile(CompileConfig {
-    target_arch: TargetArch::AArch64,
-    file_type: FileType::Assembly,
-    path: "./test"
-  });
-  let assembly_parsed: serde_json::Value = serde_json::from_str(&assembly_result).expect("Failed to parse assembly compile result");
-  assert_eq!(assembly_parsed["status"], "success", "Assembly compilation failed: {}", assembly_result);,*/
   
-  /*println!("===> Execution finished <===");
-  println!("Output: {:?}", res);*/
+  vm.load(optimized_json);
+  vm.run(None);
 }

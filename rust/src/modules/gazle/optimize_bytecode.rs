@@ -8,31 +8,35 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::modules::gazle::{
-  analyze_usage::analyze_usage, constant_propagation::constant_propagation,
-  eliminate_dead_loops::eliminate_dead_loops, eliminate_dead_stores::eliminate_dead_stores,
-  eliminate_redundant_loads::eliminate_redundant_loads, fold_constants::fold_constants,
-  fold_conversions::fold_conversions, jump_threading::jump_threading,
-  specialized_instructions::specialized_instructions, strength_reduction::strength_reduction,
-};
+use crate::modules::gazle::utils::run_pass::run_pass;
 use crate::types::instructions::Instructions;
 pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
+  let mut pass_weights: [i32; 9] = [1; 9];
   loop {
-    let previous_bytecode = bytecode.clone();
-    specialized_instructions(&mut bytecode);
-    strength_reduction(&mut bytecode);
-    fold_constants(&mut bytecode);
-    fold_conversions(&mut bytecode);
-    jump_threading(&mut bytecode);
-    constant_propagation(&mut bytecode);
-    bytecode = eliminate_dead_loops(bytecode);
-    bytecode = eliminate_redundant_loads(bytecode);
-    let usage = analyze_usage(&bytecode);
-    eliminate_dead_stores(&mut bytecode, &usage);
-    let mut index_mapping = Vec::with_capacity(bytecode.len());
+    let mut changed = false;
+    let len_before = bytecode.len();
+    let mut order: [usize; 9] = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+    order.sort_by(|a, b| pass_weights[*b].cmp(&pass_weights[*a]));
+    for &pass_id in &order {
+      let len_before_pass = bytecode.len();
+      let prev_bytes_debug = bytecode.clone();
+      run_pass(pass_id, &mut bytecode);
+      let len_after_pass = bytecode.len();
+      if bytecode != prev_bytes_debug {
+        let reduction = (len_before_pass as i32) - (len_after_pass as i32);
+        let reward = if reduction > 0 { reduction * 2 } else { 1 };
+        pass_weights[pass_id] += reward;
+        changed = true;
+      } else {
+        pass_weights[pass_id] = pass_weights[pass_id].saturating_sub(1).max(1);
+      }
+    }
+    let len = bytecode.len();
+    let mut index_mapping = Vec::with_capacity(len);
+    let mut new_bytecode = Vec::with_capacity(len);
     let mut new_idx = 0;
-    for (old_idx, instr) in bytecode.iter().enumerate() {
-      let keep = match instr {
+    for (old_idx, instr) in bytecode.into_iter().enumerate() {
+      let keep = match &instr {
         Instructions::Jump(target) => *target != old_idx + 1,
         Instructions::Nop => false,
         _ => true,
@@ -40,31 +44,31 @@ pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
       if keep {
         index_mapping.push(new_idx);
         new_idx += 1;
+        new_bytecode.push(instr);
       } else {
         index_mapping.push(new_idx);
+        changed = true;
       }
     }
-    let mut current_idx = 0;
-    bytecode.retain(|instr| {
-      let keep = match instr {
-        Instructions::Jump(target) => *target != current_idx + 1,
-        Instructions::Nop => false,
-        _ => true,
-      };
-      current_idx += 1;
-      keep
-    });
-    for instr in bytecode.iter_mut() {
+    for instr in &mut new_bytecode {
       match instr {
         Instructions::Jump(target) | Instructions::IfFalse(target)
           if *target < index_mapping.len() =>
         {
-          *target = index_mapping[*target];
+          let mapped = index_mapping[*target];
+          if *target != mapped {
+            *target = mapped;
+            changed = true;
+          }
         }
         _ => {}
       }
     }
-    if bytecode == previous_bytecode {
+    bytecode = new_bytecode;
+    if len_before != bytecode.len() {
+      changed = true;
+    }
+    if !changed {
       break;
     }
   }
