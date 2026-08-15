@@ -1,6 +1,6 @@
 [package]
 name = "lightvm"
-version = "0.1.0-alpha.8-nightly.20260815.2846b59"
+version = "0.1.0-alpha.9"
 authors = ["SoTeen Studio <soteenstudio@gmail.com>"]
 edition = "2024"
 build = "build.rs"
