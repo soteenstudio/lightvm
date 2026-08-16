@@ -25,15 +25,21 @@ fi
     COMMITS_COUNT=$(git rev-list --count "$LAST_STABLE..v$VERSION" 2>/dev/null || echo 0)
     FILES_COUNT=$(git diff --name-only "$LAST_STABLE" "v$VERSION" 2>/dev/null | wc -l | tr -d ' ' || echo 0)
     
-    if [ "$COMMITS_COUNT" -gt 150 ]; then
+    FEAT_COUNT=$(git log "$LAST_STABLE..v$VERSION" --oneline | grep -E '^[a-f0-9]+ (feat(\(.*\))?:)' | wc -l | tr -d ' ')
+    FIX_COUNT=$(git log "$LAST_STABLE..v$VERSION" --oneline | grep -E '^[a-f0-9]+ (fix(\(.*\))?:)' | wc -l | tr -d ' ')
+    PERF_COUNT=$(git log "$LAST_STABLE..v$VERSION" --oneline | grep -E '^[a-f0-9]+ (perf(\(.*\))?:)' | wc -l | tr -d ' ')
+    
+    SIGNIFICANT_COUNT=$((FEAT_COUNT + FIX_COUNT + PERF_COUNT))
+    
+    if [ "$SIGNIFICANT_COUNT" -gt 35 ]; then
       CHANGE_TYPE="major"
-    elif [ "$COMMITS_COUNT" -gt 50 ]; then
+    elif [ "$SIGNIFICANT_COUNT" -gt 10 ]; then
       CHANGE_TYPE="medium"
     else
       CHANGE_TYPE="minor"
     fi
     
-    echo "This update brings $CHANGE_TYPE changes with $COMMITS_COUNT commits and $FILES_COUNT files changed which can be seen in: $COMPARE_LINK"
+    echo "This update brings $CHANGE_TYPE changes with $COMMITS_COUNT commits ($SIGNIFICANT_COUNT tracked changes) and $FILES_COUNT files changed which can be seen in: $COMPARE_LINK"
     echo ""
   fi
 
