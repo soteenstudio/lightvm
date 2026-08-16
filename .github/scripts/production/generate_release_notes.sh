@@ -21,12 +21,23 @@ fi
   echo "Release based on Changelogs:"
   if [ -n "$FINAL_NIGHTLIES" ]; then
     REPO="${GITHUB_REPOSITORY}"
+    SORTED_NIGHTLIES=""
+    while IFS= read -r tag; do
+      [ -z "$tag" ] && continue
+      TAG_DATE=$(git log -1 --format=%ct "$tag" 2>/dev/null || echo 0)
+      SORTED_NIGHTLIES="$SORTED_NIGHTLIES$TAG_DATE $tag\n"
+    done <<EOF
+$FINAL_NIGHTLIES
+EOF
+    
+    SORTED_NIGHTLIES=$(echo -e "$SORTED_NIGHTLIES" | sed '/^$/d' | sort -n | cut -d' ' -f2-)
+    
     while IFS= read -r tag; do
       [ -z "$tag" ] && continue
       CLEAN_NAME=$(echo "$tag" | sed -E 's/-nightly\.([0-9]{4})([0-9]{2})([0-9]{2})\..*/ (Nightly \1-\2-\3)/')
       echo "* [$CLEAN_NAME](https://github.com/$REPO/releases/tag/$tag)"
     done <<EOF
-$FINAL_NIGHTLIES
+$SORTED_NIGHTLIES
 EOF
   else
     echo "* No previous nightly builds."
