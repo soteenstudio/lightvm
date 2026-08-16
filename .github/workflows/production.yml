@@ -17,10 +17,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          fetch-tags: true
 
       - name: Validate Version & Check Tag
         run: bash .github/scripts/production/validate_version_tag.sh "${{ github.event.inputs.version }}"
-
 
       - name: Generate Release Notes
         run: bash .github/scripts/production/generate_release_notes.sh "${{ github.event.inputs.version }}"
