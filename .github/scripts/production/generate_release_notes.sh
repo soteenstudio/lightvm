@@ -25,9 +25,9 @@ fi
     COMMITS_COUNT=$(git rev-list --count "$LAST_STABLE..v$VERSION" 2>/dev/null || echo 0)
     FILES_COUNT=$(git diff --name-only "$LAST_STABLE" "v$VERSION" 2>/dev/null | wc -l | tr -d ' ' || echo 0)
     
-    if [ "$COMMITS_COUNT" -gt 30 ]; then
+    if [ "$COMMITS_COUNT" -gt 150 ]; then
       CHANGE_TYPE="major"
-    elif [ "$COMMITS_COUNT" -gt 10 ]; then
+    elif [ "$COMMITS_COUNT" -gt 50 ]; then
       CHANGE_TYPE="medium"
     else
       CHANGE_TYPE="minor"
