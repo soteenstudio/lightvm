@@ -193,11 +193,11 @@ RUST_EOF
 
   cd "publish/$PLATFORM"
   
-  if [[ "$EVENT_NAME" == "release" ]] || [[ "$EVENT_NAME" == "workflow_dispatch" && "$VERSION" == *"nightly"* ]]; then
-    echo "Nightly Release Event Detected: Running Real Publish to NPM..."
+  if [[ "$EVENT_NAME" == "release" ]] || [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+    echo "Release or Manual Dispatch Event Detected: Running Real Publish to NPM..."
     npm publish --tag $TAG --access public || echo "Skip existing"
   else
-    echo "Manual (Non-Nightly) Event Detected: Running Dry-Run (NPM Pack)..."
+    echo "Other Event Detected: Running Dry-Run (NPM Pack)..."
     npm pack
     mkdir -p ../../dist-test
     mv *.tgz ../../dist-test/
