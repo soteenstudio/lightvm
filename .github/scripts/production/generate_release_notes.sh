@@ -22,28 +22,17 @@ fi
   if [ -n "$LAST_STABLE" ]; then
     COMPARE_LINK="https://github.com/$REPO/compare/$LAST_STABLE...v$VERSION"
     
-    COMMITS_COUNT=$(git rev-list --count "$LAST_STABLE..v$VERSION" 2>/dev/null || echo 0)
-    FILES_COUNT=$(git diff --name-only "$LAST_STABLE" "v$VERSION" 2>/dev/null | wc -l | tr -d ' ' || echo 0)
-    
-    FEAT_COUNT=$(git log "$LAST_STABLE..v$VERSION" --format="%s" | grep -E '^(feat|feature)(\(.+\))?:' | wc -l | tr -d ' ')
-    FIX_COUNT=$(git log "$LAST_STABLE..v$VERSION" --format="%s" | grep -E '^fix(\(.+\))?:' | wc -l | tr -d ' ')
-    PERF_COUNT=$(git log "$LAST_STABLE..v$VERSION" --format="%s" | grep -E '^perf(\(.+\))?:' | wc -l | tr -d ' ')
-    
-    SIGNIFICANT_COUNT=$((FEAT_COUNT + FIX_COUNT + PERF_COUNT))
-    
-    if [ "$SIGNIFICANT_COUNT" -eq 0 ]; then
-      SIGNIFICANT_COUNT=$((COMMITS_COUNT / 2))
-    fi
-    
-    if [ "$SIGNIFICANT_COUNT" -gt 50 ]; then
-      CHANGE_TYPE="major"
-    elif [ "$SIGNIFICANT_COUNT" -gt 15 ]; then
-      CHANGE_TYPE="medium"
+    if echo "$LAST_STABLE" | grep -qi "alpha"; then
+      PREV_TYPE="alpha"
+    elif echo "$LAST_STABLE" | grep -qi "beta"; then
+      PREV_TYPE="beta"
+    elif echo "$LAST_STABLE" | grep -qiE "rc|preview"; then
+      PREV_TYPE="rc"
     else
-      CHANGE_TYPE="minor"
+      PREV_TYPE="stable"
     fi
     
-    echo "This update brings $CHANGE_TYPE changes with $COMMITS_COUNT commits ($SIGNIFICANT_COUNT tracked changes) and $FILES_COUNT files changed which can be seen in: $COMPARE_LINK"
+    echo "Explore all code changes, enhancements, and full difference details since the last $PREV_TYPE release here: $COMPARE_LINK"
     echo ""
   fi
 
