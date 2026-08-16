@@ -20,7 +20,14 @@ fi
 {
   echo "Release based on Changelogs:"
   if [ -n "$FINAL_NIGHTLIES" ]; then
-    echo "$FINAL_NIGHTLIES" | sed 's/^/* /'
+    REPO="${GITHUB_REPOSITORY}"
+    while IFS= read -r tag; do
+      [ -z "$tag" ] && continue
+      CLEAN_NAME=$(echo "$tag" | sed -E 's/-nightly\.([0-9]{4})([0-9]{2})([0-9]{2})\..*/ (Nightly \1-\2-\3)/')
+      echo "* [$CLEAN_NAME](https://github.com/$REPO/releases/tag/$tag)"
+    done <<EOF
+$FINAL_NIGHTLIES
+EOF
   else
     echo "* No previous nightly builds."
   fi
