@@ -1,4 +1,4 @@
-VERSION="${{ github.event.inputs.version }}"
+VERSION="$1"
 git config user.name "github-actions[bot]"
 git config user.email "github-actions[bot]@users.noreply.github.com"
 

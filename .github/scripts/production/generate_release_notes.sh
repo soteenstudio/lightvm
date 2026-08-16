@@ -1,4 +1,4 @@
-VERSION="${{ github.event.inputs.version }}"
+VERSION="$1"
 
 LAST_STABLE=$(git tag --sort=-creatordate | grep -v "nightly" | head -n 1 || echo "")
 
