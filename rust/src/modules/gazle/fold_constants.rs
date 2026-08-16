@@ -15,10 +15,15 @@ use crate::instructions::{
   },
   logic::{and_func::and_values, or_func::or_values, xor_func::xor_values},
   math::{
-    add_func::add_values, atan2_func::atan2_values, div_func::div_values, mod_func::mod_values,
-    mul_func::mul_values, pow_func::pow_values, powf_func::powf_values, powi_func::powi_values,
-    rol_func::rol_values, ror_func::ror_values, shl_func::shl_values, shr_func::shr_values,
-    sub_func::sub_values,
+    arithmetic::{
+      add_func::add_values, div_func::div_values, mod_func::mod_values, mul_func::mul_values,
+      pow_func::pow_values, powf_func::powf_values, powi_func::powi_values, sub_func::sub_values,
+    },
+    atan2_func::atan2_values,
+    rol_func::rol_values,
+    ror_func::ror_values,
+    shl_func::shl_values,
+    shr_func::shr_values,
   },
   stack::concat_func::concat_values,
 };

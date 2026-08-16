@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::modules::gazle::is_pure_loop::is_pure_loop;
+use crate::modules::gazle::utils::is_pure_loop::is_pure_loop;
 use crate::types::instructions::Instructions;
 use ahash::AHashMap;
 #[inline(always)]

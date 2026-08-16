@@ -9,6 +9,7 @@
  */
 
 pub(crate) mod extract_value;
+pub(crate) mod is_pure_loop;
 pub(crate) mod run_pass;
 pub(crate) mod time_budget;
 pub(crate) mod value_to_instruction;

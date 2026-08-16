@@ -15,7 +15,6 @@ pub(crate) mod eliminate_dead_stores;
 pub(crate) mod eliminate_redundant_loads;
 pub(crate) mod fold_constants;
 pub(crate) mod fold_conversions;
-pub(crate) mod is_pure_loop;
 pub(crate) mod jump_threading;
 pub(crate) mod optimize_bytecode;
 pub(crate) mod specialized_instructions;
