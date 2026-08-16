@@ -18,9 +18,15 @@ else
 fi
 
 {
+  REPO="${GITHUB_REPOSITORY}"
+  if [ -n "$LAST_STABLE" ]; then
+    COMPARE_LINK="https://github.com/$REPO/compare/$LAST_STABLE...v$VERSION"
+    echo "Compare: $COMPARE_LINK"
+    echo ""
+  fi
+
   echo "Release based on Changelogs:"
   if [ -n "$FINAL_NIGHTLIES" ]; then
-    REPO="${GITHUB_REPOSITORY}"
     SORTED_NIGHTLIES=""
     while IFS= read -r tag; do
       [ -z "$tag" ] && continue
@@ -32,16 +38,10 @@ EOF
     
     SORTED_NIGHTLIES=$(echo -e "$SORTED_NIGHTLIES" | sed '/^$/d' | sort -n | cut -d' ' -f2-)
     
-    BASE_REF="${LAST_STABLE:-}"
     while IFS= read -r tag; do
       [ -z "$tag" ] && continue
       CLEAN_NAME=$(echo "$tag" | sed -E 's/-nightly\.([0-9]{4})([0-9]{2})([0-9]{2})\..*/ (Nightly \1-\2-\3)/')
-      if [ -n "$BASE_REF" ]; then
-        COMPARE_URL="https://github.com/$REPO/compare/$BASE_REF...$tag"
-        echo "* [$CLEAN_NAME](https://github.com/$REPO/releases/tag/$tag) ([compare]($COMPARE_URL))"
-      else
-        echo "* [$CLEAN_NAME](https://github.com/$REPO/releases/tag/$tag)"
-      fi
+      echo "* [$CLEAN_NAME](https://github.com/$REPO/releases/tag/$tag)"
     done <<EOF
 $SORTED_NIGHTLIES
 EOF
