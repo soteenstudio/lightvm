@@ -21,11 +21,23 @@ fi
   REPO="${GITHUB_REPOSITORY}"
   if [ -n "$LAST_STABLE" ]; then
     COMPARE_LINK="https://github.com/$REPO/compare/$LAST_STABLE...v$VERSION"
-    echo "Compare: $COMPARE_LINK"
+    
+    COMMITS_COUNT=$(git rev-list --count "$LAST_STABLE..v$VERSION" 2>/dev/null || echo 0)
+    FILES_COUNT=$(git diff --name-only "$LAST_STABLE" "v$VERSION" 2>/dev/null | wc -l | tr -d ' ' || echo 0)
+    
+    if [ "$COMMITS_COUNT" -gt 30 ]; then
+      CHANGE_TYPE="major"
+    elif [ "$COMMITS_COUNT" -gt 10 ]; then
+      CHANGE_TYPE="medium"
+    else
+      CHANGE_TYPE="minor"
+    fi
+    
+    echo "This update brings $CHANGE_TYPE changes with $COMMITS_COUNT commits and $FILES_COUNT files changed which can be seen in: $COMPARE_LINK"
     echo ""
   fi
 
-  echo "Release based on Changelogs:"
+  echo "Compiled from the following nightly iterations:"
   if [ -n "$FINAL_NIGHTLIES" ]; then
     SORTED_NIGHTLIES=""
     while IFS= read -r tag; do
@@ -48,6 +60,17 @@ EOF
   else
     echo "* No previous nightly builds."
   fi
+  echo ""
+  echo "### Quick Install"
+  echo "For Node.js / npm:"
+  echo '```bash'
+  echo "npm install lightvm@$VERSION"
+  echo '```'
+  echo ""
+  echo "For Rust / Cargo (in your Cargo.toml):"
+  echo '```toml'
+  echo "lightvm = { version = \"$VERSION\" }"
+  echo '```'
   echo ""
   echo "***Lion Owl caught in apple net!***"
 } > release_notes.md
