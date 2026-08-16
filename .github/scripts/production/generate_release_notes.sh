@@ -32,17 +32,16 @@ EOF
     
     SORTED_NIGHTLIES=$(echo -e "$SORTED_NIGHTLIES" | sed '/^$/d' | sort -n | cut -d' ' -f2-)
     
-    PREV_REF="${LAST_STABLE:-}"
+    BASE_REF="${LAST_STABLE:-}"
     while IFS= read -r tag; do
       [ -z "$tag" ] && continue
       CLEAN_NAME=$(echo "$tag" | sed -E 's/-nightly\.([0-9]{4})([0-9]{2})([0-9]{2})\..*/ (Nightly \1-\2-\3)/')
-      if [ -n "$PREV_REF" ]; then
-        COMPARE_URL="https://github.com/$REPO/compare/$PREV_REF...$tag"
+      if [ -n "$BASE_REF" ]; then
+        COMPARE_URL="https://github.com/$REPO/compare/$BASE_REF...$tag"
         echo "* [$CLEAN_NAME](https://github.com/$REPO/releases/tag/$tag) ([compare]($COMPARE_URL))"
       else
         echo "* [$CLEAN_NAME](https://github.com/$REPO/releases/tag/$tag)"
       fi
-      PREV_REF="$tag"
     done <<EOF
 $SORTED_NIGHTLIES
 EOF
