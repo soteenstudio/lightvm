@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::powf::{
+use crate::instructions::math::arithmetic::powf::{
   powf_f16in::powf_f16in, powf_f32in::powf_f32in, powf_f64in::powf_f64in,
 };
 use crate::types::primitive_types::PrimitiveTypes;

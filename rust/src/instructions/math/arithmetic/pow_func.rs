@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::pow::{
+use crate::instructions::math::arithmetic::pow::{
   pow_i16in::pow_i16in, pow_i32in::pow_i32in, pow_i64in::pow_i64in, pow_i128in::pow_i128in,
 };
 use crate::types::primitive_types::PrimitiveTypes;

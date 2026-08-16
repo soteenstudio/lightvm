@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::add::{
+use crate::instructions::math::arithmetic::add::{
   add_f16in::add_f16in, add_f32in::add_f32in, add_f64in::add_f64in, add_i16in::add_i16in,
   add_i32in::add_i32in, add_i64in::add_i64in, add_i128in::add_i128in,
 };

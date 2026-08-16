@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::r#mod::{
+use crate::instructions::math::arithmetic::r#mod::{
   mod_f16in::mod_f16in, mod_f32in::mod_f32in, mod_f64in::mod_f64in, mod_i16in::mod_i16in,
   mod_i32in::mod_i32in, mod_i64in::mod_i64in, mod_i128in::mod_i128in,
 };

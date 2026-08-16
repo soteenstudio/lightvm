@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::div::{
+use crate::instructions::math::arithmetic::div::{
   div_f16in::div_f16in, div_f32in::div_f32in, div_f64in::div_f64in, div_i16in::div_i16in,
   div_i32in::div_i32in, div_i64in::div_i64in, div_i128in::div_i128in,
 };

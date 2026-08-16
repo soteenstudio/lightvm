@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::sub::{
+use crate::instructions::math::arithmetic::sub::{
   sub_f16in::sub_f16in, sub_f32in::sub_f32in, sub_f64in::sub_f64in, sub_i16in::sub_i16in,
   sub_i32in::sub_i32in, sub_i64in::sub_i64in,
 };

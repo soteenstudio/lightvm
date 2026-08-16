@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::mul::{
+use crate::instructions::math::arithmetic::mul::{
   mul_f16in::mul_f16in, mul_f32in::mul_f32in, mul_f64in::mul_f64in, mul_i16in::mul_i16in,
   mul_i32in::mul_i32in, mul_i64in::mul_i64in, mul_i128in::mul_i128in,
 };

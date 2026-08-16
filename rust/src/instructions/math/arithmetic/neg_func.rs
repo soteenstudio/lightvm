@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::neg::{
+use crate::instructions::math::arithmetic::neg::{
   neg_f16in::neg_f16in, neg_f32in::neg_f32in, neg_f64in::neg_f64in, neg_i16in::neg_i16in,
   neg_i32in::neg_i32in, neg_i64in::neg_i64in, neg_i128in::neg_i128in,
 };
