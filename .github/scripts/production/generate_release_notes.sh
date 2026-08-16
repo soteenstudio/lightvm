@@ -32,7 +32,7 @@ fi
       PREV_TYPE="stable"
     fi
     
-    echo "Explore all code changes, enhancements, and full difference details since the last $PREV_TYPE release here: $COMPARE_LINK"
+    echo "Explore all code changes, enhancements, and full difference details since the last **$PREV_TYPE** release here: $COMPARE_LINK"
     echo ""
   fi
 
@@ -61,12 +61,12 @@ EOF
   fi
   echo ""
   echo "### Quick Install"
-  echo "For Node.js / npm:"
+  echo "For **Node.js** or **npm**:"
   echo '```bash'
   echo "npm install lightvm@$VERSION"
   echo '```'
   echo ""
-  echo "For Rust / Cargo (in your Cargo.toml):"
+  echo "For **Rust** or **Cargo** (in your `Cargo.toml`):"
   echo '```toml'
   echo "lightvm = { version = \"$VERSION\" }"
   echo '```'
