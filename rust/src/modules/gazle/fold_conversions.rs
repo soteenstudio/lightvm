@@ -19,10 +19,9 @@ use crate::instructions::{
     arithmetic::{
       cos_func::cos_values, neg_func::neg_values, sin_func::sin_values, tan_func::tan_values,
     },
-    cbrt_func::cbrt_values,
     exp_func::exp_values,
     logarithm::ln_func::ln_values,
-    sqrt_func::sqrt_values,
+    root::{cbrt_func::cbrt_values, sqrt_func::sqrt_values},
     trigonometry::{
       hyperbolic::{
         cosh_func::cosh_values,

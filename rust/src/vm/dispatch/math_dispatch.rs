@@ -14,15 +14,14 @@ use crate::instructions::math::{
     mul_func::mul_func, neg_func::neg_func, pow_func::pow_func, powf_func::powf_func,
     powi_func::powi_func, sin_func::sin_func, sub_func::sub_func, tan_func::tan_func,
   },
-  cbrt_func::cbrt_func,
   exp_func::exp_func,
   inc_dec::{dec_func, inc_func},
   logarithm::{ln_func::ln_func, log2_func::log2_func, log10_func::log10_func},
   rol_func::rol_func,
+  root::{cbrt_func::cbrt_func, sqrt_func::sqrt_func},
   ror_func::ror_func,
   shl_func::shl_func,
   shr_func::shr_func,
-  sqrt_func::sqrt_func,
   trigonometry::{
     hyperbolic::{
       cosh_func::cosh_func,

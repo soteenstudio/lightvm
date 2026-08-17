@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::cbrt::{
+use crate::instructions::math::root::cbrt::{
   cbrt_f16in::cbrt_f16in, cbrt_f32in::cbrt_f32in, cbrt_f64in::cbrt_f64in,
 };
 use crate::types::primitive_types::PrimitiveTypes;

@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::sqrt::{
+use crate::instructions::math::root::sqrt::{
   sqrt_f16in::sqrt_f16in, sqrt_f32in::sqrt_f32in, sqrt_f64in::sqrt_f64in,
 };
 use crate::types::primitive_types::PrimitiveTypes;
