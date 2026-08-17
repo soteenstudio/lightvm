@@ -8,8 +8,9 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub(crate) mod extract_value;
-pub(crate) mod is_pure_loop;
-pub(crate) mod run_pass;
-pub(crate) mod time_budget;
-pub(crate) mod value_to_instruction;
+pub(crate) mod acosh;
+pub(crate) mod acosh_func;
+pub(crate) mod asinh;
+pub(crate) mod asinh_func;
+pub(crate) mod atanh;
+pub(crate) mod atanh_func;
