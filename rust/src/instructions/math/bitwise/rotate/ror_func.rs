@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::ror::{
+use crate::instructions::math::bitwise::rotate::ror::{
   ror_i16in::ror_i16in, ror_i32in::ror_i32in, ror_i64in::ror_i64in, ror_i128in::ror_i128in,
 };
 use crate::types::primitive_types::PrimitiveTypes;

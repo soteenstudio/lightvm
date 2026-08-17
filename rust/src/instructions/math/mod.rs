@@ -9,17 +9,10 @@
  */
 
 pub(crate) mod arithmetic;
+pub(crate) mod bitwise;
 pub(crate) mod exp;
 pub(crate) mod exp_func;
 pub(crate) mod inc_dec;
 pub(crate) mod logarithm;
-pub(crate) mod rol;
-pub(crate) mod rol_func;
 pub(crate) mod root;
-pub(crate) mod ror;
-pub(crate) mod ror_func;
-pub(crate) mod shl;
-pub(crate) mod shl_func;
-pub(crate) mod shr;
-pub(crate) mod shr_func;
 pub(crate) mod trigonometry;

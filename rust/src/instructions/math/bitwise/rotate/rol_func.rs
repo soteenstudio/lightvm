@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::rol::{
+use crate::instructions::math::bitwise::rotate::rol::{
   rol_i16in::rol_i16in, rol_i32in::rol_i32in, rol_i64in::rol_i64in, rol_i128in::rol_i128in,
 };
 use crate::types::primitive_types::PrimitiveTypes;

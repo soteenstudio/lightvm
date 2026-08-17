@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::shr::{
+use crate::instructions::math::bitwise::shift::shr::{
   shr_i16in::shr_i16in, shr_i32in::shr_i32in, shr_i64in::shr_i64in, shr_i128in::shr_i128in,
 };
 use crate::types::primitive_types::PrimitiveTypes;
