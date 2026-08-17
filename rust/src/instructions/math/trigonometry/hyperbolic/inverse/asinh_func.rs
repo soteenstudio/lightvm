@@ -8,29 +8,29 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::acosh::{
-  acosh_f16in::acosh_f16in, acosh_f32in::acosh_f32in, acosh_f64in::acosh_f64in,
+use crate::instructions::math::trigonometry::hyperbolic::inverse::asinh::{
+  asinh_f16in::asinh_f16in, asinh_f32in::asinh_f32in, asinh_f64in::asinh_f64in,
 };
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::vmerror::VMError;
 #[inline(always)]
-pub fn acosh_values(a: Value, num_type: PrimitiveTypes) -> Value {
+pub fn asinh_values(a: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
-    PrimitiveTypes::Hlf => Value::Float16(acosh_f16in(a.as_f16())),
-    PrimitiveTypes::Flt => Value::Float32(acosh_f32in(a.as_f32())),
-    PrimitiveTypes::Dbl => Value::Float64(acosh_f64in(a.as_f64())),
+    PrimitiveTypes::Hlf => Value::Float16(asinh_f16in(a.as_f16())),
+    PrimitiveTypes::Flt => Value::Float32(asinh_f32in(a.as_f32())),
+    PrimitiveTypes::Dbl => Value::Float64(asinh_f64in(a.as_f64())),
     _ => Value::NaN,
   }
 }
 #[inline]
-pub fn acosh_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
+pub fn asinh_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
   let val_ref = stack.last_mut().ok_or(VMError::StackUnderflow {
     ip,
-    opcode: "ACOSH",
+    opcode: "ASINH",
   })?;
   let val = std::mem::take(val_ref);
-  *val_ref = acosh_values(val, num_type);
+  *val_ref = asinh_values(val, num_type);
   Ok(())
 }

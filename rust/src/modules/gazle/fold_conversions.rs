@@ -16,21 +16,21 @@ use crate::instructions::{
   },
   logic::not_func::not_values,
   math::{
-    acosh_func::acosh_values,
     arithmetic::{
       cos_func::cos_values, neg_func::neg_values, sin_func::sin_values, tan_func::tan_values,
     },
-    asinh_func::asinh_values,
-    atanh_func::atanh_values,
     cbrt_func::cbrt_values,
-    cosh_func::cosh_values,
     exp_func::exp_values,
     logarithm::ln_func::ln_values,
-    sinh_func::sinh_values,
     sqrt_func::sqrt_values,
-    tanh_func::tanh_values,
-    trigonometry::inverse::{
-      acos_func::acos_values, asin_func::asin_values, atan_func::atan_values,
+    trigonometry::{
+      hyperbolic::{
+        cosh_func::cosh_values,
+        inverse::{acosh_func::acosh_values, asinh_func::asinh_values, atanh_func::atanh_values},
+        sinh_func::sinh_values,
+        tanh_func::tanh_values,
+      },
+      inverse::{acos_func::acos_values, asin_func::asin_values, atan_func::atan_values},
     },
   },
   metadata::typeof_func::typeof_values,

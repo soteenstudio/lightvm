@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::atanh::{
+use crate::instructions::math::trigonometry::hyperbolic::inverse::atanh::{
   atanh_f16in::atanh_f16in, atanh_f32in::atanh_f32in, atanh_f64in::atanh_f64in,
 };
 use crate::types::primitive_types::PrimitiveTypes;

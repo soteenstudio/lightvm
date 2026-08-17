@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::cosh::{
+use crate::instructions::math::trigonometry::hyperbolic::cosh::{
   cosh_f16in::cosh_f16in, cosh_f32in::cosh_f32in, cosh_f64in::cosh_f64in,
 };
 use crate::types::primitive_types::PrimitiveTypes;

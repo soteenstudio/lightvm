@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::tanh::{
+use crate::instructions::math::trigonometry::hyperbolic::tanh::{
   tanh_f16in::tanh_f16in, tanh_f32in::tanh_f32in, tanh_f64in::tanh_f64in,
 };
 use crate::types::primitive_types::PrimitiveTypes;

@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::sinh::{
+use crate::instructions::math::trigonometry::hyperbolic::sinh::{
   sinh_f16in::sinh_f16in, sinh_f32in::sinh_f32in, sinh_f64in::sinh_f64in,
 };
 use crate::types::primitive_types::PrimitiveTypes;

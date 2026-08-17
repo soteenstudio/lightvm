@@ -9,16 +9,12 @@
  */
 
 use crate::instructions::math::{
-  acosh_func::acosh_func,
   arithmetic::{
     add_func::add_func, cos_func::cos_func, div_func::div_func, mod_func::mod_func,
     mul_func::mul_func, neg_func::neg_func, pow_func::pow_func, powf_func::powf_func,
     powi_func::powi_func, sin_func::sin_func, sub_func::sub_func, tan_func::tan_func,
   },
-  asinh_func::asinh_func,
-  atanh_func::atanh_func,
   cbrt_func::cbrt_func,
-  cosh_func::cosh_func,
   exp_func::exp_func,
   inc_dec::{dec_func, inc_func},
   logarithm::{ln_func::ln_func, log2_func::log2_func, log10_func::log10_func},
@@ -26,11 +22,17 @@ use crate::instructions::math::{
   ror_func::ror_func,
   shl_func::shl_func,
   shr_func::shr_func,
-  sinh_func::sinh_func,
   sqrt_func::sqrt_func,
-  tanh_func::tanh_func,
-  trigonometry::inverse::{
-    acos_func::acos_func, asin_func::asin_func, atan_func::atan_func, atan2_func::atan2_func,
+  trigonometry::{
+    hyperbolic::{
+      cosh_func::cosh_func,
+      inverse::{acosh_func::acosh_func, asinh_func::asinh_func, atanh_func::atanh_func},
+      sinh_func::sinh_func,
+      tanh_func::tanh_func,
+    },
+    inverse::{
+      acos_func::acos_func, asin_func::asin_func, atan_func::atan_func, atan2_func::atan2_func,
+    },
   },
 };
 use crate::types::stack::Stack;
