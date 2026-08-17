@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::asin::{
+use crate::instructions::math::trigonometry::inverse::asin::{
   asin_f16in::asin_f16in, asin_f32in::asin_f32in, asin_f64in::asin_f64in,
 };
 use crate::types::primitive_types::PrimitiveTypes;

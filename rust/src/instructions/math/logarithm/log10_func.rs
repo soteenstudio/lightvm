@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::log10::{
+use crate::instructions::math::logarithm::log10::{
   log10_f16in::log10_f16in, log10_f32in::log10_f32in, log10_f64in::log10_f64in,
 };
 use crate::types::primitive_types::PrimitiveTypes;

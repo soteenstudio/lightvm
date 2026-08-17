@@ -8,19 +8,11 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub(crate) mod acos;
-pub(crate) mod acos_func;
 pub(crate) mod acosh;
 pub(crate) mod acosh_func;
 pub(crate) mod arithmetic;
-pub(crate) mod asin;
-pub(crate) mod asin_func;
 pub(crate) mod asinh;
 pub(crate) mod asinh_func;
-pub(crate) mod atan;
-pub(crate) mod atan2;
-pub(crate) mod atan2_func;
-pub(crate) mod atan_func;
 pub(crate) mod atanh;
 pub(crate) mod atanh_func;
 pub(crate) mod cbrt;
@@ -30,12 +22,7 @@ pub(crate) mod cosh_func;
 pub(crate) mod exp;
 pub(crate) mod exp_func;
 pub(crate) mod inc_dec;
-pub(crate) mod ln;
-pub(crate) mod ln_func;
-pub(crate) mod log10;
-pub(crate) mod log10_func;
-pub(crate) mod log2;
-pub(crate) mod log2_func;
+pub(crate) mod logarithm;
 pub(crate) mod rol;
 pub(crate) mod rol_func;
 pub(crate) mod ror;
@@ -50,3 +37,4 @@ pub(crate) mod sqrt;
 pub(crate) mod sqrt_func;
 pub(crate) mod tanh;
 pub(crate) mod tanh_func;
+pub(crate) mod trigonometry;

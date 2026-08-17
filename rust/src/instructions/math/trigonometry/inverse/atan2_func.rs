@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::atan2::{
+use crate::instructions::math::trigonometry::inverse::atan2::{
   atan2_f16in::atan2_f16in, atan2_f32in::atan2_f32in, atan2_f64in::atan2_f64in,
 };
 use crate::types::primitive_types::PrimitiveTypes;
