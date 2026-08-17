@@ -10,11 +10,6 @@
 
 A capability-based virtual machine designed for __secure__, __predictable__, and __optimized bytecode execution__.
 
-> [!WARNING]
-> This documentation is based on the `alpha.9` nightly build.
-> 
-> Refer to the [alpha.8 documentation](https://github.com/soteenstudio/lightvm/tree/v0.1.0-alpha.8) for more details.
-
 ## Documentation
 Check out our official website for complete documentation.
  - **[Official Documentation](https://lightvm.vercel.app)**
