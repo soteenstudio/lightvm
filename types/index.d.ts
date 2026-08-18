@@ -10,6 +10,11 @@
 import { Instructions } from './generated/Instructions.js';
 import { VMConfig } from './generated/VMConfig.js';
 import { CompileConfig } from './generated/CompileConfig.js';
+import { Capability } from './generated/Capability.js';
+import { VmEvent as VMEvent } from './generated/VmEvent.js';
+import { TargetArch } from './generated/TargetArch.js';
+import { FileType } from './generated/FileType.js';
+import { TimeBudget } from './generated/TimeBudget.js';
 import { loadNapi } from './utils/loadNapi.js';
 import { isMusl } from './utils/isMusl.js';
 import { VMSystemError as VMError } from './utils/vmerror.js';
@@ -18,29 +23,6 @@ export interface VMResult {
     value: any;
     outputs: string[];
     halted: boolean;
-}
-export declare enum Capability {
-    Observe = 0,
-    Control = 1,
-    Debug = 2,
-    Unsafe = 3
-}
-export declare enum VMEvent {
-    Tick = 0,
-    Halt = 1,
-    Panic = 2
-}
-export declare enum TargetArch {
-    AArch64 = 0
-}
-export declare enum FileType {
-    Assembly = 0,
-    Binary = 1
-}
-export declare enum TimeBudget {
-    Cheap = 0,
-    Normal = 1,
-    Expensive = 2
 }
 export declare class LightVM {
     private native;
@@ -90,4 +72,4 @@ export declare class LightVM {
         parseLTCArray: (code: string) => any;
     };
 }
-export { Instructions, loadNapi, isMusl, VMError };
+export { Instructions, loadNapi, isMusl, VMError, Capability, VMEvent, TargetArch, FileType, TimeBudget };
