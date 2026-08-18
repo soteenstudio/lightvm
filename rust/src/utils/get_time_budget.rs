@@ -8,10 +8,11 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub(crate) mod fast_format;
-pub(crate) mod filtered_writer;
-pub(crate) mod format_output;
-pub(crate) mod get_time_budget;
-pub(crate) mod loader;
-pub(crate) mod map_primitive;
-pub(crate) mod vmerror;
+use crate::types::time_budget::TimeBudget;
+pub fn get_time_budget(value: TimeBudget) -> u64 {
+  match value {
+    TimeBudget::Cheap => 200,
+    TimeBudget::Normal => 1000,
+    TimeBudget::Expensive => 5000,
+  }
+}

@@ -8,10 +8,10 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub(crate) mod fast_format;
-pub(crate) mod filtered_writer;
-pub(crate) mod format_output;
-pub(crate) mod get_time_budget;
-pub(crate) mod loader;
-pub(crate) mod map_primitive;
-pub(crate) mod vmerror;
+use serde::{Deserialize, Serialize};
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum TimeBudget {
+  Cheap,
+  Normal,
+  Expensive,
+}
