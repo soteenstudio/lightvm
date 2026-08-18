@@ -37,6 +37,11 @@ export declare enum FileType {
     Assembly = 0,
     Binary = 1
 }
+export declare enum TimeBudget {
+    Cheap = 0,
+    Normal = 1,
+    Expensive = 2
+}
 export declare class LightVM {
     private native;
     private instance;
@@ -56,6 +61,7 @@ export declare class LightVM {
     setMaxTicks: (val: number) => this;
     setMaxStackSize: (val: number) => this;
     setAllowedImports: (val: string[]) => this;
+    setTimeBudget: (val: number) => this;
     withUnsafeMode: (en: boolean) => this;
     withNightly: (en: boolean) => this;
     withBacktrace: (en: boolean) => this;
