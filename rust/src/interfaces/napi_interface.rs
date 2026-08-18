@@ -135,6 +135,22 @@ impl NodeLightVM {
     self.inner.allowed_imports = value;
     Ok(())
   }
+  #[napi(js_name = "setTimeBudget")]
+  pub fn set_time_budget(&mut self, value: u32) -> Result<()> {
+    let budget = match value {
+      0 => TimeBudget::Cheap,
+      1 => TimeBudget::Normal,
+      2 => TimeBudget::Expensive,
+      _ => {
+        return Err(Error::from_reason(format!(
+          "Unknown time budget: {}",
+          value
+        )));
+      }
+    };
+    self.inner.time_budget = budget;
+    Ok(())
+  }
   #[napi(js_name = "withUnsafeMode")]
   pub fn with_unsafe_mode(&mut self, enabled: bool) -> Result<()> {
     self.inner.unsafe_mode = enabled;
@@ -331,8 +347,8 @@ impl NodeLightVM {
   #[napi(js_name = "bench")]
   pub fn napi_bench(
     name: String,
-    mut setup: Function<(), serde_json::Value>,
-    mut f: Function<serde_json::Value, serde_json::Value>,
+    setup: Function<(), serde_json::Value>,
+    f: Function<serde_json::Value, serde_json::Value>,
     bytes: Option<u32>,
     samples: Option<u32>,
     target_time: Option<u32>,

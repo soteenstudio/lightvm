@@ -1,9 +1,15 @@
-import { LightVM, Capability, VMEvent } from '../dist/index.min.mjs';
+import {
+  LightVM,
+  Capability,
+  VMEvent,
+  TimeBudget,
+} from '../dist/index.min.mjs';
 
 function main() {
   const vm = new LightVM({
     caps: [Capability.Observe, Capability.Control, Capability.Unsafe],
   })
+    .setTimeBudget(TimeBudget.Cheap)
     .withNightly(false)
     .withHint(true)
     .withExplain(false)
