@@ -12,7 +12,8 @@
 use crate::interfaces::interface::LightVM;
 use crate::types::{
   capability::Capability, compile_config::CompileConfig, file_type::FileType,
-  security_config::SecurityConfig, target_arch::TargetArch, vmconfig::VmNapiConfig,
+  security_config::SecurityConfig, target_arch::TargetArch, time_budget::TimeBudget,
+  vmconfig::VmNapiConfig,
 };
 use crate::utils::vmerror::VMError;
 use napi::bindgen_prelude::*;
@@ -86,6 +87,7 @@ impl NodeLightVM {
           .allowed_imports
           .unwrap_or_else(|| vec!["math".into(), "time".into(), "utils".into()]),
         unsafe_mode: security_config.unsafe_mode.unwrap_or(false),
+        time_budget: TimeBudget::Cheap,
         nightly: runtime_config.nightly.unwrap_or(false),
         backtrace: error_options.backtrace.unwrap_or(false),
         explain: error_options.explain.unwrap_or(false),
@@ -446,6 +448,7 @@ impl NodeLightVM {
         max_stack_size: is_max_stack_size,
         allowed_imports: is_allowed_imports,
         unsafe_mode: is_unsafe_mode,
+        time_budget: TimeBudget::Cheap,
       },
       is_nightly,
       is_backtrace,

@@ -23,7 +23,7 @@ use crate::types::{
   vmevent::VmEvent,
   vmstate::VmState,
 };
-use crate::utils::{get_time_budget::get_time_budget, vmerror::VMError};
+use crate::utils::vmerror::VMError;
 use crate::vm::run::run;
 use ahash::AHashMap;
 use regex::Regex;
@@ -54,7 +54,7 @@ pub struct LightVM {
   pub max_stack_size: usize,
   pub allowed_imports: Vec<String>,
   pub unsafe_mode: bool,
-  pub time_budget: u64,
+  pub time_budget: TimeBudget,
   pub nightly: bool,
   pub backtrace: bool,
   pub explain: bool,
@@ -95,7 +95,7 @@ impl LightVM {
       max_stack_size: security_config.max_stack_size,
       allowed_imports: security_config.allowed_imports,
       unsafe_mode: security_config.unsafe_mode,
-      time_budget: get_time_budget(security_config.time_budget),
+      time_budget: security_config.time_budget,
       nightly,
       backtrace,
       explain,
@@ -246,7 +246,7 @@ impl LightVM {
         max_stack_size: self.max_stack_size,
         allowed_imports: self.allowed_imports.clone(),
         unsafe_mode: self.unsafe_mode,
-        time_budget: TimeBudget::Cheap,
+        time_budget: self.time_budget.clone(),
       },
     };
     let result = crate::vm::run::run(&bytecode_json, Some(options));
@@ -385,7 +385,7 @@ impl LightVM {
         max_stack_size: self.max_stack_size,
         allowed_imports: self.allowed_imports.clone(),
         unsafe_mode: self.unsafe_mode,
-        time_budget: TimeBudget::Cheap,
+        time_budget: self.time_budget.clone(),
       },
     };
     let result_run = run(&bytecode_str.clone(), Some(options));
@@ -552,6 +552,7 @@ mod tests {
       max_stack_size: default_security.max_stack_size,
       allowed_imports: default_security.allowed_imports,
       unsafe_mode: default_security.unsafe_mode,
+      time_budget: default_security.time_budget,
       nightly: false,
       backtrace: false,
       explain: false,
