@@ -84,6 +84,7 @@ impl WasmLightVM {
         max_stack_size: default_security.max_stack_size,
         allowed_imports: default_security.allowed_imports,
         unsafe_mode: default_security.unsafe_mode,
+        time_budget: default_security.time_budget,
         nightly: runtime_config.nightly.unwrap_or(false),
         backtrace: error_options.backtrace.unwrap_or(false),
         explain: error_options.explain.unwrap_or(false),

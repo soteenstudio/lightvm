@@ -1,9 +1,15 @@
-import { LightVM, Capability, VMEvent } from '../dist/index.min.mjs';
+import {
+  LightVM,
+  Capability,
+  VMEvent,
+  TimeBudget,
+} from '../dist/index.min.mjs';
 
 function main() {
   const vm = new LightVM({
     caps: [Capability.Observe, Capability.Control, Capability.Unsafe],
   })
+    .setTimeBudget(TimeBudget.Normal)
     .withNightly(false)
     .withHint(true)
     .withExplain(false)
@@ -17,6 +23,7 @@ println; ;; IP=3
   `;
   console.log(vm.tools().parseLTCArray(str));
   vm.load(vm.tools().optimizeBytecode(raw));
+  console.log('Using time budget: Normal');
   const res = vm.run();
   console.log('Res: ', res);
   vm.halt();

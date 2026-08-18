@@ -38,6 +38,11 @@ export enum FileType {
   Assembly = 0,
   Binary = 1,
 }
+export enum TimeBudget {
+  Cheap = 0,
+  Normal = 1,
+  Expensive = 2,
+}
 export class LightVM {
   private native: any;
   private instance: any;
@@ -137,6 +142,8 @@ export class LightVM {
       val,
       'setAllowedImports',
     );
+  setTimeBudget = (val: number) =>
+    this.updateConfig('securityConfig', 'timeBudget', val, 'setTimeBudget');
   withUnsafeMode = (en: boolean) =>
     this.updateConfig('securityConfig', 'unsafeMode', en, 'withUnsafeMode');
   withNightly = (en: boolean) =>

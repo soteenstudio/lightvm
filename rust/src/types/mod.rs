@@ -21,6 +21,7 @@ pub mod runtime_config;
 pub mod security_config;
 pub(crate) mod stack;
 pub mod target_arch;
+pub mod time_budget;
 pub(crate) mod usage;
 pub(crate) mod value;
 pub(crate) mod var_stack;

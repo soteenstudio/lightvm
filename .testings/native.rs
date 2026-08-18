@@ -8,13 +8,13 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use lightvm::{LightVM, types::{vmconfig::VmConfig, capability::Capability}};
+use lightvm::{LightVM, types::{vmconfig::VmConfig, capability::Capability, time_budget::TimeBudget}};
 
 fn main() {
   let mut vm = LightVM::new(VmConfig {
     caps: vec![Capability::Control, Capability::Observe, Capability::Unsafe],
     ..Default::default()
-  }).set_max_io(5000000).set_max_ticks(200).set_max_stack_size(0).with_nightly(false).with_backtrace(false).with_explain(false).with_hint(true);
+  }).set_max_io(5000000).set_max_ticks(200).set_max_stack_size(0).with_nightly(false).with_backtrace(false).with_explain(false).with_hint(true).set_time_budget(TimeBudget::Cheap);
   
   let raw = r#"[
     ["push", 5],

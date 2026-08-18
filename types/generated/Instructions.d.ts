@@ -1,124 +1,147 @@
-/**
- * Copyright 2025-2026 SoTeen Studio
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- */
 import type { PrimitiveTypes } from './PrimitiveTypes.js';
 import type { Value } from './Value.js';
 export type Instructions = {
-    push_int16: number;
+    "push_int16": number;
 } | {
-    push_int32: number;
+    "push_int32": number;
 } | {
-    push_int64: number;
+    "push_int64": number;
 } | {
-    push_int128: number;
+    "push_int128": number;
 } | {
-    push_float16: number;
+    "push_float16": number;
 } | {
-    push_float32: number;
+    "push_float32": number;
 } | {
-    push_float64: number;
+    "push_float64": number;
 } | {
-    push_string: string;
+    "push_string": string;
 } | {
-    push_array: any[];
+    "push_array": any[];
 } | {
-    push_object: Record<string, any>;
+    "push_object": Record<string, any>;
 } | {
-    push_bool: boolean;
-} | 'push_null' | 'push_undefined' | 'push_na_n' | {
-    push: Value;
+    "push_bool": boolean;
+} | "push_null" | "push_undefined" | "push_na_n" | {
+    "push": Value;
 } | {
-    val: string;
+    "val": string;
 } | {
-    val_idx: number;
+    "val_idx": number;
 } | {
-    set: string;
+    "set": string;
 } | {
-    set_idx: number;
+    "set_idx": number;
 } | {
-    get: string;
+    "get": string;
 } | {
-    get_idx: number;
+    "get_idx": number;
 } | {
-    add: PrimitiveTypes;
+    "add": PrimitiveTypes;
 } | {
-    sub: PrimitiveTypes;
+    "sub": PrimitiveTypes;
 } | {
-    mul: PrimitiveTypes;
+    "mul": PrimitiveTypes;
 } | {
-    div: PrimitiveTypes;
+    "div": PrimitiveTypes;
 } | {
-    mod: PrimitiveTypes;
+    "mod": PrimitiveTypes;
 } | {
-    shl: PrimitiveTypes;
+    "shl": PrimitiveTypes;
 } | {
-    shr: PrimitiveTypes;
+    "shr": PrimitiveTypes;
 } | {
-    ror: PrimitiveTypes;
+    "ror": PrimitiveTypes;
 } | {
-    rol: PrimitiveTypes;
+    "rol": PrimitiveTypes;
 } | {
-    sin: PrimitiveTypes;
+    "sin": PrimitiveTypes;
 } | {
-    cos: PrimitiveTypes;
+    "cos": PrimitiveTypes;
 } | {
-    tan: PrimitiveTypes;
+    "tan": PrimitiveTypes;
 } | {
-    neg: PrimitiveTypes;
+    "asin": PrimitiveTypes;
 } | {
-    pow: PrimitiveTypes;
+    "acos": PrimitiveTypes;
 } | {
-    powi: PrimitiveTypes;
+    "atan": PrimitiveTypes;
 } | {
-    powf: PrimitiveTypes;
+    "atan2": PrimitiveTypes;
 } | {
-    gt: PrimitiveTypes;
+    "sinh": PrimitiveTypes;
 } | {
-    lt: PrimitiveTypes;
+    "cosh": PrimitiveTypes;
 } | {
-    ge: PrimitiveTypes;
+    "tanh": PrimitiveTypes;
 } | {
-    le: PrimitiveTypes;
+    "asinh": PrimitiveTypes;
 } | {
-    eq: PrimitiveTypes;
+    "acosh": PrimitiveTypes;
 } | {
-    neq: PrimitiveTypes;
-} | 'and' | 'or' | 'xor' | 'not' | 'print' | 'println' | 'stdout' | 'stdoutln' | 'stdin' | 'clear_screen' | {
-    if_false: number;
+    "atanh": PrimitiveTypes;
 } | {
-    jump: number;
+    "sqrt": PrimitiveTypes;
 } | {
-    inc: [string, PrimitiveTypes];
+    "cbrt": PrimitiveTypes;
 } | {
-    inc_idx: [number, PrimitiveTypes];
+    "neg": PrimitiveTypes;
 } | {
-    dec: [string, PrimitiveTypes];
+    "ln": PrimitiveTypes;
 } | {
-    dec_idx: [number, PrimitiveTypes];
+    "exp": PrimitiveTypes;
 } | {
-    call: [string, PrimitiveTypes];
+    "log2": PrimitiveTypes;
 } | {
-    func: [string, number, number, number, string[]];
-} | 'stop' | 'return' | {
-    break: number;
+    "log10": PrimitiveTypes;
 } | {
-    access: string;
-} | 'access_index' | 'to_string' | 'to_short' | 'to_integer' | 'to_long' | 'to_octa' | 'to_half' | 'to_float' | 'to_double' | {
-    make_obj: number;
+    "pow": PrimitiveTypes;
 } | {
-    make_array: number;
-} | 'type_of' | 'inspect_obj' | 'inspect_arr' | 'length' | 'concat' | 'dup' | 'swap' | {
-    set_prop: string;
+    "powi": PrimitiveTypes;
 } | {
-    import: [string, number];
+    "powf": PrimitiveTypes;
 } | {
-    export: string;
+    "gt": PrimitiveTypes;
 } | {
-    instantiate: [string, number];
-} | 'nop' | 'truncate' | 'shrink';
+    "lt": PrimitiveTypes;
+} | {
+    "ge": PrimitiveTypes;
+} | {
+    "le": PrimitiveTypes;
+} | {
+    "eq": PrimitiveTypes;
+} | {
+    "neq": PrimitiveTypes;
+} | "and" | "or" | "xor" | "not" | "print" | "println" | "stdout" | "stdoutln" | "stdin" | "clear_screen" | {
+    "if_false": number;
+} | {
+    "jump": number;
+} | {
+    "inc": [string, PrimitiveTypes];
+} | {
+    "inc_idx": [number, PrimitiveTypes];
+} | {
+    "dec": [string, PrimitiveTypes];
+} | {
+    "dec_idx": [number, PrimitiveTypes];
+} | {
+    "call": [string, PrimitiveTypes];
+} | {
+    "func": [string, number, number, number, string[]];
+} | "stop" | "return" | {
+    "break": number;
+} | {
+    "access": string;
+} | "access_index" | "to_string" | "to_short" | "to_integer" | "to_long" | "to_octa" | "to_half" | "to_float" | "to_double" | {
+    "make_obj": number;
+} | {
+    "make_array": number;
+} | "type_of" | "inspect_obj" | "inspect_arr" | "length" | "concat" | "dup" | "swap" | {
+    "set_prop": string;
+} | {
+    "import": [string, number];
+} | {
+    "export": string;
+} | {
+    "instantiate": [string, number];
+} | "nop" | "truncate" | "shrink";

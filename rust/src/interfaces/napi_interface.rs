@@ -12,7 +12,8 @@
 use crate::interfaces::interface::LightVM;
 use crate::types::{
   capability::Capability, compile_config::CompileConfig, file_type::FileType,
-  security_config::SecurityConfig, target_arch::TargetArch, vmconfig::VmNapiConfig,
+  security_config::SecurityConfig, target_arch::TargetArch, time_budget::TimeBudget,
+  vmconfig::VmNapiConfig,
 };
 use crate::utils::vmerror::VMError;
 use napi::bindgen_prelude::*;
@@ -86,6 +87,7 @@ impl NodeLightVM {
           .allowed_imports
           .unwrap_or_else(|| vec!["math".into(), "time".into(), "utils".into()]),
         unsafe_mode: security_config.unsafe_mode.unwrap_or(false),
+        time_budget: TimeBudget::Cheap,
         nightly: runtime_config.nightly.unwrap_or(false),
         backtrace: error_options.backtrace.unwrap_or(false),
         explain: error_options.explain.unwrap_or(false),
@@ -131,6 +133,23 @@ impl NodeLightVM {
   #[napi(js_name = "setAllowedImports")]
   pub fn set_allowed_imports(&mut self, value: Vec<String>) -> Result<()> {
     self.inner.allowed_imports = value;
+    Ok(())
+  }
+  #[napi(js_name = "setTimeBudget")]
+  pub fn set_time_budget(&mut self, value: u32) -> Result<()> {
+    let (budget, ticks) = match value {
+      0 => (TimeBudget::Cheap, 200),
+      1 => (TimeBudget::Normal, 1000),
+      2 => (TimeBudget::Expensive, 5000),
+      _ => {
+        return Err(Error::from_reason(format!(
+          "Unknown time budget: {}",
+          value
+        )));
+      }
+    };
+    self.inner.time_budget = budget;
+    self.inner.max_ticks = ticks;
     Ok(())
   }
   #[napi(js_name = "withUnsafeMode")]
@@ -329,8 +348,8 @@ impl NodeLightVM {
   #[napi(js_name = "bench")]
   pub fn napi_bench(
     name: String,
-    mut setup: Function<(), serde_json::Value>,
-    mut f: Function<serde_json::Value, serde_json::Value>,
+    setup: Function<(), serde_json::Value>,
+    f: Function<serde_json::Value, serde_json::Value>,
     bytes: Option<u32>,
     samples: Option<u32>,
     target_time: Option<u32>,
@@ -446,6 +465,7 @@ impl NodeLightVM {
         max_stack_size: is_max_stack_size,
         allowed_imports: is_allowed_imports,
         unsafe_mode: is_unsafe_mode,
+        time_budget: TimeBudget::Cheap,
       },
       is_nightly,
       is_backtrace,

@@ -21,10 +21,12 @@ use crate::types::{
   file_type::FileType,
   runtime_config::RuntimeConfig,
   security_config::SecurityConfig,
+  time_budget::TimeBudget,
   value::{RunOptions, Value},
   vmconfig::VmConfig,
   vmstate::VmState,
 };
+use crate::utils::get_time_budget::get_time_budget;
 use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
 use std::collections::HashSet;
@@ -66,6 +68,7 @@ impl LightVM {
       max_stack_size: security_config.max_stack_size,
       allowed_imports: security_config.allowed_imports,
       unsafe_mode: security_config.unsafe_mode,
+      time_budget: security_config.time_budget,
       nightly: runtime_config.nightly,
       backtrace: error_options.backtrace,
       explain: error_options.explain,
@@ -102,6 +105,11 @@ impl LightVM {
   }
   pub fn set_allowed_imports(mut self, value: Vec<String>) -> Self {
     self.allowed_imports = value;
+    self
+  }
+  pub fn set_time_budget(mut self, value: TimeBudget) -> Self {
+    self.max_ticks = get_time_budget(value.clone());
+    self.time_budget = value;
     self
   }
   pub fn with_unsafe_mode(mut self, enabled: bool) -> Self {
@@ -514,5 +522,20 @@ mod tests {
     let result = vm.embedded();
     assert!(result.is_object());
     assert!(result.get("outputs").is_some());
+  }
+  #[test]
+  fn time_budget_cheap_is_configured() {
+    let vm = LightVM::new(VmConfig::default()).set_time_budget(TimeBudget::Cheap);
+    assert_eq!(vm.time_budget, TimeBudget::Cheap);
+  }
+  #[test]
+  fn time_budget_normal_is_configured() {
+    let vm = LightVM::new(VmConfig::default()).set_time_budget(TimeBudget::Normal);
+    assert_eq!(vm.time_budget, TimeBudget::Normal);
+  }
+  #[test]
+  fn time_budget_expensive_is_configured() {
+    let vm = LightVM::new(VmConfig::default()).set_time_budget(TimeBudget::Expensive);
+    assert_eq!(vm.time_budget, TimeBudget::Expensive);
   }
 }
