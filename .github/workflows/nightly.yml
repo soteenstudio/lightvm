@@ -80,7 +80,7 @@ jobs:
         run: bash .github/scripts/nightly/create_release.sh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION_VAL: ${{ steps.versioning.outputs.version_clean }}
+          VERSION_VAL: ${{ steps.versioning.outputs.version_tag }}
           REPOSITORY: ${{ github.repository }}
 
       - name: Trigger Main Release Workflow
