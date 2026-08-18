@@ -26,6 +26,7 @@ use crate::types::{
   vmconfig::VmConfig,
   vmstate::VmState,
 };
+use crate::utils::get_time_budget::get_time_budget;
 use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
 use std::collections::HashSet;
@@ -107,6 +108,7 @@ impl LightVM {
     self
   }
   pub fn set_time_budget(mut self, value: TimeBudget) -> Self {
+    self.max_ticks = get_time_budget(value.clone());
     self.time_budget = value;
     self
   }
