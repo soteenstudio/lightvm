@@ -10,11 +10,9 @@
 
 use crate::types::time_budget::TimeBudget;
 use serde::{Deserialize, Serialize};
-
 fn default_time_budget() -> TimeBudget {
   TimeBudget::Cheap
 }
-
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct SecurityConfig {
   pub max_io: usize,
