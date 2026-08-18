@@ -12,7 +12,8 @@
 use napi_derive::napi;
 use serde::{Deserialize, Serialize};
 #[cfg_attr(feature = "node", napi)]
-#[derive(Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(ts_rs::TS, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[ts(export, rename = "Capability")]
 pub enum Capability {
   Control,
   Observe,
