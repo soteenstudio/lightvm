@@ -1,4 +1,4 @@
-export enum Capability {
+export const enum Capability {
   Control = 0,
   Observe = 1,
   Debug = 2,
