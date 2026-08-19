@@ -11,6 +11,7 @@ jobs:
     permissions:
       contents: write
       actions: write
+      workflows: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -69,11 +70,11 @@ jobs:
           VERSION_VAL: ${{ steps.versioning.outputs.version_clean }}
         run: bash .github/scripts/nightly/update_files.sh
 
-     - name: Commit and Push
-       if: steps.filter_changes.outputs.significant == 'true'
-       env:
-         VERSION_VAL: ${{ steps.versioning.outputs.version_tag }}
-       run: bash .github/scripts/nightly/commit_push.sh
+      - name: Commit and Push
+        if: steps.filter_changes.outputs.significant == 'true'
+        env:
+          VERSION_VAL: ${{ steps.versioning.outputs.version_tag }}
+        run: bash .github/scripts/nightly/commit_push.sh
 
       - name: Create Release
         if: steps.filter_changes.outputs.significant == 'true'
