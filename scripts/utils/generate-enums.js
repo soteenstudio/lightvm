@@ -115,13 +115,22 @@ try {
 
           if (decimalMatch) {
             currentValue = parseInt(decimalMatch[1], 10);
+            if (!Number.isSafeInteger(currentValue)) {
+              throw new Error(`Discriminant value for ${name} in ${enumName} is not a safe integer: "${valueStr}". Values must be within Number.MIN_SAFE_INTEGER and Number.MAX_SAFE_INTEGER.`);
+            }
           } else if (hexMatch) {
             currentValue = parseInt(hexMatch[1], 16);
+            if (!Number.isSafeInteger(currentValue)) {
+              throw new Error(`Discriminant value for ${name} in ${enumName} is not a safe integer: "${valueStr}". Values must be within Number.MIN_SAFE_INTEGER and Number.MAX_SAFE_INTEGER.`);
+            }
           } else {
             throw new Error(`Unsupported discriminant value for ${name} in ${enumName}: "${valueStr}". Only decimal and hex (0x...) integer literals are supported.`);
           }
         }
 
+        if (!Number.isSafeInteger(currentValue)) {
+          throw new Error(`Discriminant value for ${name} in ${enumName} exceeds safe integer bounds (currentValue: ${currentValue}). Values must be within Number.MIN_SAFE_INTEGER and Number.MAX_SAFE_INTEGER.`);
+        }
         variants.push(`  ${name} = ${currentValue}`);
         currentValue++;
       }
