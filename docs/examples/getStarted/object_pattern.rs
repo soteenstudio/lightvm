@@ -4,7 +4,8 @@ use lightvm::types::{
   runtime_config::RuntimeConfig,
   error_options::ErrorOptions,
   security_config::SecurityConfig,
-  capability::Capability
+  capability::Capability,
+  time_budget::TimeBudget
 };
 
 fn main() {
@@ -27,6 +28,7 @@ fn main() {
       max_ticks: 1_000_000, // Maximum number of execution ticks before stopping (default: 1,000,000)
       max_stack_size: 128, // Maximum number of items the stack can hold (default: 128)
       allowed_imports: vec!["math".into(), "time".into(), "utils".into()], // Whitelist of modules that can be imported
+      time_budget: TimeBudget::Cheap, // Sets the execution time budget limit to prevent infinite loops (Default: Cheap)
       unsafe_mode: false // Enable or disable system-level unsafe operations (default: false)
     })
   });

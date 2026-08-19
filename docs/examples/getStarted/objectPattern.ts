@@ -1,4 +1,4 @@
-import { LightVM, Capability } from 'lightvm';
+import { LightVM, Capability, TimeBudget } from 'lightvm';
 
 const vm = new LightVM({
   caps: [Capability.Observe, Capability.Control],
@@ -19,6 +19,7 @@ const vm = new LightVM({
     maxTicks: 1_000_000, // Maximum number of execution ticks before stopping (default: 1,000,000)
     maxStackSize: 128, // Maximum number of items the stack can hold (default: 128)
     allowedImports: ['math', 'time', 'utils'], // Whitelist of modules that can be imported
+    timeBudget: TimeBudget.Cheap, // Sets the execution time budget limit to prevent infinite loops (Default: Cheap)
     unsafeMode: false, // Enable or disable system-level unsafe operations (default: false)
   },
 });

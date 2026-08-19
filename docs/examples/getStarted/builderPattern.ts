@@ -1,4 +1,4 @@
-import { LightVM, Capability } from 'lightvm';
+import { LightVM, Capability, TimeBudget } from 'lightvm';
 
 const vm = new LightVM({ caps: [Capability.Observe, Capability.Control] })
   .setMaxIo(100) // Maximum number of I/O operations allowed (default: 100)
@@ -9,6 +9,7 @@ const vm = new LightVM({ caps: [Capability.Observe, Capability.Control] })
   .setMaxTicks(1_000_000) // Maximum number of execution ticks before stopping (default: 1,000,000)
   .setMaxStackSize(128) // Maximum number of items the stack can hold (default: 128)
   .setAllowedImports(['math', 'time', 'utils']) // Whitelist of modules that can be imported
+  .setTimeBudget(TimeBudget.Cheap) // Sets the execution time budget limit to prevent infinite loops (Default: Cheap)
   .withUnsafeMode(false) // Enable or disable system-level unsafe operations (default: false)
   .withNightly(false) // Allow nightly features (default: false)
   .withBacktrace(false) // Display backtrace details in error messages (default: false)
