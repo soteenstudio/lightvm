@@ -1,6 +1,6 @@
 export declare const FileTypeValue: {
-    Assembly: number;
-    Binary: number;
+    readonly Assembly: 0;
+    readonly Binary: 1;
 };
 export declare enum FileType {
     Assembly = 0,

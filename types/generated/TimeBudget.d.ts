@@ -1,7 +1,7 @@
 export declare const TimeBudgetValue: {
-    Cheap: number;
-    Normal: number;
-    Expensive: number;
+    readonly Cheap: 0;
+    readonly Normal: 1;
+    readonly Expensive: 2;
 };
 export declare enum TimeBudget {
     Cheap = 0,

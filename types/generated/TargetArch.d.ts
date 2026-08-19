@@ -1,5 +1,5 @@
 export declare const TargetArchValue: {
-    AArch64: number;
+    readonly AArch64: 0;
 };
 export declare enum TargetArch {
     AArch64 = 0

@@ -2,7 +2,7 @@ export const VmEventValue = {
   Tick: 0,
   Halt: 1,
   Panic: 2,
-}
+} as const;
 
 export enum VmEvent {
   Tick = 0,

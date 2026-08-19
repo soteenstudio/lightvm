@@ -3,7 +3,7 @@ export const CapabilityValue = {
   Observe: 1,
   Debug: 2,
   Unsafe: 3,
-}
+} as const;
 
 export enum Capability {
   Control = 0,

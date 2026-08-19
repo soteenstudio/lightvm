@@ -1,7 +1,7 @@
 export declare const VmEventValue: {
-    Tick: number;
-    Halt: number;
-    Panic: number;
+    readonly Tick: 0;
+    readonly Halt: 1;
+    readonly Panic: 2;
 };
 export declare enum VmEvent {
     Tick = 0,
