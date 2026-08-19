@@ -135,7 +135,7 @@ try {
         currentValue++;
       }
 
-      const tsCode = `export const enum ${enumName} {\n${variants.join(',\n')},\n}\n`;
+      const tsCode = `export enum ${enumName} {\n${variants.join(',\n')},\n}\n`;
       const outputPath = path.join(OUTPUT_DIR, `${enumName}.ts`);
 
       fs.writeFileSync(outputPath, tsCode, 'utf8');
