@@ -11,11 +11,11 @@
 import { Instructions } from './generated/Instructions.js';
 import { VMConfig } from './generated/VMConfig.js';
 import { CompileConfig } from './generated/CompileConfig.js';
-import { Capability } from './generated/Capability.js';
-import { VmEvent as VMEvent } from './generated/VmEvent.js';
-import { TargetArch } from './generated/TargetArch.js';
-import { FileType } from './generated/FileType.js';
-import { TimeBudget } from './generated/TimeBudget.js';
+import { Capability, CapabilityValue } from './generated/Capability.js';
+import { VmEvent as VMEvent, VmEventValue } from './generated/VmEvent.js';
+import { TargetArch, TargetArchValue } from './generated/TargetArch.js';
+import { FileType, FileTypeValue } from './generated/FileType.js';
+import { TimeBudget, TimeBudgetValue } from './generated/TimeBudget.js';
 import { loadNapi } from './utils/loadNapi.js';
 import { isMusl } from './utils/isMusl.js';
 import { VMSystemError as VMError } from './utils/vmerror.js';
@@ -31,7 +31,7 @@ export class LightVM {
   private config: VMConfig;
 
   private static readonly DEFAULTS: VMConfig = {
-    caps: [Capability.Observe],
+    caps: [CapabilityValue.Observe],
     runtimeConfig: { nightly: false },
     errorOptions: { backtrace: false, explain: false, hint: true },
     securityConfig: {
@@ -276,9 +276,9 @@ export {
   loadNapi,
   isMusl,
   VMError,
-  Capability,
-  VMEvent,
-  TargetArch,
-  FileType,
-  TimeBudget,
+  CapabilityValue as Capability,
+  VmEventValue as VMEvent,
+  TargetArchValue as TargetArch,
+  FileTypeValue as FileType,
+  TimeBudgetValue as TimeBudget,
 };

@@ -10,11 +10,11 @@
 import { Instructions } from './generated/Instructions.js';
 import { VMConfig } from './generated/VMConfig.js';
 import { CompileConfig } from './generated/CompileConfig.js';
-import { Capability } from './generated/Capability.js';
-import { VmEvent as VMEvent } from './generated/VmEvent.js';
-import { TargetArch } from './generated/TargetArch.js';
-import { FileType } from './generated/FileType.js';
-import { TimeBudget } from './generated/TimeBudget.js';
+import { Capability, CapabilityValue } from './generated/Capability.js';
+import { VmEvent as VMEvent, VmEventValue } from './generated/VmEvent.js';
+import { TargetArchValue } from './generated/TargetArch.js';
+import { FileTypeValue } from './generated/FileType.js';
+import { TimeBudgetValue } from './generated/TimeBudget.js';
 import { loadNapi } from './utils/loadNapi.js';
 import { isMusl } from './utils/isMusl.js';
 import { VMSystemError as VMError } from './utils/vmerror.js';
@@ -72,4 +72,4 @@ export declare class LightVM {
         parseLTCArray: (code: string) => any;
     };
 }
-export { Instructions, loadNapi, isMusl, VMError, Capability, VMEvent, TargetArch, FileType, TimeBudget, };
+export { Instructions, loadNapi, isMusl, VMError, CapabilityValue as Capability, VmEventValue as VMEvent, TargetArchValue as TargetArch, FileTypeValue as FileType, TimeBudgetValue as TimeBudget, };

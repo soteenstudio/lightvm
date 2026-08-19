@@ -1,4 +1,10 @@
-export const enum VmEvent {
+export const VmEventValue = {
+  Tick: 0,
+  Halt: 1,
+  Panic: 2,
+}
+
+export enum VmEvent {
   Tick = 0,
   Halt = 1,
   Panic = 2,
