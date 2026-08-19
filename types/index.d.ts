@@ -72,4 +72,4 @@ export declare class LightVM {
         parseLTCArray: (code: string) => any;
     };
 }
-export { Instructions, loadNapi, isMusl, VMError, Capability, VMEvent, TargetArch, FileType, TimeBudget };
+export { Instructions, loadNapi, isMusl, VMError, Capability, VMEvent, TargetArch, FileType, TimeBudget, };

@@ -60,7 +60,7 @@ if (inputFiles.length === 0) {
     'Define files in TARGET_RUST_FILES or provide them as CLI arguments.',
   );
   console.log(
-    `  ${s.dim}Usage:${s.reset} node generate-enums.mjs [file1.rs file2.rs...] ${s.dim}[--silent]${s.reset}\n`,
+    `  ${s.dim}Usage:${s.reset} node scripts/utils/generate-enums.js [file1.rs file2.rs...] ${s.dim}[--silent]${s.reset}\n`,
   );
   process.exit(1);
 }
@@ -79,8 +79,7 @@ try {
   for (const filePath of inputFiles) {
     const resolvedPath = path.resolve(filePath);
     if (!fs.existsSync(resolvedPath)) {
-      logger.warn(`File not found: ${resolvedPath}, skipping.`);
-      continue;
+      throw new Error(`File not found: ${resolvedPath}`);
     }
 
     const content = fs.readFileSync(resolvedPath, 'utf8');
@@ -109,7 +108,18 @@ try {
         const name = parts[0];
 
         if (parts.length > 1) {
-          currentValue = parseInt(parts[1], 10);
+          const valueStr = parts[1];
+          // Match either decimal integer literal or hex integer literal (0x...)
+          const decimalMatch = valueStr.match(/^(\d+)$/);
+          const hexMatch = valueStr.match(/^0x([0-9a-fA-F]+)$/);
+
+          if (decimalMatch) {
+            currentValue = parseInt(decimalMatch[1], 10);
+          } else if (hexMatch) {
+            currentValue = parseInt(hexMatch[1], 16);
+          } else {
+            throw new Error(`Unsupported discriminant value for ${name} in ${enumName}: "${valueStr}". Only decimal and hex (0x...) integer literals are supported.`);
+          }
         }
 
         variants.push(`  ${name} = ${currentValue}`);
