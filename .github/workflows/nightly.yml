@@ -5,13 +5,14 @@ on:
     - cron: '35 12 * * *'
   workflow_dispatch:
 
+permissions:
+  contents: write
+  actions: write
+  workflows: write
+
 jobs:
   check-and-release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      actions: write
-      workflows: write
     steps:
       - uses: actions/checkout@v4
         with:
