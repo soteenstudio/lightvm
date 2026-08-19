@@ -14,17 +14,21 @@ fn main() {
   let mut vm = LightVM::new(VmConfig {
     caps: vec![Capability::Control, Capability::Observe, Capability::Unsafe],
     ..Default::default()
-  }).set_max_io(5000000).set_max_ticks(200).set_max_stack_size(0).with_nightly(false).with_backtrace(false).with_explain(false).with_hint(true).set_time_budget(TimeBudget::Cheap);
+  }).set_max_io(5000000).set_max_ticks(1000).set_max_stack_size(0).with_nightly(true).with_backtrace(false).with_explain(false).with_hint(true).set_time_budget(TimeBudget::Cheap);
   
   let raw = r#"[
-    ["push", 5],
-    ["asinh", "flt"],
+    ["jump", 5],
+    ["func", "say", 0, 2, 4],
+    ["push", "Hello from LightVM"],
     ["println"],
-    ["jump", 0]
+    ["stop"],
+    ["export", "say"]
   ]"#;
   let optimized_json = vm.tools().optimize_bytecode(raw);
-  println!("{}", optimized_json);
+  //println!("{}", optimized_json);
   
   vm.load(optimized_json);
-  vm.run(None);
+  //vm.run(None);
+  let mut say_func = vm.export("say".to_string());
+  say_func(vec![]);
 }

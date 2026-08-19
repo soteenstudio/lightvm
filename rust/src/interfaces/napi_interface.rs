@@ -16,11 +16,18 @@ use crate::types::{
   vmconfig::VmNapiConfig,
 };
 use crate::utils::vmerror::VMError;
-use napi::bindgen_prelude::*;
 use napi::threadsafe_function::ThreadsafeFunctionCallMode;
+use napi::{Env, Error, Result, bindgen_prelude::*};
 use napi_derive::napi;
+use serde_json::Value;
+use std::mem;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
+#[napi(js_name = "LightVM")]
+struct FunctionContext {
+  name: String,
+  vm_ptr: usize,
+}
 #[napi(js_name = "LightVM")]
 pub struct NodeLightVM {
   inner: LightVM,
@@ -314,32 +321,49 @@ impl NodeLightVM {
     }))
   }
   #[napi(js_name = "callExport")]
-  pub fn call_export(
-    &mut self,
-    name: String,
-    args: serde_json::Value,
-  ) -> Result<serde_json::Value> {
+  pub fn call_export(&mut self, env: Env, name: String, args: Value) -> Result<Function> {
     let raw_result = self
       .inner
-      .call_exported_internal(name, args)
-      .map_err(|e| Error::from_reason(e.to_string()))?;
-    let parsed: serde_json::Value = serde_json::from_str(&raw_result)
+      .call_exported_internal(name.clone(), args)
+      .map_err(|e: anyhow::Error| Error::from_reason(e.to_string()))?;
+    let parsed: Value = serde_json::from_str(&raw_result)
       .map_err(|e| Error::from_reason(format!("Failed to parse export return: {}", e)))?;
-    if parsed["status"] == "success" {
-      Ok(
-        parsed
-          .get("result")
-          .cloned()
-          .unwrap_or(serde_json::Value::Null),
-      )
-    } else {
-      Err(Error::from_reason(
+    if parsed["status"] != "success" {
+      return Err(Error::from_reason(
         parsed["message"]
           .as_str()
           .unwrap_or("Unknown Error")
           .to_string(),
-      ))
+      ));
     }
+    let self_ptr = self as *mut Self as usize;
+    let context = FunctionContext {
+      name,
+      vm_ptr: self_ptr,
+    };
+    let func = env.create_function_with_data("boundExportedFn", context, move |ctx| {
+      let context_data: &FunctionContext = ctx.data()?;
+      let args_vec: Vec<Value> = ctx.get_all()?;
+      let this = unsafe { &mut *(context_data.vm_ptr as *mut Self) };
+      let new_args = args_vec.into_iter().next().unwrap_or(Value::Null);
+      let raw_result = this
+        .inner
+        .call_exported_internal(context_data.name.clone(), new_args)
+        .map_err(|e: anyhow::Error| Error::from_reason(e.to_string()))?;
+      let parsed: Value = serde_json::from_str(&raw_result)
+        .map_err(|e| Error::from_reason(format!("Failed to parse export return: {}", e)))?;
+      if parsed["status"] == "success" {
+        Ok(parsed.get("result").cloned().unwrap_or(Value::Null))
+      } else {
+        Err(Error::from_reason(
+          parsed["message"]
+            .as_str()
+            .unwrap_or("Unknown Error")
+            .to_string(),
+        ))
+      }
+    })?;
+    Ok(func)
   }
   #[napi(js_name = "blackBox")]
   pub fn napi_black_box(value: serde_json::Value) -> Result<serde_json::Value> {
