@@ -55,6 +55,7 @@ jobs:
           else
             npm install --prefer-offline
           fi
+          npm install -D typescript@6.0.3
 
       - name: Linting & Formatting
         run: |

@@ -1,4 +1,3 @@
-// @ts-ignore
 export const CapabilityValue = {
   Control: 0,
   Observe: 1,
