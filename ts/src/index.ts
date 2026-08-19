@@ -21,8 +21,8 @@ export interface VMResult {
   halted: boolean;
 }
 export enum Capability {
-  Observe = 0,
-  Control = 1,
+  Control = 0,
+  Observe = 1,
   Debug = 2,
   Unsafe = 3,
 }
