@@ -21,8 +21,8 @@ export interface VMResult {
   halted: boolean;
 }
 export enum Capability {
-  Observe = 0,
-  Control = 1,
+  Control = 0,
+  Observe = 1,
   Debug = 2,
   Unsafe = 3,
 }
@@ -175,10 +175,7 @@ export class LightVM {
   export(name: string) {
     return (...args: any[]) => {
       return this.wrap(() => {
-        const rawResult = this.instance.callExported(
-          name,
-          JSON.stringify(args),
-        );
+        const rawResult = this.instance.callExport(name, args);
 
         if (rawResult == null || rawResult === 'Undefined') return undefined;
 
