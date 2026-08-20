@@ -29,10 +29,82 @@ use crate::types::{
 use crate::utils::get_time_budget::get_time_budget;
 use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
+use half::f16;
+use smol_str::SmolStr;
 use std::collections::HashSet;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use unescape::unescape;
+impl From<i16> for Value {
+  fn from(v: i16) -> Self {
+    Value::Int16(v)
+  }
+}
+impl From<i32> for Value {
+  fn from(v: i32) -> Self {
+    Value::Int32(v)
+  }
+}
+impl From<i64> for Value {
+  fn from(v: i64) -> Self {
+    Value::Int64(v)
+  }
+}
+impl From<i128> for Value {
+  fn from(v: i128) -> Self {
+    Value::Int128(v)
+  }
+}
+impl From<f32> for Value {
+  fn from(v: f32) -> Self {
+    Value::Float32(v)
+  }
+}
+impl From<f64> for Value {
+  fn from(v: f64) -> Self {
+    Value::Float64(v)
+  }
+}
+impl From<f16> for Value {
+  fn from(v: f16) -> Self {
+    Value::Float16(v)
+  }
+}
+impl From<&str> for Value {
+  fn from(v: &str) -> Self {
+    Value::String(SmolStr::new(v))
+  }
+}
+impl From<String> for Value {
+  fn from(v: String) -> Self {
+    Value::String(SmolStr::new(v))
+  }
+}
+impl From<SmolStr> for Value {
+  fn from(v: SmolStr) -> Self {
+    Value::String(v)
+  }
+}
+impl From<bool> for Value {
+  fn from(v: bool) -> Self {
+    Value::Bool(v)
+  }
+}
+impl From<Vec<Value>> for Value {
+  fn from(v: Vec<Value>) -> Self {
+    Value::Array(Arc::new(v))
+  }
+}
+impl From<AHashMap<SmolStr, Value>> for Value {
+  fn from(v: AHashMap<SmolStr, Value>) -> Self {
+    Value::Object(Arc::new(v))
+  }
+}
+impl From<()> for Value {
+  fn from(_: ()) -> Self {
+    Value::Null
+  }
+}
 #[cfg(not(feature = "node"))]
 impl LightVM {
   pub fn new<C: Into<VmConfig>>(config: C) -> Self {
@@ -194,25 +266,24 @@ impl LightVM {
   ///    println!("Result from VM: {}", result);
   /// }
   /// ```
-  pub fn export(
-    &mut self,
-    name: String,
-  ) -> Box<dyn FnMut(Vec<serde_json::Value>) -> Option<serde_json::Value> + '_> {
+  pub fn export(&mut self, name: String) -> Box<dyn FnMut(Vec<Value>) -> Option<Value> + '_> {
     let function_name = name.clone();
     Box::new(move |args| {
-      let args_value = serde_json::Value::Array(args);
+      let json_args: Vec<serde_json::Value> = args
+        .iter()
+        .map(|v| serde_json::to_value(v).unwrap_or(serde_json::Value::Null))
+        .collect();
+      let args_value = serde_json::Value::Array(json_args);
       match self.call_exported_internal(function_name.clone(), args_value) {
         Ok(raw_result) => {
           let parsed: serde_json::Value =
             serde_json::from_str(&raw_result).unwrap_or(serde_json::Value::Null);
           if parsed["status"] == "success" {
-            let result = parsed.get("result").cloned();
-            if result.is_none()
-              || result == Some(serde_json::Value::String("Undefined".to_string()))
-            {
+            let result_json = parsed.get("result").cloned()?;
+            if result_json == serde_json::Value::String("Undefined".to_string()) {
               return None;
             }
-            result
+            Some(Value::from(result_json))
           } else {
             eprintln!("Error: {}", parsed["message"]);
             None

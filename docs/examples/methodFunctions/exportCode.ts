@@ -1,2 +1,14 @@
-const add = vm.export('add');
-console.log(add(5, 6));
+const raw = [
+  ['jump', 7],
+  ['func', 'add', 2, 2, 6, 'a', 'b'],
+  ['get', 'a'],
+  ['get', 'b'],
+  ['add', 'int'],
+  ['return'],
+  ['stop'],
+  ['export', 'add'],
+];
+const optimized = tools.optimizeBytecode(raw);
+vm.load(optimized);
+const addFunc = vm.export('add');
+console.log(addFunc(5, 6));
