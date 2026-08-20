@@ -6,4 +6,4 @@ These instructions perform low-level binary manipulation, shifts, and bitwise lo
 | `shl` / `shr` | type | val1, val2 | Shift Left or Shift Right bitwise operation |
 | `rol` / `ror` | type | val1, val2 | Circular Shift Left or Right (Rotate) |
 | `xor` | - | val1, val2 | Bitwise Exclusive OR operation |
-| `not` | - | val1, val2 | Bitwise NOT (Inversion) operation |
+| `not` | - | val | Bitwise NOT (Inversion) operation |

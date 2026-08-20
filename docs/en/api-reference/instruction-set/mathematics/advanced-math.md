@@ -3,8 +3,8 @@ These instructions execute complex mathematical functions including trigonometri
 
 | Opcode | Arguments | Operands (stack) | Description |
 | :--- | :--- | :--- | :--- |
-| `sin` / `cos` | type | val1, val2 | Sine or Cosine trigonometric operation |
-| `tan` | type | val1, val2 | Tangent trigonometric operation |
+| `sin` / `cos` | type | val | Sine or Cosine trigonometric operation |
+| `tan` | type | val | Tangent trigonometric operation |
 | `sinh` / `cosh` | type | val | Hyperbolic Sine or Cosine operation |
 | `tanh` | type | val | Hyperbolic Tangent operation |
 | `asin` / `acos` | type | val | Arcsine or Arccosine trigonometric operation |

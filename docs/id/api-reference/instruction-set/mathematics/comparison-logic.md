@@ -6,4 +6,4 @@ Instruksi-instruksi ini mengevaluasi hubungan antar nilai dan memproses ekspresi
 | `gt` / `lt` | tipe | val1, val2 | Lebih Dari atau Kurang Dari |
 | `ge` / `le` | tipe | val1, val2 | Lebih Dari/Kurang Dari atau Sama Dengan |
 | `eq` / `neq` | tipe | val1, val2 | Sama Dengan atau Tidak Sama Dengan |
-| `and` / `or` | - | val1, val2 | Operasi logika boolean (&& / |  | ) |
+| `and` / `or` | - | val1, val2 | Operasi logika boolean (AND / OR) |

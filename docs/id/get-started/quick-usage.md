@@ -28,5 +28,5 @@ Dapatkan antarmuka alat. Simpan ini sebagai konstanta agar dapat digunakan kemba
 :::
 
 ::: info Referensi API Terkait
-Mau ngatur izin akses atau batas eksekusi? Cek panduan lengkapnya di halaman [Kapabilitas](/id/api-reference/capabilities) dan [Batas Waktu Eksekusi](/id/api-reference/time-budget).
+Untuk mengatur izin akses atau batas eksekusi, lihat panduan lengkapnya di halaman [Kapabilitas](/id/api-reference/capabilities) dan [Batas Waktu Eksekusi](/id/api-reference/time-budget).
 :::
