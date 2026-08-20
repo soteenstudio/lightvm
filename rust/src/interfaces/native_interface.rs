@@ -270,7 +270,7 @@ impl LightVM {
     let function_name = name.clone();
     Box::new(move |args| {
       let json_args: Result<Vec<serde_json::Value>, _> =
-        args.iter().map(|v| serde_json::to_value(v)).collect();
+        args.iter().map(serde_json::to_value).collect();
       let json_args = match json_args {
         Ok(values) => values,
         Err(e) => {
