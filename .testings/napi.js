@@ -14,16 +14,20 @@ function main() {
     .withHint(true)
     .withExplain(false)
     .withBacktrace(false);
+  const tools = vm.tools();
   const raw = [
-    ['jump', 5],
-    ['func', 'say', 0, 2, 4],
-    ['push', 'Hello from LightVM'],
+    ['jump', 7],
+    ['func', 'add', 2, 2, 6, 'a', 'b'],
+    ['get', 'a'],
+    ['get', 'b'],
+    ['add', 'int'],
     ['return'],
     ['stop'],
-    ['export', 'say'],
+    ['export', 'add'],
   ];
-  vm.load(vm.tools().optimizeBytecode(raw));
-  const sayFunc = vm.export('say');
-  console.log(sayFunc());
+  const optimized = tools.optimizeBytecode(raw);
+  vm.load(optimized);
+  const addFunc = vm.export('add');
+  console.log(addFunc(5, 6));
 }
 main();

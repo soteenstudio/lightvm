@@ -17,18 +17,21 @@ fn main() {
   }).set_max_io(5000000).set_max_ticks(1000).set_max_stack_size(0).with_nightly(true).with_backtrace(false).with_explain(false).with_hint(true).set_time_budget(TimeBudget::Cheap);
   
   let raw = r#"[
-    ["jump", 5],
-    ["func", "say", 0, 2, 4],
-    ["push", "Hello from LightVM"],
+    ["jump", 7],
+    ["func", "add", 2, 2, 6, "a", "b"],
+    ["get", "a"],
+    ["get", "b"],
+    ["add", "int"],
     ["return"],
     ["stop"],
-    ["export", "say"]
+    ["export", "add"]
   ]"#;
   let optimized_json = vm.tools().optimize_bytecode(raw);
-  //println!("{}", optimized_json);
+  println!("{}", optimized_json);
   
   vm.load(optimized_json);
   //vm.run(None);
-  let mut say_func = vm.export("say".to_string());
-  say_func(vec![]);
+  let mut add_func = vm.export("add".to_string());
+  let result = add_func(vec![5.into(), 6.into()]);
+  println!("Result: {:?}", result);
 }
