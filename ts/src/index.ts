@@ -175,10 +175,7 @@ export class LightVM {
   export(name: string) {
     return (...args: any[]) => {
       return this.wrap(() => {
-        const rawResult = this.instance.callExported(
-          name,
-          JSON.stringify(args),
-        );
+        const rawResult = this.instance.callExport(name, args);
 
         if (rawResult == null || rawResult === 'Undefined') return undefined;
 
