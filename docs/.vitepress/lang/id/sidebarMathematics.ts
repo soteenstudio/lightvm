@@ -1,5 +1,5 @@
 export const sidebarMathematics = {
-  text: 'Mathematics',
+  text: 'Matematika',
   collapsed: false,
   items: [
     {

@@ -32,19 +32,21 @@ const logger = {
 
 async function syncFiles(src, dest, langCode) {
   if (!existsSync(dest)) mkdirSync(dest, { recursive: true });
-  
+
   const entries = await readdir(src, { withFileTypes: true });
+  let hasError = false;
 
   for (const entry of entries) {
     const srcPath = join(src, entry.name);
     const destPath = join(dest, entry.name);
 
     if (entry.isDirectory()) {
-      await syncFiles(srcPath, destPath, langCode);
+      const dirResult = await syncFiles(srcPath, destPath, langCode);
+      if (!dirResult) hasError = true;
     } else {
       try {
         const srcStat = await stat(srcPath);
-        
+
         try {
           const destStat = await stat(destPath);
 
@@ -59,21 +61,32 @@ async function syncFiles(src, dest, langCode) {
         }
       } catch (err) {
         logger.error(`Failed to process ${entry.name} for ${langCode}:`, err.message);
+        hasError = true;
       }
     }
   }
+
+  return !hasError;
 }
 
 async function startSync() {
   logger.info(`${s.bold}Starting synchronization from '${SOURCE_LANG}' to: ${TARGET_LANGS.join(', ')}${s.reset}\n`);
-  
+
+  let overallSuccess = true;
+
   for (const lang of TARGET_LANGS) {
     const src = join(baseDir, SOURCE_LANG);
     const dest = join(baseDir, lang);
-    await syncFiles(src, dest, lang);
+    const success = await syncFiles(src, dest, lang);
+    if (!success) overallSuccess = false;
   }
-  
-  console.log(`\n${s.bold}${s.green}✔ All languages processed successfully!${s.reset}`);
+
+  if (overallSuccess) {
+    console.log(`\n${s.bold}${s.green}✔ All languages processed successfully!${s.reset}`);
+  } else {
+    console.log(`\n${s.bold}${s.red}✖ Synchronization completed with errors.${s.reset}`);
+    process.exitCode = 1;
+  }
 }
 
 startSync();
