@@ -4,7 +4,7 @@ let raw = r#"[
   ["get", "a"],
   ["get", "b"],
   ["add", "int"],
-  ["println"],
+  ["return"],
   ["stop"],
   ["export", "add"]
 ]"#;
