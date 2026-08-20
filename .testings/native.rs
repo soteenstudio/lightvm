@@ -22,7 +22,7 @@ fn main() {
     ["get", "a"],
     ["get", "b"],
     ["add", "int"],
-    ["println"],
+    ["return"],
     ["stop"],
     ["export", "add"]
   ]"#;
@@ -32,5 +32,6 @@ fn main() {
   vm.load(optimized_json);
   //vm.run(None);
   let mut add_func = vm.export("add".to_string());
-  add_func(vec![5.into(), 6.into()]);
+  let result = add_func(vec![5.into(), 6.into()]);
+  println!("Result: {:?}", result);
 }

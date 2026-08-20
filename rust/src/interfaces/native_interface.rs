@@ -261,7 +261,7 @@ impl LightVM {
   /// # Examples
   /// ```rust,ignore
   /// let mut add = vm.export("add".to_string());
-  /// let args = vec![serde_json::json!(5), serde_json::json!(6)];
+  /// let args = vec![5.into(), 6.into()];
   /// if let Some(result) = add(args) {
   ///    println!("Result from VM: {}", result);
   /// }
@@ -269,10 +269,17 @@ impl LightVM {
   pub fn export(&mut self, name: String) -> Box<dyn FnMut(Vec<Value>) -> Option<Value> + '_> {
     let function_name = name.clone();
     Box::new(move |args| {
-      let json_args: Vec<serde_json::Value> = args
+      let json_args: Result<Vec<serde_json::Value>, _> = args
         .iter()
-        .map(|v| serde_json::to_value(v).unwrap_or(serde_json::Value::Null))
+        .map(|v| serde_json::to_value(v))
         .collect();
+      let json_args = match json_args {
+        Ok(values) => values,
+        Err(e) => {
+          eprintln!("Failed to convert arguments: {}", e);
+          return None;
+        }
+      };
       let args_value = serde_json::Value::Array(json_args);
       match self.call_exported_internal(function_name.clone(), args_value) {
         Ok(raw_result) => {
