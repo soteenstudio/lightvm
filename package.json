@@ -42,6 +42,7 @@
     "bench:ts": "node ./scripts/bench/ts-bench.js",
     "testing:rust": "solas run .testings/native.rs",
     "testing:ts": "node .testings/napi.js",
+    "test-install:ts": "node .testings/test-install/napi.js",
     "build": "node ./esbuild.config.js",
     "build:pack": "node ./scripts/build/build-script.js",
     "build:wasm": "wasm-pack build --target web -- --features wasm",
