@@ -20,7 +20,7 @@ fn main() {
     ["jump", 5],
     ["func", "say", 0, 2, 4],
     ["push", "Hello from LightVM"],
-    ["println"],
+    ["return"],
     ["stop"],
     ["export", "say"]
   ]"#;

@@ -23,9 +23,7 @@ pub fn return_func(
   }
   if let Some(return_addr) = call_stack.pop() {
     *ip = return_addr + 1;
-    println!("{}", last_return);
     return true;
   }
-  println!("{}", last_return);
   false
 }
