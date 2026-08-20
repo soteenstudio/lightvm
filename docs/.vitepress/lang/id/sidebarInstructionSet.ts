@@ -1,3 +1,5 @@
+import { sidebarMathematics } from './sidebarMathematics.js';
+
 export const sidebarInstructionSet = {
   text: 'Set Instruksi',
   collapsed: false,
@@ -6,10 +8,7 @@ export const sidebarInstructionSet = {
       text: 'Manajemen Stack & Variabel',
       link: '/id/api-reference/instruction-set/stack-variable-management',
     },
-    {
-      text: 'Aritmatika & Logika',
-      link: '/id/api-reference/instruction-set/arithmetic-logic',
-    },
+    sidebarMathematics,
     {
       text: 'Alur Kontrol & Fungsi',
       link: '/id/api-reference/instruction-set/control-flow-function',

@@ -1,5 +1,4 @@
 import { defineConfig } from 'vitepress';
-import { withMermaid } from 'vitepress-plugin-mermaid';
 import { enUs, enUsSearch } from './en.js';
 import { idId, idIdSearch } from './id.js';
 import fs from 'fs';
@@ -15,122 +14,120 @@ const donationSvg = fs.readFileSync(
   'utf-8',
 );
 
-export default withMermaid(
-  defineConfig({
-    rewrites: {
-      'en/:rest*': ':rest*',
-    },
+export default defineConfig({
+  rewrites: {
+    'en/:rest*': ':rest*',
+  },
 
-    title: 'LightVM',
-    titleTemplate: ':title | LightVM Docs',
-    description:
-      'A capability-based virtual machine designed for secure, predictable, and optimized bytecode execution.',
+  title: 'LightVM',
+  titleTemplate: ':title | LightVM Docs',
+  description:
+    'A capability-based virtual machine designed for secure, predictable, and optimized bytecode execution.',
 
-    cleanUrls: true,
+  cleanUrls: true,
 
-    head: [
-      [
-        'meta',
-        {
-          name: 'theme-color',
-          content: '#ffffff',
-          media: '(prefers-color-scheme: light)',
-        },
-      ],
-      [
-        'meta',
-        {
-          name: 'theme-color',
-          content: '#16141C',
-          media: '(prefers-color-scheme: dark)',
-        },
-      ],
-      [
-        'script',
-        { type: 'application/ld+json' },
-        JSON.stringify({
-          '@context': 'https://schema.org',
-          '@type': 'SoftwareSourceCode',
-          name: 'LightVM',
-          description:
-            'A capability-based virtual machine designed for secure, predictable, and optimized bytecode execution.',
-          codeRepository: 'https://github.com/soteenstudio/lightvm',
-          programmingLanguage: 'Rust',
-          author: {
-            '@type': 'Person',
-            name: 'Claycuy',
-          },
-        }),
-      ],
+  head: [
+    [
+      'meta',
+      {
+        name: 'theme-color',
+        content: '#ffffff',
+        media: '(prefers-color-scheme: light)',
+      },
     ],
-
-    sitemap: {
-      hostname: 'https://lightvm.vercel.app',
-    },
-
-    transformPageData(pageData: any) {
-      if (!pageData.content) {
-        return;
-      }
-
-      if (
-        pageData.relativePath === 'index.md' ||
-        pageData.frontmatter.layout === 'home'
-      ) {
-        return;
-      }
-
-      const lines = (pageData.content as string)
-        .split('\n')
-        .filter((line: string) => line.trim() !== '');
-
-      if (lines.length >= 2 && !pageData.frontmatter.description) {
-        const desc = lines[1].replace(/[#*`]/g, '').trim();
-        pageData.frontmatter.description = desc;
-      }
-    },
-
-    lastUpdated: true,
-    locales: {
-      root: {
-        label: 'English (US)',
-        lang: 'en-US',
-        ...enUs,
+    [
+      'meta',
+      {
+        name: 'theme-color',
+        content: '#16141C',
+        media: '(prefers-color-scheme: dark)',
       },
-      id: {
-        label: 'Bahasa Indonesia',
-        lang: 'id-ID',
-        link: '/id/',
-        dir: 'id',
-        ...idId,
-      },
+    ],
+    [
+      'script',
+      { type: 'application/ld+json' },
+      JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareSourceCode',
+        name: 'LightVM',
+        description:
+          'A capability-based virtual machine designed for secure, predictable, and optimized bytecode execution.',
+        codeRepository: 'https://github.com/soteenstudio/lightvm',
+        programmingLanguage: 'Rust',
+        author: {
+          '@type': 'Person',
+          name: 'Claycuy',
+        },
+      }),
+    ],
+  ],
+
+  sitemap: {
+    hostname: 'https://lightvm.vercel.app',
+  },
+
+  transformPageData(pageData: any) {
+    if (!pageData.content) {
+      return;
+    }
+
+    if (
+      pageData.relativePath === 'index.md' ||
+      pageData.frontmatter.layout === 'home'
+    ) {
+      return;
+    }
+
+    const lines = (pageData.content as string)
+      .split('\n')
+      .filter((line: string) => line.trim() !== '');
+
+    if (lines.length >= 2 && !pageData.frontmatter.description) {
+      const desc = lines[1].replace(/[#*`]/g, '').trim();
+      pageData.frontmatter.description = desc;
+    }
+  },
+
+  lastUpdated: true,
+  locales: {
+    root: {
+      label: 'English (US)',
+      lang: 'en-US',
+      ...enUs,
     },
-    themeConfig: {
-      // https://vitepress.dev/reference/default-theme-config
-      search: {
-        provider: 'algolia',
-        options: {
-          appId: '7KAJIG4S68',
-          apiKey: '113fdb221f76b5367d9bd85a868f1958',
-          indexName: 'Yoush',
-          locales: {
-            root: enUsSearch,
-            id: idIdSearch,
-          },
+    id: {
+      label: 'Bahasa Indonesia',
+      lang: 'id-ID',
+      link: '/id/',
+      dir: 'id',
+      ...idId,
+    },
+  },
+  themeConfig: {
+    // https://vitepress.dev/reference/default-theme-config
+    search: {
+      provider: 'algolia',
+      options: {
+        appId: '7KAJIG4S68',
+        apiKey: '113fdb221f76b5367d9bd85a868f1958',
+        indexName: 'Yoush',
+        locales: {
+          root: enUsSearch,
+          id: idIdSearch,
         },
       },
-
-      socialLinks: [
-        { icon: 'github', link: 'https://github.com/soteenstudio/lightvm' },
-        { icon: 'instagram', link: 'https://instagram.com/soteenstudio' },
-        {
-          icon: {
-            svg: donationSvg,
-          },
-          link: 'https://trakteer.id/soteen_studio/tip?quantity=1',
-          ariaLabel: 'trakteer',
-        },
-      ],
     },
-  }),
-);
+
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/soteenstudio/lightvm' },
+      { icon: 'instagram', link: 'https://instagram.com/soteenstudio' },
+      {
+        icon: {
+          svg: donationSvg,
+        },
+        link: 'https://trakteer.id/soteen_studio/tip?quantity=1',
+        ariaLabel: 'trakteer',
+      },
+    ],
+  },
+});

@@ -1,3 +1,5 @@
+import { sidebarMathematics } from './sidebarMathematics.js';
+
 export const sidebarInstructionSet = {
   text: 'Instruction Set',
   collapsed: false,
@@ -6,10 +8,7 @@ export const sidebarInstructionSet = {
       text: 'Stack & Variable Management',
       link: '/api-reference/instruction-set/stack-variable-management',
     },
-    {
-      text: 'Arithmetic & Logic',
-      link: '/api-reference/instruction-set/arithmetic-logic',
-    },
+    sidebarMathematics,
     {
       text: 'Control Flow & Function',
       link: '/api-reference/instruction-set/control-flow-function',
