@@ -687,7 +687,7 @@ mod tests {
       }),
       ..Default::default()
     });
-    let result = optimizer_vm.optimize_bytecode_internal(json!([["noop"]]));
+    let result = optimizer_vm.optimize_bytecode_internal(json!([["stop"]]));
     assert!(result.is_ok());
   }
   #[test]
