@@ -397,9 +397,7 @@ impl LightVMTools {
   }
   pub fn bench(&self, name: &str) -> Result<Benchmark, VMError> {
     if !self.can_debug {
-      return Err(VMError::SystemError(
-        "Capability Debug not granted".into(),
-      ));
+      return Err(VMError::SystemError("Capability Debug not granted".into()));
     }
     Ok(Benchmark::new(name))
   }
