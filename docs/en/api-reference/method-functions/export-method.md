@@ -1,4 +1,4 @@
-# Export Method <Badge type="warning" text="Nightly" />
+# Export Method <Badge type="warning" text="Preview" />
 The `export` method allows you to extract specific functions or logic registered within the VM's environment, exposing them to your host application. This effectively bridges the gap between the VM's isolated execution space and your primary code.
 
 ## Using TypeScript
