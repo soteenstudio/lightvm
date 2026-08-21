@@ -289,6 +289,10 @@ impl WasmLightVM {
       backtrace: self.inner.backtrace,
       explain: self.inner.explain,
       hint: self.inner.hint,
+      can_observe: self.inner.caps.contains(&Capability::Observe),
+      can_control: self.inner.caps.contains(&Capability::Control),
+      can_debug: self.inner.caps.contains(&Capability::Debug),
+      can_unsafe: self.inner.caps.contains(&Capability::Unsafe),
     }
   }
 }
@@ -298,13 +302,19 @@ pub struct WasmLightVMTools {
   pub backtrace: bool,
   pub explain: bool,
   pub hint: bool,
+  pub can_observe: bool,
+  pub can_control: bool,
+  pub can_debug: bool,
+  pub can_unsafe: bool,
 }
 #[wasm_bindgen(js_class = "LightVMTools")]
 impl WasmLightVMTools {
   #[wasm_bindgen(js_name = "optimizeBytecode")]
   pub fn optimize_bytecode(&self, bytecode: JsValue) -> Result<JsValue, JsValue> {
+    use crate::types::capability::Capability;
     use crate::types::security_config::SecurityConfig;
     use crate::utils::vmerror::VMError;
+    use std::collections::HashSet;
     let input_json: serde_json::Value = serde_wasm_bindgen::from_value(bytecode).map_err(|e| {
       wasm_bindgen::JsValue::from(js_sys::Error::new(&format!(
         "Invalid input structure: {}",
@@ -318,6 +328,22 @@ impl WasmLightVMTools {
       self.explain,
       self.hint,
     );
+    vm_instance.caps = {
+      let mut caps = HashSet::new();
+      if self.can_observe {
+        caps.insert(Capability::Observe);
+      }
+      if self.can_control {
+        caps.insert(Capability::Control);
+      }
+      if self.can_debug {
+        caps.insert(Capability::Debug);
+      }
+      if self.can_unsafe {
+        caps.insert(Capability::Unsafe);
+      }
+      caps
+    };
     let opt_str = vm_instance
       .optimize_bytecode_internal(input_json)
       .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))?;
