@@ -30,5 +30,5 @@ Konfigurasi benchmark menerima parameter berikut:
 :::
 
 ::: info
-**Kapabilitas yang Dibutuhkan**: tidak ada kapabilitas khusus
+**Kapabilitas yang Dibutuhkan**: `Debug`
 :::

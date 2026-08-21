@@ -22,7 +22,7 @@ In **Rust**, you can optimize your bytecode either as raw strings or by leveragi
 :::
 
 ::: info
-**Capability Required**: no specific capability
+**Capability Required**: `Control`
 :::
 
 ::: tip

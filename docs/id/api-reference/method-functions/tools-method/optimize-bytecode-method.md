@@ -22,7 +22,7 @@ Dalam **Rust**, Anda dapat mengoptimalkan bytecode Anda baik sebagai string ment
 :::
 
 ::: info
-**Kapabilitas yang Dibutuhkan**: tidak ada kapabilitas khusus
+**Kapabilitas yang Dibutuhkan**: `Control`
 :::
 
 ::: tip

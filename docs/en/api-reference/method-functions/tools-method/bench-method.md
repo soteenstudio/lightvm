@@ -30,5 +30,5 @@ The benchmark configuration accepts the following parameters:
 :::
 
 ::: info
-**Capability Required**: no specific capability
+**Capability Required**: `Debug`
 :::
