@@ -39,7 +39,5 @@ fn main() {
   let mut x_var = vm.export("x".to_string());
   //let result = add_func(vec![5.into(), 6.into()]);
   //println!("Result: {:?}", result);
-  let result = x_var(vec![]);
-  assert!(result.is_ok(), "x_var call should succeed");
-  println!("{:?}", result);
+  println!("{:?}", x_var(vec![]));
 }

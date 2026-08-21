@@ -24,6 +24,7 @@ use crate::types::{
   vmstate::VmState,
 };
 use crate::utils::vmerror::VMError;
+use crate::vm::run::run;
 use ahash::AHashMap;
 use regex::Regex;
 use smol_str::SmolStr;
@@ -208,7 +209,6 @@ impl LightVM {
       self.bytecode = crate::utils::loader::parse_ltc(&raw_code);
     }
     self.index_metadata();
-    self.last_run_options = None;
     Ok(())
   }
   pub fn run_internal(&mut self, _options: Option<RunOptions>) -> Result<String, VMError> {
@@ -226,6 +226,12 @@ impl LightVM {
     }
     self.state = VmState::Running;
     self.emit(VmEvent::Tick, serde_json::json!({ "state": "start" }));
+    let bytecode_json = serde_json::to_string(&self.bytecode).map_err(|e| {
+      VMError::SystemError(smol_str::SmolStr::new(format!(
+        "Failed to serialize bytecode: {}",
+        e
+      )))
+    })?;
     let options = RunOptions {
       entry: None,
       args: Vec::new(),
@@ -247,19 +253,10 @@ impl LightVM {
       symbol_table: None,
       vars: None,
     };
-    let result = crate::vm::execute::execute(
-      self.bytecode.clone(),
-      Some(options.clone()),
-      Some(self.should_halt.clone()),
-    );
-    if let Ok((_, _)) = result {
-      self.last_run_options = Some(options);
-    }
+    let result = crate::vm::run::run(&bytecode_json, Some(options.clone()));
+    self.last_run_options = Some(options);
     self.state = VmState::Idle;
-    Ok(
-      serde_json::to_string(&result.map(|(v, _)| v).unwrap_or(Value::Undefined))
-        .unwrap_or_default(),
-    )
+    Ok(result)
   }
   #[inline]
   pub fn compile_internal(&mut self, config: CompileConfig) -> Result<(), VMError> {
@@ -374,6 +371,9 @@ impl LightVM {
     let args: Vec<Value> = serde_json::from_str(&json_args)
       .map_err(|e| VMError::SystemError(SmolStr::new(format!("Invalid args: {}", e))))?;
     self.state = VmState::Running;
+    let bytecode_str = serde_json::to_string(&self.bytecode).map_err(|e| {
+      VMError::SystemError(SmolStr::new(format!("Failed to stringify bytecode: {}", e)))
+    })?;
     let options = RunOptions {
       entry: Some(fn_meta.start),
       args,
@@ -395,20 +395,8 @@ impl LightVM {
       symbol_table: None,
       vars: None,
     };
-    let result = crate::vm::execute::execute(
-      self.bytecode.clone(),
-      Some(options.clone()),
-      Some(self.should_halt.clone()),
-    );
-    if let Ok((ref val, _)) = result {
-      self.last_run_options = Some(options);
-      self.state = VmState::Idle;
-      return serde_json::to_string(val).map_err(|e| {
-        VMError::SystemError(SmolStr::new(format!("Failed to stringify result: {}", e)))
-      });
-    }
-    self.state = VmState::Idle;
-    Err(result.err().unwrap())
+    let result_run = run(&bytecode_str.clone(), Some(options));
+    Ok(result_run)
   }
   pub fn var_exported_internal(&mut self, name: String) -> Result<String, VMError> {
     self.require(Capability::Observe)?;
@@ -432,6 +420,8 @@ impl LightVM {
     } else {
       Value::Undefined
     };
+    println!("{:?}", val);
+    println!("{:?}", self.last_run_options);
     serde_json::to_string(&val).map_err(|e| {
       VMError::SystemError(SmolStr::new(format!("Failed to stringify variable: {}", e)))
     })
@@ -590,7 +580,6 @@ mod tests {
       functions: AHashMap::new(),
       exported: HashSet::new(),
       _imports: AHashMap::new(),
-      last_run_options: None,
       max_io: default_security.max_io,
       max_import: default_security.max_import,
       max_alloc: default_security.max_alloc,
@@ -605,7 +594,6 @@ mod tests {
       backtrace: false,
       explain: false,
       hint: true,
-      last_run_options: None,
     }
   }
   #[test]

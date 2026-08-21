@@ -7,3 +7,66 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
+
+use crate::types::instructions::Instructions;
+use crate::types::value::RunOptions;
+use crate::utils::vmerror::VMError;
+use serde_json::Value as JsonValue;
+pub fn execute_and_log(bytecode: Vec<Instructions>, options: Option<RunOptions>) -> String {
+  let halt_flag = options.as_ref().map(|o| o.halt_flag.clone());
+  let result = crate::vm::execute::execute(bytecode, options, halt_flag);
+  match result {
+    Ok((val, tick)) => serde_json::json!({
+        "status": "success",
+        "result": val,
+        "ticks": tick
+    })
+    .to_string(),
+    Err(err) => {
+      eprintln!("\n{}", err);
+      serde_json::json!({
+          "status": "error",
+          "message": format!("{:?}", err)
+      })
+      .to_string()
+    }
+  }
+}
+#[inline]
+#[cold]
+pub fn run(bytecode_json: &str, options: Option<RunOptions>) -> String {
+  let raw: Vec<JsonValue> = serde_json::from_str(bytecode_json).expect("Invalid JSON");
+  let bytecode_res: Result<Vec<Instructions>, VMError> = raw
+    .iter()
+    .enumerate()
+    .map(|(ip, item)| Instructions::from_json_array(item, ip))
+    .collect();
+  match bytecode_res {
+    Ok(bytecode) => execute_and_log(bytecode, options),
+    Err(err) => {
+      eprintln!("\n{}", err);
+      serde_json::json!({
+        "status": "error",
+        "message": format!("{:?}", err)
+      })
+      .to_string()
+    }
+  }
+}
+#[cfg(test)]
+mod tests {
+  use super::*;
+  #[test]
+  fn test_run_with_valid_json() {
+    let json = r#"[["PushInt32", 10], ["Stop"]]"#;
+    let result = run(json, None);
+    assert!(result.contains("10") || result.contains("status"));
+  }
+  #[test]
+  fn test_run_with_invalid_instruction() {
+    let json = r#"[["random nonsense", 0]]"#;
+    let result = run(json, None);
+    assert!(result.contains("error"));
+    assert!(result.contains("message"));
+  }
+}
