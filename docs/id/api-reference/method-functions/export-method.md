@@ -1,4 +1,4 @@
-# Metode Export <Badge type="warning" text="Nightly" />
+# Metode Export <Badge type="warning" text="Preview" />
 Metode `export` memungkinkan Anda untuk mengekstrak fungsi atau logika spesifik yang terdaftar di dalam lingkungan VM, dan mengeksposnya ke aplikasi host Anda. Ini secara efektif menjembatani kesenjangan antara VM dan aplikasi host Anda. 
 
 ## Menggunakan TypeScript
