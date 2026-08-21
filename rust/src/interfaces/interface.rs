@@ -701,7 +701,7 @@ mod tests {
   #[test]
   fn optimize_bytecode_internal_succeeds_with_control_capability() {
     let mut vm = make_vm(vec![Capability::Control]);
-    let bytecode = serde_json::json!([["noop"]]);
+    let bytecode = serde_json::json!([["stop"]]);
     assert!(vm.optimize_bytecode_internal(bytecode).is_ok());
   }
   #[test]
