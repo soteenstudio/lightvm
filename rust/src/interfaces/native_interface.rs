@@ -271,7 +271,6 @@ impl LightVM {
     let target_name = name.clone();
     let is_function = self.functions.contains_key(target_name.as_str());
     Box::new(move |args| {
-      let smol_target = SmolStr::new(target_name.clone());
       if is_function {
         let json_args: Result<Vec<serde_json::Value>, _> =
           args.iter().map(serde_json::to_value).collect();
