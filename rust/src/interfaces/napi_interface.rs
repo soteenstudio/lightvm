@@ -347,6 +347,7 @@ impl NodeLightVM {
   }
   #[napi(js_name = "bench")]
   pub fn napi_bench(
+    &self,
     name: String,
     setup: Function<(), serde_json::Value>,
     f: Function<serde_json::Value, serde_json::Value>,
@@ -368,7 +369,10 @@ impl NodeLightVM {
         ));
       }
     }
-    let mut bench_obj = LightVM::bench(&name);
+    let mut bench_obj = self
+      .inner
+      .bench(&name)
+      .map_err(|e| Error::from_reason(e.to_string()))?;
     if let Some(b) = bytes {
       bench_obj = bench_obj.bytes(b as usize);
     }
@@ -410,6 +414,7 @@ impl NodeLightVM {
   }
   #[napi(js_name = "optimizeBytecode")]
   pub fn napi_optimize_bytecode(
+    &self,
     bytecode: serde_json::Value,
     max_io: Option<u32>,
     max_import: Option<u32>,
@@ -472,6 +477,17 @@ impl NodeLightVM {
       is_explain,
       is_hint,
     );
+    vm_instance.caps = self
+      .inner
+      .caps
+      .iter()
+      .filter_map(|cap| match cap {
+        Capability::Observe => Some(Capability::Observe),
+        Capability::Control => Some(Capability::Control),
+        Capability::Debug => Some(Capability::Debug),
+        Capability::Unsafe => Some(Capability::Unsafe),
+      })
+      .collect();
     let opt_str = vm_instance
       .optimize_bytecode_internal(input_json)
       .map_err(|e| Error::from_reason(e.to_string()))?;
