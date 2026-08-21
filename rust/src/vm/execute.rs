@@ -38,7 +38,7 @@ fn handle_unused_opcodes() {}
 #[cold]
 pub fn execute(
   mut bytecode: Vec<Instructions>,
-  options: Option<RunOptions>,
+  mut options: Option<RunOptions>,
   halt_flag: Option<Arc<AtomicBool>>,
 ) -> Result<(Value, u64), VMError> {
   let mut last_return = Value::Undefined;
@@ -293,6 +293,10 @@ pub fn execute(
       }
     }
     ip += 1;
+  }
+  if let Some(ref mut opts) = options {
+    opts.symbol_table = Some(symbol_table);
+    opts.vars = Some(vars);
   }
   if options.as_ref().is_some_and(|o| o.capture_return) {
     if let Value::Undefined = last_return

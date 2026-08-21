@@ -60,6 +60,10 @@ pub struct RunOptions {
   pub imports: AHashMap<SmolStr, Value>,
   pub halt_flag: Arc<AtomicBool>,
   pub security_config: SecurityConfig,
+  #[serde(skip)]
+  pub symbol_table: Option<AHashMap<SmolStr, usize>>,
+  #[serde(skip)]
+  pub vars: Option<Vec<Value>>,
 }
 impl Value {
   #[inline(always)]

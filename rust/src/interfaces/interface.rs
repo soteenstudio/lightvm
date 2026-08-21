@@ -45,6 +45,7 @@ pub struct LightVM {
   pub functions: AHashMap<SmolStr, FuncMetadata>,
   pub exported: HashSet<SmolStr>,
   pub _imports: AHashMap<SmolStr, Value>,
+  pub last_run_options: Option<RunOptions>,
   pub max_io: usize,
   pub max_import: usize,
   pub max_alloc: usize,
@@ -86,6 +87,7 @@ impl LightVM {
       functions: AHashMap::new(),
       exported: HashSet::new(),
       _imports: AHashMap::new(),
+      last_run_options: None,
       max_io: security_config.max_io,
       max_import: security_config.max_import,
       max_alloc: security_config.max_alloc,
@@ -248,8 +250,11 @@ impl LightVM {
         unsafe_mode: self.unsafe_mode,
         time_budget: self.time_budget.clone(),
       },
+      symbol_table: None,
+      vars: None,
     };
-    let result = crate::vm::run::run(&bytecode_json, Some(options));
+    let result = crate::vm::run::run(&bytecode_json, Some(options.clone()));
+    self.last_run_options = Some(options);
     self.state = VmState::Idle;
     Ok(result)
   }
@@ -387,9 +392,39 @@ impl LightVM {
         unsafe_mode: self.unsafe_mode,
         time_budget: self.time_budget.clone(),
       },
+      symbol_table: None,
+      vars: None,
     };
     let result_run = run(&bytecode_str.clone(), Some(options));
     Ok(result_run)
+  }
+  pub fn var_exported_internal(&mut self, name: String) -> Result<String, VMError> {
+    self.require(Capability::Observe)?;
+    let smol_name = SmolStr::new(name);
+    if !self.exported.contains(&smol_name) {
+      return Err(VMError::InvalidOpcode {
+        ip: 0,
+        code: SmolStr::new(format!("NOT_EXPORTED:{}", smol_name)),
+      });
+    }
+    let val = if let Some(ref opts) = self.last_run_options {
+      if let (Some(sym_table), Some(vars)) = (&opts.symbol_table, &opts.vars) {
+        if let Some(&idx) = sym_table.get(&smol_name) {
+          vars.get(idx).cloned().unwrap_or(Value::Undefined)
+        } else {
+          Value::Undefined
+        }
+      } else {
+        Value::Undefined
+      }
+    } else {
+      Value::Undefined
+    };
+    println!("{:?}", val);
+    println!("{:?}", self.last_run_options);
+    serde_json::to_string(&val).map_err(|e| {
+      VMError::SystemError(SmolStr::new(format!("Failed to stringify variable: {}", e)))
+    })
   }
   #[inline]
   pub fn get_outputs_internal(&mut self) -> Result<Vec<String>, VMError> {
