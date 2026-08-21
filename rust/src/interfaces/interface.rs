@@ -408,6 +408,7 @@ impl LightVM {
   }
   #[inline]
   pub fn bench(name: &str) -> Benchmark {
+    self.require(Capability::Debug)?;
     Benchmark::new(name)
   }
   pub fn optimize_bytecode_internal(
@@ -419,6 +420,7 @@ impl LightVM {
     if self.backtrace {
       crate::utils::vmerror::get_backtrace::capture_backtrace();
     }
+    self.require(Capability::Control)?;
     let json_str = bytecode_raw.to_string();
     if !self.nightly && has_nightly_opcodes(&json_str) {
       let mut nightly_ip = 0;
