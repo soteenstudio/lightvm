@@ -377,6 +377,8 @@ impl LightVM {
       backtrace: self.backtrace,
       explain: self.explain,
       hint: self.hint,
+      can_control: self.caps.contains(&Capability::Control),
+      can_debug: self.caps.contains(&Capability::Debug),
     }
   }
 }
@@ -385,14 +387,19 @@ pub struct LightVMTools {
   pub backtrace: bool,
   pub explain: bool,
   pub hint: bool,
+  pub can_control: bool,
+  pub can_debug: bool,
 }
 #[cfg(not(feature = "node"))]
 impl LightVMTools {
   pub fn black_box<T>(&self, value: T) -> T {
     LightVM::black_box(value)
   }
-  pub fn bench(&self, name: &str) -> Benchmark {
-    LightVM::bench(name)
+  pub fn bench(&self, name: &str) -> Result<Benchmark, VMError> {
+    if !self.can_debug {
+      return Err(VMError::SystemError("Capability Debug not granted".into()));
+    }
+    Ok(Benchmark::new(name))
   }
   /// Optimizes raw JSON bytecode and serializes it to a string
   ///
@@ -415,6 +422,16 @@ impl LightVMTools {
       });
     }
     let config = crate::types::vmconfig::VmConfig {
+      caps: {
+        let mut caps = Vec::new();
+        if self.can_control {
+          caps.push(Capability::Control);
+        }
+        if self.can_debug {
+          caps.push(Capability::Debug);
+        }
+        caps
+      },
       runtime_config: Some(RuntimeConfig {
         nightly: self.nightly,
       }),
@@ -587,6 +604,91 @@ mod tests {
     };
     let mut vm = LightVM::new(config);
     let _tools = vm.tools();
+  }
+  #[test]
+  fn tools_capture_source_capability_state() {
+    let config = VmConfig {
+      caps: vec![Capability::Control],
+      ..Default::default()
+    };
+    let mut vm = LightVM::new(config);
+    let tools = vm.tools();
+    assert!(tools.can_control);
+    assert!(!tools.can_debug);
+  }
+  #[test]
+  fn tools_bench_requires_debug_capability() {
+    let config = VmConfig {
+      caps: vec![Capability::Observe],
+      ..Default::default()
+    };
+    let mut vm = LightVM::new(config);
+    let tools = vm.tools();
+    assert!(tools.bench("bench").is_err());
+  }
+  #[test]
+  fn tools_bench_succeeds_with_debug_capability() {
+    let config = VmConfig {
+      caps: vec![Capability::Debug],
+      ..Default::default()
+    };
+    let mut vm = LightVM::new(config);
+    let tools = vm.tools();
+    assert!(tools.bench("bench").is_ok());
+  }
+  #[test]
+  fn tools_optimizer_vm_preserves_denied_control_decision() {
+    let config = VmConfig {
+      caps: vec![Capability::Observe],
+      ..Default::default()
+    };
+    let mut vm = LightVM::new(config);
+    let tools = vm.tools();
+    let mut optimizer_vm = LightVM::new(VmConfig {
+      caps: if tools.can_control {
+        vec![Capability::Control]
+      } else {
+        vec![Capability::Observe]
+      },
+      runtime_config: Some(RuntimeConfig {
+        nightly: tools.nightly,
+      }),
+      error_options: Some(ErrorOptions {
+        backtrace: tools.backtrace,
+        explain: tools.explain,
+        hint: tools.hint,
+      }),
+      ..Default::default()
+    });
+    let result = optimizer_vm.optimize_bytecode_internal(json!([["noop"]]));
+    assert!(result.is_err());
+  }
+  #[test]
+  fn tools_optimizer_vm_preserves_allowed_control_decision() {
+    let config = VmConfig {
+      caps: vec![Capability::Control],
+      ..Default::default()
+    };
+    let mut vm = LightVM::new(config);
+    let tools = vm.tools();
+    let mut optimizer_vm = LightVM::new(VmConfig {
+      caps: if tools.can_control {
+        vec![Capability::Control]
+      } else {
+        vec![Capability::Observe]
+      },
+      runtime_config: Some(RuntimeConfig {
+        nightly: tools.nightly,
+      }),
+      error_options: Some(ErrorOptions {
+        backtrace: tools.backtrace,
+        explain: tools.explain,
+        hint: tools.hint,
+      }),
+      ..Default::default()
+    });
+    let result = optimizer_vm.optimize_bytecode_internal(json!([["stop"]]));
+    assert!(result.is_ok());
   }
   #[test]
   fn embedded_returns_object() {

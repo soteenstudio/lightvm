@@ -15,10 +15,6 @@ import { resolve } from "node:path";
 
 const { loadNapi } = await importVM();
 
-// Set by scripts/test/test-ts.js to select which fallback scenario is
-// currently staged on disk for this run: 'priority' (platform package +
-// local fallback both present), 'fallback' (local fallback only), or
-// 'reject-invalid-sig' (local fallback only, missing/invalid .sig).
 const scenario = process.env.LIGHTVM_TEST_SCENARIO;
 
 function runLoadNapiInSubprocess() {
@@ -46,9 +42,7 @@ describe("loadNapi Utility", () => {
 
   if (scenario === "priority") {
     test("loadNapi: should prioritize the platform package over the local lightvm-test fallback", () => {
-      // The local fallback staged for this scenario is intentionally
-      // corrupt, so a successful load proves the platform package (which
-      // resolves via require.resolve) was used instead of the fallback.
+      
       const native = loadNapi();
       expect(native).toBeDefined();
     });
@@ -63,8 +57,7 @@ describe("loadNapi Utility", () => {
 
   if (scenario === "reject-invalid-sig") {
     test("loadNapi: should reject the local fallback binary when its signature is missing or invalid", () => {
-      // loadNapi() calls process.exit() on verification failure, so it must
-      // be exercised in a subprocess rather than in-process.
+      
       const result = runLoadNapiInSubprocess();
       expect(result.status).toBe(70);
     });

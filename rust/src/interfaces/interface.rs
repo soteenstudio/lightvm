@@ -407,13 +407,15 @@ impl LightVM {
     std::hint::black_box(value)
   }
   #[inline]
-  pub fn bench(name: &str) -> Benchmark {
-    Benchmark::new(name)
+  pub fn bench(&self, name: &str) -> Result<Benchmark, VMError> {
+    self.require(Capability::Debug)?;
+    Ok(Benchmark::new(name))
   }
   pub fn optimize_bytecode_internal(
     &mut self,
     bytecode_raw: serde_json::Value,
   ) -> Result<String, VMError> {
+    self.require(Capability::Control)?;
     self.set_mode(self.backtrace, self.explain, self.hint);
     crate::utils::vmerror::get_backtrace::clear_backtrace();
     if self.backtrace {
@@ -685,6 +687,45 @@ mod tests {
     let mut vm = make_vm(vec![Capability::Control]);
     let result = vm.run_internal(None);
     assert!(result.is_err());
+  }
+  #[test]
+  fn bench_succeeds_with_debug_capability() {
+    let vm = make_vm(vec![Capability::Debug]);
+    assert!(vm.bench("debug-bench").is_ok());
+  }
+  #[test]
+  fn bench_fails_without_debug_capability() {
+    let vm = make_vm(vec![Capability::Observe]);
+    assert!(vm.bench("no-debug-bench").is_err());
+  }
+  #[test]
+  fn optimize_bytecode_internal_succeeds_with_control_capability() {
+    let mut vm = make_vm(vec![Capability::Control]);
+    let bytecode = serde_json::json!([["stop"]]);
+    assert!(vm.optimize_bytecode_internal(bytecode).is_ok());
+  }
+  #[test]
+  fn optimize_bytecode_internal_fails_without_control_capability() {
+    let mut vm = make_vm(vec![Capability::Observe]);
+    let bytecode = serde_json::json!([["noop"]]);
+    assert!(vm.optimize_bytecode_internal(bytecode).is_err());
+  }
+  #[test]
+  fn optimize_bytecode_internal_denied_does_not_change_mode_or_state() {
+    use crate::utils::vmerror::config::{get_thread_or_global_config, set_thread_error_config};
+    let mut vm = make_vm(vec![Capability::Observe]);
+    vm.backtrace = true;
+    vm.explain = true;
+    vm.hint = false;
+    set_thread_error_config(false, false, true);
+    let before = get_thread_or_global_config();
+    let result = vm.optimize_bytecode_internal(serde_json::json!([["noop"]]));
+    let after = get_thread_or_global_config();
+    assert!(result.is_err());
+    assert_eq!(vm.state, VmState::Idle);
+    assert_eq!(before.backtrace, after.backtrace);
+    assert_eq!(before.explain, after.explain);
+    assert_eq!(before.hint, after.hint);
   }
   #[test]
   fn compile_internal_catches_panicking_listener_and_restores_state() {
