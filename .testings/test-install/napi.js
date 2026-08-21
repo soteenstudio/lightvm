@@ -1,4 +1,4 @@
-const { LightVM, Capability } = require('lightvm');
+import { LightVM, Capability } from 'lightvm';
 
 function main() {
   const vm = new LightVM({

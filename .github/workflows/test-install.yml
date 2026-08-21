@@ -63,7 +63,7 @@ jobs:
           uses: actions/checkout@v4
 
         - name: Setup Environment / Install Package
-          run: npm i lightvm
+          run: npm install lightvm@nightly
             
         - name: Verify Installation
           run: npm run test-install:ts
