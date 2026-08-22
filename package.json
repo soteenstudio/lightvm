@@ -1,5 +1,5 @@
 {
-  "name": "lightvm",
+  "name": "lightvm-test",
   "version": "0.1.0-alpha.9-nightly.20260820.939b5ad",
   "description": "A capability-based virtual machine designed for secure, predictable, and optimized bytecode execution.",
   "author": "SoTeen Studio",
