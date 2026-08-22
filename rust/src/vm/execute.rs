@@ -325,7 +325,8 @@ fn test_execute_basic_math_and_return() {
     },
     ..Default::default()
   };
-  let result = execute(bytecode, Some(options), Some(halt_flag));
+  let mut options = Some(options);
+  let result = execute(bytecode, &mut options, Some(halt_flag));
   assert!(result.is_ok());
   let (val, _tick) = result.unwrap();
   assert_eq!(val, Value::Int32(15));
@@ -336,7 +337,7 @@ fn test_halt_flag_behavior() {
   let halt_flag = Arc::new(AtomicBool::new(false));
   let flag_clone = halt_flag.clone();
   flag_clone.store(true, std::sync::atomic::Ordering::Relaxed);
-  let result = execute(bytecode, None, Some(halt_flag));
+  let result = execute(bytecode, &mut None, Some(halt_flag));
   assert!(result.is_ok());
   let (val, _tick) = result.unwrap();
   assert_eq!(val, Value::Undefined);
