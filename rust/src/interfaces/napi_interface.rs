@@ -330,14 +330,19 @@ impl NodeLightVM {
       let parsed: serde_json::Value = serde_json::from_str(&raw_result)
         .map_err(|e| Error::from_reason(format!("Failed to parse export return: {}", e)))?;
       if parsed["status"] == "success" {
-        let result_json = parsed
+        let result_payload = parsed
           .get("result")
           .cloned()
           .unwrap_or(serde_json::Value::Null);
-        if result_json == serde_json::Value::String("Undefined".to_string()) {
-          Ok(serde_json::Value::Null)
+        if let Some(obj) = result_payload.as_object() {
+          let defined = obj.get("defined").and_then(|v| v.as_bool()).unwrap_or(true);
+          if defined {
+            Ok(obj.get("value").cloned().unwrap_or(serde_json::Value::Null))
+          } else {
+            Ok(serde_json::Value::Null)
+          }
         } else {
-          Ok(result_json)
+          Ok(result_payload)
         }
       } else {
         Err(Error::from_reason(
@@ -354,8 +359,13 @@ impl NodeLightVM {
         .map_err(|e| Error::from_reason(e.to_string()))?;
       let parsed: serde_json::Value = serde_json::from_str(&raw_result)
         .map_err(|e| Error::from_reason(format!("Failed to parse variable: {}", e)))?;
-      if parsed.is_null() || parsed == serde_json::Value::String("Undefined".to_string()) {
-        Ok(serde_json::Value::Null)
+      if let Some(obj) = parsed.as_object() {
+        let defined = obj.get("defined").and_then(|v| v.as_bool()).unwrap_or(true);
+        if defined {
+          Ok(obj.get("value").cloned().unwrap_or(serde_json::Value::Null))
+        } else {
+          Ok(serde_json::Value::Null)
+        }
       } else {
         Ok(parsed)
       }

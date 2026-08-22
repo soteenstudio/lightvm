@@ -76,237 +76,243 @@ pub fn execute(
   let mut runtime_jump_count = 0usize;
   let mut runtime_alloc_count = 0usize;
   let mut runtime_import_count = 0usize;
-  while ip < bytecode_len {
-    gas_monitor.check_tick(tick)?;
-    if tick.is_multiple_of(threshold)
-      && let Some(ref flag) = halt_flag
-      && flag.load(Ordering::Relaxed)
-    {
-      return Ok((Value::Undefined, tick));
+
+  let execution_result = (|| -> Result<(Value, u64), VMError> {
+    while ip < bytecode_len {
+      gas_monitor.check_tick(tick)?;
+      if tick.is_multiple_of(threshold)
+        && let Some(ref flag) = halt_flag
+        && flag.load(Ordering::Relaxed)
+      {
+        return Ok((Value::Undefined, tick));
+      }
+      tick += 1;
+      unsafe { std::hint::assert_unchecked(ip < bytecode_len) }
+      debug_assert!(
+        ip < bytecode_len,
+        "IP out of bounds! IP: {}, Len: {}",
+        ip,
+        bytecode_len
+      );
+      let instr = unsafe { &*bytecode_ptr.add(ip) };
+      match instr {
+        Instructions::PushInt16(_)
+        | Instructions::PushInt32(_)
+        | Instructions::PushInt64(_)
+        | Instructions::PushInt128(_)
+        | Instructions::PushFloat16(_)
+        | Instructions::PushFloat32(_)
+        | Instructions::PushFloat64(_)
+        | Instructions::PushString(_)
+        | Instructions::PushArray(_)
+        | Instructions::PushBool(_)
+        | Instructions::PushObject(_)
+        | Instructions::PushUndefined
+        | Instructions::PushNull
+        | Instructions::PushNaN
+        | Instructions::Push(_)
+        | Instructions::ValIdx(_)
+        | Instructions::SetIdx(_)
+        | Instructions::GetIdx(_)
+        | Instructions::Concat
+        | Instructions::Dup
+        | Instructions::Swap
+        | Instructions::Truncate => {
+          stack_dispatch(instr, &mut stack, &mut vars, ip)?;
+        }
+        Instructions::Import(module_name, alias_idx) => {
+          if !security_config.unsafe_mode {
+            runtime_import_count += 1;
+            if runtime_import_count > security_config.max_import {
+              return Err(VMError::ImportLimitReached { ip });
+            }
+          }
+          import_func(&mut vars, options, module_name, *alias_idx, ip)?;
+        }
+        Instructions::Add(_)
+        | Instructions::Sub(_)
+        | Instructions::Mul(_)
+        | Instructions::Div(_)
+        | Instructions::Mod(_)
+        | Instructions::Shl(_)
+        | Instructions::Shr(_)
+        | Instructions::Ror(_)
+        | Instructions::Rol(_)
+        | Instructions::Pow(_)
+        | Instructions::Powi(_)
+        | Instructions::Powf(_)
+        | Instructions::Sin(_)
+        | Instructions::Cos(_)
+        | Instructions::Tan(_)
+        | Instructions::Asin(_)
+        | Instructions::Acos(_)
+        | Instructions::Atan(_)
+        | Instructions::Atan2(_)
+        | Instructions::Sinh(_)
+        | Instructions::Cosh(_)
+        | Instructions::Tanh(_)
+        | Instructions::Asinh(_)
+        | Instructions::Acosh(_)
+        | Instructions::Atanh(_)
+        | Instructions::Sqrt(_)
+        | Instructions::Cbrt(_)
+        | Instructions::Neg(_)
+        | Instructions::Ln(_)
+        | Instructions::Exp(_)
+        | Instructions::Log2(_)
+        | Instructions::Log10(_)
+        | Instructions::IncIdx(_, _)
+        | Instructions::DecIdx(_, _) => {
+          math_dispatch(instr, &mut stack, &mut vars, ip)?;
+        }
+        Instructions::Gt(_)
+        | Instructions::Lt(_)
+        | Instructions::Ge(_)
+        | Instructions::Le(_)
+        | Instructions::Eq(_)
+        | Instructions::Neq(_) => {
+          comparison_dispatch(instr, &mut stack, ip)?;
+        }
+        Instructions::And | Instructions::Or | Instructions::Xor | Instructions::Not => {
+          logic_dispatch(instr, &mut stack, ip)?;
+        }
+        Instructions::IfFalse(_) | Instructions::Jump(_) | Instructions::Break(_) => {
+          if !security_config.unsafe_mode {
+            runtime_jump_count += 1;
+            if runtime_jump_count > security_config.max_jump {
+              return Err(VMError::JumpLimitExceeded { ip });
+            }
+          }
+          match control_flow_dispatch(
+            instr,
+            &mut stack,
+            &mut vars,
+            &mut _call_stack,
+            &mut last_return,
+            &functions,
+            &symbol_table,
+            &mut ip,
+            bytecode_len,
+          )? {
+            ControlFlowSignal::Continue => continue,
+            ControlFlowSignal::Break => break,
+            ControlFlowSignal::None => {}
+          }
+        }
+        Instructions::Call(_, _) => {
+          if !security_config.unsafe_mode {
+            runtime_call_count += 1;
+            if runtime_call_count > security_config.max_call {
+              return Err(VMError::CallLimitExceeded { ip });
+            }
+          }
+          match control_flow_dispatch(
+            instr,
+            &mut stack,
+            &mut vars,
+            &mut _call_stack,
+            &mut last_return,
+            &functions,
+            &symbol_table,
+            &mut ip,
+            bytecode_len,
+          )? {
+            ControlFlowSignal::Continue => continue,
+            ControlFlowSignal::Break => break,
+            ControlFlowSignal::None => {}
+          }
+        }
+        Instructions::Return
+        | Instructions::Stop
+        | Instructions::Instantiate(_, _)
+        | Instructions::Func(_, _, _, _, _) => {
+          match control_flow_dispatch(
+            instr,
+            &mut stack,
+            &mut vars,
+            &mut _call_stack,
+            &mut last_return,
+            &functions,
+            &symbol_table,
+            &mut ip,
+            bytecode_len,
+          )? {
+            ControlFlowSignal::Continue => continue,
+            ControlFlowSignal::Break => break,
+            ControlFlowSignal::None => {}
+          }
+        }
+        Instructions::Print
+        | Instructions::Println
+        | Instructions::Stdout
+        | Instructions::Stdoutln
+        | Instructions::Stdin
+        | Instructions::InspectObj
+        | Instructions::InspectArr
+        | Instructions::ClearScreen => {
+          if !security_config.unsafe_mode {
+            runtime_io_count += 1;
+            if runtime_io_count > security_config.max_io {
+              return Err(VMError::IoFlood { ip });
+            }
+          }
+          io_dispatch(instr, &mut stack, ip)?;
+        }
+        Instructions::MakeObj(_) | Instructions::MakeArray(_) => {
+          if !security_config.unsafe_mode {
+            runtime_alloc_count += 1;
+            if runtime_alloc_count > security_config.max_alloc {
+              return Err(VMError::MemoryLimitExceeded { ip });
+            }
+          }
+          collections_dispatch(instr, &mut stack, ip)?;
+        }
+        Instructions::AccessIndex
+        | Instructions::Access(_)
+        | Instructions::SetProp(_)
+        | Instructions::Shrink => {
+          collections_dispatch(instr, &mut stack, ip)?;
+        }
+        Instructions::ToString
+        | Instructions::ToShort
+        | Instructions::ToInteger
+        | Instructions::ToLong
+        | Instructions::ToOcta
+        | Instructions::ToHalf
+        | Instructions::ToFloat
+        | Instructions::ToDouble => {
+          conversions_dispatch(instr, &mut stack, ip)?;
+        }
+        Instructions::TypeOf | Instructions::Length => metadata_dispatch(instr, &mut stack, ip)?,
+        Instructions::Nop
+        | Instructions::Export(_)
+        | Instructions::Val(_)
+        | Instructions::Set(_)
+        | Instructions::Get(_)
+        | Instructions::Inc(_, _)
+        | Instructions::Dec(_, _) => {
+          handle_unused_opcodes();
+        }
+      }
+      ip += 1;
     }
-    tick += 1;
-    unsafe { std::hint::assert_unchecked(ip < bytecode_len) }
-    debug_assert!(
-      ip < bytecode_len,
-      "IP out of bounds! IP: {}, Len: {}",
-      ip,
-      bytecode_len
-    );
-    let instr = unsafe { &*bytecode_ptr.add(ip) };
-    match instr {
-      Instructions::PushInt16(_)
-      | Instructions::PushInt32(_)
-      | Instructions::PushInt64(_)
-      | Instructions::PushInt128(_)
-      | Instructions::PushFloat16(_)
-      | Instructions::PushFloat32(_)
-      | Instructions::PushFloat64(_)
-      | Instructions::PushString(_)
-      | Instructions::PushArray(_)
-      | Instructions::PushBool(_)
-      | Instructions::PushObject(_)
-      | Instructions::PushUndefined
-      | Instructions::PushNull
-      | Instructions::PushNaN
-      | Instructions::Push(_)
-      | Instructions::ValIdx(_)
-      | Instructions::SetIdx(_)
-      | Instructions::GetIdx(_)
-      | Instructions::Concat
-      | Instructions::Dup
-      | Instructions::Swap
-      | Instructions::Truncate => {
-        stack_dispatch(instr, &mut stack, &mut vars, ip)?;
+    if options.as_ref().is_some_and(|o| o.capture_return) {
+      if let Value::Undefined = last_return
+        && let Some(v) = stack.pop()
+      {
+        last_return = v;
       }
-      Instructions::Import(module_name, alias_idx) => {
-        if !security_config.unsafe_mode {
-          runtime_import_count += 1;
-          if runtime_import_count > security_config.max_import {
-            return Err(VMError::ImportLimitReached { ip });
-          }
-        }
-        import_func(&mut vars, options, module_name, *alias_idx, ip)?;
-      }
-      Instructions::Add(_)
-      | Instructions::Sub(_)
-      | Instructions::Mul(_)
-      | Instructions::Div(_)
-      | Instructions::Mod(_)
-      | Instructions::Shl(_)
-      | Instructions::Shr(_)
-      | Instructions::Ror(_)
-      | Instructions::Rol(_)
-      | Instructions::Pow(_)
-      | Instructions::Powi(_)
-      | Instructions::Powf(_)
-      | Instructions::Sin(_)
-      | Instructions::Cos(_)
-      | Instructions::Tan(_)
-      | Instructions::Asin(_)
-      | Instructions::Acos(_)
-      | Instructions::Atan(_)
-      | Instructions::Atan2(_)
-      | Instructions::Sinh(_)
-      | Instructions::Cosh(_)
-      | Instructions::Tanh(_)
-      | Instructions::Asinh(_)
-      | Instructions::Acosh(_)
-      | Instructions::Atanh(_)
-      | Instructions::Sqrt(_)
-      | Instructions::Cbrt(_)
-      | Instructions::Neg(_)
-      | Instructions::Ln(_)
-      | Instructions::Exp(_)
-      | Instructions::Log2(_)
-      | Instructions::Log10(_)
-      | Instructions::IncIdx(_, _)
-      | Instructions::DecIdx(_, _) => {
-        math_dispatch(instr, &mut stack, &mut vars, ip)?;
-      }
-      Instructions::Gt(_)
-      | Instructions::Lt(_)
-      | Instructions::Ge(_)
-      | Instructions::Le(_)
-      | Instructions::Eq(_)
-      | Instructions::Neq(_) => {
-        comparison_dispatch(instr, &mut stack, ip)?;
-      }
-      Instructions::And | Instructions::Or | Instructions::Xor | Instructions::Not => {
-        logic_dispatch(instr, &mut stack, ip)?;
-      }
-      Instructions::IfFalse(_) | Instructions::Jump(_) | Instructions::Break(_) => {
-        if !security_config.unsafe_mode {
-          runtime_jump_count += 1;
-          if runtime_jump_count > security_config.max_jump {
-            return Err(VMError::JumpLimitExceeded { ip });
-          }
-        }
-        match control_flow_dispatch(
-          instr,
-          &mut stack,
-          &mut vars,
-          &mut _call_stack,
-          &mut last_return,
-          &functions,
-          &symbol_table,
-          &mut ip,
-          bytecode_len,
-        )? {
-          ControlFlowSignal::Continue => continue,
-          ControlFlowSignal::Break => break,
-          ControlFlowSignal::None => {}
-        }
-      }
-      Instructions::Call(_, _) => {
-        if !security_config.unsafe_mode {
-          runtime_call_count += 1;
-          if runtime_call_count > security_config.max_call {
-            return Err(VMError::CallLimitExceeded { ip });
-          }
-        }
-        match control_flow_dispatch(
-          instr,
-          &mut stack,
-          &mut vars,
-          &mut _call_stack,
-          &mut last_return,
-          &functions,
-          &symbol_table,
-          &mut ip,
-          bytecode_len,
-        )? {
-          ControlFlowSignal::Continue => continue,
-          ControlFlowSignal::Break => break,
-          ControlFlowSignal::None => {}
-        }
-      }
-      Instructions::Return
-      | Instructions::Stop
-      | Instructions::Instantiate(_, _)
-      | Instructions::Func(_, _, _, _, _) => {
-        match control_flow_dispatch(
-          instr,
-          &mut stack,
-          &mut vars,
-          &mut _call_stack,
-          &mut last_return,
-          &functions,
-          &symbol_table,
-          &mut ip,
-          bytecode_len,
-        )? {
-          ControlFlowSignal::Continue => continue,
-          ControlFlowSignal::Break => break,
-          ControlFlowSignal::None => {}
-        }
-      }
-      Instructions::Print
-      | Instructions::Println
-      | Instructions::Stdout
-      | Instructions::Stdoutln
-      | Instructions::Stdin
-      | Instructions::InspectObj
-      | Instructions::InspectArr
-      | Instructions::ClearScreen => {
-        if !security_config.unsafe_mode {
-          runtime_io_count += 1;
-          if runtime_io_count > security_config.max_io {
-            return Err(VMError::IoFlood { ip });
-          }
-        }
-        io_dispatch(instr, &mut stack, ip)?;
-      }
-      Instructions::MakeObj(_) | Instructions::MakeArray(_) => {
-        if !security_config.unsafe_mode {
-          runtime_alloc_count += 1;
-          if runtime_alloc_count > security_config.max_alloc {
-            return Err(VMError::MemoryLimitExceeded { ip });
-          }
-        }
-        collections_dispatch(instr, &mut stack, ip)?;
-      }
-      Instructions::AccessIndex
-      | Instructions::Access(_)
-      | Instructions::SetProp(_)
-      | Instructions::Shrink => {
-        collections_dispatch(instr, &mut stack, ip)?;
-      }
-      Instructions::ToString
-      | Instructions::ToShort
-      | Instructions::ToInteger
-      | Instructions::ToLong
-      | Instructions::ToOcta
-      | Instructions::ToHalf
-      | Instructions::ToFloat
-      | Instructions::ToDouble => {
-        conversions_dispatch(instr, &mut stack, ip)?;
-      }
-      Instructions::TypeOf | Instructions::Length => metadata_dispatch(instr, &mut stack, ip)?,
-      Instructions::Nop
-      | Instructions::Export(_)
-      | Instructions::Val(_)
-      | Instructions::Set(_)
-      | Instructions::Get(_)
-      | Instructions::Inc(_, _)
-      | Instructions::Dec(_, _) => {
-        handle_unused_opcodes();
-      }
+      return Ok((last_return, tick));
     }
-    ip += 1;
-  }
+    Ok((Value::Undefined, tick))
+  })();
+
   if let Some(opts) = options {
     opts.symbol_table = Some(symbol_table);
     opts.vars = Some(vars);
   }
-  if options.as_ref().is_some_and(|o| o.capture_return) {
-    if let Value::Undefined = last_return
-      && let Some(v) = stack.pop()
-    {
-      last_return = v;
-    }
-    return Ok((last_return, tick));
-  }
-  Ok((Value::Undefined, tick))
+
+  execution_result
 }
 #[test]
 fn test_execute_basic_math_and_return() {
