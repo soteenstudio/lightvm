@@ -254,7 +254,7 @@ impl LightVM {
       vars: None,
     };
     let mut opt_wrapper = Some(options.clone());
-    let result = crate::vm::run::run(&bytecode_json, &mut opt_wrapper);
+    let result = crate::vm::run::run(&bytecode_json, &mut opt_wrapper)?;
     self.last_run_options = opt_wrapper;
     self.state = VmState::Idle;
     Ok(result)
@@ -396,7 +396,7 @@ impl LightVM {
       symbol_table: None,
       vars: None,
     };
-    let result_run = run(&bytecode_str.clone(), &mut Some(options));
+    let result_run = run(&bytecode_str.clone(), &mut Some(options))?;
     Ok(result_run)
   }
   pub fn var_exported_internal(&mut self, name: String) -> Result<String, VMError> {
@@ -579,6 +579,7 @@ mod tests {
       functions: AHashMap::new(),
       exported: HashSet::new(),
       _imports: AHashMap::new(),
+      last_run_options: None,
       max_io: default_security.max_io,
       max_import: default_security.max_import,
       max_alloc: default_security.max_alloc,
