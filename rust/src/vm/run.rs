@@ -9,28 +9,36 @@
  */
 
 use crate::types::instructions::Instructions;
-use crate::types::value::RunOptions;
+use crate::types::value::{RunOptions, Value};
 use crate::utils::vmerror::VMError;
+use serde::Serialize;
 use serde_json::Value as JsonValue;
-pub fn execute_and_log(bytecode: Vec<Instructions>, options: &mut Option<RunOptions>) -> String {
+
+#[derive(Serialize)]
+struct ValuePayload {
+  defined: bool,
+  value: Value,
+}
+
+pub fn execute_and_log(
+  bytecode: Vec<Instructions>,
+  options: &mut Option<RunOptions>,
+) -> Result<String, VMError> {
   let halt_flag = options.as_ref().map(|o| o.halt_flag.clone());
-  let result = crate::vm::execute::execute(bytecode, options, halt_flag);
-  match result {
-    Ok((val, tick)) => serde_json::json!({
+  let (val, tick) = crate::vm::execute::execute(bytecode, options, halt_flag)?;
+  let defined = !matches!(val, Value::Undefined);
+  let payload = ValuePayload {
+    defined,
+    value: val,
+  };
+  Ok(
+    serde_json::json!({
         "status": "success",
-        "result": val,
+        "result": payload,
         "ticks": tick
     })
     .to_string(),
-    Err(err) => {
-      eprintln!("\n{}", err);
-      serde_json::json!({
-          "status": "error",
-          "message": format!("{:?}", err)
-      })
-      .to_string()
-    }
-  }
+  )
 }
 #[inline]
 #[cold]
@@ -41,24 +49,12 @@ pub fn run(bytecode_json: &str, options: &mut Option<RunOptions>) -> Result<Stri
       e
     )))
   })?;
-  let bytecode_res: Result<Vec<Instructions>, VMError> = raw
+  let bytecode: Vec<Instructions> = raw
     .iter()
     .enumerate()
     .map(|(ip, item)| Instructions::from_json_array(item, ip))
-    .collect();
-  match bytecode_res {
-    Ok(bytecode) => Ok(execute_and_log(bytecode, options)),
-    Err(err) => {
-      eprintln!("\n{}", err);
-      Ok(
-        serde_json::json!({
-          "status": "error",
-          "message": format!("{:?}", err)
-        })
-        .to_string(),
-      )
-    }
-  }
+    .collect::<Result<Vec<Instructions>, VMError>>()?;
+  execute_and_log(bytecode, options)
 }
 #[cfg(test)]
 mod tests {
@@ -75,10 +71,7 @@ mod tests {
   fn test_run_with_invalid_instruction() {
     let json = r#"[["random nonsense", 0]]"#;
     let result = run(json, &mut None);
-    assert!(result.is_ok());
-    let result_str = result.unwrap();
-    assert!(result_str.contains("error"));
-    assert!(result_str.contains("message"));
+    assert!(result.is_err());
   }
   #[test]
   fn test_run_with_malformed_json() {

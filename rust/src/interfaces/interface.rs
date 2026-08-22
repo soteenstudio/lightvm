@@ -27,6 +27,7 @@ use crate::utils::vmerror::VMError;
 use crate::vm::run::run;
 use ahash::AHashMap;
 use regex::Regex;
+use serde::Serialize;
 use smol_str::SmolStr;
 use std::collections::HashSet;
 use std::sync::Arc;
@@ -34,6 +35,12 @@ use std::sync::OnceLock;
 use std::sync::atomic::{AtomicBool, Ordering};
 pub type VmCallback = Box<dyn Fn(String) + Send + Sync>;
 pub type VmEventMap = AHashMap<VmEvent, Vec<VmCallback>>;
+
+#[derive(Serialize)]
+struct ValuePayload {
+  defined: bool,
+  value: Value,
+}
 pub struct LightVM {
   pub bytecode: Vec<Instructions>,
   pub listeners: VmEventMap,
@@ -396,8 +403,9 @@ impl LightVM {
       symbol_table: None,
       vars: None,
     };
-    let result_run = run(&bytecode_str.clone(), &mut Some(options))?;
-    Ok(result_run)
+    let result_run = run(&bytecode_str.clone(), &mut Some(options));
+    self.state = VmState::Idle;
+    result_run
   }
   pub fn var_exported_internal(&mut self, name: String) -> Result<String, VMError> {
     self.require(Capability::Observe)?;
@@ -408,20 +416,31 @@ impl LightVM {
         code: SmolStr::new(format!("NOT_EXPORTED:{}", smol_name)),
       });
     }
-    let val = if let Some(ref opts) = self.last_run_options {
-      if let (Some(sym_table), Some(vars)) = (&opts.symbol_table, &opts.vars) {
-        if let Some(&idx) = sym_table.get(&smol_name) {
-          vars.get(idx).cloned().unwrap_or(Value::Undefined)
-        } else {
-          Value::Undefined
-        }
-      } else {
-        Value::Undefined
-      }
-    } else {
-      Value::Undefined
+    let opts = self
+      .last_run_options
+      .as_ref()
+      .ok_or_else(|| VMError::SystemError(SmolStr::new("No runtime state available")))?;
+    let sym_table = opts
+      .symbol_table
+      .as_ref()
+      .ok_or_else(|| VMError::SystemError(SmolStr::new("Symbol table not available")))?;
+    let vars = opts
+      .vars
+      .as_ref()
+      .ok_or_else(|| VMError::SystemError(SmolStr::new("Variables state not available")))?;
+    let idx = sym_table.get(&smol_name).ok_or_else(|| {
+      VMError::SystemError(SmolStr::new(format!(
+        "Symbol '{}' not found in symbol table",
+        smol_name
+      )))
+    })?;
+    let val = vars.get(*idx).cloned().unwrap_or(Value::Undefined);
+    let defined = !matches!(val, Value::Undefined);
+    let payload = ValuePayload {
+      defined,
+      value: val,
     };
-    serde_json::to_string(&val).map_err(|e| {
+    serde_json::to_string(&payload).map_err(|e| {
       VMError::SystemError(SmolStr::new(format!("Failed to stringify variable: {}", e)))
     })
   }
