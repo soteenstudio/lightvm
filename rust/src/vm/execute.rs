@@ -53,7 +53,7 @@ pub fn execute(
     }
   }
   let mut _call_stack: Vec<usize> = Vec::new();
-  let (functions, _exported, mut ip) = prepare_vm(&bytecode, &options);
+  let (functions, _exported, mut ip) = prepare_vm(&bytecode, options);
   let security_config = options
     .as_ref()
     .map(|o| o.security_config.clone())
@@ -65,7 +65,7 @@ pub fn execute(
   validate_vars(&bytecode, var_count)?;
   validate_bytecode(&bytecode, &functions)?;
   validate_security(&bytecode, &security_config)?;
-  inject_args(&mut vars, &functions, &options, ip);
+  inject_args(&mut vars, &functions, options, ip);
   let bytecode_ptr = bytecode.as_ptr();
   let bytecode_len = bytecode.len();
   let threshold = if bytecode_len < 100 { 1 } else { 50 };
@@ -125,7 +125,7 @@ pub fn execute(
             return Err(VMError::ImportLimitReached { ip });
           }
         }
-        import_func(&mut vars, &options, module_name, *alias_idx, ip)?;
+        import_func(&mut vars, options, module_name, *alias_idx, ip)?;
       }
       Instructions::Add(_)
       | Instructions::Sub(_)
