@@ -253,8 +253,9 @@ impl LightVM {
       symbol_table: None,
       vars: None,
     };
-    let result = crate::vm::run::run(&bytecode_json, Some(options.clone()));
-    self.last_run_options = Some(options);
+    let mut opt_wrapper = Some(options.clone());
+    let result = crate::vm::run::run(&bytecode_json, &mut opt_wrapper);
+    self.last_run_options = opt_wrapper;
     self.state = VmState::Idle;
     Ok(result)
   }
@@ -395,7 +396,7 @@ impl LightVM {
       symbol_table: None,
       vars: None,
     };
-    let result_run = run(&bytecode_str.clone(), Some(options));
+    let result_run = run(&bytecode_str.clone(), &mut Some(options));
     Ok(result_run)
   }
   pub fn var_exported_internal(&mut self, name: String) -> Result<String, VMError> {
@@ -420,8 +421,6 @@ impl LightVM {
     } else {
       Value::Undefined
     };
-    println!("{:?}", val);
-    println!("{:?}", self.last_run_options);
     serde_json::to_string(&val).map_err(|e| {
       VMError::SystemError(SmolStr::new(format!("Failed to stringify variable: {}", e)))
     })

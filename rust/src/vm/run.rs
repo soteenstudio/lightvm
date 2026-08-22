@@ -12,7 +12,7 @@ use crate::types::instructions::Instructions;
 use crate::types::value::RunOptions;
 use crate::utils::vmerror::VMError;
 use serde_json::Value as JsonValue;
-pub fn execute_and_log(bytecode: Vec<Instructions>, options: Option<RunOptions>) -> String {
+pub fn execute_and_log(bytecode: Vec<Instructions>, options: &mut Option<RunOptions>) -> String {
   let halt_flag = options.as_ref().map(|o| o.halt_flag.clone());
   let result = crate::vm::execute::execute(bytecode, options, halt_flag);
   match result {
@@ -34,7 +34,7 @@ pub fn execute_and_log(bytecode: Vec<Instructions>, options: Option<RunOptions>)
 }
 #[inline]
 #[cold]
-pub fn run(bytecode_json: &str, options: Option<RunOptions>) -> String {
+pub fn run(bytecode_json: &str, options: &mut Option<RunOptions>) -> String {
   let raw: Vec<JsonValue> = serde_json::from_str(bytecode_json).expect("Invalid JSON");
   let bytecode_res: Result<Vec<Instructions>, VMError> = raw
     .iter()
