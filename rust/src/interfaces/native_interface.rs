@@ -131,6 +131,7 @@ impl LightVM {
       functions: AHashMap::new(),
       exported: HashSet::new(),
       _imports: AHashMap::new(),
+      last_run_options: None,
       max_io: security_config.max_io,
       max_import: security_config.max_import,
       max_alloc: security_config.max_alloc,
@@ -267,36 +268,55 @@ impl LightVM {
   /// }
   /// ```
   pub fn export(&mut self, name: String) -> Box<dyn FnMut(Vec<Value>) -> Option<Value> + '_> {
-    let function_name = name.clone();
+    let target_name = name.clone();
+    let is_function = self.functions.contains_key(target_name.as_str());
     Box::new(move |args| {
-      let json_args: Result<Vec<serde_json::Value>, _> =
-        args.iter().map(serde_json::to_value).collect();
-      let json_args = match json_args {
-        Ok(values) => values,
-        Err(e) => {
-          eprintln!("Failed to convert arguments: {}", e);
-          return None;
-        }
-      };
-      let args_value = serde_json::Value::Array(json_args);
-      match self.call_exported_internal(function_name.clone(), args_value) {
-        Ok(raw_result) => {
-          let parsed: serde_json::Value =
-            serde_json::from_str(&raw_result).unwrap_or(serde_json::Value::Null);
-          if parsed["status"] == "success" {
-            let result_json = parsed.get("result").cloned()?;
-            if result_json == serde_json::Value::String("Undefined".to_string()) {
-              return None;
+      if is_function {
+        let json_args: Result<Vec<serde_json::Value>, _> =
+          args.iter().map(serde_json::to_value).collect();
+        let json_args = match json_args {
+          Ok(values) => values,
+          Err(e) => {
+            eprintln!("Failed to convert arguments: {}", e);
+            return None;
+          }
+        };
+        let args_value = serde_json::Value::Array(json_args);
+        match self.call_exported_internal(target_name.clone(), args_value) {
+          Ok(raw_result) => {
+            let parsed: serde_json::Value =
+              serde_json::from_str(&raw_result).unwrap_or(serde_json::Value::Null);
+            if parsed["status"] == "success" {
+              let result_json = parsed.get("result").cloned()?;
+              if result_json == serde_json::Value::String("Undefined".to_string()) {
+                return None;
+              }
+              Some(Value::from(result_json))
+            } else {
+              eprintln!("Error: {}", parsed["message"]);
+              None
             }
-            Some(Value::from(result_json))
-          } else {
-            eprintln!("Error: {}", parsed["message"]);
-            None
+          }
+          Err(e) => {
+            eprintln!("{}", e);
+            std::process::exit(1);
           }
         }
-        Err(e) => {
-          eprintln!("{}", e);
-          std::process::exit(1);
+      } else {
+        match self.var_exported_internal(target_name.clone()) {
+          Ok(raw_result) => {
+            let parsed: serde_json::Value =
+              serde_json::from_str(&raw_result).unwrap_or(serde_json::Value::Null);
+            if parsed.is_null() || parsed == serde_json::Value::String("Undefined".to_string()) {
+              None
+            } else {
+              Some(Value::from(parsed))
+            }
+          }
+          Err(e) => {
+            eprintln!("{}", e);
+            None
+          }
         }
       }
     })

@@ -27,6 +27,7 @@ use crate::utils::vmerror::VMError;
 use crate::vm::run::run;
 use ahash::AHashMap;
 use regex::Regex;
+use serde::Serialize;
 use smol_str::SmolStr;
 use std::collections::HashSet;
 use std::sync::Arc;
@@ -34,6 +35,12 @@ use std::sync::OnceLock;
 use std::sync::atomic::{AtomicBool, Ordering};
 pub type VmCallback = Box<dyn Fn(String) + Send + Sync>;
 pub type VmEventMap = AHashMap<VmEvent, Vec<VmCallback>>;
+
+#[derive(Serialize)]
+struct ValuePayload {
+  defined: bool,
+  value: Value,
+}
 pub struct LightVM {
   pub bytecode: Vec<Instructions>,
   pub listeners: VmEventMap,
@@ -45,6 +52,7 @@ pub struct LightVM {
   pub functions: AHashMap<SmolStr, FuncMetadata>,
   pub exported: HashSet<SmolStr>,
   pub _imports: AHashMap<SmolStr, Value>,
+  pub last_run_options: Option<RunOptions>,
   pub max_io: usize,
   pub max_import: usize,
   pub max_alloc: usize,
@@ -86,6 +94,7 @@ impl LightVM {
       functions: AHashMap::new(),
       exported: HashSet::new(),
       _imports: AHashMap::new(),
+      last_run_options: None,
       max_io: security_config.max_io,
       max_import: security_config.max_import,
       max_alloc: security_config.max_alloc,
@@ -248,8 +257,12 @@ impl LightVM {
         unsafe_mode: self.unsafe_mode,
         time_budget: self.time_budget.clone(),
       },
+      symbol_table: None,
+      vars: None,
     };
-    let result = crate::vm::run::run(&bytecode_json, Some(options));
+    let mut opt_wrapper = Some(options.clone());
+    let result = crate::vm::run::run(&bytecode_json, &mut opt_wrapper)?;
+    self.last_run_options = opt_wrapper;
     self.state = VmState::Idle;
     Ok(result)
   }
@@ -387,9 +400,49 @@ impl LightVM {
         unsafe_mode: self.unsafe_mode,
         time_budget: self.time_budget.clone(),
       },
+      symbol_table: None,
+      vars: None,
     };
-    let result_run = run(&bytecode_str.clone(), Some(options));
-    Ok(result_run)
+    let result_run = run(&bytecode_str.clone(), &mut Some(options));
+    self.state = VmState::Idle;
+    result_run
+  }
+  pub fn var_exported_internal(&mut self, name: String) -> Result<String, VMError> {
+    self.require(Capability::Observe)?;
+    let smol_name = SmolStr::new(name);
+    if !self.exported.contains(&smol_name) {
+      return Err(VMError::InvalidOpcode {
+        ip: 0,
+        code: SmolStr::new(format!("NOT_EXPORTED:{}", smol_name)),
+      });
+    }
+    let opts = self
+      .last_run_options
+      .as_ref()
+      .ok_or_else(|| VMError::SystemError(SmolStr::new("No runtime state available")))?;
+    let sym_table = opts
+      .symbol_table
+      .as_ref()
+      .ok_or_else(|| VMError::SystemError(SmolStr::new("Symbol table not available")))?;
+    let vars = opts
+      .vars
+      .as_ref()
+      .ok_or_else(|| VMError::SystemError(SmolStr::new("Variables state not available")))?;
+    let idx = sym_table.get(&smol_name).ok_or_else(|| {
+      VMError::SystemError(SmolStr::new(format!(
+        "Symbol '{}' not found in symbol table",
+        smol_name
+      )))
+    })?;
+    let val = vars.get(*idx).cloned().unwrap_or(Value::Undefined);
+    let defined = !matches!(val, Value::Undefined);
+    let payload = ValuePayload {
+      defined,
+      value: val,
+    };
+    serde_json::to_string(&payload).map_err(|e| {
+      VMError::SystemError(SmolStr::new(format!("Failed to stringify variable: {}", e)))
+    })
   }
   #[inline]
   pub fn get_outputs_internal(&mut self) -> Result<Vec<String>, VMError> {
@@ -545,6 +598,7 @@ mod tests {
       functions: AHashMap::new(),
       exported: HashSet::new(),
       _imports: AHashMap::new(),
+      last_run_options: None,
       max_io: default_security.max_io,
       max_import: default_security.max_import,
       max_alloc: default_security.max_alloc,

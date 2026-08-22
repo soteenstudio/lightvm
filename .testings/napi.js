@@ -15,6 +15,7 @@ function main() {
     .withExplain(false)
     .withBacktrace(false);
   const tools = vm.tools();
+  console.log(tools);
   const raw = [
     ['jump', 7],
     ['func', 'add', 2, 2, 6, 'a', 'b'],
