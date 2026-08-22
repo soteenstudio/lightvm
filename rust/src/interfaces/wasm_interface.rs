@@ -75,6 +75,7 @@ impl WasmLightVM {
         functions: AHashMap::new(),
         exported: HashSet::new(),
         _imports: AHashMap::new(),
+        last_run_options: None,
         max_io: default_security.max_io,
         max_import: default_security.max_import,
         max_alloc: default_security.max_alloc,
