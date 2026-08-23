@@ -443,7 +443,11 @@ impl LightVM {
     let defined = !is_uninitialized;
     let payload = ValuePayload {
       defined,
-      value: if is_uninitialized { Value::Undefined } else { val },
+      value: if is_uninitialized {
+        Value::Undefined
+      } else {
+        val
+      },
     };
     serde_json::to_string(&payload).map_err(|e| {
       VMError::SystemError(SmolStr::new(format!("Failed to stringify variable: {}", e)))
