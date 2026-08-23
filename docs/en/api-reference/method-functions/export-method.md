@@ -19,6 +19,8 @@ In **Rust**, the `export` method is used to map VM-side functions to Rust-callab
 
 <<< @/examples/methodFunctions/export_function.rs{rust:line-numbers}[Export Function]
 
+<<< @/examples/methodFunctions/export_variable.rs{rust:line-numbers}[Export Variable]
+
 :::
 
 ::: info
