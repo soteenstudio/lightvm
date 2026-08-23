@@ -47,19 +47,37 @@ describe("LightVM Suite", () => {
       expect(res).toBeInstanceOf(LightVM);
     });
 
-    test("exported variable should run the loaded program lazily", () => {
+    test("export should return handles for functions and variables", () => {
       const vm = new LightVM({
         caps: [Capability.Observe, Capability.Control],
         runtimeConfig: { nightly: true },
       });
       vm.load([
+        ["jump", 7],
+        ["func", "add", 2, 2, 6, "a", "b"],
+        ["get", "a"],
+        ["get", "b"],
+        ["add", "int"],
+        ["return"],
+        ["stop"],
+        ["export", "add"],
         ["val", "x"],
         ["push", 5],
         ["set", "x"],
         ["export", "x"],
+        ["val", "unset"],
+        ["export", "unset"],
       ]);
 
-      expect(vm.export("x")()).toBe(5);
+      const add = vm.export("add");
+      const x = vm.export("x");
+      const unset = vm.export("unset");
+
+      expect(typeof add).toBe("object");
+      expect(typeof add.call).toBe("function");
+      expect(add.call(5, 6)).toBe(11);
+      expect(x.call()).toBe(5);
+      expect(unset.call()).toBe(undefined);
     });
 
     test("provide should accept key-value pairs", () => {
