@@ -61,7 +61,7 @@ mod tests {
   use super::*;
   #[test]
   fn test_run_with_valid_json() {
-    let json = r#"[["PushInt32", 10], ["Stop"]]"#;
+    let json = r#"[["push", 10], ["stop"]]"#;
     let result = run(json, &mut None);
     assert!(result.is_ok());
     let result_str = result.unwrap();
