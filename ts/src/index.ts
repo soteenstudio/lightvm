@@ -242,14 +242,7 @@ export class LightVM {
           targetTime: (val: number) => ((targetTime = val), builder),
           run: (setup: () => any, fn: (state: any) => any) =>
             this.wrap(() =>
-              this.instance.bench(
-                name,
-                setup,
-                fn,
-                b,
-                samples,
-                targetTime,
-              ),
+              this.instance.bench(name, setup, fn, b, samples, targetTime),
             ),
         };
         return builder;

@@ -438,10 +438,12 @@ impl LightVM {
       )))
     })?;
     let val = vars.get(*idx).cloned().unwrap_or(Value::Undefined);
-    let defined = !matches!(val, Value::Undefined);
+    let is_uninitialized = matches!(val, Value::Undefined)
+      || matches!(&val, Value::Marker(marker) if marker.as_str() == "NoInitExpression");
+    let defined = !is_uninitialized;
     let payload = ValuePayload {
       defined,
-      value: val,
+      value: if is_uninitialized { Value::Undefined } else { val },
     };
     serde_json::to_string(&payload).map_err(|e| {
       VMError::SystemError(SmolStr::new(format!("Failed to stringify variable: {}", e)))
