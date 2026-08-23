@@ -47,6 +47,21 @@ describe("LightVM Suite", () => {
       expect(res).toBeInstanceOf(LightVM);
     });
 
+    test("exported variable should run the loaded program lazily", () => {
+      const vm = new LightVM({
+        caps: [Capability.Observe, Capability.Control],
+        runtimeConfig: { nightly: true },
+      });
+      vm.load([
+        ["val", "x"],
+        ["push", 5],
+        ["set", "x"],
+        ["export", "x"],
+      ]);
+
+      expect(vm.export("x")()).toBe(5);
+    });
+
     test("provide should accept key-value pairs", () => {
       const vm = createVM();
       
