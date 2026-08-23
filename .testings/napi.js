@@ -33,8 +33,8 @@ function main() {
   const optimized = tools.optimizeBytecode(raw);
   vm.load(optimized);
   const addFunc = vm.export('add');
-  console.log(addFunc(5, 6));
+  console.log(addFunc.call(5, 6));
   const xVar = vm.export('x');
-  console.log(xVar());
+  console.log(xVar.call());
 }
 main();

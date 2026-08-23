@@ -20,6 +20,9 @@ export interface VMResult {
   outputs: string[];
   halted: boolean;
 }
+export interface ExportedHandle {
+  call: (...args: any[]) => any;
+}
 export enum Capability {
   Control = 0,
   Observe = 1,
@@ -172,17 +175,18 @@ export class LightVM {
     );
   }
 
-  export(name: string) {
-    return (...args: any[]) => {
-      return this.wrap(() => {
-        const rawResult = this.instance.callExport(name, args);
+  export(name: string): ExportedHandle {
+    return {
+      call: (...args: any[]) =>
+        this.wrap(() => {
+          const rawResult = this.instance.callExport(name, args);
 
-        if (rawResult == null || rawResult === 'Undefined') return undefined;
+          if (rawResult == null || rawResult === 'Undefined') return undefined;
 
-        return typeof rawResult === 'object' && !Array.isArray(rawResult)
-          ? Object.values(rawResult)[0]
-          : rawResult;
-      });
+          return typeof rawResult === 'object' && !Array.isArray(rawResult)
+            ? Object.values(rawResult)[0]
+            : rawResult;
+        }),
     };
   }
 
