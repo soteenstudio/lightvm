@@ -6,7 +6,9 @@ For **TypeScript**, the `export` method provides a seamless way to retrieve and 
 
 ::: code-group
 
-<<< @/examples/methodFunctions/exportCode.ts{ts:line-numbers}[Code]
+<<< @/examples/methodFunctions/exportFunction.ts{ts:line-numbers}[Export Function]
+
+<<< @/examples/methodFunctions/exportVariable.ts{ts:line-numbers}[Export Variable]
 
 :::
 
@@ -15,7 +17,7 @@ In **Rust**, the `export` method is used to map VM-side functions to Rust-callab
 
 ::: code-group
 
-<<< @/examples/methodFunctions/export_code.rs{rust:line-numbers}[Code]
+<<< @/examples/methodFunctions/export_function.rs{rust:line-numbers}[Export Function]
 
 :::
 
