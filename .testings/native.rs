@@ -36,8 +36,9 @@ fn main() {
   vm.load(optimized_json);
   vm.run(None);
   let mut add_func = vm.export("add".to_string());
-  let mut x_var = vm.export("x".to_string());
   let result = add_func(vec![5.into(), 6.into()]);
   println!("Result: {:?}", result);
+
+  let mut x_var = vm.export("x".to_string());
   println!("{:?}", x_var(vec![]));
 }
