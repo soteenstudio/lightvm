@@ -42,7 +42,7 @@ pub struct ExportedHandle {
 }
 
 impl ExportedHandle {
-  pub fn call(&self, vm: &mut LightVM, args: Vec<Value>) -> Option<Value> {
+  pub fn call(&self, vm: &mut LightVM, args: Vec<Value>) -> Value {
     if self.is_function {
       let json_args: Result<Vec<serde_json::Value>, _> =
         args.iter().map(serde_json::to_value).collect();
@@ -50,7 +50,7 @@ impl ExportedHandle {
         Ok(values) => values,
         Err(e) => {
           eprintln!("Failed to convert arguments: {}", e);
-          return None;
+          return Value::Undefined;
         }
       };
       let args_value = serde_json::Value::Array(json_args);
@@ -59,15 +59,20 @@ impl ExportedHandle {
           let parsed: serde_json::Value =
             serde_json::from_str(&raw_result).unwrap_or(serde_json::Value::Null);
           if parsed["status"] == "success" {
-            export_value(parsed.get("result").cloned()?)
+            export_value(
+              parsed
+                .get("result")
+                .cloned()
+                .unwrap_or(serde_json::Value::Null),
+            )
           } else {
             eprintln!("Error: {}", parsed["message"]);
-            None
+            Value::Undefined
           }
         }
         Err(e) => {
           eprintln!("{}", e);
-          std::process::exit(1);
+          Value::Undefined
         }
       }
     } else {
@@ -79,24 +84,31 @@ impl ExportedHandle {
         }
         Err(e) => {
           eprintln!("{}", e);
-          None
+          Value::Undefined
         }
       }
     }
   }
 }
 
-fn export_value(value: serde_json::Value) -> Option<Value> {
+fn export_value(value: serde_json::Value) -> Value {
   if let Some(payload) = value.as_object() {
     if payload.get("defined").and_then(|value| value.as_bool()) == Some(false) {
-      return None;
+      return Value::Undefined;
     }
-    return payload.get("value").cloned().map(Value::from);
+    let value = payload
+      .get("value")
+      .cloned()
+      .unwrap_or(serde_json::Value::Null);
+    if value.is_null() || value == serde_json::Value::String("Undefined".to_string()) {
+      return Value::Undefined;
+    }
+    return Value::from(value);
   }
   if value.is_null() || value == serde_json::Value::String("Undefined".to_string()) {
-    None
+    Value::Undefined
   } else {
-    Some(Value::from(value))
+    Value::from(value)
   }
 }
 
@@ -328,9 +340,8 @@ impl LightVM {
   /// ```rust,ignore
   /// let add = vm.export("add".to_string());
   /// let args = vec![5.into(), 6.into()];
-  /// if let Some(result) = add.call(&mut vm, args) {
-  ///    println!("Result from VM: {}", result);
-  /// }
+  /// let result = add.call(&mut vm, args);
+  /// println!("Result from VM: {}", result);
   /// ```
   pub fn export(&self, name: String) -> ExportedHandle {
     ExportedHandle {
@@ -772,18 +783,22 @@ mod tests {
       ["val", "x"],
       ["push", 5],
       ["set", "x"],
-      ["export", "x"]
+      ["export", "x"],
+      ["val", "unset"],
+      ["export", "unset"]
     ]));
     vm.run(None);
 
     let add_func = vm.export("add".to_string());
     let x_var = vm.export("x".to_string());
+    let unset_var = vm.export("unset".to_string());
 
     assert_eq!(
       add_func.call(&mut vm, vec![5.into(), 6.into()]),
-      Some(Value::Int64(11))
+      Value::Int64(11)
     );
-    assert_eq!(x_var.call(&mut vm, vec![]), Some(Value::Int64(5)));
+    assert_eq!(x_var.call(&mut vm, vec![]), Value::Int64(5));
+    assert_eq!(unset_var.call(&mut vm, vec![]), Value::Undefined);
   }
   #[test]
   fn export_only_requires_shared_access() {
