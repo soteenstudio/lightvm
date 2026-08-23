@@ -35,12 +35,10 @@ use std::collections::HashSet;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use unescape::unescape;
-
 pub struct ExportedHandle {
   name: String,
   is_function: bool,
 }
-
 impl ExportedHandle {
   pub fn call(&self, vm: &mut LightVM, args: Vec<Value>) -> Value {
     if self.is_function {
@@ -90,7 +88,6 @@ impl ExportedHandle {
     }
   }
 }
-
 fn export_value(value: serde_json::Value) -> Value {
   if let Some(payload) = value.as_object() {
     if payload.get("defined").and_then(|value| value.as_bool()) == Some(false) {
@@ -111,7 +108,6 @@ fn export_value(value: serde_json::Value) -> Value {
     Value::from(value)
   }
 }
-
 impl From<i16> for Value {
   fn from(v: i16) -> Self {
     Value::Int16(v)
@@ -788,11 +784,9 @@ mod tests {
       ["export", "unset"]
     ]));
     vm.run(None);
-
     let add_func = vm.export("add".to_string());
     let x_var = vm.export("x".to_string());
     let unset_var = vm.export("unset".to_string());
-
     assert_eq!(
       add_func.call(&mut vm, vec![5.into(), 6.into()]),
       Value::Int64(11)

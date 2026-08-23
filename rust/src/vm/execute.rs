@@ -76,7 +76,6 @@ pub fn execute(
   let mut runtime_jump_count = 0usize;
   let mut runtime_alloc_count = 0usize;
   let mut runtime_import_count = 0usize;
-
   let execution_result = (|| -> Result<(Value, u64), VMError> {
     while ip < bytecode_len {
       gas_monitor.check_tick(tick)?;
@@ -306,12 +305,10 @@ pub fn execute(
     }
     Ok((Value::Undefined, tick))
   })();
-
   if let Some(opts) = options {
     opts.symbol_table = Some(symbol_table);
     opts.vars = Some(vars);
   }
-
   execution_result
 }
 #[test]

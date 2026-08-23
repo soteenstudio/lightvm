@@ -13,13 +13,11 @@ use crate::types::value::{RunOptions, Value};
 use crate::utils::vmerror::VMError;
 use serde::Serialize;
 use serde_json::Value as JsonValue;
-
 #[derive(Serialize)]
 struct ValuePayload {
   defined: bool,
   value: Value,
 }
-
 pub fn execute_and_log(
   bytecode: Vec<Instructions>,
   options: &mut Option<RunOptions>,

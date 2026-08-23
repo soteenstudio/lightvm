@@ -35,7 +35,6 @@ use std::sync::OnceLock;
 use std::sync::atomic::{AtomicBool, Ordering};
 pub type VmCallback = Box<dyn Fn(String) + Send + Sync>;
 pub type VmEventMap = AHashMap<VmEvent, Vec<VmCallback>>;
-
 #[derive(Serialize)]
 struct ValuePayload {
   defined: bool,
@@ -752,7 +751,6 @@ mod tests {
     vm.nightly = true;
     vm.load_internal(r#"[["val","x"],["push",5],["set","x"],["export","x"]]"#.to_string())
       .unwrap();
-
     let result = vm.var_exported_internal("x".to_string()).unwrap();
     let payload: serde_json::Value = serde_json::from_str(&result).unwrap();
     assert_eq!(payload["defined"], true);
@@ -765,7 +763,6 @@ mod tests {
     vm.load_internal(r#"[["val","x"],["push",5],["set","x"],["export","x"]]"#.to_string())
       .unwrap();
     vm.run_internal(None).unwrap();
-
     vm.load_internal(r#"[["val","x"],["push",9],["set","x"],["export","x"]]"#.to_string())
       .unwrap();
     let result = vm.var_exported_internal("x".to_string()).unwrap();
