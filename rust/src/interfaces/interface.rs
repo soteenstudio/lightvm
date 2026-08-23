@@ -216,6 +216,7 @@ impl LightVM {
       self.bytecode = crate::utils::loader::parse_ltc(&raw_code);
     }
     self.index_metadata();
+    self.last_run_options = None;
     Ok(())
   }
   pub fn run_internal(&mut self, _options: Option<RunOptions>) -> Result<String, VMError> {
@@ -415,6 +416,9 @@ impl LightVM {
         ip: 0,
         code: SmolStr::new(format!("NOT_EXPORTED:{}", smol_name)),
       });
+    }
+    if self.last_run_options.is_none() {
+      self.run_internal(None)?;
     }
     let opts = self
       .last_run_options
@@ -741,6 +745,33 @@ mod tests {
     let mut vm = make_vm(vec![Capability::Control]);
     let result = vm.run_internal(None);
     assert!(result.is_err());
+  }
+  #[test]
+  fn var_exported_internal_runs_loaded_program_lazily() {
+    let mut vm = make_vm(vec![Capability::Observe, Capability::Control]);
+    vm.nightly = true;
+    vm.load_internal(r#"[["val","x"],["push",5],["set","x"],["export","x"]]"#.to_string())
+      .unwrap();
+
+    let result = vm.var_exported_internal("x".to_string()).unwrap();
+    let payload: serde_json::Value = serde_json::from_str(&result).unwrap();
+    assert_eq!(payload["defined"], true);
+    assert_eq!(payload["value"], 5);
+  }
+  #[test]
+  fn load_internal_invalidates_exported_variable_runtime_state() {
+    let mut vm = make_vm(vec![Capability::Observe, Capability::Control]);
+    vm.nightly = true;
+    vm.load_internal(r#"[["val","x"],["push",5],["set","x"],["export","x"]]"#.to_string())
+      .unwrap();
+    vm.run_internal(None).unwrap();
+
+    vm.load_internal(r#"[["val","x"],["push",9],["set","x"],["export","x"]]"#.to_string())
+      .unwrap();
+    let result = vm.var_exported_internal("x".to_string()).unwrap();
+    let payload: serde_json::Value = serde_json::from_str(&result).unwrap();
+    assert_eq!(payload["defined"], true);
+    assert_eq!(payload["value"], 9);
   }
   #[test]
   fn bench_succeeds_with_debug_capability() {
