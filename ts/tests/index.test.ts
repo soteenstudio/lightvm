@@ -24,7 +24,19 @@ describe("LightVM Suite", () => {
       const raw = [["push", 15], ["push", 5], ["add", "i16"], ["println"]];
       const result = tools.optimizeBytecode(raw);
       
-      expect(result).toEqual([{ push: 20 }, 'println']);
+      expect(result).toEqual([{ push_int16: 20 }, 'println']);
+    });
+
+    test("bench should run through the public tools wrapper", () => {
+      const vm = new LightVM({ caps: [Capability.Debug] });
+      const tools = vm.tools();
+
+      expect(() =>
+        tools.bench("wrapper-bench").samples(1).targetTime(1).run(
+          () => 1,
+          (state) => state + 1,
+        ),
+      ).not.toThrow();
     });
   });
 

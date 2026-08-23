@@ -242,7 +242,7 @@ export class LightVM {
           targetTime: (val: number) => ((targetTime = val), builder),
           run: (setup: () => any, fn: (state: any) => any) =>
             this.wrap(() =>
-              this.native.LightVM.bench(
+              this.instance.bench(
                 name,
                 setup,
                 fn,
@@ -256,7 +256,7 @@ export class LightVM {
       },
       optimizeBytecode: (bytecode: any) => {
         return this.wrap(() =>
-          this.native.LightVM.optimizeBytecode(
+          this.instance.optimizeBytecode(
             bytecode,
             securityConfig?.maxIo ?? 100,
             securityConfig?.maxImport ?? 3,
