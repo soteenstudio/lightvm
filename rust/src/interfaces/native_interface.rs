@@ -97,7 +97,7 @@ fn export_value(value: serde_json::Value) -> Value {
       .get("value")
       .cloned()
       .unwrap_or(serde_json::Value::Null);
-    if value.is_null() || value == serde_json::Value::String("Undefined".to_string()) {
+    if value.is_null() {
       return Value::Undefined;
     }
     return Value::from(value);
