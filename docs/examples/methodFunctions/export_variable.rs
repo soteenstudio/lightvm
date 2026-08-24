@@ -7,4 +7,4 @@ let raw = r#"[
 let optimized = tools.optimize_bytecode(raw);
 vm.load(optimized);
 let mut score_variable = vm.export("score".to_string());
-println!("{:?}", score_variable(vec![]));
+println!("{:?}", score_variable.call(&mut vm, vec![]));
