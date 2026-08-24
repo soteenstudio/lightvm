@@ -183,9 +183,7 @@ export class LightVM {
 
           if (rawResult == null || rawResult === 'Undefined') return undefined;
 
-          return typeof rawResult === 'object' && !Array.isArray(rawResult)
-            ? Object.values(rawResult)[0]
-            : rawResult;
+          return rawResult;
         }),
     };
   }

@@ -20,7 +20,7 @@ export interface VMResult {
     halted: boolean;
 }
 export interface ExportedHandle {
-    call: (...args: any[]) => any;
+  call: (...args: any[]) => any;
 }
 export declare enum Capability {
     Control = 0,

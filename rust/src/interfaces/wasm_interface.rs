@@ -262,26 +262,78 @@ impl WasmLightVM {
   }
   #[wasm_bindgen(js_name = "callExport")]
   pub fn call_export(&mut self, name: String, args: JsValue) -> Result<JsValue, JsValue> {
+    let target_name = name.clone();
+    let is_function = self.inner.functions.contains_key(target_name.as_str());
     let serde_args: serde_json::Value = serde_wasm_bindgen::from_value(args).map_err(|e| {
       wasm_bindgen::JsValue::from(js_sys::Error::new(&format!("Invalid export args: {}", e)))
     })?;
-    let raw_result = self
-      .inner
-      .call_exported_internal(name, serde_args)
-      .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))?;
-    let res_json: serde_json::Value = serde_json::from_str(&raw_result).map_err(|e| {
-      let vm_err = VMError::SystemError(smol_str::SmolStr::from(format!(
-        "Failed to parse export return value: {}",
-        e
-      )));
-      wasm_bindgen::JsValue::from(js_sys::Error::new(&vm_err.to_string()))
-    })?;
-    serde_wasm_bindgen::to_value(&res_json).map_err(|e| {
-      wasm_bindgen::JsValue::from(js_sys::Error::new(&format!(
-        "Wasm serialization failed: {}",
-        e
-      )))
-    })
+    if is_function {
+      let raw_result = self
+        .inner
+        .call_exported_internal(target_name, serde_args)
+        .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))?;
+      let parsed: serde_json::Value = serde_json::from_str(&raw_result).map_err(|e| {
+        let vm_err = VMError::SystemError(smol_str::SmolStr::from(format!(
+          "Failed to parse export return value: {}",
+          e
+        )));
+        wasm_bindgen::JsValue::from(js_sys::Error::new(&vm_err.to_string()))
+      })?;
+      if parsed["status"] == "success" {
+        let result_payload = parsed
+          .get("result")
+          .cloned()
+          .unwrap_or(serde_json::Value::Null);
+        let unwrapped_value = if let Some(obj) = result_payload.as_object() {
+          let defined = obj.get("defined").and_then(|v| v.as_bool()).unwrap_or(true);
+          if defined {
+            obj.get("value").cloned().unwrap_or(serde_json::Value::Null)
+          } else {
+            serde_json::Value::Null
+          }
+        } else {
+          result_payload
+        };
+        serde_wasm_bindgen::to_value(&unwrapped_value).map_err(|e| {
+          wasm_bindgen::JsValue::from(js_sys::Error::new(&format!(
+            "Wasm serialization failed: {}",
+            e
+          )))
+        })
+      } else {
+        Err(wasm_bindgen::JsValue::from(js_sys::Error::new(
+          parsed["message"].as_str().unwrap_or("Unknown Error"),
+        )))
+      }
+    } else {
+      let raw_result = self
+        .inner
+        .var_exported_internal(target_name)
+        .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))?;
+      let parsed: serde_json::Value = serde_json::from_str(&raw_result).map_err(|e| {
+        let vm_err = VMError::SystemError(smol_str::SmolStr::from(format!(
+          "Failed to parse variable: {}",
+          e
+        )));
+        wasm_bindgen::JsValue::from(js_sys::Error::new(&vm_err.to_string()))
+      })?;
+      let unwrapped_value = if let Some(obj) = parsed.as_object() {
+        let defined = obj.get("defined").and_then(|v| v.as_bool()).unwrap_or(true);
+        if defined {
+          obj.get("value").cloned().unwrap_or(serde_json::Value::Null)
+        } else {
+          serde_json::Value::Null
+        }
+      } else {
+        parsed
+      };
+      serde_wasm_bindgen::to_value(&unwrapped_value).map_err(|e| {
+        wasm_bindgen::JsValue::from(js_sys::Error::new(&format!(
+          "Wasm serialization failed: {}",
+          e
+        )))
+      })
+    }
   }
   #[wasm_bindgen]
   pub fn tools(&self) -> WasmLightVMTools {
