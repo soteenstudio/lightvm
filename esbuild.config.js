@@ -15,7 +15,7 @@ for (const config of builds) {
   esbuild
     .build({
       bundle: true,
-      minify: false,
+      minify: true,
       sourcemap: true,
       platform: 'node',
       ...config,
