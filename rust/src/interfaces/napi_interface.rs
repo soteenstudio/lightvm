@@ -76,6 +76,7 @@ impl NodeLightVM {
         functions: AHashMap::new(),
         exported: HashSet::new(),
         _imports: AHashMap::new(),
+        last_run_options: None,
         max_io: security_config.max_io.unwrap_or(100) as usize,
         max_import: security_config.max_import.unwrap_or(3) as usize,
         max_alloc: security_config.max_alloc.unwrap_or(50) as usize,
@@ -319,26 +320,55 @@ impl NodeLightVM {
     name: String,
     args: serde_json::Value,
   ) -> Result<serde_json::Value> {
-    let raw_result = self
-      .inner
-      .call_exported_internal(name, args)
-      .map_err(|e| Error::from_reason(e.to_string()))?;
-    let parsed: serde_json::Value = serde_json::from_str(&raw_result)
-      .map_err(|e| Error::from_reason(format!("Failed to parse export return: {}", e)))?;
-    if parsed["status"] == "success" {
-      Ok(
-        parsed
+    let target_name = name.clone();
+    let is_function = self.inner.functions.contains_key(target_name.as_str());
+    if is_function {
+      let raw_result = self
+        .inner
+        .call_exported_internal(target_name, args)
+        .map_err(|e| Error::from_reason(e.to_string()))?;
+      let parsed: serde_json::Value = serde_json::from_str(&raw_result)
+        .map_err(|e| Error::from_reason(format!("Failed to parse export return: {}", e)))?;
+      if parsed["status"] == "success" {
+        let result_payload = parsed
           .get("result")
           .cloned()
-          .unwrap_or(serde_json::Value::Null),
-      )
+          .unwrap_or(serde_json::Value::Null);
+        if let Some(obj) = result_payload.as_object() {
+          let defined = obj.get("defined").and_then(|v| v.as_bool()).unwrap_or(true);
+          if defined {
+            Ok(obj.get("value").cloned().unwrap_or(serde_json::Value::Null))
+          } else {
+            Ok(serde_json::Value::Null)
+          }
+        } else {
+          Ok(result_payload)
+        }
+      } else {
+        Err(Error::from_reason(
+          parsed["message"]
+            .as_str()
+            .unwrap_or("Unknown Error")
+            .to_string(),
+        ))
+      }
     } else {
-      Err(Error::from_reason(
-        parsed["message"]
-          .as_str()
-          .unwrap_or("Unknown Error")
-          .to_string(),
-      ))
+      let raw_result = self
+        .inner
+        .var_exported_internal(target_name)
+        .map_err(|e| Error::from_reason(e.to_string()))?;
+      let parsed: serde_json::Value = serde_json::from_str(&raw_result)
+        .map_err(|e| Error::from_reason(format!("Failed to parse variable: {}", e)))?;
+      if let Some(obj) = parsed.as_object() {
+        let defined = obj.get("defined").and_then(|v| v.as_bool()).unwrap_or(true);
+        if defined {
+          Ok(obj.get("value").cloned().unwrap_or(serde_json::Value::Null))
+        } else {
+          Ok(serde_json::Value::Null)
+        }
+      } else {
+        Ok(parsed)
+      }
     }
   }
   #[napi(js_name = "blackBox")]

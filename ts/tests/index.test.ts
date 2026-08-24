@@ -24,7 +24,19 @@ describe("LightVM Suite", () => {
       const raw = [["push", 15], ["push", 5], ["add", "i16"], ["println"]];
       const result = tools.optimizeBytecode(raw);
       
-      expect(result).toEqual([{ push: 20 }, 'println']);
+      expect(result).toEqual([{ push_int16: 20 }, 'println']);
+    });
+
+    test("bench should run through the public tools wrapper", () => {
+      const vm = new LightVM({ caps: [Capability.Debug] });
+      const tools = vm.tools();
+
+      expect(() =>
+        tools.bench("wrapper-bench").samples(1).targetTime(1).run(
+          () => 1,
+          (state) => state + 1,
+        ),
+      ).not.toThrow();
     });
   });
 
@@ -33,6 +45,39 @@ describe("LightVM Suite", () => {
       const vm = createVM();
       const res = vm.load([{ push: 10 }]);
       expect(res).toBeInstanceOf(LightVM);
+    });
+
+    test("export should return handles for functions and variables", () => {
+      const vm = new LightVM({
+        caps: [Capability.Observe, Capability.Control],
+        runtimeConfig: { nightly: true },
+      });
+      vm.load([
+        ["jump", 7],
+        ["func", "add", 2, 2, 6, "a", "b"],
+        ["get", "a"],
+        ["get", "b"],
+        ["add", "int"],
+        ["return"],
+        ["stop"],
+        ["export", "add"],
+        ["val", "x"],
+        ["push", 5],
+        ["set", "x"],
+        ["export", "x"],
+        ["val", "unset"],
+        ["export", "unset"],
+      ]);
+
+      const add = vm.export("add");
+      const x = vm.export("x");
+      const unset = vm.export("unset");
+
+      expect(typeof add).toBe("object");
+      expect(typeof add.call).toBe("function");
+      expect(add.call(5, 6)).toBe(11);
+      expect(x.call()).toBe(5);
+      expect(unset.call()).toBe(undefined);
     });
 
     test("provide should accept key-value pairs", () => {

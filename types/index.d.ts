@@ -19,6 +19,9 @@ export interface VMResult {
     outputs: string[];
     halted: boolean;
 }
+export interface ExportedHandle {
+    call: (...args: any[]) => any;
+}
 export declare enum Capability {
     Control = 0,
     Observe = 1,
@@ -70,7 +73,7 @@ export declare class LightVM {
     load(source: Instructions[] | string): this;
     run(options?: any): any;
     compile(config: CompileConfig): any;
-    export(name: string): (...args: any[]) => any;
+    export(name: string): ExportedHandle;
     provide(nameOrObj: string | Record<string, any>, value?: any): this;
     halt(): void;
     on(event: VMEvent, fn: Listener): this;

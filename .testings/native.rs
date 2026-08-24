@@ -24,14 +24,22 @@ fn main() {
     ["add", "int"],
     ["return"],
     ["stop"],
-    ["export", "add"]
+    ["export", "add"],
+    ["val", "x"],
+    ["push", 5],
+    ["set", "x"],
+    ["export", "x"]
   ]"#;
   let optimized_json = vm.tools().optimize_bytecode(raw);
   println!("{}", optimized_json);
   
   vm.load(optimized_json);
-  //vm.run(None);
-  let mut add_func = vm.export("add".to_string());
-  let result = add_func(vec![5.into(), 6.into()]);
+  vm.run(None);
+  let add_func = vm.export("add".to_string());
+  let x_var = vm.export("x".to_string());
+
+  let result = add_func.call(&mut vm, vec![5.into(), 6.into()]);
   println!("Result: {:?}", result);
+
+  println!("{:?}", x_var.call(&mut vm, vec![]));
 }

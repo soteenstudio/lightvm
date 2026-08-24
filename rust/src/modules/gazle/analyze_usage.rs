@@ -25,6 +25,9 @@ pub fn analyze_usage(bytecode: &[Instructions]) -> Usage {
       | Instructions::Dec(var_name, _) => {
         written.insert(var_name.clone());
       }
+      Instructions::Export(var_name) => {
+        read.insert(var_name.clone());
+      }
       Instructions::Print | Instructions::Println => {
         read.insert(SmolStr::new("*IO*"));
       }

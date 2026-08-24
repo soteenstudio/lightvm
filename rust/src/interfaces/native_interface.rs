@@ -35,6 +35,79 @@ use std::collections::HashSet;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use unescape::unescape;
+pub struct ExportedHandle {
+  name: String,
+  is_function: bool,
+}
+impl ExportedHandle {
+  pub fn call(&self, vm: &mut LightVM, args: Vec<Value>) -> Value {
+    if self.is_function {
+      let json_args: Result<Vec<serde_json::Value>, _> =
+        args.iter().map(serde_json::to_value).collect();
+      let json_args = match json_args {
+        Ok(values) => values,
+        Err(e) => {
+          eprintln!("Failed to convert arguments: {}", e);
+          return Value::Undefined;
+        }
+      };
+      let args_value = serde_json::Value::Array(json_args);
+      match vm.call_exported_internal(self.name.clone(), args_value) {
+        Ok(raw_result) => {
+          let parsed: serde_json::Value =
+            serde_json::from_str(&raw_result).unwrap_or(serde_json::Value::Null);
+          if parsed["status"] == "success" {
+            export_value(
+              parsed
+                .get("result")
+                .cloned()
+                .unwrap_or(serde_json::Value::Null),
+            )
+          } else {
+            eprintln!("Error: {}", parsed["message"]);
+            Value::Undefined
+          }
+        }
+        Err(e) => {
+          eprintln!("{}", e);
+          Value::Undefined
+        }
+      }
+    } else {
+      match vm.var_exported_internal(self.name.clone()) {
+        Ok(raw_result) => {
+          let parsed: serde_json::Value =
+            serde_json::from_str(&raw_result).unwrap_or(serde_json::Value::Null);
+          export_value(parsed)
+        }
+        Err(e) => {
+          eprintln!("{}", e);
+          Value::Undefined
+        }
+      }
+    }
+  }
+}
+fn export_value(value: serde_json::Value) -> Value {
+  if let Some(payload) = value.as_object() {
+    if payload.get("defined").and_then(|value| value.as_bool()) == Some(false) {
+      return Value::Undefined;
+    }
+    let value = payload
+      .get("value")
+      .cloned()
+      .unwrap_or(serde_json::Value::Null);
+    if value.is_null() {
+      return Value::Undefined;
+    }
+    return Value::from(value);
+  }
+  if value.is_null() || value == serde_json::Value::String("Undefined".to_string()) {
+    Value::Undefined
+  } else {
+    Value::from(value)
+  }
+}
 impl From<i16> for Value {
   fn from(v: i16) -> Self {
     Value::Int16(v)
@@ -131,6 +204,7 @@ impl LightVM {
       functions: AHashMap::new(),
       exported: HashSet::new(),
       _imports: AHashMap::new(),
+      last_run_options: None,
       max_io: security_config.max_io,
       max_import: security_config.max_import,
       max_alloc: security_config.max_alloc,
@@ -260,46 +334,16 @@ impl LightVM {
   ///
   /// # Examples
   /// ```rust,ignore
-  /// let mut add = vm.export("add".to_string());
+  /// let add = vm.export("add".to_string());
   /// let args = vec![5.into(), 6.into()];
-  /// if let Some(result) = add(args) {
-  ///    println!("Result from VM: {}", result);
-  /// }
+  /// let result = add.call(&mut vm, args);
+  /// println!("Result from VM: {}", result);
   /// ```
-  pub fn export(&mut self, name: String) -> Box<dyn FnMut(Vec<Value>) -> Option<Value> + '_> {
-    let function_name = name.clone();
-    Box::new(move |args| {
-      let json_args: Result<Vec<serde_json::Value>, _> =
-        args.iter().map(serde_json::to_value).collect();
-      let json_args = match json_args {
-        Ok(values) => values,
-        Err(e) => {
-          eprintln!("Failed to convert arguments: {}", e);
-          return None;
-        }
-      };
-      let args_value = serde_json::Value::Array(json_args);
-      match self.call_exported_internal(function_name.clone(), args_value) {
-        Ok(raw_result) => {
-          let parsed: serde_json::Value =
-            serde_json::from_str(&raw_result).unwrap_or(serde_json::Value::Null);
-          if parsed["status"] == "success" {
-            let result_json = parsed.get("result").cloned()?;
-            if result_json == serde_json::Value::String("Undefined".to_string()) {
-              return None;
-            }
-            Some(Value::from(result_json))
-          } else {
-            eprintln!("Error: {}", parsed["message"]);
-            None
-          }
-        }
-        Err(e) => {
-          eprintln!("{}", e);
-          std::process::exit(1);
-        }
-      }
-    })
+  pub fn export(&self, name: String) -> ExportedHandle {
+    ExportedHandle {
+      is_function: self.functions.contains_key(name.as_str()),
+      name,
+    }
   }
   /// Function to inject data/variables into the VM.
   ///
@@ -715,5 +759,45 @@ mod tests {
   fn time_budget_expensive_is_configured() {
     let vm = LightVM::new(VmConfig::default()).set_time_budget(TimeBudget::Expensive);
     assert_eq!(vm.time_budget, TimeBudget::Expensive);
+  }
+  #[test]
+  fn export_creates_function_and_variable_handles_before_calls() {
+    let mut vm = LightVM::new(VmConfig {
+      caps: vec![Capability::Control, Capability::Observe],
+      runtime_config: Some(RuntimeConfig { nightly: true }),
+      ..Default::default()
+    });
+    vm.load(json!([
+      ["jump", 7],
+      ["func", "add", 2, 2, 6, "a", "b"],
+      ["get", "a"],
+      ["get", "b"],
+      ["add", "int"],
+      ["return"],
+      ["stop"],
+      ["export", "add"],
+      ["val", "x"],
+      ["push", 5],
+      ["set", "x"],
+      ["export", "x"],
+      ["val", "unset"],
+      ["export", "unset"]
+    ]));
+    vm.run(None);
+    let add_func = vm.export("add".to_string());
+    let x_var = vm.export("x".to_string());
+    let unset_var = vm.export("unset".to_string());
+    assert_eq!(
+      add_func.call(&mut vm, vec![5.into(), 6.into()]),
+      Value::Int64(11)
+    );
+    assert_eq!(x_var.call(&mut vm, vec![]), Value::Int64(5));
+    assert_eq!(unset_var.call(&mut vm, vec![]), Value::Undefined);
+  }
+  #[test]
+  fn export_only_requires_shared_access() {
+    let vm = LightVM::new(VmConfig::default());
+    let shared_vm = &vm;
+    let _handle = shared_vm.export("value".to_string());
   }
 }
