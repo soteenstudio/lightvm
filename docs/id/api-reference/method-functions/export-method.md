@@ -6,9 +6,9 @@ Untuk **TypeScript**, metode `export` menyediakan cara mudah untuk mengambil dan
 
 ::: code-group
 
-<<< @/examples/methodFunctions/exportFunction.ts{ts:line-numbers}[Export Function]
+<<< @/examples/methodFunctions/exportFunction.ts{ts:line-numbers}[Ekspor Fungsi]
 
-<<< @/examples/methodFunctions/exportVariable.ts{ts:line-numbers}[Export Variable]
+<<< @/examples/methodFunctions/exportVariable.ts{ts:line-numbers}[Ekspor Variabel]
 
 :::
 
@@ -17,9 +17,9 @@ Dalam **Rust**, metode `export` digunakan untuk memetakan fungsi sisi VM ke anta
 
 ::: code-group
 
-<<< @/examples/methodFunctions/export_function.rs{rust:line-numbers}[Export Function]
+<<< @/examples/methodFunctions/export_function.rs{rust:line-numbers}[Ekspor Fungsi]
 
-<<< @/examples/methodFunctions/export_variable.rs{rust:line-numbers}[Export Variable]
+<<< @/examples/methodFunctions/export_variable.rs{rust:line-numbers}[Ekspor Variabel]
 
 :::
 
