@@ -30,13 +30,7 @@ fn main() {
     ["set", "x"],
     ["export", "x"]
   ]"#;
-  let optimized_json = match vm.tools().optimize_bytecode(raw) {
-    Ok(value) => value,
-    Err(err) => {
-      eprintln!("{}", err);
-      return;
-    }
-  };
+  let optimized_json = vm.tools().optimize_bytecode(raw);
   println!("{}", optimized_json);
   
   vm.load(optimized_json);

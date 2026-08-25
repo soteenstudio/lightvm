@@ -14,10 +14,7 @@ use std::time::Duration;
 fn bench_vm_execution(c: &mut Criterion) {
   let mut vm = LightVM::new(vec![Capability::Control, Capability::Observe]);
   let raw = r#"[["val", "x"], ["push", 5], ["set", "x"]]"#;
-  let optimized_json = match LightVM::tools().optimize_bytecode(raw) {
-    Ok(value) => value,
-    Err(err) => panic!("{}", err),
-  };
+  let optimized_json = LightVM::tools().optimize_bytecode(raw);
   vm.load(optimized_json.clone());
   let mut group = c.benchmark_group("LightVM Execution");
   group.bench_function("assign_bench", |b: &mut Bencher| {
