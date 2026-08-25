@@ -38,10 +38,10 @@ impl WasmLightVM {
       for cap_num in config.caps.iter() {
         match cap_num {
           0 => {
-            caps_set.insert(Capability::Observe);
+            caps_set.insert(Capability::Control);
           }
           1 => {
-            caps_set.insert(Capability::Control);
+            caps_set.insert(Capability::Observe);
           }
           2 => {
             caps_set.insert(Capability::Debug);
