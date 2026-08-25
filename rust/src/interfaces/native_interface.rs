@@ -478,6 +478,18 @@ impl LightVMTools {
       )))
     })
   }
+  pub fn optimize_bytecode_or_display<T: IntoJsonValue>(
+    &self,
+    input: T,
+  ) -> Option<serde_json::Value> {
+    match self.optimize_bytecode(input) {
+      Ok(value) => Some(value),
+      Err(error) => {
+        eprintln!("{error}");
+        None
+      }
+    }
+  }
   /// Converts raw JSON bytecode into a readable LTC assembly string
   ///
   /// # Examples
@@ -496,6 +508,15 @@ impl LightVMTools {
     let text = LightVM::stringify_ltc_internal(json)?;
     Ok(unescape(&text).unwrap_or(text))
   }
+  pub fn stringify_ltc_or_display<T: IntoJsonValue>(&self, input: T) -> Option<String> {
+    match self.stringify_ltc(input) {
+      Ok(value) => Some(value),
+      Err(error) => {
+        eprintln!("{error}");
+        None
+      }
+    }
+  }
   /// Parses LTC code and serializes the instructions to a JSON string
   ///
   /// # Examples
@@ -512,6 +533,15 @@ impl LightVMTools {
     }
     LightVM::parse_ltc_internal(code.to_string())
   }
+  pub fn parse_ltc_or_display(&self, code: &str) -> Option<String> {
+    match self.parse_ltc(code) {
+      Ok(value) => Some(value),
+      Err(error) => {
+        eprintln!("{error}");
+        None
+      }
+    }
+  }
   /// Parses an LTC string into a JSON array
   ///
   /// # Examples
@@ -527,6 +557,15 @@ impl LightVMTools {
       ));
     }
     LightVM::parse_ltc_array_internal(code.to_string())
+  }
+  pub fn parse_ltc_array_or_display(&self, code: &str) -> Option<String> {
+    match self.parse_ltc_array(code) {
+      Ok(value) => Some(value),
+      Err(error) => {
+        eprintln!("{error}");
+        None
+      }
+    }
   }
 }
 #[cfg(test)]
@@ -675,6 +714,39 @@ mod tests {
     let mut vm = LightVM::new(VmConfig::default());
     let result = vm.tools().parse_ltc_array("");
     assert!(matches!(result, Err(VMError::SystemError(_))));
+  }
+  #[test]
+  fn tools_display_methods_return_none_for_invalid_input() {
+    let mut vm = LightVM::new(VmConfig::default());
+    let tools = vm.tools();
+    assert!(tools.optimize_bytecode_or_display("not json").is_none());
+    assert!(
+      tools
+        .stringify_ltc_or_display(json!({"invalid": true}))
+        .is_none()
+    );
+    assert!(tools.parse_ltc_or_display("").is_none());
+    assert!(tools.parse_ltc_array_or_display("").is_none());
+  }
+  #[test]
+  fn tools_display_methods_return_some_for_valid_input() {
+    let mut vm = LightVM::new(VmConfig {
+      caps: vec![Capability::Control],
+      ..Default::default()
+    });
+    let tools = vm.tools();
+    assert!(
+      tools
+        .optimize_bytecode_or_display(json!([["stop"]]))
+        .is_some()
+    );
+    assert!(
+      tools
+        .stringify_ltc_or_display(json!([["stop"]]))
+        .is_some()
+    );
+    assert!(tools.parse_ltc_or_display("stop;").is_some());
+    assert!(tools.parse_ltc_array_or_display("stop;").is_some());
   }
   #[test]
   fn tools_optimizer_vm_preserves_denied_control_decision() {

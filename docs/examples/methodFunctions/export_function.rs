@@ -8,7 +8,8 @@ let raw = r#"[
   ["stop"],
   ["export", "add"]
 ]"#;
-let optimized = tools.optimize_bytecode(raw).unwrap();
-vm.load(optimized);
-let mut add_func = vm.export("add".to_string());
-println!("{:?}", add_func.call(&mut vm, vec![5.into(), 6.into()]));
+if let Some(optimized) = tools.optimize_bytecode_or_display(raw) {
+  vm.load(optimized);
+  let mut add_func = vm.export("add".to_string());
+  println!("{:?}", add_func.call(&mut vm, vec![5.into(), 6.into()]));
+}

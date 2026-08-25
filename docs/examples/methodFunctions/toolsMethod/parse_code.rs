@@ -3,5 +3,6 @@ let str_val = r#"
   val x; ;; IP=1
   set x; ;; IP=2
 "#;
-let parsed = tools.parse_ltc(str_val).unwrap();
-println!("{:#}", parsed.clone());
+if let Some(parsed) = tools.parse_ltc_or_display(str_val) {
+  println!("{:#}", parsed);
+}
