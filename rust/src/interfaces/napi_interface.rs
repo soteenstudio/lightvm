@@ -43,10 +43,10 @@ impl NodeLightVM {
       for cap_num in config.caps_raw {
         match cap_num {
           0 => {
-            caps_set.insert(Capability::Observe);
+            caps_set.insert(Capability::Control);
           }
           1 => {
-            caps_set.insert(Capability::Control);
+            caps_set.insert(Capability::Observe);
           }
           2 => {
             caps_set.insert(Capability::Debug);
