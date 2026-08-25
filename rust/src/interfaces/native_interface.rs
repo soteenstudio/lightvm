@@ -288,7 +288,7 @@ impl LightVM {
   ///   ["val", "x"],
   ///   ["set", "x"]
   /// ]"#;
-  /// vm.load(vm.tools().optimize_bytecode(raw).unwrap().clone())
+  /// vm.load(vm.tools().optimize_bytecode(raw).clone())
   ///   .run(None);
   /// ```
   pub fn run(&mut self, options: Option<RunOptions>) -> String {
@@ -426,31 +426,22 @@ impl LightVMTools {
   /// # Examples
   /// ```rust,ignore
   /// let tools = vm.tools();
-  /// let optimized = tools.optimize_bytecode(raw).unwrap();
+  /// let optimized = tools.optimize_bytecode(raw);
   /// println!("{}", optimized);
   /// ```
-  pub fn optimize_bytecode<T: IntoJsonValue>(
-    &self,
-    input: T,
-  ) -> Result<serde_json::Value, VMError> {
-    let mut bytecode: serde_json::Value = match input.into_json_value() {
-      Ok(value) => value,
-      Err(err) => {
-        return Err(VMError::SystemError(
-          format!("Failed to parse JSON input: {}", err).into(),
-        ));
-      }
-    };
+  pub fn optimize_bytecode<T: IntoJsonValue>(&self, input: T) -> serde_json::Value {
+    let mut bytecode: serde_json::Value = input.into_json_value().unwrap_or_else(|err| {
+      let error = VMError::SystemError(format!("Failed to parse JSON input: {}", err).into());
+      eprintln!("\n{}", error);
+      std::process::exit(1);
+    });
     if bytecode.is_string() {
       let raw_str = bytecode.as_str().unwrap_or("");
-      bytecode = match serde_json::from_str(raw_str) {
-        Ok(value) => value,
-        Err(err) => {
-          return Err(VMError::SystemError(
-            format!("Failed to parse JSON string: {}", err).into(),
-          ));
-        }
-      };
+      bytecode = serde_json::from_str(raw_str).unwrap_or_else(|err| {
+        let error = VMError::SystemError(format!("Failed to parse JSON string: {}", err).into());
+        eprintln!("\n{}", error);
+        std::process::exit(1);
+      });
     }
     let config = crate::types::vmconfig::VmConfig {
       caps: {
@@ -473,37 +464,45 @@ impl LightVMTools {
       }),
       ..Default::default()
     };
-    let opt_str = match LightVM::new(config).optimize_bytecode_internal(bytecode) {
-      Ok(value) => value,
-      Err(err) => return Err(err),
-    };
-    match serde_json::from_str::<serde_json::Value>(&opt_str) {
-      Ok(value) => Ok(value),
-      Err(err) => Err(VMError::SystemError(
+    let opt_str = LightVM::new(config)
+      .optimize_bytecode_internal(bytecode)
+      .unwrap_or_else(|error| {
+        eprintln!("\n{}", error);
+        std::process::exit(1);
+      });
+    serde_json::from_str::<serde_json::Value>(&opt_str).unwrap_or_else(|err| {
+      let error = VMError::SystemError(
         format!("Internal JSON Parsing Failed: {}", err).into(),
-      )),
-    }
+      );
+      eprintln!("\n{}", error);
+      std::process::exit(1);
+    })
   }
   /// Converts raw JSON bytecode into a readable LTC assembly string
   ///
   /// # Examples
   /// ```rust,ignore
   /// let tools = vm.tools();
-  /// let stringify = tools.stringify_ltc(raw).unwrap();
+  /// let stringify = tools.stringify_ltc(raw);
   /// println!("{:#}", stringify.clone());
   /// ```
-  pub fn stringify_ltc<T: IntoJsonValue>(&self, input: T) -> Result<String, VMError> {
+  pub fn stringify_ltc<T: IntoJsonValue>(&self, input: T) -> String {
     let json = match input.into_json_value() {
       Ok(v) => v,
       Err(e) => {
-        return Err(VMError::SystemError(
+        let error = VMError::SystemError(
           format!("Failed to parse/convert input: {}", e).into(),
-        ));
+        );
+        eprintln!("{}", error);
+        std::process::exit(1);
       }
     };
     match LightVM::stringify_ltc_internal(json) {
-      Ok(text) => Ok(unescape(&text).unwrap_or(text)),
-      Err(e) => Err(e),
+      Ok(text) => unescape(&text).unwrap_or(text),
+      Err(error) => {
+        eprintln!("{}", error);
+        std::process::exit(1);
+      }
     }
   }
   /// Parses LTC code and serializes the instructions to a JSON string
@@ -511,18 +510,16 @@ impl LightVMTools {
   /// # Examples
   /// ```rust,ignore
   /// let tools = vm.tools();
-  /// let parsed = tools.parse_ltc(raw).unwrap();
+  /// let parsed = tools.parse_ltc(raw);
   /// println!("{:#}", parsed.clone());
   /// ```
-  pub fn parse_ltc(&self, code: &str) -> Result<String, VMError> {
-    if code.trim().is_empty() {
-      return Err(VMError::SystemError(
-        "Failed to parse/convert input: LTC code is empty".into(),
-      ));
-    }
+  pub fn parse_ltc(&self, code: &str) -> String {
     match LightVM::parse_ltc_internal(code.to_string()) {
-      Ok(text) => Ok(text),
-      Err(e) => Err(e),
+      Ok(text) => text,
+      Err(error) => {
+        eprintln!("{}", error);
+        std::process::exit(1);
+      }
     }
   }
   /// Parses an LTC string into a JSON array
@@ -530,18 +527,16 @@ impl LightVMTools {
   /// # Examples
   /// ```rust,ignore
   /// let tools = vm.tools();
-  /// let json = tools.parse_ltc_array(raw).unwrap();
+  /// let json = tools.parse_ltc_array(raw);
   /// println!("{:#}", json.clone());
   /// ```
-  pub fn parse_ltc_array(&self, code: &str) -> Result<String, VMError> {
-    if code.trim().is_empty() {
-      return Err(VMError::SystemError(
-        "Failed to parse/convert input: LTC code is empty".into(),
-      ));
-    }
+  pub fn parse_ltc_array(&self, code: &str) -> String {
     match LightVM::parse_ltc_array_internal(code.to_string()) {
-      Ok(text) => Ok(text),
-      Err(e) => Err(e),
+      Ok(text) => text,
+      Err(error) => {
+        eprintln!("{}", error);
+        std::process::exit(1);
+      }
     }
   }
 }
@@ -554,12 +549,6 @@ mod tests {
     Arc, Mutex,
     atomic::{AtomicBool, Ordering},
   };
-  struct InvalidJsonInput;
-  impl IntoJsonValue for InvalidJsonInput {
-    fn into_json_value(self) -> Result<serde_json::Value, serde_json::Error> {
-      serde_json::from_str("{")
-    }
-  }
   #[test]
   fn new_creates_vm() {
     let config = VmConfig {
@@ -571,24 +560,26 @@ mod tests {
     assert_eq!(vm.state, VmState::Idle);
   }
   #[test]
-  fn optimize_bytecode_returns_system_error_for_invalid_input() {
-    let result = LightVM::tools().optimize_bytecode(InvalidJsonInput);
-    assert!(matches!(result, Err(VMError::SystemError(_))));
+  fn optimize_bytecode_returns_direct_value() {
+    assert_eq!(
+      LightVM::tools().optimize_bytecode(json!([["stop"]])),
+      json!(["stop"])
+    );
   }
   #[test]
-  fn stringify_ltc_returns_system_error_for_invalid_input() {
-    let result = LightVM::tools().stringify_ltc(InvalidJsonInput);
-    assert!(matches!(result, Err(VMError::SystemError(_))));
+  fn stringify_ltc_returns_direct_value() {
+    assert_eq!(
+      LightVM::tools().stringify_ltc(json!([["stop"]])),
+      "stop; ;; IP=0"
+    );
   }
   #[test]
-  fn parse_ltc_returns_system_error_for_invalid_input() {
-    let result = LightVM::tools().parse_ltc(" ");
-    assert!(matches!(result, Err(VMError::SystemError(_))));
+  fn parse_ltc_returns_direct_value() {
+    assert_eq!(LightVM::tools().parse_ltc("stop;"), r#"[["stop"]]"#);
   }
   #[test]
-  fn parse_ltc_array_returns_system_error_for_invalid_input() {
-    let result = LightVM::tools().parse_ltc_array(" ");
-    assert!(matches!(result, Err(VMError::SystemError(_))));
+  fn parse_ltc_array_returns_direct_value() {
+    assert_eq!(LightVM::tools().parse_ltc_array("stop;"), r#"["stop"]"#);
   }
   #[test]
   fn on_registers_listener() {

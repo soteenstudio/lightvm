@@ -3,5 +3,5 @@ let str_val = r#"
   val x; ;; IP=1
   set x; ;; IP=2
 "#;
-let parsed = tools.parse_ltc_array(str_val).unwrap();
+let parsed = tools.parse_ltc_array(str_val);
 println!("{:#}", parsed.clone());

@@ -9,7 +9,7 @@ let raw = r#"[
   ["val", "x"],
   ["set", "x"]
 ]"#;
-let optimized = tools.optimize_bytecode(raw).unwrap();
+let optimized = tools.optimize_bytecode(raw);
 vm.load(optimized.clone())
   .compile(CompileConfig {
     target_arch: TargetArch::AArch64,
