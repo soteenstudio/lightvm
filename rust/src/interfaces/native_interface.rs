@@ -826,4 +826,40 @@ mod tests {
     let shared_vm = &vm;
     let _handle = shared_vm.export("value".to_string());
   }
+  #[test]
+  fn parse_ltc_fails_with_invalid_opcode() {
+    let config = VmConfig {
+      caps: vec![],
+      ..Default::default()
+    };
+    let mut vm = LightVM::new(config);
+    let tools = vm.tools();
+    let result = tools.parse_ltc("totally_bogus_opcode 1 2;");
+    assert!(result.is_err());
+    match result {
+      Err(VMError::InvalidOpcode { ip, code }) => {
+        assert_eq!(ip, 0);
+        assert_eq!(code.as_str(), "UNKNOWN_OPCODE");
+      }
+      _ => panic!("Expected VMError::InvalidOpcode"),
+    }
+  }
+  #[test]
+  fn parse_ltc_array_fails_with_invalid_opcode() {
+    let config = VmConfig {
+      caps: vec![],
+      ..Default::default()
+    };
+    let mut vm = LightVM::new(config);
+    let tools = vm.tools();
+    let result = tools.parse_ltc_array("totally_bogus_opcode 1 2;");
+    assert!(result.is_err());
+    match result {
+      Err(VMError::InvalidOpcode { ip, code }) => {
+        assert_eq!(ip, 0);
+        assert_eq!(code.as_str(), "UNKNOWN_OPCODE");
+      }
+      _ => panic!("Expected VMError::InvalidOpcode"),
+    }
+  }
 }
