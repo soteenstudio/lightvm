@@ -21,7 +21,7 @@ fn bench_vm_execution(c: &mut Criterion) {
     ["push", 9],
     ["set", "x"]
   ]"#;
-  let optimized_json = LightVM::tools().optimize_bytecode(raw);
+  let optimized_json = LightVM::tools().optimize_bytecode(raw).unwrap();
   vm.load(optimized_json.clone());
   let mut group = c.benchmark_group("LightVM Execution");
   group.bench_function("dead_code_bench", |b: &mut Bencher| {
