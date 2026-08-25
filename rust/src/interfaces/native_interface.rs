@@ -764,11 +764,11 @@ mod tests {
     let x_var = vm.export("x".to_string());
     let unset_var = vm.export("unset".to_string());
     assert_eq!(
-      add_func.call(&mut vm, vec![5.into(), 6.into()]),
+      add_func.call(&mut vm, vec![5.into(), 6.into()]).unwrap(),
       Value::Int64(11)
     );
-    assert_eq!(x_var.call(&mut vm, vec![]), Value::Int64(5));
-    assert_eq!(unset_var.call(&mut vm, vec![]), Value::Undefined);
+    assert_eq!(x_var.call(&mut vm, vec![]).unwrap(), Value::Int64(5));
+    assert_eq!(unset_var.call(&mut vm, vec![]).unwrap(), Value::Undefined);
   }
   #[test]
   fn export_only_requires_shared_access() {
