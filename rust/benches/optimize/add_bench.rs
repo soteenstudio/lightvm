@@ -20,7 +20,10 @@ fn bench_vm_execution(c: &mut Criterion) {
     ["add", "i16"],
     ["set", "x"]
   ]"#;
-  let optimized_json = LightVM::tools().optimize_bytecode(raw);
+  let optimized_json = match LightVM::tools().optimize_bytecode(raw) {
+    Ok(value) => value,
+    Err(err) => panic!("{}", err),
+  };
   vm.load(optimized_json.clone());
   let mut group = c.benchmark_group("LightVM Execution");
   group.bench_function("add_bench", |b: &mut Bencher| {
