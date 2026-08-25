@@ -471,9 +471,7 @@ impl LightVMTools {
         std::process::exit(1);
       });
     serde_json::from_str::<serde_json::Value>(&opt_str).unwrap_or_else(|err| {
-      let error = VMError::SystemError(
-        format!("Internal JSON Parsing Failed: {}", err).into(),
-      );
+      let error = VMError::SystemError(format!("Internal JSON Parsing Failed: {}", err).into());
       eprintln!("\n{}", error);
       std::process::exit(1);
     })
@@ -490,9 +488,7 @@ impl LightVMTools {
     let json = match input.into_json_value() {
       Ok(v) => v,
       Err(e) => {
-        let error = VMError::SystemError(
-          format!("Failed to parse/convert input: {}", e).into(),
-        );
+        let error = VMError::SystemError(format!("Failed to parse/convert input: {}", e).into());
         eprintln!("{}", error);
         std::process::exit(1);
       }
