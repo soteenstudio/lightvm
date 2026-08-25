@@ -40,51 +40,36 @@ pub struct ExportedHandle {
   is_function: bool,
 }
 impl ExportedHandle {
-  pub fn call(&self, vm: &mut LightVM, args: Vec<Value>) -> Value {
+  pub fn call(&self, vm: &mut LightVM, args: Vec<Value>) -> Result<Value, VMError> {
     if self.is_function {
       let json_args: Result<Vec<serde_json::Value>, _> =
         args.iter().map(serde_json::to_value).collect();
-      let json_args = match json_args {
-        Ok(values) => values,
-        Err(e) => {
-          eprintln!("Failed to convert arguments: {}", e);
-          return Value::Undefined;
-        }
-      };
+      let json_args = json_args.map_err(|e| {
+        VMError::SystemError(SmolStr::new(format!("Failed to convert arguments: {}", e)))
+      })?;
       let args_value = serde_json::Value::Array(json_args);
-      match vm.call_exported_internal(self.name.clone(), args_value) {
-        Ok(raw_result) => {
-          let parsed: serde_json::Value =
-            serde_json::from_str(&raw_result).unwrap_or(serde_json::Value::Null);
-          if parsed["status"] == "success" {
-            export_value(
-              parsed
-                .get("result")
-                .cloned()
-                .unwrap_or(serde_json::Value::Null),
-            )
-          } else {
-            eprintln!("Error: {}", parsed["message"]);
-            Value::Undefined
-          }
-        }
-        Err(e) => {
-          eprintln!("{}", e);
-          Value::Undefined
-        }
+      let raw_result = vm.call_exported_internal(self.name.clone(), args_value)?;
+      let parsed: serde_json::Value =
+        serde_json::from_str(&raw_result).unwrap_or(serde_json::Value::Null);
+      if parsed["status"] == "success" {
+        Ok(export_value(
+          parsed
+            .get("result")
+            .cloned()
+            .unwrap_or(serde_json::Value::Null),
+        ))
+      } else {
+        Err(VMError::SystemError(SmolStr::new(
+          parsed["message"]
+            .as_str()
+            .unwrap_or("Unknown execution error"),
+        )))
       }
     } else {
-      match vm.var_exported_internal(self.name.clone()) {
-        Ok(raw_result) => {
-          let parsed: serde_json::Value =
-            serde_json::from_str(&raw_result).unwrap_or(serde_json::Value::Null);
-          export_value(parsed)
-        }
-        Err(e) => {
-          eprintln!("{}", e);
-          Value::Undefined
-        }
-      }
+      let raw_result = vm.var_exported_internal(self.name.clone())?;
+      let parsed: serde_json::Value =
+        serde_json::from_str(&raw_result).unwrap_or(serde_json::Value::Null);
+      Ok(export_value(parsed))
     }
   }
 }
@@ -279,21 +264,20 @@ impl LightVM {
     self
   }
   /// Function used to load bytecode before execution
-  pub fn load<T: IntoJsonValue>(&mut self, source: T) -> &mut Self {
-    let source_value = source.into_json_value().unwrap_or_else(|err| {
-      eprintln!("Failed to process load input: {}", err);
-      std::process::exit(1);
-    });
+  pub fn load<T: IntoJsonValue>(&mut self, source: T) -> Result<&mut Self, VMError> {
+    let source_value = source.into_json_value().map_err(|err| {
+      VMError::SystemError(SmolStr::new(format!(
+        "Failed to process load input: {}",
+        err
+      )))
+    })?;
     let payload = if source_value.is_string() {
       source_value.as_str().unwrap_or("").to_string()
     } else {
       source_value.to_string()
     };
-    if let Err(err) = self.load_internal(payload) {
-      eprintln!("{}", err);
-      std::process::exit(1);
-    }
-    self
+    self.load_internal(payload)?;
+    Ok(self)
   }
   /// Function to start bytecode execution.
   ///
@@ -312,7 +296,7 @@ impl LightVM {
       .run_internal(options)
       .unwrap_or_else(|e| format!(r#"{{"status": "error", "message": "{}"}}"#, e))
   }
-  pub fn compile(&mut self, config: CompileConfig) -> String {
+  pub fn compile(&mut self, config: CompileConfig) -> Result<String, VMError> {
     let output_path = if matches!(config.file_type, FileType::Assembly) {
       if config.path.ends_with(".s") {
         config.path.to_string()
@@ -322,13 +306,8 @@ impl LightVM {
     } else {
       config.path.to_string()
     };
-    match self.compile_internal(config) {
-      Ok(_) => output_path,
-      Err(e) => {
-        eprintln!("{}", e);
-        std::process::exit(1);
-      }
-    }
+    self.compile_internal(config)?;
+    Ok(output_path)
   }
   /// Function to export functions in the VM out.
   ///
@@ -360,16 +339,13 @@ impl LightVM {
   ///   ["println"]
   /// ]"#;
   /// ```
-  pub fn provide(&mut self, data: serde_json::Value) -> &mut Self {
+  pub fn provide(&mut self, data: serde_json::Value) -> Result<&mut Self, VMError> {
     if let serde_json::Value::Object(map) = data {
       for (name, val) in map {
-        if let Err(e) = self.provide_internal(name.into(), val) {
-          eprintln!("{}", e);
-          std::process::exit(1);
-        }
+        self.provide_internal(name.into(), val)?;
       }
     }
-    self
+    Ok(self)
   }
   /// Function to force/manually stop VM.
   ///
