@@ -100,7 +100,11 @@ export class LightVM {
     try {
       return fn();
     } catch (err) {
-      throw err instanceof Error ? err : new Error(String(err));
+      if (err instanceof Error) {
+        err.stack = err.message;
+        throw err;
+      }
+      throw new Error(String(err));
     }
   }
 
