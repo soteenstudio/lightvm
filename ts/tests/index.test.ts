@@ -9,8 +9,6 @@
  */
 
 import { test, expect, describe, fn, suppressConsole } from "unitry";
-import { spawnSync } from "node:child_process";
-import { resolve } from "node:path";
 import { importVM } from "./helper/importVM.js";
 
 const { LightVM, Capability } = await importVM();
@@ -43,23 +41,47 @@ describe("LightVM Suite", () => {
   });
 
   describe("VM Lifecycle", () => {
-    test("manual entry point should print only the VMError display", () => {
-      const result = spawnSync(
-        process.execPath,
-        [resolve(process.cwd(), ".testings/napi.js")],
-        { encoding: "utf8" },
-      );
+    test("wrap should normalize N-API error presentation", () => {
+      const vm = createVM();
+      const message =
+        "Error[LVM500]: Unknown time budget: 6\n │\n └─ hint: System-level operation failed.";
+      const error = new Error(message);
+      error.stack = `${error.name}: ${message}\n    at nativeCall (index.ts:1:1)`;
+      (vm as any).instance.run = () => {
+        throw error;
+      };
 
-      expect(result.status).toBe(1);
-      expect(result.stderr).toContain(
-        "Error[LVM500]: Unknown time budget: 6\n │\n └─ hint: System-level operation failed.",
-      );
-      expect(result.stderr).not.toContain("node:internal/");
-      expect(result.stderr).not.toContain("GenericFailure");
-      expect(result.stderr).not.toContain("Node.js v");
-      expect(result.stderr).not.toContain("[Error[");
-      expect(result.stderr).not.toContain("] {");
-      expect(result.stderr).not.toContain("    at ");
+      let thrown: unknown;
+      try {
+        vm.run();
+      } catch (err) {
+        thrown = err;
+      }
+
+      expect(thrown).toBe(error);
+      expect((thrown as Error).message).toBe(message);
+      expect((thrown as Error).stack).toBe(message);
+      expect((thrown as Error).stack?.startsWith("Error[LVM500]:")).toBe(true);
+      expect((thrown as Error).stack?.includes("    at ")).toBe(false);
+    });
+
+    test("configuration errors should normalize N-API error presentation", () => {
+      const vm = createVM();
+
+      let thrown: unknown;
+      try {
+        vm.setTimeBudget(6);
+      } catch (err) {
+        thrown = err;
+      }
+
+      expect(thrown).toBeInstanceOf(Error);
+      expect(
+        (thrown as Error).message.startsWith(
+          "Error[LVM500]: Unknown time budget: 6",
+        ),
+      ).toBe(true);
+      expect((thrown as Error).stack).toBe((thrown as Error).message);
     });
 
     test("load should return instance", () => {

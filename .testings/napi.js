@@ -1,10 +1,15 @@
-import { LightVM, Capability } from '../dist/index.min.mjs';
+import {
+  LightVM,
+  Capability,
+  VMEvent,
+  TimeBudget,
+} from '../dist/index.min.mjs';
 
 function main() {
   const vm = new LightVM({
     caps: [Capability.Observe, Capability.Control, Capability.Unsafe],
   })
-    .setTimeBudget(6)
+    .setTimeBudget(TimeBudget.Normal)
     .withNightly(true)
     .withHint(true)
     .withExplain(false)
@@ -32,10 +37,4 @@ function main() {
   const xVar = vm.export('x');
   console.log(xVar.call());
 }
-
-try {
-  main();
-} catch (error) {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exitCode = 1;
-}
+main();
