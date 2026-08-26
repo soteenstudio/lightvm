@@ -65,6 +65,25 @@ describe("LightVM Suite", () => {
       expect((thrown as Error).stack?.includes("    at ")).toBe(false);
     });
 
+    test("configuration errors should normalize N-API error presentation", () => {
+      const vm = createVM();
+
+      let thrown: unknown;
+      try {
+        vm.setTimeBudget(6);
+      } catch (err) {
+        thrown = err;
+      }
+
+      expect(thrown).toBeInstanceOf(Error);
+      expect(
+        (thrown as Error).message.startsWith(
+          "Error[LVM500]: Unknown time budget: 6",
+        ),
+      ).toBe(true);
+      expect((thrown as Error).stack).toBe((thrown as Error).message);
+    });
+
     test("load should return instance", () => {
       const vm = createVM();
       const res = vm.load([{ push: 10 }]);
