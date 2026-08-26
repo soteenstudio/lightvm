@@ -19,8 +19,12 @@ fn bench_vm_execution(c: &mut Criterion) {
     ["push", "LightVM!"],
     ["set", "x"]
   ]"#;
-  let optimized_json = LightVM::tools().optimize_bytecode(raw);
-  vm.load(optimized_json.clone());
+  let tools = vm.tools();
+  let optimized_json = tools
+    .optimize_bytecode(raw)
+    .expect("Failed to optimize bytecode");
+  vm.load(optimized_json.clone())
+    .expect("Failed to load bytecode");
   let mut group = c.benchmark_group("LightVM Execution");
   group.bench_function("concat_bench", |b: &mut Bencher| {
     b.iter(|| vm.run(None));

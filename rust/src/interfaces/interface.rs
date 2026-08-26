@@ -511,7 +511,6 @@ impl LightVM {
     serde_json::to_string(&optimized)
       .map_err(|e| VMError::SystemError(format!("Failed to stringify: {}", e).into()))
   }
-  // TODO: Is there a bug in the following code?
   pub fn parse_ltc_internal(code: String) -> Result<String, VMError> {
     static RE_IP_INTERNAL: OnceLock<Regex> = OnceLock::new();
     static RE_TOKEN_INTERNAL: OnceLock<Regex> = OnceLock::new();
@@ -520,6 +519,7 @@ impl LightVM {
       RE_TOKEN_INTERNAL.get_or_init(|| Regex::new(r#""([^"\\]|\\.)*"|[^\s;]+"#).unwrap());
     let cleaned_code = re_ip.replace_all(&code, "");
     let mut array_of_array: Vec<Vec<serde_json::Value>> = Vec::new();
+    let mut ip = 0;
     for line in cleaned_code.split(['\n', ';']) {
       let trimmed = line.trim();
       if trimmed.is_empty() {
@@ -539,7 +539,10 @@ impl LightVM {
         current_line.push(val);
       }
       if !current_line.is_empty() {
+        // Validate the line by calling Instructions::from_json_array
+        Instructions::from_json_array(&serde_json::Value::Array(current_line.clone()), ip)?;
         array_of_array.push(current_line);
+        ip += 1;
       }
     }
     serde_json::to_string(&array_of_array).map_err(|e| {
@@ -550,8 +553,41 @@ impl LightVM {
     })
   }
   pub fn parse_ltc_array_internal(code: String) -> Result<String, VMError> {
-    let instructions = crate::utils::loader::parse_ltc_to_vec(&code);
-    serde_json::to_string(&instructions).map_err(|e| {
+    static RE_IP_INTERNAL: OnceLock<Regex> = OnceLock::new();
+    static RE_TOKEN_INTERNAL: OnceLock<Regex> = OnceLock::new();
+    let re_ip = RE_IP_INTERNAL.get_or_init(|| Regex::new(r"\s;; IP=(\d+)").unwrap());
+    let re_token =
+      RE_TOKEN_INTERNAL.get_or_init(|| Regex::new(r#""([^"\\]|\\.)*"|[^\s;]+"#).unwrap());
+    let cleaned_code = re_ip.replace_all(&code, "");
+    let mut validated_instructions: Vec<Instructions> = Vec::new();
+    let mut ip = 0;
+    for line in cleaned_code.split(['\n', ';']) {
+      let trimmed = line.trim();
+      if trimmed.is_empty() {
+        continue;
+      }
+      let mut current_line: Vec<serde_json::Value> = Vec::new();
+      for m in re_token.find_iter(trimmed) {
+        let arg = m.as_str();
+        let val = if arg.starts_with('"') && arg.ends_with('"') && arg.len() >= 2 {
+          serde_json::from_str::<serde_json::Value>(arg)
+            .unwrap_or_else(|_| serde_json::Value::from(&arg[1..arg.len() - 1]))
+        } else if let Ok(num) = arg.parse::<f64>() {
+          serde_json::Value::from(num)
+        } else {
+          serde_json::Value::from(arg)
+        };
+        current_line.push(val);
+      }
+      if !current_line.is_empty() {
+        // Validate and convert the line to an Instruction
+        let instruction =
+          Instructions::from_json_array(&serde_json::Value::Array(current_line), ip)?;
+        validated_instructions.push(instruction);
+        ip += 1;
+      }
+    }
+    serde_json::to_string(&validated_instructions).map_err(|e| {
       VMError::SystemError(smol_str::SmolStr::from(format!(
         "Failed to stringify parsed instructions: {}",
         e

@@ -3,5 +3,5 @@ let raw = serde_json::json!([
   ["val", "x"],
   ["set", "x"]
 ]);
-let stringify = tools.stringify_ltc(raw);
-println!("{:#}", stringify.clone());
+let stringify = tools.stringify_ltc(raw)?;
+println!("{:#}", stringify);

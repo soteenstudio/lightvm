@@ -41,6 +41,49 @@ describe("LightVM Suite", () => {
   });
 
   describe("VM Lifecycle", () => {
+    test("wrap should normalize N-API error presentation", () => {
+      const vm = createVM();
+      const message =
+        "Error[LVM500]: Unknown time budget: 6\n │\n └─ hint: System-level operation failed.";
+      const error = new Error(message);
+      error.stack = `${error.name}: ${message}\n    at nativeCall (index.ts:1:1)`;
+      (vm as any).instance.run = () => {
+        throw error;
+      };
+
+      let thrown: unknown;
+      try {
+        vm.run();
+      } catch (err) {
+        thrown = err;
+      }
+
+      expect(thrown).toBe(error);
+      expect((thrown as Error).message).toBe(message);
+      expect((thrown as Error).stack).toBe(message);
+      expect((thrown as Error).stack?.startsWith("Error[LVM500]:")).toBe(true);
+      expect((thrown as Error).stack?.includes("    at ")).toBe(false);
+    });
+
+    test("configuration errors should normalize N-API error presentation", () => {
+      const vm = createVM();
+
+      let thrown: unknown;
+      try {
+        vm.setTimeBudget(6);
+      } catch (err) {
+        thrown = err;
+      }
+
+      expect(thrown).toBeInstanceOf(Error);
+      expect(
+        (thrown as Error).message.startsWith(
+          "Error[LVM500]: Unknown time budget: 6",
+        ),
+      ).toBe(true);
+      expect((thrown as Error).stack).toBe((thrown as Error).message);
+    });
+
     test("load should return instance", () => {
       const vm = createVM();
       const res = vm.load([{ push: 10 }]);
