@@ -581,7 +581,8 @@ impl LightVM {
       }
       if !current_line.is_empty() {
         // Validate and convert the line to an Instruction
-        let instruction = Instructions::from_json_array(&serde_json::Value::Array(current_line), ip)?;
+        let instruction =
+          Instructions::from_json_array(&serde_json::Value::Array(current_line), ip)?;
         validated_instructions.push(instruction);
         ip += 1;
       }
