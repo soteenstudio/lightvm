@@ -152,7 +152,8 @@ impl NodeLightVM {
       2 => (TimeBudget::Expensive, 5000),
       _ => {
         return Err(into_napi_error(system_error(format!(
-          "Unknown time budget: {}", value
+          "Unknown time budget: {}",
+          value
         ))));
       }
     };
@@ -187,20 +188,16 @@ impl NodeLightVM {
   }
   #[napi]
   pub fn load(&mut self, source: String) -> Result<()> {
-    self
-      .inner
-      .load_internal(source)
-      .map_err(into_napi_error)
+    self.inner.load_internal(source).map_err(into_napi_error)
   }
   #[napi]
   pub fn run(&mut self) -> Result<serde_json::Value> {
-    let raw_json = self
-      .inner
-      .run_internal(None)
-      .map_err(into_napi_error)?;
-    serde_json::from_str(&raw_json).map_err(|e| {
-      into_napi_error(system_error(format!("Failed to parse VM result: {}", e)))
-    })
+    let raw_json = match self.inner.run_internal(None).map_err(into_napi_error) {
+      Ok(value) => value,
+      Err(e) => return Err(e),
+    };
+    serde_json::from_str(&raw_json)
+      .map_err(|e| into_napi_error(system_error(format!("Failed to parse VM result: {}", e))))
   }
   #[napi]
   pub fn compile(
@@ -233,10 +230,10 @@ impl NodeLightVM {
       file_type: ftype,
       path: &path,
     };
-    self
-      .inner
-      .compile_internal(config)
-      .map_err(into_napi_error)?;
+    match self.inner.compile_internal(config).map_err(into_napi_error) {
+      Ok(_) => {}
+      Err(e) => return Err(e),
+    };
     let output_path = if matches!(ftype, FileType::Assembly) {
       if path.ends_with(".s") {
         path
@@ -260,10 +257,10 @@ impl NodeLightVM {
   }
   #[napi]
   pub fn inspect(&self) -> Result<serde_json::Value> {
-    let json_str = self
-      .inner
-      .inspect_internal()
-      .map_err(into_napi_error)?;
+    let json_str = match self.inner.inspect_internal().map_err(into_napi_error) {
+      Ok(value) => value,
+      Err(e) => return Err(e),
+    };
     serde_json::from_str(&json_str).map_err(|e| {
       into_napi_error(system_error(format!(
         "Failed to parse inspect object: {}",
@@ -273,10 +270,7 @@ impl NodeLightVM {
   }
   #[napi]
   pub fn halt(&mut self) -> Result<()> {
-    self
-      .inner
-      .halt_internal()
-      .map_err(into_napi_error)
+    self.inner.halt_internal().map_err(into_napi_error)
   }
   #[napi]
   pub fn on(&mut self, event_type: u32, callback: Function<String, ()>) -> Result<()> {
@@ -292,11 +286,17 @@ impl NodeLightVM {
         ))));
       }
     };
-    let mut threadsafe_callback = callback.build_threadsafe_function().build()?;
+    let mut threadsafe_callback = match callback.build_threadsafe_function().build() {
+      Ok(value) => value,
+      Err(e) => return Err(e),
+    };
     #[allow(deprecated)]
     {
       let env = napi::bindgen_prelude::Env::from_raw(std::ptr::null_mut());
-      threadsafe_callback.unref(&env)?;
+      match threadsafe_callback.unref(&env) {
+        Ok(_) => {}
+        Err(e) => return Err(e),
+      };
     }
     self
       .inner
@@ -307,18 +307,18 @@ impl NodeLightVM {
   }
   #[napi]
   pub fn embedded(&mut self) -> Result<serde_json::Value> {
-    self
-      .inner
-      .clear_outputs_internal()
-      .map_err(into_napi_error)?;
-    let _ = self
-      .inner
-      .run_internal(None)
-      .map_err(into_napi_error)?;
-    let outputs = self
-      .inner
-      .get_outputs_internal()
-      .map_err(into_napi_error)?;
+    match self.inner.clear_outputs_internal().map_err(into_napi_error) {
+      Ok(_) => {}
+      Err(e) => return Err(e),
+    };
+    let _ = match self.inner.run_internal(None).map_err(into_napi_error) {
+      Ok(value) => value,
+      Err(e) => return Err(e),
+    };
+    let outputs = match self.inner.get_outputs_internal().map_err(into_napi_error) {
+      Ok(value) => value,
+      Err(e) => return Err(e),
+    };
     Ok(serde_json::json!({
       "value": serde_json::Value::Null,
       "outputs": outputs,
@@ -334,13 +334,23 @@ impl NodeLightVM {
     let target_name = name.clone();
     let is_function = self.inner.functions.contains_key(target_name.as_str());
     if is_function {
-      let raw_result = self
+      let raw_result = match self
         .inner
         .call_exported_internal(target_name, args)
-        .map_err(into_napi_error)?;
-      let parsed: serde_json::Value = serde_json::from_str(&raw_result).map_err(|e| {
-        into_napi_error(system_error(format!("Failed to parse export return: {}", e)))
-      })?;
+        .map_err(into_napi_error)
+      {
+        Ok(value) => value,
+        Err(e) => return Err(e),
+      };
+      let parsed: serde_json::Value = match serde_json::from_str(&raw_result).map_err(|e| {
+        into_napi_error(system_error(format!(
+          "Failed to parse export return: {}",
+          e
+        )))
+      }) {
+        Ok(value) => value,
+        Err(e) => return Err(e),
+      };
       if parsed["status"] == "success" {
         let result_payload = parsed
           .get("result")
@@ -365,13 +375,20 @@ impl NodeLightVM {
         )))
       }
     } else {
-      let raw_result = self
+      let raw_result = match self
         .inner
         .var_exported_internal(target_name)
-        .map_err(into_napi_error)?;
-      let parsed: serde_json::Value = serde_json::from_str(&raw_result).map_err(|e| {
-        into_napi_error(system_error(format!("Failed to parse variable: {}", e)))
-      })?;
+        .map_err(into_napi_error)
+      {
+        Ok(value) => value,
+        Err(e) => return Err(e),
+      };
+      let parsed: serde_json::Value = match serde_json::from_str(&raw_result)
+        .map_err(|e| into_napi_error(system_error(format!("Failed to parse variable: {}", e))))
+      {
+        Ok(value) => value,
+        Err(e) => return Err(e),
+      };
       if let Some(obj) = parsed.as_object() {
         let defined = obj.get("defined").and_then(|v| v.as_bool()).unwrap_or(true);
         if defined {
@@ -412,10 +429,10 @@ impl NodeLightVM {
         )));
       }
     }
-    let mut bench_obj = self
-      .inner
-      .bench(&name)
-      .map_err(into_napi_error)?;
+    let mut bench_obj = match self.inner.bench(&name).map_err(into_napi_error) {
+      Ok(value) => value,
+      Err(e) => return Err(e),
+    };
     if let Some(b) = bytes {
       bench_obj = bench_obj.bytes(b as usize);
     }
@@ -473,18 +490,18 @@ impl NodeLightVM {
     explain: Option<bool>,
     hint: Option<bool>,
   ) -> Result<serde_json::Value> {
-    let input_string = serde_json::to_string(&bytecode).map_err(|e| {
-      into_napi_error(system_error(format!(
-        "Failed to serialize input: {}",
-        e
-      )))
-    })?;
-    let input_json: serde_json::Value = serde_json::from_str(&input_string).map_err(|e| {
-      into_napi_error(system_error(format!(
-        "Invalid input structure: {}",
-        e
-      )))
-    })?;
+    let input_string = match serde_json::to_string(&bytecode)
+      .map_err(|e| into_napi_error(system_error(format!("Failed to serialize input: {}", e))))
+    {
+      Ok(value) => value,
+      Err(e) => return Err(e),
+    };
+    let input_json: serde_json::Value = match serde_json::from_str(&input_string)
+      .map_err(|e| into_napi_error(system_error(format!("Invalid input structure: {}", e))))
+    {
+      Ok(value) => value,
+      Err(e) => return Err(e),
+    };
     let is_max_io = max_io.unwrap_or(100) as usize;
     let is_max_import = max_import.unwrap_or(3) as usize;
     let is_max_alloc = max_alloc.unwrap_or(50) as usize;
@@ -528,15 +545,15 @@ impl NodeLightVM {
         Capability::Unsafe => Some(Capability::Unsafe),
       })
       .collect();
-    let opt_str = vm_instance
+    let opt_str = match vm_instance
       .optimize_bytecode_internal(input_json)
-      .map_err(into_napi_error)?;
-    serde_json::from_str::<serde_json::Value>(&opt_str).map_err(|e| {
-      into_napi_error(system_error(format!(
-        "Internal JSON Parsing Failed: {}",
-        e
-      )))
-    })
+      .map_err(into_napi_error)
+    {
+      Ok(value) => value,
+      Err(e) => return Err(e),
+    };
+    serde_json::from_str::<serde_json::Value>(&opt_str)
+      .map_err(|e| into_napi_error(system_error(format!("Internal JSON Parsing Failed: {}", e))))
   }
   #[napi(js_name = "stringifyLtc")]
   pub fn napi_stringify_ltc(json: serde_json::Value) -> Result<String> {
@@ -562,7 +579,9 @@ mod tests {
       caps_raw: vec![99],
       ..Default::default()
     };
-    let error = NodeLightVM::napi_new(config).err().expect("expected an error");
+    let error = NodeLightVM::napi_new(config)
+      .err()
+      .expect("expected an error");
     assert_eq!(
       error.reason,
       system_error("Unknown capability: 99").to_string()
