@@ -47,7 +47,7 @@ fn main() {
     .expect("Failed to optimize bytecode");
   println!("{}", optimized_json);
 
-  vm.load(optimized_json);
+  vm.load(optimized_json).expect("Failed to load bytecode");
   vm.run(None);
   let add_func = vm.export("add".to_string());
   let x_var = vm.export("x".to_string());

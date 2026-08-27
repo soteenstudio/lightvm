@@ -4,5 +4,5 @@ let raw = r#"[
   ["set", "x"]
 ]"#;
 let optimized = tools.optimize_bytecode(raw)?;
-vm.load(optimized.clone())
+vm.load(optimized.clone())?
   .run(None);

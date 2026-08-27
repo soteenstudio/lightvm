@@ -10,7 +10,7 @@ let raw = serde_json::json!([
   ["set", "x"]
 ]);
 let optimized = tools.optimize_bytecode(raw)?;
-vm.load(optimized.clone())
+vm.load(optimized.clone())?
   .compile(CompileConfig {
     target_arch: TargetArch::AArch64,
     file_type: FileType::Binary,

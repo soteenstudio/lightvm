@@ -21,10 +21,17 @@ fn bench_vm_execution(c: &mut Criterion) {
     ["set", "x"]
   ]"#;
   let tools = vm.tools();
-  let optimized_json = tools
-    .optimize_bytecode(raw)
-    .expect("Failed to optimize bytecode");
-  vm.load(optimized_json.clone());
+  let optimized_json = match tools.optimize_bytecode(raw) {
+    Ok(optimized_json) => optimized_json,
+    Err(error) => {
+      eprintln!("Failed to optimize bytecode: {}", error);
+      return;
+    }
+  };
+  if let Err(error) = vm.load(optimized_json.clone()) {
+    eprintln!("Failed to load bytecode: {}", error);
+    return;
+  }
   let mut group = c.benchmark_group("LightVM Execution");
   group.bench_function("add_bench", |b: &mut Bencher| {
     b.iter(|| vm.run(None));
