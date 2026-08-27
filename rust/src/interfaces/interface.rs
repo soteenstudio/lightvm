@@ -29,10 +29,10 @@ use ahash::AHashMap;
 use regex::Regex;
 use serde::Serialize;
 use smol_str::SmolStr;
-use std::collections::HashSet;
-use std::sync::Arc;
+use std::collections::{HashSet, VecDeque};
 use std::sync::OnceLock;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
 pub type VmCallback = Box<dyn Fn(String) + Send + Sync>;
 pub type VmEventMap = AHashMap<VmEvent, Vec<VmCallback>>;
 #[derive(Serialize)]
@@ -66,6 +66,7 @@ pub struct LightVM {
   pub backtrace: bool,
   pub explain: bool,
   pub hint: bool,
+  pub(crate) native_errors: Arc<Mutex<VecDeque<VMError>>>,
 }
 impl LightVM {
   pub fn new_node(
@@ -108,6 +109,7 @@ impl LightVM {
       backtrace,
       explain,
       hint,
+      native_errors: Arc::new(Mutex::new(VecDeque::new())),
     }
   }
   #[inline(always)]
@@ -658,6 +660,7 @@ mod tests {
       backtrace: false,
       explain: false,
       hint: true,
+      native_errors: Arc::new(Mutex::new(VecDeque::new())),
     }
   }
   #[test]

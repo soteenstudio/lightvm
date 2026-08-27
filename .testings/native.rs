@@ -13,6 +13,14 @@ use lightvm::{
   types::{capability::Capability, time_budget::TimeBudget, vmconfig::VmConfig},
 };
 
+fn report_vm_error(vm: &mut LightVM) -> bool {
+  if let Some(error) = vm.take_error() {
+    eprintln!("{}", error);
+    return true;
+  }
+  false
+}
+
 fn main() {
   let mut vm = LightVM::new(VmConfig {
     caps: vec![Capability::Control, Capability::Observe, Capability::Unsafe],
@@ -42,12 +50,19 @@ fn main() {
     ["export", "x"],
   ]"#;
   let tools = vm.tools();
-  let optimized_json = tools
-    .optimize_bytecode(raw)
-    .expect("Failed to optimize bytecode");
+  let optimized_json = match tools.optimize_bytecode(raw) {
+    Ok(bytecode) => bytecode,
+    Err(_) => {
+      report_vm_error(&mut vm);
+      return;
+    }
+  };
   println!("{}", optimized_json);
 
   vm.load(optimized_json);
+  if report_vm_error(&mut vm) {
+    return;
+  }
   vm.run(None);
   let add_func = vm.export("add".to_string());
   let x_var = vm.export("x".to_string());

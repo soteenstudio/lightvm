@@ -14,4 +14,4 @@ pub(crate) mod display;
 pub(crate) mod error;
 pub(crate) mod get_backtrace;
 pub(crate) mod hints;
-pub(crate) use error::VMError;
+pub use error::VMError;

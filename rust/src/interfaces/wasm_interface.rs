@@ -90,6 +90,7 @@ impl WasmLightVM {
         backtrace: error_options.backtrace.unwrap_or(false),
         explain: error_options.explain.unwrap_or(false),
         hint: error_options.hint.unwrap_or(true),
+        native_errors: Arc::new(std::sync::Mutex::new(std::collections::VecDeque::new())),
       },
     })
   }

@@ -31,9 +31,9 @@ use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
 use half::f16;
 use smol_str::SmolStr;
-use std::collections::HashSet;
-use std::sync::Arc;
+use std::collections::{HashSet, VecDeque};
 use std::sync::atomic::AtomicBool;
+use std::sync::{Arc, Mutex};
 use unescape::unescape;
 pub struct ExportedHandle {
   name: String,
@@ -204,6 +204,7 @@ impl LightVM {
       backtrace: error_options.backtrace,
       explain: error_options.explain,
       hint: error_options.hint,
+      native_errors: Arc::new(Mutex::new(VecDeque::new())),
     }
   }
   pub fn set_max_io(mut self, value: usize) -> Self {
@@ -264,21 +265,34 @@ impl LightVM {
     self
   }
   /// Loads bytecode before execution.
-  ///
-  /// Panics if LightVM cannot convert or load the bytecode.
   pub fn load<T: IntoJsonValue>(&mut self, source: T) -> &mut Self {
-    let source_value = source
-      .into_json_value()
-      .expect("Failed to process load input");
+    let source_value = match source.into_json_value() {
+      Ok(value) => value,
+      Err(err) => {
+        self.set_native_error(VMError::SystemError(
+          format!("Failed to process load input: {}", err).into(),
+        ));
+        return self;
+      }
+    };
     let payload = if source_value.is_string() {
       source_value.as_str().unwrap_or("").to_string()
     } else {
       source_value.to_string()
     };
+    if let Err(err) = self.load_internal(payload) {
+      self.set_native_error(err);
+    }
     self
-      .load_internal(payload)
-      .expect("Failed to load bytecode");
-    self
+  }
+  /// Takes an error retained by the native workflow for a CLI or application boundary.
+  pub fn take_error(&mut self) -> Option<VMError> {
+    self.native_errors.lock().ok()?.pop_front()
+  }
+  fn set_native_error(&self, error: VMError) {
+    if let Ok(mut errors) = self.native_errors.lock() {
+      errors.push_back(error);
+    }
   }
   /// Function to start bytecode execution.
   ///
@@ -294,9 +308,14 @@ impl LightVM {
   /// vm.load(optimized.clone()).run(None);
   /// ```
   pub fn run(&mut self, options: Option<RunOptions>) -> String {
-    self
-      .run_internal(options)
-      .unwrap_or_else(|e| format!(r#"{{"status": "error", "message": "{}"}}"#, e))
+    match self.run_internal(options) {
+      Ok(output) => output,
+      Err(error) => {
+        let output = format!(r#"{{"status": "error", "message": "{}"}}"#, error);
+        self.set_native_error(error);
+        output
+      }
+    }
   }
   pub fn compile(&mut self, config: CompileConfig) -> Result<String, VMError> {
     let output_path = if matches!(config.file_type, FileType::Assembly) {
@@ -308,7 +327,10 @@ impl LightVM {
     } else {
       config.path.to_string()
     };
-    self.compile_internal(config)?;
+    if let Err(error) = self.compile_internal(config) {
+      self.set_native_error(error.clone());
+      return Err(error);
+    }
     Ok(output_path)
   }
   /// Function to export functions in the VM out.
@@ -344,7 +366,10 @@ impl LightVM {
   pub fn provide(&mut self, data: serde_json::Value) -> Result<&mut Self, VMError> {
     if let serde_json::Value::Object(map) = data {
       for (name, val) in map {
-        self.provide_internal(name.into(), val)?;
+        if let Err(error) = self.provide_internal(name.into(), val) {
+          self.set_native_error(error.clone());
+          return Err(error);
+        }
       }
     }
     Ok(self)
@@ -358,7 +383,9 @@ impl LightVM {
   /// println!("The VM has been terminated.");
   /// ```
   pub fn halt(&mut self) {
-    let _ = self.halt_internal();
+    if let Err(error) = self.halt_internal() {
+      self.set_native_error(error);
+    }
   }
   pub fn on<E, F>(&mut self, event: E, callback: F) -> &mut Self
   where
@@ -401,6 +428,7 @@ impl LightVM {
       hint: self.hint,
       can_control: self.caps.contains(&Capability::Control),
       can_debug: self.caps.contains(&Capability::Debug),
+      native_errors: self.native_errors.clone(),
     }
   }
 }
@@ -411,6 +439,7 @@ pub struct LightVMTools {
   pub hint: bool,
   pub can_control: bool,
   pub can_debug: bool,
+  native_errors: Arc<Mutex<VecDeque<VMError>>>,
 }
 #[cfg(not(feature = "node"))]
 impl LightVMTools {
@@ -432,6 +461,18 @@ impl LightVMTools {
   /// println!("{}", optimized);
   /// ```
   pub fn optimize_bytecode<T: IntoJsonValue>(
+    &self,
+    input: T,
+  ) -> Result<serde_json::Value, VMError> {
+    let result = self.optimize_bytecode_result(input);
+    if let Err(err) = &result {
+      if let Ok(mut errors) = self.native_errors.lock() {
+        errors.push_back(err.clone());
+      }
+    }
+    result
+  }
+  fn optimize_bytecode_result<T: IntoJsonValue>(
     &self,
     input: T,
   ) -> Result<serde_json::Value, VMError> {
@@ -581,12 +622,19 @@ mod tests {
     vm.load(json!([["stop"]])).run(None);
     assert_eq!(vm.bytecode.len(), 1);
     assert_eq!(vm.state, VmState::Idle);
+    assert!(vm.take_error().is_none());
   }
   #[test]
-  #[should_panic(expected = "Failed to load bytecode")]
-  fn load_panics_with_clear_message_for_invalid_bytecode() {
+  fn load_retains_vmerror_for_cli_boundary() {
     let mut vm = LightVM::new(VmConfig::default());
     vm.load("not valid bytecode");
+    assert_eq!(
+      vm.take_error(),
+      Some(VMError::InvalidOpcode {
+        ip: 0,
+        code: "INVALID_SOURCE".into(),
+      })
+    );
   }
   #[test]
   fn optimize_bytecode_fails_with_invalid_json() {
@@ -597,11 +645,16 @@ mod tests {
     let mut vm = LightVM::new(config);
     let tools = vm.tools();
     let result = tools.optimize_bytecode("{not valid json}");
-    assert!(result.is_err());
-    match result {
-      Err(VMError::SystemError(_)) => {}
+    let returned_error = match result {
+      Err(error @ VMError::SystemError(_)) => error,
       _ => panic!("Expected VMError::SystemError"),
-    }
+    };
+    assert_eq!(vm.take_error(), Some(returned_error));
+  }
+  #[test]
+  fn load_signature_remains_fluent() {
+    let _: for<'a> fn(&'a mut LightVM, serde_json::Value) -> &'a mut LightVM =
+      LightVM::load::<serde_json::Value>;
   }
   #[test]
   fn stringify_ltc_fails_with_invalid_input() {

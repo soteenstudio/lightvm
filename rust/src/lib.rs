@@ -31,6 +31,7 @@ pub use crate::interfaces::napi_interface::NodeLightVM;
 #[doc(hidden)]
 #[cfg(feature = "wasm")]
 pub use crate::interfaces::wasm_interface::WasmLightVM;
+pub use crate::utils::vmerror::VMError;
 #[cfg(feature = "node")]
 use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 #[cfg(not(feature = "node"))]

@@ -10,7 +10,7 @@
 
 use smol_str::SmolStr;
 use std::borrow::Cow;
-#[derive(Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum VMError {
   /// Occurs when the stack reaches the maximum limit specified by InitStack or default.
   StackOverflow {
