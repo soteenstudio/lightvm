@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::utils::vmerror::colors::*;
+use crate::modules::dying::colors::*;
 use crate::utils::vmerror::config::get_thread_or_global_config;
 use crate::utils::vmerror::error::VMError;
 use crate::utils::vmerror::get_backtrace::get_backtrace;

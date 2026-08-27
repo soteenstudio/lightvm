@@ -9,6 +9,7 @@
  */
 
 pub(crate) mod carzy;
+pub(crate) mod dying;
 pub(crate) mod gazle;
 pub(crate) mod itme;
 pub(crate) mod krates;
