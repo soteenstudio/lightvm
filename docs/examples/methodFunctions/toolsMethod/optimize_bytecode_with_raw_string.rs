@@ -3,5 +3,5 @@ let raw = r#"[
   ["val", "x"],
   ["set", "x"]
 ]"#;
-let optimized = tools.optimize_bytecode(raw)?;
-println!("{}", optimized);
+let optimized = tools.optimize_bytecode(raw);
+println!(optimized.clone());
