@@ -263,21 +263,22 @@ impl LightVM {
     self.hint = enabled;
     self
   }
-  /// Function used to load bytecode before execution
-  pub fn load<T: IntoJsonValue>(&mut self, source: T) -> Result<&mut Self, VMError> {
-    let source_value = source.into_json_value().map_err(|err| {
-      VMError::SystemError(SmolStr::new(format!(
-        "Failed to process load input: {}",
-        err
-      )))
-    })?;
+  /// Loads bytecode before execution.
+  ///
+  /// Panics if LightVM cannot convert or load the bytecode.
+  pub fn load<T: IntoJsonValue>(&mut self, source: T) -> &mut Self {
+    let source_value = source
+      .into_json_value()
+      .expect("Failed to process load input");
     let payload = if source_value.is_string() {
       source_value.as_str().unwrap_or("").to_string()
     } else {
       source_value.to_string()
     };
-    self.load_internal(payload)?;
-    Ok(self)
+    self
+      .load_internal(payload)
+      .expect("Failed to load bytecode");
+    self
   }
   /// Function to start bytecode execution.
   ///
@@ -290,8 +291,7 @@ impl LightVM {
   /// ]"#;
   /// let tools = vm.tools();
   /// let optimized = tools.optimize_bytecode(raw)?;
-  /// vm.load(optimized.clone())?;
-  /// vm.run(None);
+  /// vm.load(optimized.clone()).run(None);
   /// ```
   pub fn run(&mut self, options: Option<RunOptions>) -> String {
     self
@@ -571,6 +571,22 @@ mod tests {
     let mut vm = LightVM::new(config);
     let tools = vm.tools();
     assert_eq!(tools.parse_ltc_array("stop;").unwrap(), r#"["stop"]"#);
+  }
+  #[test]
+  fn load_supports_fluent_execution() {
+    let mut vm = LightVM::new(VmConfig {
+      caps: vec![Capability::Control],
+      ..Default::default()
+    });
+    vm.load(json!([["stop"]])).run(None);
+    assert_eq!(vm.bytecode.len(), 1);
+    assert_eq!(vm.state, VmState::Idle);
+  }
+  #[test]
+  #[should_panic(expected = "Failed to load bytecode")]
+  fn load_panics_with_clear_message_for_invalid_bytecode() {
+    let mut vm = LightVM::new(VmConfig::default());
+    vm.load("not valid bytecode");
   }
   #[test]
   fn optimize_bytecode_fails_with_invalid_json() {

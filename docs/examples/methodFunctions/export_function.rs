@@ -9,6 +9,6 @@ let raw = r#"[
   ["export", "add"]
 ]"#;
 let optimized = tools.optimize_bytecode(raw)?;
-vm.load(optimized)?;
+vm.load(optimized);
 let mut add_func = vm.export("add".to_string());
 println!("{:?}", add_func.call(&mut vm, vec![5.into(), 6.into()]));
