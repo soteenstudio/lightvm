@@ -103,9 +103,10 @@ export class LightVM {
     try {
       return fn();
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      console.error(message);
-      process.exit(1);
+      if (err instanceof Error) {
+        throw err;
+      }
+      throw new Error(String(err));
     }
   }
 
