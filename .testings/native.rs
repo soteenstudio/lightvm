@@ -18,7 +18,7 @@ fn main() {
     caps: vec![Capability::Control, Capability::Observe, Capability::Unsafe],
     ..Default::default()
   })
-  .set_max_io(5000000) 
+  .set_max_io(5000000)
   .set_max_ticks(1000)
   .set_max_stack_size(0)
   .with_nightly(true)
@@ -47,7 +47,7 @@ fn main() {
     .expect("Failed to optimize bytecode");
   println!("{}", optimized_json);
 
-  vm.load(optimized_json).expect("Failed to load bytecode");
+  vm.load(optimized_json);
   vm.run(None);
   let add_func = vm.export("add".to_string());
   let x_var = vm.export("x".to_string());
