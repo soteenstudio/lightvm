@@ -46,6 +46,31 @@ pub fn parse_ltc(code: &str) -> Vec<Instructions> {
     })
     .collect()
 }
+pub fn parse_ltc_to_vec(code: &str) -> Vec<Instructions> {
+  let cleaned_code = get_re().replace_all(code, "");
+  cleaned_code
+    .as_ref()
+    .split(';')
+    .map(|s: &str| s.trim())
+    .filter(|s: &&str| !s.is_empty())
+    .map(|line: &str| {
+      let mut parts = line.split_whitespace();
+      let op = parts.next().unwrap_or("").to_string();
+      let args: Vec<serde_json::Value> = parts
+        .map(|arg: &str| {
+          if arg.starts_with('"') && arg.ends_with('"') && arg.len() >= 2 {
+            serde_json::Value::from(&arg[1..arg.len() - 1])
+          } else if let Ok(num) = arg.parse::<f64>() {
+            serde_json::Value::from(num)
+          } else {
+            serde_json::Value::from(arg)
+          }
+        })
+        .collect();
+      Instructions::from_parts(op, args)
+    })
+    .collect()
+}
 pub fn stringify_ltc(instructions: Vec<Instructions>) -> String {
   let mut result = String::with_capacity(instructions.len() * 40);
   for (i, instr) in instructions.iter().enumerate() {

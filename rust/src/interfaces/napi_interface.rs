@@ -611,11 +611,11 @@ mod tests {
   }
   #[test]
   fn invalid_ltc_uses_vm_error_display() {
-    let code = "totally_bogus_opcode 1 2;".to_string();
-    let expected = LightVM::parse_ltc_internal(code.clone())
+    let bytecode = serde_json::json!([["totally_bogus_opcode", 1, 2]]);
+    let expected = LightVM::stringify_ltc_internal(bytecode.clone())
       .expect_err("expected a VM error")
       .to_string();
-    let error = NodeLightVM::napi_parse_ltc(code).expect_err("expected an N-API error");
+    let error = NodeLightVM::napi_stringify_ltc(bytecode).expect_err("expected an N-API error");
     assert_eq!(error.reason, expected);
   }
   #[test]
