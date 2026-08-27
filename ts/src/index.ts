@@ -89,18 +89,23 @@ export class LightVM {
       this.config.errorOptions?.explain ?? false,
       this.config.errorOptions?.hint ?? true,
     );
-    this.instance = new this.native.LightVM({
-      capsRaw: this.config.caps,
-      runtimeConfig: this.config.runtimeConfig,
-      errorOptions: this.config.errorOptions,
-    });
+    this.instance = this.wrap(
+      () =>
+        new this.native.LightVM({
+          capsRaw: this.config.caps,
+          runtimeConfig: this.config.runtimeConfig,
+          errorOptions: this.config.errorOptions,
+        }),
+    );
   }
 
   private wrap<T>(fn: () => T): T {
     try {
       return fn();
     } catch (err) {
-      throw err instanceof Error ? err : new Error(String(err));
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(message);
+      process.exit(1);
     }
   }
 
@@ -119,7 +124,7 @@ export class LightVM {
     methodName?: string,
   ) {
     const method = methodName ?? `with${sub[0].toUpperCase() + sub.slice(1)}`;
-    this.instance[method](val);
+    this.wrap(() => this.instance[method](val));
     (this.config[key] as any)[sub] = val;
     return this;
   }
@@ -189,13 +194,15 @@ export class LightVM {
   }
 
   provide(nameOrObj: string | Record<string, any>, value?: any) {
-    if (typeof nameOrObj === 'object') {
-      Object.entries(nameOrObj).forEach(([k, v]) =>
-        this.instance.provide(k, v),
-      );
-    } else {
-      this.instance.provide(nameOrObj, value);
-    }
+    this.wrap(() => {
+      if (typeof nameOrObj === 'object') {
+        Object.entries(nameOrObj).forEach(([k, v]) =>
+          this.instance.provide(k, v),
+        );
+      } else {
+        this.instance.provide(nameOrObj, value);
+      }
+    });
     return this;
   }
 
