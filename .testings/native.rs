@@ -45,5 +45,5 @@ fn main() {
 
   println!("{:?}", x_var.call(&mut vm, vec![]));
 
-  println!("{:?}", vm.info());
+  println!("{}", vm.info());
 }
