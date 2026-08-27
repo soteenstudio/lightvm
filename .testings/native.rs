@@ -18,7 +18,7 @@ fn main() {
     caps: vec![Capability::Control, Capability::Observe, Capability::Unsafe],
     ..Default::default()
   })
-  .set_max_io(5000000)
+  .set_max_io(5000000) 
   .set_max_ticks(1000)
   .set_max_stack_size(0)
   .with_nightly(true)
