@@ -9,8 +9,6 @@
  */
 
 pub const RED: &str = "\x1b[31;1m";
-#[warn(dead_code)]
-pub const YELLOW: &str = "\x1b[33m";
 pub const CYAN: &str = "\x1b[36m";
 pub const DARK_GRAY: &str = "\x1b[2;37m";
 pub const RESET: &str = "\x1b[0m";
