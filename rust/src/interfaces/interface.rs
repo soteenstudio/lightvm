@@ -10,8 +10,10 @@
 
 use crate::codegen::compile::compile;
 use crate::modules::{
-  gazle::optimize_bytecode::optimize_bytecode, itme::benchmark::Benchmark,
+  gazle::optimize_bytecode::optimize_bytecode,
+  itme::benchmark::Benchmark,
   krates::has_nightly_opcodes::has_nightly_opcodes,
+  versions::{InfoVM, get_versions},
 };
 use crate::types::{
   capability::Capability,
@@ -157,6 +159,9 @@ impl LightVM {
         listener(json_payload.clone());
       }
     }
+  }
+  pub fn info_internal(&mut self) -> InfoVM {
+    get_versions()
   }
   pub fn load_internal(&mut self, source: String) -> Result<(), VMError> {
     self.set_mode(self.backtrace, self.explain, self.hint);
@@ -539,7 +544,6 @@ impl LightVM {
         current_line.push(val);
       }
       if !current_line.is_empty() {
-        // Validate the line by calling Instructions::from_json_array
         Instructions::from_json_array(&serde_json::Value::Array(current_line.clone()), ip)?;
         array_of_array.push(current_line);
         ip += 1;
@@ -580,7 +584,6 @@ impl LightVM {
         current_line.push(val);
       }
       if !current_line.is_empty() {
-        // Validate and convert the line to an Instruction
         let instruction =
           Instructions::from_json_array(&serde_json::Value::Array(current_line), ip)?;
         validated_instructions.push(instruction);

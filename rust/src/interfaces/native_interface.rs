@@ -11,6 +11,7 @@
 #![cfg(not(feature = "node"))]
 use crate::interfaces::interface::LightVM;
 use crate::modules::itme::benchmark::Benchmark;
+use crate::modules::versions::InfoVM;
 use crate::traits::{json_value_trait::IntoJsonValue, vmevent_trait::IntoVmEvent};
 #[allow(unused_imports)]
 use crate::types::vmevent::VmEvent;
@@ -262,6 +263,9 @@ impl LightVM {
   pub fn with_hint(mut self, enabled: bool) -> Self {
     self.hint = enabled;
     self
+  }
+  pub fn info(&mut self) -> InfoVM {
+    self.info_internal()
   }
   /// Function used to load bytecode before execution
   pub fn load<T: IntoJsonValue>(&mut self, source: T) -> Result<&mut Self, VMError> {

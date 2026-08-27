@@ -43,11 +43,10 @@ fn main() {
   ]"#;
   let tools = vm.tools();
   let optimized_json = tools
-    .optimize_bytecode(raw)
-    .expect("Failed to optimize bytecode");
+    .optimize_bytecode(raw);
   println!("{}", optimized_json);
 
-  vm.load(optimized_json).expect("Failed to load bytecode");
+  vm.load(optimized_json);
   vm.run(None);
   let add_func = vm.export("add".to_string());
   let x_var = vm.export("x".to_string());
@@ -56,4 +55,6 @@ fn main() {
   println!("Result: {:?}", result);
 
   println!("{:?}", x_var.call(&mut vm, vec![]));
+
+  println!("{:?}", vm.info());
 }

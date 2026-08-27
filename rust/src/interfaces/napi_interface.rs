@@ -21,15 +21,12 @@ use napi::threadsafe_function::ThreadsafeFunctionCallMode;
 use napi_derive::napi;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
-
 fn into_napi_error(vm_error: VMError) -> Error {
   Error::from_reason(vm_error.to_string())
 }
-
 fn system_error(message: impl Into<smol_str::SmolStr>) -> VMError {
   VMError::SystemError(message.into())
 }
-
 #[napi(js_name = "LightVM")]
 pub struct NodeLightVM {
   inner: LightVM,
@@ -568,11 +565,9 @@ impl NodeLightVM {
     LightVM::parse_ltc_array_internal(code).map_err(into_napi_error)
   }
 }
-
 #[cfg(test)]
 mod tests {
   use super::*;
-
   #[test]
   fn unknown_capability_uses_vm_error_display() {
     let config = VmNapiConfig {
@@ -587,7 +582,6 @@ mod tests {
       system_error("Unknown capability: 99").to_string()
     );
   }
-
   #[test]
   fn invalid_time_budget_uses_vm_error_display() {
     let mut vm = NodeLightVM::napi_new(VmNapiConfig::default()).expect("expected a VM");
@@ -597,7 +591,6 @@ mod tests {
       system_error("Unknown time budget: 99").to_string()
     );
   }
-
   #[test]
   fn invalid_compile_options_use_vm_error_display() {
     let mut vm = NodeLightVM::napi_new(VmNapiConfig::default()).expect("expected a VM");
@@ -608,7 +601,6 @@ mod tests {
       arch_error.reason,
       system_error("Unknown target architecture: 99").to_string()
     );
-
     let file_type_error = vm
       .compile(0, 99, "output".to_string())
       .expect_err("expected a file type error");
@@ -617,7 +609,6 @@ mod tests {
       system_error("Unknown file type: 99").to_string()
     );
   }
-
   #[test]
   fn invalid_ltc_uses_vm_error_display() {
     let code = "totally_bogus_opcode 1 2;".to_string();
@@ -627,7 +618,6 @@ mod tests {
     let error = NodeLightVM::napi_parse_ltc(code).expect_err("expected an N-API error");
     assert_eq!(error.reason, expected);
   }
-
   #[test]
   fn valid_calls_keep_existing_return_values() {
     let mut vm = NodeLightVM::napi_new(VmNapiConfig::default()).expect("expected a VM");
