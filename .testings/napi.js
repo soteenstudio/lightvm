@@ -9,7 +9,7 @@ function main() {
   const vm = new LightVM({
     caps: [Capability.Observe, Capability.Control, Capability.Unsafe],
   })
-    .setTimeBudget(TimeBudget.Normal)
+    .setTimeBudget(6)
     .withNightly(true)
     .withHint(true)
     .withExplain(false)
