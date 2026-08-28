@@ -1,14 +1,14 @@
 # Batas Waktu Eksekusi
 Batas eksekusi di LightVM dikelola melalui prasetel batas waktu untuk mencegah *infinite loop* (pengulangan tanpa henti) dan skrip yang berjalan di luar kendali. Gunakan tabel berikut untuk memahami tingkat durasi dan batasan eksekusi yang tersedia:
 
-| Level Batas Waktu | Durasi | Deskripsi |
+| Level Batas Waktu | Maks Ticks | Deskripsi |
 | :--- | :--- | :--- |
-| `Cheap` **(Default)** | ~200ms | Dioptimalkan untuk eksekusi skrip yang cepat, ringan, dan validasi kilat. |
-| `Normal` | ~1000ms | Batas standar yang cocok untuk sebagian besar aplikasi umum. |
-| `Expensive` | ~5000ms | Jendela eksekusi diperpanjang untuk komputasi berat atau logika kompleks. |
+| `Cheap` **(Default)** | 200 ticks | Dioptimalkan untuk eksekusi skrip yang cepat, ringan, dan validasi kilat. |
+| `Normal` | 1000 ticks | Batas standar yang cocok untuk sebagian besar aplikasi umum. |
+| `Expensive` | 5000 ticks | Jendela eksekusi diperpanjang untuk komputasi berat atau logika kompleks. |
 
 ::: info
-**Time Budget** dan **Max Ticks** tidak akan saling berkonflik, karena **Time Budget** tidak digunakan pada saat eksekusi berlangsung.
+**Time Budget** diberlakukan selama eksekusi oleh GasMonitor, yang memeriksa jumlah tick pada setiap instruksi VM. Baik `set_time_budget` maupun `set_max_ticks` mengatur batas `max_ticks` yang sama, sehingga metode yang dipanggil paling terakhir akan menentukan batas eksekusi efektif.
 :::
 
 ::: warning Peringatan Performa
