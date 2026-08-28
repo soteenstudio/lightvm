@@ -591,17 +591,23 @@ mod tests {
     );
   }
   #[test]
-  fn optimizer_preserves_normal_time_budget() {
-    let mut vm = NodeLightVM::napi_new(VmNapiConfig {
+  fn optimizer_uses_normal_time_budget_for_more_optimization() {
+    let bytecode = serde_json::Value::Array(
+      (0..500_000)
+        .map(|_| serde_json::json!(["push", 0]))
+        .collect(),
+    );
+    let mut cheap_vm = NodeLightVM::napi_new(VmNapiConfig {
       caps_raw: vec![0],
       ..Default::default()
     })
     .expect("expected a VM");
-    vm.set_time_budget(1).expect("expected a valid budget");
-    assert_eq!(vm.inner.time_budget, TimeBudget::Normal);
-    let optimized = vm
+    cheap_vm
+      .set_time_budget(0)
+      .expect("expected a valid budget");
+    let cheaply_optimized = cheap_vm
       .napi_optimize_bytecode(
-        serde_json::json!([["stop"]]),
+        bytecode.clone(),
         None,
         None,
         None,
@@ -617,7 +623,29 @@ mod tests {
         None,
       )
       .expect("expected optimized bytecode");
-    assert!(optimized.is_array());
+    let mut vm = NodeLightVM::napi_new(VmNapiConfig {
+      caps_raw: vec![0],
+      ..Default::default()
+    })
+    .expect("expected a VM");
+    vm.set_time_budget(1).expect("expected a valid budget");
+    let normally_optimized = vm
+      .napi_optimize_bytecode(
+        bytecode, None, None, None, None, None, None, None, None, None, None, None, None, None,
+      )
+      .expect("expected optimized bytecode");
+    let normal_len = normally_optimized
+      .as_array()
+      .expect("expected an array")
+      .len();
+    let cheap_len = cheaply_optimized
+      .as_array()
+      .expect("expected an array")
+      .len();
+    assert!(
+      normal_len < cheap_len,
+      "expected normal optimization to remove more instructions (normal: {normal_len}, cheap: {cheap_len})"
+    );
   }
   #[test]
   fn invalid_compile_options_use_vm_error_display() {
