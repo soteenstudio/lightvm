@@ -8,13 +8,8 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::modules::dying::colors::*;
 use std::fmt;
-pub const RED: &str = "\x1b[31;1m";
-pub const _YELLOW: &str = "\x1b[33m";
-pub const CYAN: &str = "\x1b[36m";
-pub const DARK_GRAY: &str = "\x1b[2;37m";
-pub const RESET: &str = "\x1b[0m";
-pub const BOLD: &str = "\x1b[1m";
 #[derive(Debug)]
 struct ModuleVersions {
   carzy: String,
