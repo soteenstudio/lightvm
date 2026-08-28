@@ -143,10 +143,10 @@ impl NodeLightVM {
   }
   #[napi(js_name = "setTimeBudget")]
   pub fn set_time_budget(&mut self, value: u32) -> Result<()> {
-    let (budget, ticks) = match value {
-      0 => (TimeBudget::Cheap, 200),
-      1 => (TimeBudget::Normal, 1000),
-      2 => (TimeBudget::Expensive, 5000),
+    let budget = match value {
+      0 => TimeBudget::Cheap,
+      1 => TimeBudget::Normal,
+      2 => TimeBudget::Expensive,
       _ => {
         return Err(into_napi_error(system_error(format!(
           "Unknown time budget: {}",
@@ -155,7 +155,6 @@ impl NodeLightVM {
       }
     };
     self.inner.time_budget = budget;
-    self.inner.max_ticks = ticks;
     Ok(())
   }
   #[napi(js_name = "withUnsafeMode")]
@@ -524,7 +523,7 @@ impl NodeLightVM {
         max_stack_size: is_max_stack_size,
         allowed_imports: is_allowed_imports,
         unsafe_mode: is_unsafe_mode,
-        time_budget: TimeBudget::Cheap,
+        time_budget: self.inner.time_budget,
       },
       is_nightly,
       is_backtrace,
@@ -592,6 +591,63 @@ mod tests {
     );
   }
   #[test]
+  fn optimizer_uses_normal_time_budget_for_more_optimization() {
+    let bytecode = serde_json::Value::Array(
+      (0..500_000)
+        .map(|_| serde_json::json!(["push", 0]))
+        .collect(),
+    );
+    let mut cheap_vm = NodeLightVM::napi_new(VmNapiConfig {
+      caps_raw: vec![0],
+      ..Default::default()
+    })
+    .expect("expected a VM");
+    cheap_vm
+      .set_time_budget(0)
+      .expect("expected a valid budget");
+    let cheaply_optimized = cheap_vm
+      .napi_optimize_bytecode(
+        bytecode.clone(),
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+      )
+      .expect("expected optimized bytecode");
+    let mut vm = NodeLightVM::napi_new(VmNapiConfig {
+      caps_raw: vec![0],
+      ..Default::default()
+    })
+    .expect("expected a VM");
+    vm.set_time_budget(1).expect("expected a valid budget");
+    let normally_optimized = vm
+      .napi_optimize_bytecode(
+        bytecode, None, None, None, None, None, None, None, None, None, None, None, None, None,
+      )
+      .expect("expected optimized bytecode");
+    let normal_len = normally_optimized
+      .as_array()
+      .expect("expected an array")
+      .len();
+    let cheap_len = cheaply_optimized
+      .as_array()
+      .expect("expected an array")
+      .len();
+    assert!(
+      normal_len < cheap_len,
+      "expected normal optimization to remove more instructions (normal: {normal_len}, cheap: {cheap_len})"
+    );
+  }
+  #[test]
   fn invalid_compile_options_use_vm_error_display() {
     let mut vm = NodeLightVM::napi_new(VmNapiConfig::default()).expect("expected a VM");
     let arch_error = vm
@@ -623,7 +679,7 @@ mod tests {
     let mut vm = NodeLightVM::napi_new(VmNapiConfig::default()).expect("expected a VM");
     vm.set_time_budget(1).expect("expected a valid budget");
     assert_eq!(vm.inner.time_budget, TimeBudget::Normal);
-    assert_eq!(vm.inner.max_ticks, 1000);
+    assert_eq!(vm.inner.max_ticks, 1_000_000);
     assert_eq!(
       NodeLightVM::napi_parse_ltc("stop;".to_string()).expect("expected valid LTC"),
       r#"[["stop"]]"#

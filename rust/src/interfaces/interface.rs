@@ -253,7 +253,7 @@ impl LightVM {
         max_stack_size: self.max_stack_size,
         allowed_imports: self.allowed_imports.clone(),
         unsafe_mode: self.unsafe_mode,
-        time_budget: self.time_budget.clone(),
+        time_budget: self.time_budget,
       },
       symbol_table: None,
       vars: None,
@@ -396,7 +396,7 @@ impl LightVM {
         max_stack_size: self.max_stack_size,
         allowed_imports: self.allowed_imports.clone(),
         unsafe_mode: self.unsafe_mode,
-        time_budget: self.time_budget.clone(),
+        time_budget: self.time_budget,
       },
       symbol_table: None,
       vars: None,
@@ -505,7 +505,7 @@ impl LightVM {
       .enumerate()
       .map(|(ip, item)| Instructions::from_json_array(item, ip))
       .collect();
-    let optimized = optimize_bytecode(bytecode?);
+    let optimized = optimize_bytecode(bytecode?, self.time_budget);
     serde_json::to_string(&optimized)
       .map_err(|e| VMError::SystemError(format!("Failed to stringify: {}", e).into()))
   }

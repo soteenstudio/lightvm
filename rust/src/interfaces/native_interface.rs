@@ -27,7 +27,6 @@ use crate::types::{
   vmconfig::VmConfig,
   vmstate::VmState,
 };
-use crate::utils::get_time_budget::get_time_budget;
 use ahash::AHashMap;
 use half::f16;
 use smol_str::SmolStr;
@@ -260,7 +259,6 @@ impl LightVM {
     self
   }
   pub fn set_time_budget(mut self, value: TimeBudget) -> Self {
-    self.max_ticks = get_time_budget(value.clone());
     self.time_budget = value;
     self
   }
@@ -428,6 +426,7 @@ impl LightVM {
       backtrace: self.backtrace,
       explain: self.explain,
       hint: self.hint,
+      time_budget: self.time_budget,
       can_control: self.caps.contains(&Capability::Control),
       can_debug: self.caps.contains(&Capability::Debug),
     }
@@ -438,6 +437,7 @@ pub struct LightVMTools {
   pub backtrace: bool,
   pub explain: bool,
   pub hint: bool,
+  pub time_budget: TimeBudget,
   pub can_control: bool,
   pub can_debug: bool,
 }
@@ -485,6 +485,10 @@ impl LightVMTools {
         }
         caps
       },
+      security_config: Some(SecurityConfig {
+        time_budget: self.time_budget,
+        ..Default::default()
+      }),
       runtime_config: Some(RuntimeConfig {
         nightly: self.nightly,
       }),
@@ -493,7 +497,6 @@ impl LightVMTools {
         explain: self.explain,
         hint: self.hint,
       }),
-      ..Default::default()
     };
     let opt_str = LightVM::new(config)
       .optimize_bytecode_internal(bytecode)
@@ -669,6 +672,38 @@ mod tests {
     let tools = vm.tools();
     assert!(tools.can_control);
     assert!(!tools.can_debug);
+  }
+  #[test]
+  fn tools_optimizer_uses_normal_time_budget_for_more_optimization() {
+    let bytecode = serde_json::Value::Array(
+      (0..500_000)
+        .map(|_| serde_json::json!(["push", 0]))
+        .collect(),
+    );
+    let mut cheap_vm = LightVM::new(VmConfig {
+      caps: vec![Capability::Control],
+      ..Default::default()
+    })
+    .set_time_budget(TimeBudget::Cheap);
+    let cheaply_optimized = cheap_vm.tools().optimize_bytecode(bytecode.clone());
+    let mut vm = LightVM::new(VmConfig {
+      caps: vec![Capability::Control],
+      ..Default::default()
+    })
+    .set_time_budget(TimeBudget::Normal);
+    let normally_optimized = vm.tools().optimize_bytecode(bytecode);
+    let normal_len = normally_optimized
+      .as_array()
+      .expect("expected an array")
+      .len();
+    let cheap_len = cheaply_optimized
+      .as_array()
+      .expect("expected an array")
+      .len();
+    assert!(
+      normal_len < cheap_len,
+      "expected normal optimization to remove more instructions (normal: {normal_len}, cheap: {cheap_len})"
+    );
   }
   #[test]
   fn tools_bench_requires_debug_capability() {

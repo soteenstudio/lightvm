@@ -8,9 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-#[cfg(not(feature = "node"))]
 use crate::types::time_budget::TimeBudget;
-#[cfg(not(feature = "node"))]
 pub fn get_time_budget(value: TimeBudget) -> u64 {
   match value {
     TimeBudget::Cheap => 200,
