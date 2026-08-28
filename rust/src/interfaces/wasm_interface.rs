@@ -125,6 +125,15 @@ impl WasmLightVM {
   pub fn set_allowed_imports(&mut self, value: Vec<String>) {
     self.inner.allowed_imports = value;
   }
+  #[wasm_bindgen(js_name = "setTimeBudget")]
+  pub fn set_time_budget(&mut self, value: u32) {
+    let budget = match value {
+      0 => TimeBudget::Cheap,
+      1 => TimeBudget::Normal,
+      2 => TimeBudget::Expensive,
+    };
+    self.inner.time_budget = budget;
+  }
   #[wasm_bindgen(js_name = "withUnsafeMode")]
   pub fn with_unsafe_mode(&mut self, enabled: bool) {
     self.inner.unsafe_mode = enabled;
