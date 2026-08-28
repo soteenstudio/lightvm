@@ -7,6 +7,10 @@ Execution limits in LightVM are managed through preset time budgets to prevent i
 | `Normal` | ~1000ms | Standard limit suitable for general-purpose applications. |
 | `Expensive` | ~5000ms | Extended execution window for heavy computations or complex logic. |
 
+::: info
+**Time Budget** and **Max Ticks** will not cause any conflicts, as **Time Budget** is not utilized during execution.
+:::
+
 ::: warning Performance Notice
 Choose the appropriate budget level carefully. Setting an unnecessarily high budget for untrusted scripts may risk resource exhaustion or hanging execution threads.
 :::

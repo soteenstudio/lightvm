@@ -75,13 +75,11 @@ impl LightVM {
     explain: bool,
     hint: bool,
   ) -> Self {
-    use crate::types::capability::Capability;
     use crate::types::value::Value;
     use crate::types::vmstate::VmState;
     use ahash::AHashMap;
     use std::collections::HashSet;
-    let mut caps_set = HashSet::new();
-    caps_set.insert(Capability::Observe);
+    let caps_set = HashSet::new();
     Self {
       bytecode: Vec::new(),
       listeners: AHashMap::new(),
