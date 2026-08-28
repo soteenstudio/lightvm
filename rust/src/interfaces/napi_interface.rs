@@ -523,7 +523,7 @@ impl NodeLightVM {
         max_stack_size: is_max_stack_size,
         allowed_imports: is_allowed_imports,
         unsafe_mode: is_unsafe_mode,
-        time_budget: TimeBudget::Cheap,
+        time_budget: self.inner.time_budget,
       },
       is_nightly,
       is_backtrace,
@@ -589,6 +589,35 @@ mod tests {
       error.reason,
       system_error("Unknown time budget: 99").to_string()
     );
+  }
+  #[test]
+  fn optimizer_preserves_normal_time_budget() {
+    let mut vm = NodeLightVM::napi_new(VmNapiConfig {
+      caps_raw: vec![0],
+      ..Default::default()
+    })
+    .expect("expected a VM");
+    vm.set_time_budget(1).expect("expected a valid budget");
+    assert_eq!(vm.inner.time_budget, TimeBudget::Normal);
+    let optimized = vm
+      .napi_optimize_bytecode(
+        serde_json::json!([["stop"]]),
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+      )
+      .expect("expected optimized bytecode");
+    assert!(optimized.is_array());
   }
   #[test]
   fn invalid_compile_options_use_vm_error_display() {
