@@ -8,7 +8,6 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub(crate) mod colors;
 pub(crate) mod config;
 pub(crate) mod display;
 pub(crate) mod error;

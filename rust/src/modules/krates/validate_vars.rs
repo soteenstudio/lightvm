@@ -8,8 +8,8 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::modules::vmerror::VMError;
 use crate::types::instructions::Instructions;
-use crate::utils::vmerror::VMError;
 pub fn validate_vars(bytecode: &[Instructions], var_count: usize) -> Result<(), VMError> {
   for (ip, instr) in bytecode.iter().enumerate() {
     let idx = match instr {

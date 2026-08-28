@@ -12,10 +12,10 @@ use crate::instructions::math::arithmetic::mul::{
   mul_f16in::mul_f16in, mul_f32in::mul_f32in, mul_f64in::mul_f64in, mul_i16in::mul_i16in,
   mul_i32in::mul_i32in, mul_i64in::mul_i64in, mul_i128in::mul_i128in,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn mul_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {

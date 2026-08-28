@@ -8,9 +8,9 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::modules::vmerror::VMError;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn push_i32_func(stack: &mut Stack, val: &i32, ip: usize) -> Result<(), VMError> {
   if stack.len() == stack.capacity() {

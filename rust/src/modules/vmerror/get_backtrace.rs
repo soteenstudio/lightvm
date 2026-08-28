@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::utils::vmerror::colors::*;
+use crate::modules::dying::colors::*;
 use backtrace::Backtrace;
 use std::cell::RefCell;
 thread_local! {

@@ -10,12 +10,12 @@
 
 #![cfg(feature = "node")]
 use crate::interfaces::interface::LightVM;
+use crate::modules::vmerror::VMError;
 use crate::types::{
   capability::Capability, compile_config::CompileConfig, file_type::FileType,
   security_config::SecurityConfig, target_arch::TargetArch, time_budget::TimeBudget,
   vmconfig::VmNapiConfig,
 };
-use crate::utils::vmerror::VMError;
 use napi::bindgen_prelude::*;
 use napi::threadsafe_function::ThreadsafeFunctionCallMode;
 use napi_derive::napi;

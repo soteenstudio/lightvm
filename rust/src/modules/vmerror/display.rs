@@ -8,11 +8,11 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::utils::vmerror::colors::*;
-use crate::utils::vmerror::config::get_thread_or_global_config;
-use crate::utils::vmerror::error::VMError;
-use crate::utils::vmerror::get_backtrace::get_backtrace;
-use crate::utils::vmerror::hints::get_hint;
+use crate::modules::dying::colors::*;
+use crate::modules::vmerror::config::get_thread_or_global_config;
+use crate::modules::vmerror::error::VMError;
+use crate::modules::vmerror::get_backtrace::get_backtrace;
+use crate::modules::vmerror::hints::get_hint;
 use smol_str::SmolStr;
 use std::fmt;
 impl fmt::Display for VMError {

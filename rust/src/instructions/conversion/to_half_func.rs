@@ -8,8 +8,8 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::modules::vmerror::VMError;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 use half::f16;
 #[cold]
 #[inline(never)]

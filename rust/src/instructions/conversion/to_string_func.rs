@@ -8,8 +8,8 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::modules::vmerror::VMError;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 use smol_str::SmolStr;
 #[cold]
 #[inline(never)]

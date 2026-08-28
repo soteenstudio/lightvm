@@ -9,9 +9,9 @@
  */
 
 use crate::codegen::arch::aarch64::compile_aarch64;
+use crate::modules::vmerror::VMError;
 use crate::types::instructions::Instructions;
 use crate::types::{file_type::FileType, target_arch::TargetArch};
-use crate::utils::vmerror::VMError;
 use std::fs;
 use std::fs::OpenOptions;
 use std::io::Write;

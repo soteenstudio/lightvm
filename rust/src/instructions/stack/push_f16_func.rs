@@ -8,9 +8,9 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::modules::vmerror::VMError;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 use half::f16;
 #[inline(always)]
 pub fn push_f16_func(stack: &mut Stack, val: &f16, ip: usize) -> Result<(), VMError> {

@@ -12,10 +12,10 @@ use crate::instructions::math::arithmetic::div::{
   div_f16in::div_f16in, div_f32in::div_f32in, div_f64in::div_f64in, div_i16in::div_i16in,
   div_i32in::div_i32in, div_i64in::div_i64in, div_i128in::div_i128in,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn div_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {

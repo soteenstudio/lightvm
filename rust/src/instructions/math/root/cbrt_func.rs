@@ -11,10 +11,10 @@
 use crate::instructions::math::root::cbrt::{
   cbrt_f16in::cbrt_f16in, cbrt_f32in::cbrt_f32in, cbrt_f64in::cbrt_f64in,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn cbrt_values(a: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {

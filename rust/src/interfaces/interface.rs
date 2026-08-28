@@ -9,6 +9,7 @@
  */
 
 use crate::codegen::compile::compile;
+use crate::modules::vmerror::VMError;
 use crate::modules::{
   gazle::optimize_bytecode::optimize_bytecode,
   itme::benchmark::Benchmark,
@@ -25,7 +26,6 @@ use crate::types::{
   vmevent::VmEvent,
   vmstate::VmState,
 };
-use crate::utils::vmerror::VMError;
 use crate::vm::run::run;
 use ahash::AHashMap;
 use regex::Regex;
@@ -123,7 +123,7 @@ impl LightVM {
     Ok(())
   }
   pub fn set_mode(&self, backtrace: bool, explain: bool, hint: bool) {
-    crate::utils::vmerror::config::set_thread_error_config(backtrace, explain, hint);
+    crate::modules::vmerror::config::set_thread_error_config(backtrace, explain, hint);
   }
   pub fn index_metadata(&mut self) {
     self.functions.clear();
@@ -165,9 +165,9 @@ impl LightVM {
   }
   pub fn load_internal(&mut self, source: String) -> Result<(), VMError> {
     self.set_mode(self.backtrace, self.explain, self.hint);
-    crate::utils::vmerror::get_backtrace::clear_backtrace();
+    crate::modules::vmerror::get_backtrace::clear_backtrace();
     if self.backtrace {
-      crate::utils::vmerror::get_backtrace::capture_backtrace();
+      crate::modules::vmerror::get_backtrace::capture_backtrace();
     }
     let trimmed = source.trim();
     let raw_code: String;
@@ -225,9 +225,9 @@ impl LightVM {
   }
   pub fn run_internal(&mut self, _options: Option<RunOptions>) -> Result<String, VMError> {
     self.set_mode(self.backtrace, self.explain, self.hint);
-    crate::utils::vmerror::get_backtrace::clear_backtrace();
+    crate::modules::vmerror::get_backtrace::clear_backtrace();
     if self.backtrace {
-      crate::utils::vmerror::get_backtrace::capture_backtrace();
+      crate::modules::vmerror::get_backtrace::capture_backtrace();
     }
     self.require(Capability::Control)?;
     if self.bytecode.is_empty() {
@@ -274,9 +274,9 @@ impl LightVM {
   #[inline]
   pub fn compile_internal(&mut self, config: CompileConfig) -> Result<(), VMError> {
     self.set_mode(self.backtrace, self.explain, self.hint);
-    crate::utils::vmerror::get_backtrace::clear_backtrace();
+    crate::modules::vmerror::get_backtrace::clear_backtrace();
     if self.backtrace {
-      crate::utils::vmerror::get_backtrace::capture_backtrace();
+      crate::modules::vmerror::get_backtrace::capture_backtrace();
     }
     self.require(Capability::Control)?;
     if self.bytecode.is_empty() {
@@ -484,9 +484,9 @@ impl LightVM {
   ) -> Result<String, VMError> {
     self.require(Capability::Control)?;
     self.set_mode(self.backtrace, self.explain, self.hint);
-    crate::utils::vmerror::get_backtrace::clear_backtrace();
+    crate::modules::vmerror::get_backtrace::clear_backtrace();
     if self.backtrace {
-      crate::utils::vmerror::get_backtrace::capture_backtrace();
+      crate::modules::vmerror::get_backtrace::capture_backtrace();
     }
     let json_str = bytecode_raw.to_string();
     if !self.nightly && has_nightly_opcodes(&json_str) {
@@ -805,7 +805,7 @@ mod tests {
   }
   #[test]
   fn optimize_bytecode_internal_denied_does_not_change_mode_or_state() {
-    use crate::utils::vmerror::config::{get_thread_or_global_config, set_thread_error_config};
+    use crate::modules::vmerror::config::{get_thread_or_global_config, set_thread_error_config};
     let mut vm = make_vm(vec![Capability::Observe]);
     vm.backtrace = true;
     vm.explain = true;

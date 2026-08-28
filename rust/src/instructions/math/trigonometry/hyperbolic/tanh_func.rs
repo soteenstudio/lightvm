@@ -11,10 +11,10 @@
 use crate::instructions::math::trigonometry::hyperbolic::tanh::{
   tanh_f16in::tanh_f16in, tanh_f32in::tanh_f32in, tanh_f64in::tanh_f64in,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn tanh_values(a: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {

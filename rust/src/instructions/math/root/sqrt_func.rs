@@ -11,10 +11,10 @@
 use crate::instructions::math::root::sqrt::{
   sqrt_f16in::sqrt_f16in, sqrt_f32in::sqrt_f32in, sqrt_f64in::sqrt_f64in,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn sqrt_values(a: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
