@@ -27,7 +27,6 @@ use crate::types::{
   vmconfig::VmConfig,
   vmstate::VmState,
 };
-use crate::utils::get_time_budget::get_time_budget;
 use ahash::AHashMap;
 use half::f16;
 use smol_str::SmolStr;
@@ -498,7 +497,6 @@ impl LightVMTools {
         explain: self.explain,
         hint: self.hint,
       }),
-      ..Default::default()
     };
     let opt_str = LightVM::new(config)
       .optimize_bytecode_internal(bytecode)
