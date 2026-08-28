@@ -11,7 +11,7 @@
 #![cfg(feature = "wasm")]
 use crate::interfaces::interface::LightVM;
 use crate::modules::vmerror::VMError;
-use crate::types::{capability::Capability, vmconfig::VmWasmConfig};
+use crate::types::{capability::Capability, time_budget::TimeBudget, vmconfig::VmWasmConfig};
 use wasm_bindgen::prelude::*;
 #[wasm_bindgen(js_name = "LightVM")]
 pub struct WasmLightVM {
@@ -124,6 +124,22 @@ impl WasmLightVM {
   #[wasm_bindgen(js_name = "setAllowedImports")]
   pub fn set_allowed_imports(&mut self, value: Vec<String>) {
     self.inner.allowed_imports = value;
+  }
+  #[wasm_bindgen(js_name = "setTimeBudget")]
+  pub fn set_time_budget(&mut self, value: u32) -> Result<(), JsValue> {
+    let budget = match value {
+      0 => TimeBudget::Cheap,
+      1 => TimeBudget::Normal,
+      2 => TimeBudget::Expensive,
+      _ => {
+        return Err(JsValue::from(js_sys::Error::new(&format!(
+          "Unknown time budget: {}",
+          value
+        ))));
+      }
+    };
+    self.inner.time_budget = budget;
+    Ok(())
   }
   #[wasm_bindgen(js_name = "withUnsafeMode")]
   pub fn with_unsafe_mode(&mut self, enabled: bool) {
@@ -342,6 +358,7 @@ impl WasmLightVM {
       backtrace: self.inner.backtrace,
       explain: self.inner.explain,
       hint: self.inner.hint,
+      time_budget: self.inner.time_budget,
       can_observe: self.inner.caps.contains(&Capability::Observe),
       can_control: self.inner.caps.contains(&Capability::Control),
       can_debug: self.inner.caps.contains(&Capability::Debug),
@@ -355,27 +372,21 @@ pub struct WasmLightVMTools {
   pub backtrace: bool,
   pub explain: bool,
   pub hint: bool,
+  time_budget: TimeBudget,
   pub can_observe: bool,
   pub can_control: bool,
   pub can_debug: bool,
   pub can_unsafe: bool,
 }
-#[wasm_bindgen(js_class = "LightVMTools")]
 impl WasmLightVMTools {
-  #[wasm_bindgen(js_name = "optimizeBytecode")]
-  pub fn optimize_bytecode(&self, bytecode: JsValue) -> Result<JsValue, JsValue> {
-    use crate::modules::vmerror::VMError;
-    use crate::types::capability::Capability;
+  fn optimizer_vm(&self) -> LightVM {
     use crate::types::security_config::SecurityConfig;
     use std::collections::HashSet;
-    let input_json: serde_json::Value = serde_wasm_bindgen::from_value(bytecode).map_err(|e| {
-      wasm_bindgen::JsValue::from(js_sys::Error::new(&format!(
-        "Invalid input structure: {}",
-        e
-      )))
-    })?;
     let mut vm_instance = LightVM::new_node(
-      SecurityConfig::default(),
+      SecurityConfig {
+        time_budget: self.time_budget,
+        ..Default::default()
+      },
       self.nightly,
       self.backtrace,
       self.explain,
@@ -397,6 +408,21 @@ impl WasmLightVMTools {
       }
       caps
     };
+    vm_instance
+  }
+}
+#[wasm_bindgen(js_class = "LightVMTools")]
+impl WasmLightVMTools {
+  #[wasm_bindgen(js_name = "optimizeBytecode")]
+  pub fn optimize_bytecode(&self, bytecode: JsValue) -> Result<JsValue, JsValue> {
+    use crate::modules::vmerror::VMError;
+    let input_json: serde_json::Value = serde_wasm_bindgen::from_value(bytecode).map_err(|e| {
+      wasm_bindgen::JsValue::from(js_sys::Error::new(&format!(
+        "Invalid input structure: {}",
+        e
+      )))
+    })?;
+    let mut vm_instance = self.optimizer_vm();
     let opt_str = vm_instance
       .optimize_bytecode_internal(input_json)
       .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))?;
@@ -452,6 +478,12 @@ unsafe impl Sync for RcFnWrapper {}
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::types::security_config::SecurityConfig;
+  fn vm_with_control_capability() -> WasmLightVM {
+    let mut inner = LightVM::new_node(SecurityConfig::default(), false, false, false, true);
+    inner.caps.insert(Capability::Control);
+    WasmLightVM { inner }
+  }
   #[test]
   fn test_config_parsing() {
     let json_data = serde_json::json!({
@@ -470,5 +502,41 @@ mod tests {
       assert_eq!(vm.inner.hint, false);
     }
     assert_eq!(config.runtime_config.unwrap().nightly, Some(true));
+  }
+  #[test]
+  fn tools_optimizer_uses_normal_time_budget_for_more_optimization() {
+    let bytecode = serde_json::Value::Array(
+      (0..500_000)
+        .map(|_| serde_json::json!(["push", 0]))
+        .collect(),
+    );
+    let mut cheap_vm = vm_with_control_capability();
+    cheap_vm
+      .set_time_budget(0)
+      .expect("expected a valid cheap budget");
+    let cheaply_optimized = cheap_vm
+      .tools()
+      .optimizer_vm()
+      .optimize_bytecode_internal(bytecode.clone())
+      .expect("expected cheap optimization to succeed");
+    let mut normal_vm = vm_with_control_capability();
+    normal_vm
+      .set_time_budget(1)
+      .expect("expected a valid normal budget");
+    let normally_optimized = normal_vm
+      .tools()
+      .optimizer_vm()
+      .optimize_bytecode_internal(bytecode)
+      .expect("expected normal optimization to succeed");
+    let cheap_len = serde_json::from_str::<Vec<serde_json::Value>>(&cheaply_optimized)
+      .expect("expected cheap output to be valid bytecode")
+      .len();
+    let normal_len = serde_json::from_str::<Vec<serde_json::Value>>(&normally_optimized)
+      .expect("expected normal output to be valid bytecode")
+      .len();
+    assert!(
+      normal_len < cheap_len,
+      "expected normal optimization to remove more instructions (normal: {normal_len}, cheap: {cheap_len})"
+    );
   }
 }

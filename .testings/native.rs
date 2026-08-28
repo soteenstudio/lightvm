@@ -28,7 +28,7 @@ fn main() {
     ["val", "x"],
     ["push", 5],
     ["set", "x"],
-    ["export", "x"],
+    ["export", "x"]
   ]"#;
   let tools = vm.tools();
   let optimized_json = tools

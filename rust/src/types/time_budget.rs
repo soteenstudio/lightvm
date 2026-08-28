@@ -9,7 +9,7 @@
  */
 
 use serde::{Deserialize, Serialize};
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 pub enum TimeBudget {
   Cheap,
   Normal,
