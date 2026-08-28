@@ -12,10 +12,10 @@ use crate::instructions::math::arithmetic::r#mod::{
   mod_f16in::mod_f16in, mod_f32in::mod_f32in, mod_f64in::mod_f64in, mod_i16in::mod_i16in,
   mod_i32in::mod_i32in, mod_i64in::mod_i64in, mod_i128in::mod_i128in,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn mod_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {

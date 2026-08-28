@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::utils::vmerror::error::{Hint, VMError};
+use crate::modules::vmerror::error::{Hint, VMError};
 use std::borrow::Cow;
 pub fn get_hint(err: &VMError) -> Option<Hint> {
   match err {

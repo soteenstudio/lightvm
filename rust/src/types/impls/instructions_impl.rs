@@ -8,10 +8,10 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::modules::vmerror::VMError;
 use crate::types::instructions::Instructions;
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
 use crate::utils::map_primitive::map_primitive;
-use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
 use serde_json::Value as JsonValue;
 use smol_str::SmolStr;

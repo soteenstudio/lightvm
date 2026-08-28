@@ -8,9 +8,9 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::modules::vmerror::VMError;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 use smol_str::SmolStr;
 #[inline(always)]
 pub fn access_func(stack: &mut Stack, prop: &SmolStr, ip: usize) -> Result<(), VMError> {

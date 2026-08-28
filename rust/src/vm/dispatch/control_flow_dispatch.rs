@@ -13,6 +13,7 @@ use crate::instructions::control_flow::{
   instantiate_func::instantiate_func, jump_func::jump_func, return_func::return_func,
   stop_func::stop_func,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::stack::Stack;
 use crate::types::{
   control_flow_signal::ControlFlowSignal,
@@ -20,7 +21,6 @@ use crate::types::{
   value::{FuncMetadata, Value},
   var_stack::VarStack,
 };
-use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
 use smol_str::SmolStr;
 #[inline(always)]

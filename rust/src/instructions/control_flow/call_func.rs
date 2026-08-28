@@ -8,9 +8,9 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::modules::vmerror::VMError;
 use crate::types::stack::Stack;
 use crate::types::value::{FuncMetadata, Value};
-use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
 use smol_str::SmolStr;
 #[inline]

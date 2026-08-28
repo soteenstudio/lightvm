@@ -14,4 +14,3 @@ pub(crate) mod format_output;
 pub(crate) mod get_time_budget;
 pub(crate) mod loader;
 pub(crate) mod map_primitive;
-pub(crate) mod vmerror;

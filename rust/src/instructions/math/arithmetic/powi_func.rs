@@ -11,10 +11,10 @@
 use crate::instructions::math::arithmetic::powi::{
   powi_f16in::powi_f16in, powi_f32in::powi_f32in, powi_f64in::powi_f64in,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn powi_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {

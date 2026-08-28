@@ -11,10 +11,10 @@
 use crate::instructions::math::trigonometry::inverse::atan2::{
   atan2_f16in::atan2_f16in, atan2_f32in::atan2_f32in, atan2_f64in::atan2_f64in,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn atan2_values(y: Value, x: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {

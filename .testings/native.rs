@@ -28,7 +28,7 @@ fn main() {
     ["val", "x"],
     ["push", 5],
     ["set", "x"],
-    ["export", "x"]
+    ["export", "x"],
   ]"#;
   let optimized_json = vm.tools().optimize_bytecode(raw);
   println!("{}", optimized_json);

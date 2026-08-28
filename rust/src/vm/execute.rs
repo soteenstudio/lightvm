@@ -14,12 +14,12 @@ use crate::modules::krates::{
   validate_security::validate_security, validate_vars::validate_vars,
 };
 use crate::modules::torja::resolve_symbols::resolve_symbols;
+use crate::modules::vmerror::VMError;
 use crate::types::{
   control_flow_signal::ControlFlowSignal,
   instructions::Instructions,
   value::{RunOptions, Value},
 };
-use crate::utils::vmerror::VMError;
 use crate::vm::dispatch::{
   collections_dispatch::collections_dispatch, comparison_dispatch::comparison_dispatch,
   control_flow_dispatch::control_flow_dispatch, conversions_dispatch::conversions_dispatch,

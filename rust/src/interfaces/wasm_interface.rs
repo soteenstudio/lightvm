@@ -10,8 +10,8 @@
 
 #![cfg(feature = "wasm")]
 use crate::interfaces::interface::LightVM;
+use crate::modules::vmerror::VMError;
 use crate::types::{capability::Capability, vmconfig::VmWasmConfig};
-use crate::utils::vmerror::VMError;
 use wasm_bindgen::prelude::*;
 #[wasm_bindgen(js_name = "LightVM")]
 pub struct WasmLightVM {
@@ -364,9 +364,9 @@ pub struct WasmLightVMTools {
 impl WasmLightVMTools {
   #[wasm_bindgen(js_name = "optimizeBytecode")]
   pub fn optimize_bytecode(&self, bytecode: JsValue) -> Result<JsValue, JsValue> {
+    use crate::modules::vmerror::VMError;
     use crate::types::capability::Capability;
     use crate::types::security_config::SecurityConfig;
-    use crate::utils::vmerror::VMError;
     use std::collections::HashSet;
     let input_json: serde_json::Value = serde_wasm_bindgen::from_value(bytecode).map_err(|e| {
       wasm_bindgen::JsValue::from(js_sys::Error::new(&format!(
@@ -416,7 +416,7 @@ impl WasmLightVMTools {
   }
   #[wasm_bindgen(js_name = "stringifyLtc")]
   pub fn stringify_ltc(&self, json: JsValue) -> Result<String, JsValue> {
-    use crate::utils::vmerror::VMError;
+    use crate::modules::vmerror::VMError;
     let serde_json: serde_json::Value = serde_wasm_bindgen::from_value(json).map_err(|e| {
       wasm_bindgen::JsValue::from(js_sys::Error::new(&format!(
         "Invalid json structure: {}",

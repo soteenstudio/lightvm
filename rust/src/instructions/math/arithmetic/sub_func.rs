@@ -12,10 +12,10 @@ use crate::instructions::math::arithmetic::sub::{
   sub_f16in::sub_f16in, sub_f32in::sub_f32in, sub_f64in::sub_f64in, sub_i16in::sub_i16in,
   sub_i32in::sub_i32in, sub_i64in::sub_i64in,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn sub_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
