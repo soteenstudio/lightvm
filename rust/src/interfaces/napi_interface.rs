@@ -651,7 +651,7 @@ mod tests {
     let mut vm = NodeLightVM::napi_new(VmNapiConfig::default()).expect("expected a VM");
     vm.set_time_budget(1).expect("expected a valid budget");
     assert_eq!(vm.inner.time_budget, TimeBudget::Normal);
-    assert_eq!(vm.inner.max_ticks, 1000);
+    assert_eq!(vm.inner.max_ticks, 1_000_000);
     assert_eq!(
       NodeLightVM::napi_parse_ltc("stop;".to_string()).expect("expected valid LTC"),
       r#"[["stop"]]"#
