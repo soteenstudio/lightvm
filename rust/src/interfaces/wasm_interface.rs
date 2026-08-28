@@ -479,13 +479,11 @@ unsafe impl Sync for RcFnWrapper {}
 mod tests {
   use super::*;
   use crate::types::security_config::SecurityConfig;
-
   fn vm_with_control_capability() -> WasmLightVM {
     let mut inner = LightVM::new_node(SecurityConfig::default(), false, false, false, true);
     inner.caps.insert(Capability::Control);
     WasmLightVM { inner }
   }
-
   #[test]
   fn test_config_parsing() {
     let json_data = serde_json::json!({
@@ -505,7 +503,6 @@ mod tests {
     }
     assert_eq!(config.runtime_config.unwrap().nightly, Some(true));
   }
-
   #[test]
   fn tools_optimizer_uses_normal_time_budget_for_more_optimization() {
     let bytecode = serde_json::Value::Array(
