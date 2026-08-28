@@ -11,10 +11,10 @@
 use crate::instructions::math::trigonometry::hyperbolic::inverse::acosh::{
   acosh_f16in::acosh_f16in, acosh_f32in::acosh_f32in, acosh_f64in::acosh_f64in,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn acosh_values(a: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {

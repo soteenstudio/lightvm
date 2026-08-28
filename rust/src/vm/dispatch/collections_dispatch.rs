@@ -12,9 +12,9 @@ use crate::instructions::collections::{
   access_func::access_func, access_index_func::access_index_func, make_array_func::make_array_func,
   make_obj_func::make_obj_func, set_prop_func::set_prop_func, shrink_func::shrink_func,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::instructions::Instructions;
 use crate::types::stack::Stack;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn collections_dispatch(
   instr: &Instructions,

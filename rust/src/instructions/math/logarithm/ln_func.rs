@@ -11,10 +11,10 @@
 use crate::instructions::math::logarithm::ln::{
   ln_f16in::ln_f16in, ln_f32in::ln_f32in, ln_f64in::ln_f64in,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn ln_values(a: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {

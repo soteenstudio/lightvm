@@ -34,9 +34,9 @@ use crate::instructions::math::{
     },
   },
 };
+use crate::modules::vmerror::VMError;
 use crate::types::stack::Stack;
 use crate::types::{instructions::Instructions, var_stack::VarStack};
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn math_dispatch(
   instr: &Instructions,

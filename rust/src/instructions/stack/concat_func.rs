@@ -8,10 +8,10 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::modules::vmerror::VMError;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::filtered_writer::FilteredWriter;
-use crate::utils::vmerror::VMError;
 use smol_str::SmolStr;
 use std::fmt::Write;
 #[inline(always)]

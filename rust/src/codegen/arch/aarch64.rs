@@ -14,8 +14,8 @@ use crate::codegen::arch::aarch64_isel::{
 use crate::modules::carzy::arch::aarch64::AArch64Builder;
 use crate::modules::gazle::specialized_instructions::specialized_instructions;
 use crate::modules::torja::resolve_symbols::resolve_symbols;
+use crate::modules::vmerror::VMError;
 use crate::types::instructions::Instructions;
-use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
 use smol_str::SmolStr;
 pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> Result<String, VMError> {

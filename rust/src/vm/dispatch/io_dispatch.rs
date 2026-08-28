@@ -17,9 +17,9 @@ use crate::instructions::io::{
   stdin_func::stdin_func,
   stdout_func::{stdout_func, stdoutln_func},
 };
+use crate::modules::vmerror::VMError;
 use crate::types::instructions::Instructions;
 use crate::types::stack::Stack;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn io_dispatch(instr: &Instructions, stack: &mut Stack, ip: usize) -> Result<(), VMError> {
   match instr {

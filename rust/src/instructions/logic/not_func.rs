@@ -8,9 +8,9 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::modules::vmerror::VMError;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn not_values(a: Value) -> Value {
   Value::Bool(!a.is_truthy())

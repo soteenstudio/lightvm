@@ -17,9 +17,9 @@ use crate::instructions::stack::{
   push_string_func::push_string_func, set_func::set_func, swap_func::swap_func,
   truncate_func::truncate_func, val_func::val_func,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::stack::Stack;
 use crate::types::{instructions::Instructions, value::Value, var_stack::VarStack};
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn stack_dispatch(
   instr: &Instructions,

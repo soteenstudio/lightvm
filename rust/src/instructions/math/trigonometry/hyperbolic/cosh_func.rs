@@ -11,10 +11,10 @@
 use crate::instructions::math::trigonometry::hyperbolic::cosh::{
   cosh_f16in::cosh_f16in, cosh_f32in::cosh_f32in, cosh_f64in::cosh_f64in,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn cosh_values(a: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {

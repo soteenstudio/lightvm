@@ -12,10 +12,10 @@ use crate::instructions::math::arithmetic::neg::{
   neg_f16in::neg_f16in, neg_f32in::neg_f32in, neg_f64in::neg_f64in, neg_i16in::neg_i16in,
   neg_i32in::neg_i32in, neg_i64in::neg_i64in, neg_i128in::neg_i128in,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn neg_values(a: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {

@@ -8,9 +8,9 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::modules::vmerror::VMError;
 use crate::types::instructions::Instructions;
 use crate::types::value::{RunOptions, Value};
-use crate::utils::vmerror::VMError;
 use serde::Serialize;
 use serde_json::Value as JsonValue;
 #[derive(Serialize)]

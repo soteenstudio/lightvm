@@ -8,8 +8,8 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::modules::vmerror::VMError;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 #[cold]
 #[inline(never)]
 pub fn to_octa_values(val: Value) -> Result<Value, &'static str> {

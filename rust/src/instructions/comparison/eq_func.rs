@@ -12,10 +12,10 @@ use crate::instructions::comparison::eq::{
   eq_f16in::eq_f16in, eq_f32in::eq_f32in, eq_f64in::eq_f64in, eq_i16in::eq_i16in,
   eq_i32in::eq_i32in, eq_i64in::eq_i64in,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn eq_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {

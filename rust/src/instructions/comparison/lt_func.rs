@@ -12,10 +12,10 @@ use crate::instructions::comparison::lt::{
   lt_f16in::lt_f16in, lt_f32in::lt_f32in, lt_f64in::lt_f64in, lt_i16in::lt_i16in,
   lt_i32in::lt_i32in, lt_i64in::lt_i64in,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn lt_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {
