@@ -11,10 +11,10 @@
 use crate::instructions::math::bitwise::shift::shl::{
   shl_i16in::shl_i16in, shl_i32in::shl_i32in, shl_i64in::shl_i64in, shl_i128in::shl_i128in,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn shl_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {

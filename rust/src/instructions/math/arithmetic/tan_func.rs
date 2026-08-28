@@ -11,10 +11,10 @@
 use crate::instructions::math::arithmetic::tan::{
   tan_f16in::tan_f16in, tan_f32in::tan_f32in, tan_f64in::tan_f64in,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn tan_values(a: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {

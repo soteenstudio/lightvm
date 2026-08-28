@@ -8,9 +8,9 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::modules::vmerror::VMError;
 use crate::types::stack::Stack;
 use crate::types::var_stack::VarStack;
-use crate::utils::vmerror::VMError;
 #[allow(clippy::ptr_arg)]
 #[inline(always)]
 pub fn get_func(

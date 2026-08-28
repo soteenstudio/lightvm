@@ -12,9 +12,9 @@ use crate::instructions::comparison::{
   eq_func::eq_func, ge_func::ge_func, gt_func::gt_func, le_func::le_func, lt_func::lt_func,
   neq_func::neq_func,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::instructions::Instructions;
 use crate::types::stack::Stack;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn comparison_dispatch(
   instr: &Instructions,

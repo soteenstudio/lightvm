@@ -8,9 +8,9 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::modules::vmerror::VMError;
 use crate::types::instructions::Instructions;
 use crate::types::value::FuncMetadata;
-use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
 use smol_str::SmolStr;
 #[cold]

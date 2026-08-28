@@ -8,9 +8,9 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::modules::vmerror::VMError;
 use crate::types::stack::Stack;
 use crate::utils::format_output::format_output;
-use crate::utils::vmerror::VMError;
 #[cold]
 #[inline(never)]
 pub fn println_func(stack: &mut Stack, ip: usize) -> Result<(), VMError> {

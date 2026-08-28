@@ -11,10 +11,10 @@
 use crate::instructions::math::logarithm::log10::{
   log10_f16in::log10_f16in, log10_f32in::log10_f32in, log10_f64in::log10_f64in,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn log10_values(a: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {

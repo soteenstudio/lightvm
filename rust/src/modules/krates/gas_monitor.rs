@@ -8,8 +8,8 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::modules::vmerror::VMError;
 use crate::types::security_config::SecurityConfig;
-use crate::utils::vmerror::VMError;
 pub struct GasMonitor {
   pub max_ticks: u64,
 }

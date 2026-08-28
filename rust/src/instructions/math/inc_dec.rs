@@ -16,10 +16,10 @@ use crate::instructions::math::arithmetic::sub::{
   sub_f16in::sub_f16in, sub_f32in::sub_f32in, sub_f64in::sub_f64in, sub_i16in::sub_i16in,
   sub_i32in::sub_i32in, sub_i64in::sub_i64in, sub_i128in::sub_i128in,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::types::{primitive_types::PrimitiveTypes, var_stack::VarStack};
-use crate::utils::vmerror::VMError;
 use half::f16;
 #[inline]
 pub fn inc_func(

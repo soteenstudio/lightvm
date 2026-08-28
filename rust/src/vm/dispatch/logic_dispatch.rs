@@ -11,9 +11,9 @@
 use crate::instructions::logic::{
   and_func::and_func, not_func::not_func, or_func::or_func, xor_func::xor_func,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::instructions::Instructions;
 use crate::types::stack::Stack;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn logic_dispatch(instr: &Instructions, stack: &mut Stack, ip: usize) -> Result<(), VMError> {
   match instr {

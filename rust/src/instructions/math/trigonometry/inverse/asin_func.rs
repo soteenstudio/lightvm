@@ -11,10 +11,10 @@
 use crate::instructions::math::trigonometry::inverse::asin::{
   asin_f16in::asin_f16in, asin_f32in::asin_f32in, asin_f64in::asin_f64in,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn asin_values(a: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {

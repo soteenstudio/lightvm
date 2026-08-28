@@ -11,6 +11,7 @@
 #![cfg(not(feature = "node"))]
 use crate::interfaces::interface::LightVM;
 use crate::modules::itme::benchmark::Benchmark;
+use crate::modules::vmerror::VMError;
 use crate::traits::{json_value_trait::IntoJsonValue, vmevent_trait::IntoVmEvent};
 #[allow(unused_imports)]
 use crate::types::vmevent::VmEvent;
@@ -27,7 +28,6 @@ use crate::types::{
   vmstate::VmState,
 };
 use crate::utils::get_time_budget::get_time_budget;
-use crate::utils::vmerror::VMError;
 use ahash::AHashMap;
 use half::f16;
 use smol_str::SmolStr;
@@ -42,12 +42,14 @@ pub struct ExportedHandle {
 impl ExportedHandle {
   pub fn call(&self, vm: &mut LightVM, args: Vec<Value>) -> Value {
     if self.is_function {
-      let json_args: Result<Vec<serde_json::Value>, _> =
-        args.iter().map(serde_json::to_value).collect();
+      let json_args: Result<Vec<serde_json::Value>, VMError> = args
+        .iter()
+        .map(|v| serde_json::to_value(v).map_err(|e| VMError::SystemError(e.to_string().into())))
+        .collect();
       let json_args = match json_args {
         Ok(values) => values,
         Err(e) => {
-          eprintln!("Failed to convert arguments: {}", e);
+          eprintln!("{}", e);
           return Value::Undefined;
         }
       };
@@ -64,12 +66,15 @@ impl ExportedHandle {
                 .unwrap_or(serde_json::Value::Null),
             )
           } else {
-            eprintln!("Error: {}", parsed["message"]);
+            let err_msg = parsed["message"].as_str().unwrap_or("Unknown error");
+            let vm_err = VMError::SystemError(err_msg.into());
+            eprintln!("{}", vm_err);
             Value::Undefined
           }
         }
         Err(e) => {
-          eprintln!("{}", e);
+          let vm_err = VMError::SystemError(e.to_string().into());
+          eprintln!("{}", vm_err);
           Value::Undefined
         }
       }
@@ -81,7 +86,8 @@ impl ExportedHandle {
           export_value(parsed)
         }
         Err(e) => {
-          eprintln!("{}", e);
+          let vm_err = VMError::SystemError(e.to_string().into());
+          eprintln!("{}", vm_err);
           Value::Undefined
         }
       }
@@ -281,7 +287,8 @@ impl LightVM {
   /// Function used to load bytecode before execution
   pub fn load<T: IntoJsonValue>(&mut self, source: T) -> &mut Self {
     let source_value = source.into_json_value().unwrap_or_else(|err| {
-      eprintln!("Failed to process load input: {}", err);
+      let vm_err = VMError::SystemError(format!("Failed to process load input: {}", err).into());
+      eprintln!("{}", vm_err);
       std::process::exit(1);
     });
     let payload = if source_value.is_string() {
@@ -455,13 +462,15 @@ impl LightVMTools {
   /// ```
   pub fn optimize_bytecode<T: IntoJsonValue>(&self, input: T) -> serde_json::Value {
     let mut bytecode: serde_json::Value = input.into_json_value().unwrap_or_else(|err| {
-      eprintln!("\nFailed to parse JSON input: {}", err);
+      let vm_err = VMError::SystemError(format!("Failed to parse JSON input: {}", err).into());
+      eprintln!("\n{}", vm_err);
       std::process::exit(1);
     });
     if bytecode.is_string() {
       let raw_str = bytecode.as_str().unwrap_or("");
       bytecode = serde_json::from_str(raw_str).unwrap_or_else(|err| {
-        eprintln!("\nFailed to parse JSON string: {}", err);
+        let vm_err = VMError::SystemError(format!("Failed to parse JSON string: {}", err).into());
+        eprintln!("\n{}", vm_err);
         std::process::exit(1);
       });
     }
@@ -489,7 +498,8 @@ impl LightVMTools {
     let opt_str = LightVM::new(config)
       .optimize_bytecode_internal(bytecode)
       .unwrap_or_else(|err| {
-        eprintln!("\n{}", err);
+        let vm_err = VMError::SystemError(err.to_string().into());
+        eprintln!("\n{}", vm_err);
         std::process::exit(1);
       });
     serde_json::from_str::<serde_json::Value>(&opt_str).unwrap_or_else(|e| {

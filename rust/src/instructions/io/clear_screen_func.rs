@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::utils::vmerror::VMError;
+use crate::modules::vmerror::VMError;
 use std::io;
 use std::io::Write;
 #[cold]

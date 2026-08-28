@@ -11,10 +11,10 @@
 use crate::instructions::math::trigonometry::hyperbolic::sinh::{
   sinh_f16in::sinh_f16in, sinh_f32in::sinh_f32in, sinh_f64in::sinh_f64in,
 };
+use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn sinh_values(a: Value, num_type: PrimitiveTypes) -> Value {
   match num_type {

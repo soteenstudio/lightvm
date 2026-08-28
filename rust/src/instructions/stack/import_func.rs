@@ -8,8 +8,8 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::modules::vmerror::VMError;
 use crate::types::value::{RunOptions, Value};
-use crate::utils::vmerror::VMError;
 use smol_str::SmolStr;
 #[cold]
 pub fn import_func(

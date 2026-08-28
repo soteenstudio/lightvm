@@ -9,9 +9,9 @@
  */
 
 use crate::instructions::metadata::{length_func::length_func, typeof_func::typeof_func};
+use crate::modules::vmerror::VMError;
 use crate::types::instructions::Instructions;
 use crate::types::stack::Stack;
-use crate::utils::vmerror::VMError;
 #[inline(always)]
 pub fn metadata_dispatch(
   instr: &Instructions,
