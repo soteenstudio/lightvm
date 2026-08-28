@@ -674,16 +674,36 @@ mod tests {
     assert!(!tools.can_debug);
   }
   #[test]
-  fn tools_optimizer_preserves_normal_time_budget() {
+  fn tools_optimizer_uses_normal_time_budget_for_more_optimization() {
+    let bytecode = serde_json::Value::Array(
+      (0..500_000)
+        .map(|_| serde_json::json!(["push", 0]))
+        .collect(),
+    );
+    let mut cheap_vm = LightVM::new(VmConfig {
+      caps: vec![Capability::Control],
+      ..Default::default()
+    })
+    .set_time_budget(TimeBudget::Cheap);
+    let cheaply_optimized = cheap_vm.tools().optimize_bytecode(bytecode.clone());
     let mut vm = LightVM::new(VmConfig {
       caps: vec![Capability::Control],
       ..Default::default()
     })
     .set_time_budget(TimeBudget::Normal);
-    let tools = vm.tools();
-    assert_eq!(tools.time_budget, TimeBudget::Normal);
-    let optimized = tools.optimize_bytecode(r#"[["stop"]]"#);
-    assert!(optimized.is_array());
+    let normally_optimized = vm.tools().optimize_bytecode(bytecode);
+    let normal_len = normally_optimized
+      .as_array()
+      .expect("expected an array")
+      .len();
+    let cheap_len = cheaply_optimized
+      .as_array()
+      .expect("expected an array")
+      .len();
+    assert!(
+      normal_len < cheap_len,
+      "expected normal optimization to remove more instructions (normal: {normal_len}, cheap: {cheap_len})"
+    );
   }
   #[test]
   fn tools_bench_requires_debug_capability() {
