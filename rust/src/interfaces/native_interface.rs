@@ -427,6 +427,7 @@ impl LightVM {
       backtrace: self.backtrace,
       explain: self.explain,
       hint: self.hint,
+      time_budget: self.time_budget,
       can_control: self.caps.contains(&Capability::Control),
       can_debug: self.caps.contains(&Capability::Debug),
     }
@@ -437,6 +438,7 @@ pub struct LightVMTools {
   pub backtrace: bool,
   pub explain: bool,
   pub hint: bool,
+  pub time_budget: TimeBudget,
   pub can_control: bool,
   pub can_debug: bool,
 }
@@ -484,6 +486,10 @@ impl LightVMTools {
         }
         caps
       },
+      security_config: Some(SecurityConfig {
+        time_budget: self.time_budget,
+        ..Default::default()
+      }),
       runtime_config: Some(RuntimeConfig {
         nightly: self.nightly,
       }),
@@ -668,6 +674,18 @@ mod tests {
     let tools = vm.tools();
     assert!(tools.can_control);
     assert!(!tools.can_debug);
+  }
+  #[test]
+  fn tools_optimizer_preserves_normal_time_budget() {
+    let mut vm = LightVM::new(VmConfig {
+      caps: vec![Capability::Control],
+      ..Default::default()
+    })
+    .set_time_budget(TimeBudget::Normal);
+    let tools = vm.tools();
+    assert_eq!(tools.time_budget, TimeBudget::Normal);
+    let optimized = tools.optimize_bytecode(r#"[["stop"]]"#);
+    assert!(optimized.is_array());
   }
   #[test]
   fn tools_bench_requires_debug_capability() {

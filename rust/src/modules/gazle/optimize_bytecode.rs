@@ -111,7 +111,7 @@ mod tests {
       Instructions::Concat,
       Instructions::Println,
     ];
-    let optimized = optimize_bytecode(bytecode);
+    let optimized = optimize_bytecode(bytecode, TimeBudgetType::Cheap);
     assert_eq!(
       optimized,
       vec![
