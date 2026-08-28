@@ -260,7 +260,6 @@ impl LightVM {
     self
   }
   pub fn set_time_budget(mut self, value: TimeBudget) -> Self {
-    self.max_ticks = get_time_budget(value.clone());
     self.time_budget = value;
     self
   }

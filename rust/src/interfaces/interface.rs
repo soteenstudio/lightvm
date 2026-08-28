@@ -505,7 +505,7 @@ impl LightVM {
       .enumerate()
       .map(|(ip, item)| Instructions::from_json_array(item, ip))
       .collect();
-    let optimized = optimize_bytecode(bytecode?);
+    let optimized = optimize_bytecode(bytecode?, self.time_budget);
     serde_json::to_string(&optimized)
       .map_err(|e| VMError::SystemError(format!("Failed to stringify: {}", e).into()))
   }

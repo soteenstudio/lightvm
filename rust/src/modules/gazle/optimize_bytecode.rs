@@ -9,10 +9,16 @@
  */
 
 use crate::modules::gazle::utils::{run_pass::run_pass, time_budget::TimeBudget};
-use crate::types::instructions::Instructions;
-pub fn optimize_bytecode(mut bytecode: Vec<Instructions>) -> Vec<Instructions> {
+use crate::types::{instructions::Instructions, time_budget::TimeBudget as TimeBudgetType};
+use crate::utils::get_time_budget::get_time_budget;
+pub fn optimize_bytecode(
+  mut bytecode: Vec<Instructions>,
+  time_budget: TimeBudgetType,
+) -> Vec<Instructions> {
   let mut pass_weights: [i32; 9] = [1; 9];
-  let budget = TimeBudget::new(200);
+  let budget_ms = get_time_budget(time_budget);
+  println!("Budget: {}ms", budget_ms);
+  let budget = TimeBudget::new(budget_ms);
   loop {
     if budget.is_expired() {
       break;

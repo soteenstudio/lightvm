@@ -143,10 +143,10 @@ impl NodeLightVM {
   }
   #[napi(js_name = "setTimeBudget")]
   pub fn set_time_budget(&mut self, value: u32) -> Result<()> {
-    let (budget, ticks) = match value {
-      0 => (TimeBudget::Cheap, 200),
-      1 => (TimeBudget::Normal, 1000),
-      2 => (TimeBudget::Expensive, 5000),
+    let budget = match value {
+      0 => TimeBudget::Cheap,
+      1 => TimeBudget::Normal,
+      2 => TimeBudget::Expensive,
       _ => {
         return Err(into_napi_error(system_error(format!(
           "Unknown time budget: {}",
@@ -155,7 +155,6 @@ impl NodeLightVM {
       }
     };
     self.inner.time_budget = budget;
-    self.inner.max_ticks = ticks;
     Ok(())
   }
   #[napi(js_name = "withUnsafeMode")]

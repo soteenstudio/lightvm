@@ -14,7 +14,7 @@ fn main() {
   let mut vm = LightVM::new(VmConfig {
     caps: vec![Capability::Control, Capability::Observe, Capability::Unsafe],
     ..Default::default()
-  }).set_max_io(5000000).set_max_ticks(1000).set_max_stack_size(0).with_nightly(true).with_backtrace(false).with_explain(false).with_hint(true).set_time_budget(TimeBudget::Cheap);
+  }).set_max_io(5000000).set_max_ticks(1000).set_max_stack_size(0).with_nightly(true).with_backtrace(false).with_explain(false).with_hint(true).set_time_budget(TimeBudget::Normal);
   
   let raw = r#"[
     ["jump", 7],
@@ -28,7 +28,7 @@ fn main() {
     ["val", "x"],
     ["push", 5],
     ["set", "x"],
-    ["export", "x"],
+    ["export", "x"]
   ]"#;
   let optimized_json = vm.tools().optimize_bytecode(raw);
   println!("{}", optimized_json);
