@@ -8,6 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+#![cfg(not(feature = "wasm"))]
 use crate::modules::dying::colors::*;
 use crate::types::{info_vm::InfoVM, module_versions::ModuleVersions};
 use serde::Deserialize;
