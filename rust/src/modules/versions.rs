@@ -132,12 +132,12 @@ impl fmt::Display for InfoVM {
     writeln!(f, "  ├─ bluel    v{}", self.modules.bluel)?;
     writeln!(f, "  ├─ dying    v{}", self.modules.dying)?;
     writeln!(f, "  └─ vmerror  v{}", self.modules.vmerror)?;
-    if let Some(ref latest) = self.latest_version {
-      if latest != &self.version {
-        let formatted_latest = humanize_version(latest);
-        writeln!(f, "\n{RESET}{DARK_GRAY}new update available:")?;
-        writeln!(f, "  {RESET}{YELLOW}* {RESET}v{}", formatted_latest)?;
-      }
+    if let Some(ref latest) = self.latest_version
+      && latest != &self.version
+    {
+      let formatted_latest = humanize_version(latest);
+      writeln!(f, "\n{RESET}{DARK_GRAY}new update available:")?;
+      writeln!(f, "  {RESET}{YELLOW}* {RESET}v{}", formatted_latest)?;
     }
     Ok(())
   }
