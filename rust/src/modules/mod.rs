@@ -14,4 +14,5 @@ pub(crate) mod gazle;
 pub(crate) mod itme;
 pub(crate) mod krates;
 pub(crate) mod torja;
+pub(crate) mod versions;
 pub(crate) mod vmerror;

@@ -1,0 +1,1 @@
+println!("{}", vm.info());

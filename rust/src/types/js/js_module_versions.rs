@@ -8,8 +8,16 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub(crate) mod js_error_options;
-pub(crate) mod js_info_vm;
-pub(crate) mod js_module_versions;
-pub(crate) mod js_runtime_config;
-pub(crate) mod js_security_config;
+#![cfg(feature = "node")]
+use napi_derive::napi;
+#[napi(object)]
+pub struct JSModuleVersions {
+  pub carzy: String,
+  pub gazle: String,
+  pub itme: String,
+  pub krates: String,
+  pub torja: String,
+  pub bluel: String,
+  pub dying: String,
+  pub vmerror: String,
+}

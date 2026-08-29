@@ -36,5 +36,6 @@ function main() {
   console.log(addFunc.call(5, 6));
   const xVar = vm.export('x');
   console.log(xVar.call());
+  console.log(vm.info());
 }
 main();

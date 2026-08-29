@@ -12,11 +12,12 @@ use crate::codegen::compile::compile;
 use crate::modules::vmerror::VMError;
 use crate::modules::{
   gazle::optimize_bytecode::optimize_bytecode, itme::benchmark::Benchmark,
-  krates::has_nightly_opcodes::has_nightly_opcodes,
+  krates::has_nightly_opcodes::has_nightly_opcodes, versions::get_versions,
 };
 use crate::types::{
   capability::Capability,
   compile_config::CompileConfig,
+  info_vm::InfoVM,
   instructions::Instructions,
   security_config::SecurityConfig,
   time_budget::TimeBudget,
@@ -155,6 +156,9 @@ impl LightVM {
         listener(json_payload.clone());
       }
     }
+  }
+  pub fn info_internal(&mut self) -> InfoVM {
+    get_versions()
   }
   pub fn load_internal(&mut self, source: String) -> Result<(), VMError> {
     self.set_mode(self.backtrace, self.explain, self.hint);

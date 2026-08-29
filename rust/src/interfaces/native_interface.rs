@@ -20,6 +20,7 @@ use crate::types::{
   compile_config::CompileConfig,
   error_options::ErrorOptions,
   file_type::FileType,
+  info_vm::InfoVM,
   runtime_config::RuntimeConfig,
   security_config::SecurityConfig,
   time_budget::TimeBudget,
@@ -281,6 +282,9 @@ impl LightVM {
   pub fn with_hint(mut self, enabled: bool) -> Self {
     self.hint = enabled;
     self
+  }
+  pub fn info(&mut self) -> InfoVM {
+    self.info_internal()
   }
   /// Function used to load bytecode before execution
   pub fn load<T: IntoJsonValue>(&mut self, source: T) -> &mut Self {

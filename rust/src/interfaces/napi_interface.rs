@@ -12,8 +12,13 @@
 use crate::interfaces::interface::LightVM;
 use crate::modules::vmerror::VMError;
 use crate::types::{
-  capability::Capability, compile_config::CompileConfig, file_type::FileType,
-  security_config::SecurityConfig, target_arch::TargetArch, time_budget::TimeBudget,
+  capability::Capability,
+  compile_config::CompileConfig,
+  file_type::FileType,
+  js::{js_info_vm::JSInfoVM, js_module_versions::JSModuleVersions},
+  security_config::SecurityConfig,
+  target_arch::TargetArch,
+  time_budget::TimeBudget,
   vmconfig::VmNapiConfig,
 };
 use napi::bindgen_prelude::*;
@@ -181,6 +186,25 @@ impl NodeLightVM {
   pub fn with_hint(&mut self, enabled: bool) -> Result<()> {
     self.inner.hint = enabled;
     Ok(())
+  }
+  #[napi]
+  pub fn info(&mut self) -> Result<JSInfoVM> {
+    let info_vm = self.inner.info_internal();
+    Ok(JSInfoVM {
+      name: info_vm.name,
+      version: info_vm.version,
+      latest_version: info_vm.latest_version,
+      modules: JSModuleVersions {
+        carzy: info_vm.modules.carzy,
+        gazle: info_vm.modules.gazle,
+        itme: info_vm.modules.itme,
+        krates: info_vm.modules.krates,
+        torja: info_vm.modules.torja,
+        bluel: info_vm.modules.bluel,
+        dying: info_vm.modules.dying,
+        vmerror: info_vm.modules.vmerror,
+      },
+    })
   }
   #[napi]
   pub fn load(&mut self, source: String) -> Result<()> {

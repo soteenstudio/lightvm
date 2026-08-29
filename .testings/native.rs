@@ -30,9 +30,11 @@ fn main() {
     ["set", "x"],
     ["export", "x"]
   ]"#;
-  let optimized_json = vm.tools().optimize_bytecode(raw);
+  let tools = vm.tools();
+  let optimized_json = tools
+    .optimize_bytecode(raw);
   println!("{}", optimized_json);
-  
+
   vm.load(optimized_json);
   vm.run(None);
   let add_func = vm.export("add".to_string());
@@ -42,4 +44,6 @@ fn main() {
   println!("Result: {:?}", result);
 
   println!("{:?}", x_var.call(&mut vm, vec![]));
+
+  println!("{}", vm.info());
 }

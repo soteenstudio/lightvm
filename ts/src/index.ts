@@ -14,6 +14,7 @@ import { CompileConfig } from './generated/CompileConfig.js';
 import { loadNapi } from './utils/loadNapi.js';
 import { isMusl } from './utils/isMusl.js';
 import { VMSystemError as VMError } from './utils/vmerror.js';
+import { formatInfoVM } from './utils/infoLog.js';
 export type Listener = (payload?: any) => void;
 export interface VMResult {
   value: any;
@@ -161,6 +162,10 @@ export class LightVM {
   withExplain = (en: boolean) =>
     this.updateConfig('errorOptions', 'explain', en);
   withHint = (en: boolean) => this.updateConfig('errorOptions', 'hint', en);
+
+  info() {
+    return formatInfoVM(this.wrap(() => this.instance.info()));
+  }
 
   load(source: Instructions[] | string) {
     const payload =
