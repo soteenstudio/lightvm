@@ -25,7 +25,7 @@ pub struct InfoVM {
   modules: ModuleVersions,
 }
 fn humanize_version(raw_version: &str) -> String {
-  if let Some(nightly_idx) = raw_version.find("-nightly") {
+  if let Some(nightly_idx) = raw_version.find("-nightly.") {
     let base_ver = &raw_version[..nightly_idx];
     let remainder = &raw_version[nightly_idx + 9..];
     let parts: Vec<&str> = remainder.split('.').collect();
@@ -59,6 +59,23 @@ fn humanize_version(raw_version: &str) -> String {
     }
   }
   raw_version.to_string()
+}
+#[cfg(test)]
+mod tests {
+  use super::humanize_version;
+
+  #[test]
+  fn humanize_version_returns_bare_nightly_version_unchanged() {
+    assert_eq!(humanize_version("0.1.0-nightly"), "0.1.0-nightly");
+  }
+
+  #[test]
+  fn humanize_version_formats_valid_nightly_version() {
+    assert_eq!(
+      humanize_version("0.1.0-nightly.20260828.d36cc1e"),
+      "0.1.0 (Nightly 28 Aug 2026, d36cc1e)"
+    );
+  }
 }
 pub fn get_versions() -> InfoVM {
   InfoVM {
