@@ -159,6 +159,7 @@ impl LightVM {
       }
     }
   }
+  #[cfg(not(feature = "wasm"))]
   pub fn info_internal(&mut self) -> InfoVM {
     get_versions()
   }
