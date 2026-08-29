@@ -11,14 +11,13 @@
 use crate::codegen::compile::compile;
 use crate::modules::vmerror::VMError;
 use crate::modules::{
-  gazle::optimize_bytecode::optimize_bytecode,
-  itme::benchmark::Benchmark,
-  krates::has_nightly_opcodes::has_nightly_opcodes,
-  versions::{InfoVM, get_versions},
+  gazle::optimize_bytecode::optimize_bytecode, itme::benchmark::Benchmark,
+  krates::has_nightly_opcodes::has_nightly_opcodes, versions::get_versions,
 };
 use crate::types::{
   capability::Capability,
   compile_config::CompileConfig,
+  info_vm::InfoVM,
   instructions::Instructions,
   security_config::SecurityConfig,
   time_budget::TimeBudget,

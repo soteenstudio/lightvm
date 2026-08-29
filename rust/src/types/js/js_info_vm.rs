@@ -8,8 +8,13 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub(crate) mod js_error_options;
-pub(crate) mod js_info_vm;
-pub(crate) mod js_module_versions;
-pub(crate) mod js_runtime_config;
-pub(crate) mod js_security_config;
+#![cfg(feature = "node")]
+use crate::types::js::js_module_versions::JSModuleVersions;
+use napi_derive::napi;
+#[napi(object)]
+pub struct JSInfoVM {
+  pub name: String,
+  pub version: String,
+  pub latest_version: Option<String>,
+  pub modules: JSModuleVersions,
+}

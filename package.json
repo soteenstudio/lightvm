@@ -1,5 +1,5 @@
 {
-  "name": "lightvm",
+  "name": "lightvm-test",
   "version": "0.1.0-alpha.9-nightly.20260828.d36cc1e",
   "description": "A capability-based virtual machine designed for secure, predictable, and optimized bytecode execution.",
   "author": "SoTeen Studio",
@@ -32,7 +32,8 @@
   "files": [
     "./dist/index.min.cjs",
     "./dist/index.min.mjs",
-    "./types"
+    "./types",
+    "binaries"
   ],
   "scripts": {
     "test:rust": "node ./scripts/test/test-rust.js",

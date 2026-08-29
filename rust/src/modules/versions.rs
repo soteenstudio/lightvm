@@ -9,26 +9,9 @@
  */
 
 use crate::modules::dying::colors::*;
+use crate::types::{info_vm::InfoVM, module_versions::ModuleVersions};
 use serde::Deserialize;
 use std::fmt;
-#[derive(Debug)]
-struct ModuleVersions {
-  carzy: String,
-  gazle: String,
-  itme: String,
-  krates: String,
-  torja: String,
-  bluel: String,
-  dying: String,
-  vmerror: String,
-}
-#[derive(Debug)]
-pub struct InfoVM {
-  name: String,
-  version: String,
-  latest_version: Option<String>,
-  modules: ModuleVersions,
-}
 #[derive(Deserialize)]
 struct GitHubRelease {
   tag_name: String,

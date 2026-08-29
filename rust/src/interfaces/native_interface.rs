@@ -11,7 +11,6 @@
 #![cfg(not(feature = "node"))]
 use crate::interfaces::interface::LightVM;
 use crate::modules::itme::benchmark::Benchmark;
-use crate::modules::versions::InfoVM;
 use crate::modules::vmerror::VMError;
 use crate::traits::{json_value_trait::IntoJsonValue, vmevent_trait::IntoVmEvent};
 #[allow(unused_imports)]
@@ -21,6 +20,7 @@ use crate::types::{
   compile_config::CompileConfig,
   error_options::ErrorOptions,
   file_type::FileType,
+  info_vm::InfoVM,
   runtime_config::RuntimeConfig,
   security_config::SecurityConfig,
   time_budget::TimeBudget,
