@@ -84,7 +84,8 @@ export default {
     'acosh',
     'atanh',
     'sqrt',
-    'cbrt'
+    'cbrt',
+    'bluel'
   ],
   ignorePaths: [
     'node_modules/**',

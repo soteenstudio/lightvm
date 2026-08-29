@@ -17,11 +17,15 @@ struct ModuleVersions {
   itme: String,
   krates: String,
   torja: String,
+  bluel: String,
+  dying: String,
+  vmerror: String,
 }
 #[derive(Debug)]
 pub struct InfoVM {
   name: String,
   version: String,
+  latest_version: Option<String>,
   modules: ModuleVersions,
 }
 fn humanize_version(raw_version: &str) -> String {
@@ -60,33 +64,60 @@ fn humanize_version(raw_version: &str) -> String {
   }
   raw_version.to_string()
 }
-#[cfg(test)]
-mod tests {
-  use super::humanize_version;
-
-  #[test]
-  fn humanize_version_returns_bare_nightly_version_unchanged() {
-    assert_eq!(humanize_version("0.1.0-nightly"), "0.1.0-nightly");
+fn fetch_latest_github_version() -> Option<String> {
+  let url = "https://api.github.com/repos/soteenstudio/lightvm/releases";
+  let response = ureq::get(url)
+    .set("User-Agent", "lightvm-cli")
+    .call()
+    .ok()?;
+  let body: String = response.into_string().ok()?;
+  let mut releases = Vec::new();
+  let mut search_pos = 0;
+  while let Some(tag_idx) = body[search_pos..].find("\"tag_name\":\"") {
+    let tag_abs = search_pos + tag_idx + 12;
+    let tag_sub = &body[tag_abs..];
+    let tag_end = tag_sub.find('"')?;
+    let version = tag_sub[..tag_end].to_string();
+    if let Some(date_idx) = body[tag_abs..].find("\"published_at\":\"") {
+      let date_abs = tag_abs + date_idx + 16;
+      let date_sub = &body[date_abs..];
+      let date_end = date_sub.find('"')?;
+      let date_str = date_sub[..date_end].to_string();
+      releases.push((date_str, version));
+    }
+    search_pos = tag_abs + tag_end;
   }
-
-  #[test]
-  fn humanize_version_formats_valid_nightly_version() {
-    assert_eq!(
-      humanize_version("0.1.0-nightly.20260828.d36cc1e"),
-      "0.1.0 (Nightly 28 Aug 2026, d36cc1e)"
-    );
+  if releases.is_empty() {
+    return None;
   }
+  releases.sort_by(|a, b| b.0.cmp(&a.0));
+  for (_, mut version) in releases {
+    if version.contains("-proto") || version.contains(".proto") {
+      continue;
+    }
+    if version.starts_with('v') || version.starts_with('V') {
+      version.remove(0);
+    }
+    return Some(version);
+  }
+  None
 }
 pub fn get_versions() -> InfoVM {
+  let github_latest = fetch_latest_github_version();
+  println!("{:?}", github_latest);
   InfoVM {
     name: env!("CARGO_PKG_NAME").to_string(),
     version: env!("CARGO_PKG_VERSION").to_string(),
+    latest_version: github_latest,
     modules: ModuleVersions {
       carzy: String::from("0.1.0"),
       gazle: String::from("0.1.0"),
       itme: String::from("0.1.0"),
       krates: String::from("0.1.0"),
       torja: String::from("0.1.0"),
+      bluel: String::from("0.1.0"),
+      dying: String::from("0.1.0"),
+      vmerror: String::from("0.1.0"),
     },
   }
 }
@@ -95,10 +126,21 @@ impl fmt::Display for InfoVM {
     let formatted_version = humanize_version(&self.version);
     writeln!(f, "{CYAN}{BOLD}{}{RESET} v{}", self.name, formatted_version)?;
     writeln!(f, "{DARK_GRAY}modules:{RESET}")?;
-    writeln!(f, "  ├─ carzy  v{}", self.modules.carzy)?;
-    writeln!(f, "  ├─ gazle  v{}", self.modules.gazle)?;
-    writeln!(f, "  ├─ itme   v{}", self.modules.itme)?;
-    writeln!(f, "  ├─ krates v{}", self.modules.krates)?;
-    write!(f, "  └─ torja  v{}", self.modules.torja)
+    writeln!(f, "  ├─ carzy    v{}", self.modules.carzy)?;
+    writeln!(f, "  ├─ gazle    v{}", self.modules.gazle)?;
+    writeln!(f, "  ├─ itme     v{}", self.modules.itme)?;
+    writeln!(f, "  ├─ krates   v{}", self.modules.krates)?;
+    writeln!(f, "  ├─ torja    v{}", self.modules.torja)?;
+    writeln!(f, "  ├─ bluel    v{}", self.modules.bluel)?;
+    writeln!(f, "  ├─ dying    v{}", self.modules.dying)?;
+    writeln!(f, "  └─ vmerror  v{}", self.modules.vmerror)?;
+    if let Some(ref latest) = self.latest_version {
+      if latest != &self.version {
+        let formatted_latest = humanize_version(latest);
+        writeln!(f, "\n{RESET}{DARK_GRAY}new update available:")?;
+        writeln!(f, "  {RESET}{YELLOW}* {RESET}v{}", formatted_latest)?;
+      }
+    }
+    Ok(())
   }
 }

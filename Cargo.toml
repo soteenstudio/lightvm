@@ -122,6 +122,7 @@ js-sys = { version = "0.3.100", optional = true }
 backtrace = "0.3.76"
 ed25519-dalek = "3.0"
 hex = "0.4"
+ureq = "2"
 
 [build-dependencies]
 ed25519-dalek = "3.0"
@@ -136,12 +137,15 @@ ahash = { version = "0.8", features = ["serde"] }
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 ahash = { version = "0.8", default-features = false, features = ["serde", "no-rng", "std"] }
 
+[profile.dev]
+incremental = false
+
 [profile.release]
 opt-level = 3
 lto = "fat"
 codegen-units = 1
 panic = "abort"
-incremental = true
+incremental = false
 strip = true
 overflow-checks = false
 debug = false
@@ -153,7 +157,7 @@ wasm-opt = false
 [profile.release.package."*"]
 opt-level = 3
 codegen-units = 1
-incremental = true
+incremental = false
 split-debuginfo = "off"
 debug = false
 
