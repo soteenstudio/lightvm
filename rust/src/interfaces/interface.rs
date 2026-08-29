@@ -9,10 +9,12 @@
  */
 
 use crate::codegen::compile::compile;
+#[cfg(not(feature = "wasm"))]
+use crate::modules::versions::get_versions;
 use crate::modules::vmerror::VMError;
 use crate::modules::{
   gazle::optimize_bytecode::optimize_bytecode, itme::benchmark::Benchmark,
-  krates::has_nightly_opcodes::has_nightly_opcodes, versions::get_versions,
+  krates::has_nightly_opcodes::has_nightly_opcodes,
 };
 use crate::types::{
   capability::Capability,
