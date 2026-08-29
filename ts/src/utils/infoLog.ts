@@ -1,3 +1,13 @@
+/**
+ * Copyright 2025-2026 SoTeen Studio
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ */
+
 export function humanizeVersion(version: string): string {
   return version;
 }
@@ -10,7 +20,7 @@ export function formatInfoVM(info: any): string {
   const YELLOW = '\x1b[33m';
 
   const formattedVersion = humanizeVersion(info.version);
-  
+
   let result = `${CYAN}${BOLD}${info.name}${RESET} v${formattedVersion}\n`;
   result += `${DARK_GRAY}modules:${RESET}\n`;
   result += `  ├─ carzy    v${info.modules.carzy}\n`;

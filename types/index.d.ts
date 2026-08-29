@@ -70,6 +70,7 @@ export declare class LightVM {
     withBacktrace: (en: boolean) => this;
     withExplain: (en: boolean) => this;
     withHint: (en: boolean) => this;
+    info(): string;
     load(source: Instructions[] | string): this;
     run(options?: any): any;
     compile(config: CompileConfig): any;
