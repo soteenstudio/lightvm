@@ -6,7 +6,7 @@ Untuk **TypeScript**, Anda dapat memanggil metode info langsung pada instance VM
 
 ::: code-group
 
-<<< @/examples/methodFunctions/infoKode.ts{ts:line-numbers}[Kode]
+<<< @/examples/methodFunctions/infoCode.ts{ts:line-numbers}[Kode]
 
 :::
 
@@ -15,6 +15,6 @@ Dalam **Rust**, Anda dapat menquery instance VM yang telah diinisialisasi untuk 
 
 ::: code-group
 
-<<< @/examples/methodFunctions/info_Kode.rs{rust:line-numbers}[Kode]
+<<< @/examples/methodFunctions/info_code.rs{rust:line-numbers}[Kode]
 
 :::
