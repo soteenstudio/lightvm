@@ -9,7 +9,42 @@
  */
 
 export function humanizeVersion(version: string): string {
-  return version;
+  const nightlyMarker = '-nightly.';
+  const nightlyIndex = version.indexOf(nightlyMarker);
+
+  if (nightlyIndex === -1) {
+    return version;
+  }
+
+  const baseVersion = version.slice(0, nightlyIndex);
+  const parts = version.slice(nightlyIndex + nightlyMarker.length).split('.');
+
+  if (parts.length < 2 || parts[0].length !== 8) {
+    return version;
+  }
+
+  const date = parts[0];
+  const hash = parts[1];
+  const monthNames: Record<string, string> = {
+    '01': 'Jan',
+    '02': 'Feb',
+    '03': 'Mar',
+    '04': 'Apr',
+    '05': 'May',
+    '06': 'Jun',
+    '07': 'Jul',
+    '08': 'Aug',
+    '09': 'Sep',
+    '10': 'Oct',
+    '11': 'Nov',
+    '12': 'Dec',
+  };
+
+  const year = date.slice(0, 4);
+  const month = monthNames[date.slice(4, 6)] ?? date.slice(4, 6);
+  const day = date.slice(6, 8);
+
+  return `${baseVersion} (Nightly ${day} ${month} ${year}, ${hash})`;
 }
 
 export function formatInfoVM(info: any): string {
