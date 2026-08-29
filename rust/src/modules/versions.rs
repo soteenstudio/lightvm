@@ -9,6 +9,7 @@
  */
 
 use crate::modules::dying::colors::*;
+use serde::Deserialize;
 use std::fmt;
 #[derive(Debug)]
 struct ModuleVersions {
@@ -27,6 +28,11 @@ pub struct InfoVM {
   version: String,
   latest_version: Option<String>,
   modules: ModuleVersions,
+}
+#[derive(Deserialize)]
+struct GitHubRelease {
+  tag_name: String,
+  published_at: Option<String>,
 }
 fn humanize_version(raw_version: &str) -> String {
   if let Some(nightly_idx) = raw_version.find("-nightly.") {
@@ -71,22 +77,15 @@ fn fetch_latest_github_version() -> Option<String> {
     .call()
     .ok()?;
   let body: String = response.into_string().ok()?;
-  let mut releases = Vec::new();
-  let mut search_pos = 0;
-  while let Some(tag_idx) = body[search_pos..].find("\"tag_name\":\"") {
-    let tag_abs = search_pos + tag_idx + 12;
-    let tag_sub = &body[tag_abs..];
-    let tag_end = tag_sub.find('"')?;
-    let version = tag_sub[..tag_end].to_string();
-    if let Some(date_idx) = body[tag_abs..].find("\"published_at\":\"") {
-      let date_abs = tag_abs + date_idx + 16;
-      let date_sub = &body[date_abs..];
-      let date_end = date_sub.find('"')?;
-      let date_str = date_sub[..date_end].to_string();
-      releases.push((date_str, version));
-    }
-    search_pos = tag_abs + tag_end;
-  }
+  let mut releases: Vec<(String, String)> = serde_json::from_str::<Vec<GitHubRelease>>(&body)
+    .ok()?
+    .into_iter()
+    .filter_map(|release| {
+      release
+        .published_at
+        .map(|published_at| (published_at, release.tag_name))
+    })
+    .collect();
   if releases.is_empty() {
     return None;
   }
@@ -104,7 +103,6 @@ fn fetch_latest_github_version() -> Option<String> {
 }
 pub fn get_versions() -> InfoVM {
   let github_latest = fetch_latest_github_version();
-  println!("{:?}", github_latest);
   InfoVM {
     name: env!("CARGO_PKG_NAME").to_string(),
     version: env!("CARGO_PKG_VERSION").to_string(),
