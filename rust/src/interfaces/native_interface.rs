@@ -283,6 +283,7 @@ impl LightVM {
     self.hint = enabled;
     self
   }
+  #[cfg(not(feature = "wasm"))]
   pub fn info(&mut self) -> InfoVM {
     self.info_internal()
   }
