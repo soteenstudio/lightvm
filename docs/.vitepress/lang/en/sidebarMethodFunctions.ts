@@ -28,6 +28,10 @@ export const sidebarMethodFunctions = {
       link: '/api-reference/method-functions/export-method',
     },
     {
+      text: 'Info Method',
+      link: '/api-reference/method-functions/info-method',
+    },
+    {
       text: 'Tools Method',
       collapsed: true,
       items: [
