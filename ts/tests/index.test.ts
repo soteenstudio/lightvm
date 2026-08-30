@@ -9,6 +9,7 @@
  */
 
 import { test, expect, describe, suppressConsole } from "unitry";
+import { spawnSync } from "node:child_process";
 import { importVM } from "./helper/importVM.js";
 
 const { LightVM, Capability, VMEvent } = await importVM();
@@ -88,28 +89,54 @@ describe("LightVM Suite", () => {
   });
 
   describe("Event Emitter", () => {
-    test("on should deliver tick event data", async () => {
-      const vm = createVM();
-      vm.load([["push", 1]]);
-
-      const eventData = await new Promise((resolve, reject) => {
-        const timeout = setTimeout(
-          () => reject(new Error("Timed out waiting for Tick event")),
-          1_000,
+    if (process.env.LIGHTVM_TEST_SCENARIO !== "reject-invalid-sig") {
+      test("on should deliver tick event data", () => {
+        const result = spawnSync(
+          process.execPath,
+          [
+            "--input-type=module",
+            "--eval",
+            `import { Capability, LightVM, VMEvent } from './dist/index.min.mjs';
+const vm = new LightVM({ caps: [Capability.Observe, Capability.Control] });
+let delivered = false;
+vm.load([["push", 1]]);
+vm.on(VMEvent.Tick, (data) => {
+  delivered = true;
+  console.log(JSON.stringify(data));
+});
+vm.run();
+setTimeout(() => {
+  if (!delivered) process.exitCode = 1;
+}, 50);`,
+          ],
+          { cwd: process.cwd(), encoding: "utf8", timeout: 1_000 },
         );
 
-        vm.on(VMEvent.Tick, (data) => {
-          clearTimeout(timeout);
-          resolve(data);
+        expect(result.error).toBe(undefined);
+        expect(result.status).toBe(0);
+        expect(JSON.parse(result.stdout.trim())).toEqual({
+          event: "Tick",
+          payload: { state: "start" },
         });
-        vm.run();
       });
 
-      expect(eventData).toEqual({
-        event: VMEvent.Tick,
-        payload: { state: "start" },
+      test("on should not keep the process alive without an event", () => {
+        const result = spawnSync(
+          process.execPath,
+          [
+            "--input-type=module",
+            "--eval",
+            `import { LightVM, VMEvent } from './dist/index.min.mjs';
+const vm = new LightVM();
+vm.on(VMEvent.Tick, () => {});`,
+          ],
+          { cwd: process.cwd(), timeout: 1_000 },
+        );
+
+        expect(result.error).toBe(undefined);
+        expect(result.status).toBe(0);
       });
-    });
+    }
   });
   
   describe("Capability Validation", () => {
