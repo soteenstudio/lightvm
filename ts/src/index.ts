@@ -219,6 +219,7 @@ export class LightVM {
     this.wrap(() =>
       this.instance.on(event, (payload: string) => {
         fn(this.parseSafe(payload));
+        process.exit(0);
       }),
     );
 
