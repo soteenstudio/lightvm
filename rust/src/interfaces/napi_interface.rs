@@ -78,6 +78,7 @@ impl NodeLightVM {
       inner: LightVM {
         bytecode: Vec::new(),
         listeners: AHashMap::new(),
+        next_listener_id: 0,
         caps: caps_set,
         should_halt: Arc::new(AtomicBool::new(false)),
         state: VmState::Idle,
@@ -293,7 +294,7 @@ impl NodeLightVM {
     self.inner.halt_internal().map_err(into_napi_error)
   }
   #[napi]
-  pub fn on(&mut self, event_type: u32, callback: Function<String, ()>) -> Result<()> {
+  pub fn on(&mut self, event_type: u32, callback: Function<String, ()>) -> Result<u32> {
     use crate::interfaces::interface::VmEventData;
     use crate::types::vmevent::VmEvent;
     let event = match event_type {
@@ -322,6 +323,22 @@ impl NodeLightVM {
         let _ = threadsafe_callback.call(payload, ThreadsafeFunctionCallMode::NonBlocking);
       })
       .map_err(|e| into_napi_error(system_error(e)))
+  }
+  #[napi]
+  pub fn off(&mut self, event_type: u32, listener_id: u32) -> Result<bool> {
+    use crate::types::vmevent::VmEvent;
+    let event = match event_type {
+      0 => VmEvent::Tick,
+      1 => VmEvent::Halt,
+      2 => VmEvent::Panic,
+      _ => {
+        return Err(into_napi_error(system_error(format!(
+          "Unknown event: {}",
+          event_type
+        ))));
+      }
+    };
+    Ok(self.inner.off_internal(event, listener_id))
   }
   #[napi]
   pub fn embedded(&mut self) -> Result<serde_json::Value> {

@@ -67,6 +67,7 @@ impl WasmLightVM {
       inner: LightVM {
         bytecode: Vec::new(),
         listeners: AHashMap::new(),
+        next_listener_id: 0,
         caps: caps_set,
         should_halt: Arc::new(AtomicBool::new(false)),
         state: VmState::Idle,
