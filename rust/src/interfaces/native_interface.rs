@@ -629,7 +629,7 @@ mod tests {
     let payload = Arc::new(Mutex::new(String::new()));
     let out = payload.clone();
     vm.on(VmEvent::Tick, move |data| {
-      *out.lock().unwrap() = data;
+      *out.lock().unwrap() = data.payload.to_string();
     });
     vm.emit(VmEvent::Tick, json!({"hello":"world"}));
     assert_eq!(*payload.lock().unwrap(), r#"{"hello":"world"}"#);
