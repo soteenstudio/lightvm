@@ -307,10 +307,15 @@ impl NodeLightVM {
         ))));
       }
     };
-    let threadsafe_callback = match callback.build_threadsafe_function().build() {
+    let mut threadsafe_callback = match callback.build_threadsafe_function().build() {
       Ok(value) => value,
       Err(e) => return Err(e),
     };
+    #[allow(deprecated)]
+    {
+      let env = napi::bindgen_prelude::Env::from_raw(std::ptr::null_mut());
+      threadsafe_callback.unref(&env)?;
+    }
     self
       .inner
       .on_internal(event, move |data: &VmEventData| {
