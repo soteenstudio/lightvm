@@ -9,7 +9,6 @@
  */
 
 import { test, expect, describe, suppressConsole } from "unitry";
-import { spawnSync } from "node:child_process";
 import { importVM } from "./helper/importVM.js";
 
 const { LightVM, Capability, VMEvent } = await importVM();
@@ -92,7 +91,6 @@ describe("LightVM Suite", () => {
     test("on should deliver tick event data", async () => {
       const vm = createVM();
       vm.load([["push", 1]]);
-      let listenerId = 0;
 
       const eventData = await new Promise((resolve, reject) => {
         const timeout = setTimeout(
@@ -100,51 +98,17 @@ describe("LightVM Suite", () => {
           1_000,
         );
 
-        listenerId = vm.on(VMEvent.Tick, (data) => {
+        vm.on(VMEvent.Tick, (data) => {
           clearTimeout(timeout);
           resolve(data);
         });
         vm.run();
       });
-      vm.off(VMEvent.Tick, listenerId);
 
       expect(eventData).toEqual({
         event: VMEvent.Tick,
         payload: { state: "start" },
       });
-    });
-
-    test("off should stop later event delivery", async () => {
-      const vm = createVM();
-      vm.load([["push", 1]]);
-      let calls = 0;
-      const listenerId = vm.on(VMEvent.Tick, () => {
-        calls += 1;
-      });
-
-      expect(vm.off(VMEvent.Tick, listenerId)).toBe(true);
-      vm.run();
-      await new Promise((resolve) => setTimeout(resolve, 20));
-      expect(calls).toBe(0);
-      expect(vm.off(VMEvent.Tick, listenerId)).toBe(false);
-    });
-
-    test("off should release the callback lifecycle", () => {
-      const result = spawnSync(
-        process.execPath,
-        [
-          "--input-type=module",
-          "--eval",
-          `import { LightVM, VMEvent } from './dist/index.min.mjs';
-const vm = new LightVM();
-const listenerId = vm.on(VMEvent.Tick, () => {});
-if (!vm.off(VMEvent.Tick, listenerId)) process.exit(1);`,
-        ],
-        { cwd: process.cwd(), timeout: 1_000 },
-      );
-
-      expect(result.error).toBe(undefined);
-      expect(result.status).toBe(0);
     });
   });
   

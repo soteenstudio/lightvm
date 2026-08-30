@@ -77,9 +77,7 @@ export declare class LightVM {
     export(name: string): ExportedHandle;
     provide(nameOrObj: string | Record<string, any>, value?: any): this;
     halt(): void;
-    /** Remove the listener with `off` when it is no longer needed. */
-    on(event: VMEvent, fn: Listener): number;
-    off(event: VMEvent, listenerId: number): boolean;
+    on(event: VMEvent, fn: Listener): this;
     inspect(): any;
     embedded(): VMResult;
     tools(): {

@@ -42,8 +42,7 @@ pub struct VmEventData {
   pub payload: serde_json::Value,
 }
 pub type VmCallback = Box<dyn Fn(&VmEventData) + Send + Sync>;
-pub type VmListenerId = u32;
-pub type VmEventMap = AHashMap<VmEvent, Vec<(VmListenerId, VmCallback)>>;
+pub type VmEventMap = AHashMap<VmEvent, Vec<VmCallback>>;
 #[derive(Serialize)]
 struct ValuePayload {
   defined: bool,
@@ -52,7 +51,6 @@ struct ValuePayload {
 pub struct LightVM {
   pub bytecode: Vec<Instructions>,
   pub listeners: VmEventMap,
-  pub(crate) next_listener_id: VmListenerId,
   pub caps: HashSet<Capability>,
   pub should_halt: Arc<AtomicBool>,
   pub state: VmState,
@@ -93,7 +91,6 @@ impl LightVM {
     Self {
       bytecode: Vec::new(),
       listeners: AHashMap::new(),
-      next_listener_id: 0,
       caps: caps_set,
       should_halt: Arc::new(AtomicBool::new(false)),
       state: VmState::Idle,
@@ -162,7 +159,7 @@ impl LightVM {
   pub fn emit(&self, event: VmEvent, payload: serde_json::Value) {
     if let Some(listeners) = self.listeners.get(&event) {
       let data = VmEventData { event, payload };
-      for (_, listener) in listeners {
+      for listener in listeners {
         listener(&data);
       }
     }
@@ -328,37 +325,16 @@ impl LightVM {
     Ok(())
   }
   #[inline]
-  pub fn on_internal<F>(&mut self, event: VmEvent, callback: F) -> Result<VmListenerId, String>
+  pub fn on_internal<F>(&mut self, event: VmEvent, callback: F) -> Result<(), String>
   where
     F: Fn(&VmEventData) + Send + Sync + 'static,
   {
-    let listener_id = self.next_listener_id;
-    self.next_listener_id = self
-      .next_listener_id
-      .checked_add(1)
-      .ok_or_else(|| "Listener identifier overflow".to_string())?;
     self
       .listeners
       .entry(event)
       .or_default()
-      .push((listener_id, Box::new(callback)));
-    Ok(listener_id)
-  }
-  #[inline]
-  pub fn off_internal(&mut self, event: VmEvent, listener_id: VmListenerId) -> bool {
-    let mut removed = false;
-    let mut empty = false;
-    if let Some(listeners) = self.listeners.get_mut(&event) {
-      if let Some(index) = listeners.iter().position(|(id, _)| *id == listener_id) {
-        drop(listeners.remove(index));
-        removed = true;
-      }
-      empty = listeners.is_empty();
-    }
-    if empty {
-      self.listeners.remove(&event);
-    }
-    removed
+      .push(Box::new(callback));
+    Ok(())
   }
   pub fn provide_internal(
     &mut self,
@@ -633,7 +609,6 @@ mod tests {
     LightVM {
       bytecode: Vec::new(),
       listeners: AHashMap::new(),
-      next_listener_id: 0,
       caps: caps_set,
       should_halt: Arc::new(AtomicBool::new(false)),
       state: VmState::Idle,
@@ -715,48 +690,6 @@ mod tests {
     .unwrap();
     vm.emit(VmEvent::Tick, serde_json::Value::Null);
     assert_eq!(count.load(Ordering::SeqCst), 2);
-  }
-  #[test]
-  fn off_internal_removes_only_selected_listener() {
-    let mut vm = make_vm(vec![]);
-    let count = Arc::new(AtomicUsize::new(0));
-    let first = count.clone();
-    let second = count.clone();
-    let first_id = vm
-      .on_internal(VmEvent::Tick, move |_| {
-        first.fetch_add(1, Ordering::SeqCst);
-      })
-      .unwrap();
-    vm.on_internal(VmEvent::Tick, move |_| {
-      second.fetch_add(10, Ordering::SeqCst);
-    })
-    .unwrap();
-
-    assert!(vm.off_internal(VmEvent::Tick, first_id));
-    vm.emit(VmEvent::Tick, serde_json::Value::Null);
-    assert_eq!(count.load(Ordering::SeqCst), 10);
-    assert!(!vm.off_internal(VmEvent::Tick, first_id));
-  }
-  #[test]
-  fn off_internal_drops_callback() {
-    struct DropMarker(Arc<AtomicBool>);
-    impl Drop for DropMarker {
-      fn drop(&mut self) {
-        self.0.store(true, Ordering::SeqCst);
-      }
-    }
-
-    let mut vm = make_vm(vec![]);
-    let dropped = Arc::new(AtomicBool::new(false));
-    let marker = DropMarker(dropped.clone());
-    let listener_id = vm
-      .on_internal(VmEvent::Tick, move |_| {
-        let _ = &marker;
-      })
-      .unwrap();
-
-    assert!(vm.off_internal(VmEvent::Tick, listener_id));
-    assert!(dropped.load(Ordering::SeqCst));
   }
   #[test]
   fn provide_internal_adds_import() {
