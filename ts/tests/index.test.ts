@@ -8,10 +8,10 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-import { test, expect, describe, fn, suppressConsole } from "unitry";
+import { test, expect, describe, suppressConsole } from "unitry";
 import { importVM } from "./helper/importVM.js";
 
-const { LightVM, Capability } = await importVM();
+const { LightVM, Capability, VMEvent } = await importVM();
 
 describe("LightVM Suite", () => {
   
@@ -88,12 +88,27 @@ describe("LightVM Suite", () => {
   });
 
   describe("Event Emitter", () => {
-    test("on should register listener", () => {
+    test("on should deliver tick event data", async () => {
       const vm = createVM();
-      const mockHandler = fn();
-      
-      vm.on('tick', mockHandler);
-      expect(typeof vm.on).toBe('function');
+      vm.load([["push", 1]]);
+
+      const eventData = await new Promise((resolve, reject) => {
+        const timeout = setTimeout(
+          () => reject(new Error("Timed out waiting for Tick event")),
+          1_000,
+        );
+
+        vm.on(VMEvent.Tick, (data) => {
+          clearTimeout(timeout);
+          resolve(data);
+        });
+        vm.run();
+      });
+
+      expect(eventData).toEqual({
+        event: VMEvent.Tick,
+        payload: { state: "start" },
+      });
     });
   });
   
