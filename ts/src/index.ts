@@ -215,14 +215,17 @@ export class LightVM {
     this.wrap(() => this.instance.halt());
   }
 
-  on(event: VMEvent, fn: Listener) {
-    this.wrap(() =>
+  /** Remove the listener with `off` when it is no longer needed. */
+  on(event: VMEvent, fn: Listener): number {
+    return this.wrap(() =>
       this.instance.on(event, (payload: string) => {
         fn(this.parseSafe(payload));
       }),
     );
+  }
 
-    return this;
+  off(event: VMEvent, listenerId: number): boolean {
+    return this.wrap(() => this.instance.off(event, listenerId));
   }
 
   inspect() {
