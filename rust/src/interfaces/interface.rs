@@ -834,8 +834,8 @@ mod tests {
     vm.bytecode = vec![Instructions::Push(crate::types::value::Value::Float64(
       42.0,
     ))];
-    vm.on_internal(VmEvent::Tick, |payload| {
-      if payload.contains("compile_start") {
+    vm.on_internal(VmEvent::Tick, |data| {
+      if data.payload.to_string().contains("compile_start") {
         panic!("Intentional panic in listener");
       }
     })
