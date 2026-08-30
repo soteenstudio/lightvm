@@ -9,7 +9,7 @@
  */
 
 #![cfg(not(feature = "node"))]
-use crate::interfaces::interface::LightVM;
+use crate::interfaces::interface::{LightVM, VmEventData};
 use crate::modules::itme::benchmark::Benchmark;
 use crate::modules::vmerror::VMError;
 use crate::traits::{json_value_trait::IntoJsonValue, vmevent_trait::IntoVmEvent};
@@ -395,7 +395,7 @@ impl LightVM {
   pub fn on<E, F>(&mut self, event: E, callback: F) -> &mut Self
   where
     E: IntoVmEvent,
-    F: Fn(String) + Send + Sync + 'static,
+    F: Fn(&VmEventData) + Send + Sync + 'static,
   {
     let vm_event = event.to_vm_event();
     let _ = self.on_internal(vm_event, callback);

@@ -294,6 +294,7 @@ impl NodeLightVM {
   }
   #[napi]
   pub fn on(&mut self, event_type: u32, callback: Function<String, ()>) -> Result<()> {
+    use crate::interfaces::interface::VmEventData;
     use crate::types::vmevent::VmEvent;
     let event = match event_type {
       0 => VmEvent::Tick,
@@ -320,7 +321,12 @@ impl NodeLightVM {
     }
     self
       .inner
-      .on_internal(event, move |payload| {
+      .on_internal(event, move |data: &VmEventData| {
+        let payload = serde_json::json!({
+            "event": data.event,
+            "payload": data.payload,
+        });
+        let payload = payload.to_string();
         let _ = threadsafe_callback.call(payload, ThreadsafeFunctionCallMode::NonBlocking);
       })
       .map_err(|e| into_napi_error(system_error(e)))

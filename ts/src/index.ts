@@ -217,8 +217,11 @@ export class LightVM {
 
   on(event: VMEvent, fn: Listener) {
     this.wrap(() =>
-      this.instance.on(event, (payload: string) => fn(this.parseSafe(payload))),
+      this.instance.on(event, (payload: string) => {
+        fn(this.parseSafe(payload));
+      }),
     );
+
     return this;
   }
 

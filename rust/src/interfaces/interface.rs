@@ -36,7 +36,12 @@ use std::collections::HashSet;
 use std::sync::Arc;
 use std::sync::OnceLock;
 use std::sync::atomic::{AtomicBool, Ordering};
-pub type VmCallback = Box<dyn Fn(String) + Send + Sync>;
+#[derive(Debug)]
+pub struct VmEventData {
+  pub event: VmEvent,
+  pub payload: serde_json::Value,
+}
+pub type VmCallback = Box<dyn Fn(&VmEventData) + Send + Sync>;
 pub type VmEventMap = AHashMap<VmEvent, Vec<VmCallback>>;
 #[derive(Serialize)]
 struct ValuePayload {
@@ -152,10 +157,10 @@ impl LightVM {
     }
   }
   pub fn emit(&self, event: VmEvent, payload: serde_json::Value) {
-    if let Some(list) = self.listeners.get(&event) {
-      let json_payload = payload.to_string();
-      for listener in list {
-        listener(json_payload.clone());
+    if let Some(listeners) = self.listeners.get(&event) {
+      let data = VmEventData { event, payload };
+      for listener in listeners {
+        listener(&data);
       }
     }
   }
@@ -322,7 +327,7 @@ impl LightVM {
   #[inline]
   pub fn on_internal<F>(&mut self, event: VmEvent, callback: F) -> Result<(), String>
   where
-    F: Fn(String) + Send + Sync + 'static,
+    F: Fn(&VmEventData) + Send + Sync + 'static,
   {
     self
       .listeners

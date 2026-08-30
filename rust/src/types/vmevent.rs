@@ -10,8 +10,9 @@
 
 #[cfg(feature = "node")]
 use napi_derive::napi;
+use serde::Serialize;
 #[cfg_attr(feature = "node", napi(string_enum))]
-#[derive(Debug, Eq, PartialEq, Hash)]
+#[derive(Serialize, Debug, Eq, PartialEq, Hash)]
 pub enum VmEvent {
   Tick,
   Halt,
