@@ -228,6 +228,7 @@ impl WasmLightVM {
   }
   #[wasm_bindgen]
   pub fn on(&mut self, event_type: String, callback: js_sys::Function) -> Result<(), JsValue> {
+    use crate::interfaces::interface::VmEventData;
     use crate::types::vmevent::VmEvent;
     let event = match event_type.as_str() {
       "tick" => VmEvent::Tick,
@@ -243,9 +244,13 @@ impl WasmLightVM {
     let js_func = RcFnWrapper::new(callback);
     self
       .inner
-      .on_internal(event, move |payload| {
+      .on_internal(event, move |data: &VmEventData| {
         let this = JsValue::null();
-        let arg0 = JsValue::from_str(&payload);
+        let arg0 = serde_wasm_bindgen::to_value(&serde_json::json!({
+          "event": data.event,
+          "payload": data.payload,
+        }))
+        .unwrap_or(JsValue::NULL);
         let _ = js_func.inner.call1(&this, &arg0);
       })
       .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e)))
