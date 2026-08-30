@@ -307,7 +307,7 @@ impl NodeLightVM {
         ))));
       }
     };
-    let threadsafe_callback = match callback.build_threadsafe_function().build() {
+    let threadsafe_callback = match callback.build_threadsafe_function().weak::<true>().build() {
       Ok(value) => value,
       Err(e) => return Err(e),
     };

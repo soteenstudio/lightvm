@@ -10,8 +10,6 @@ For **TypeScript**, the `on` method allows you to attach event listeners that ex
 
 <<< @/examples/methodFunctions/onEventHalt.ts{ts:line-numbers}[On Event Halt]
 
-<<< @/examples/methodFunctions/onEventTick.ts{ts:line-numbers}[On Event Tick]
-
 :::
 
 ## Using Rust
@@ -22,8 +20,6 @@ In **Rust**, the `on` method enables you to define event handlers that integrate
 <<< @/examples/methodFunctions/on_event_tick.rs{rust:line-numbers}[On Event Tick]
 
 <<< @/examples/methodFunctions/on_event_halt.rs{rust:line-numbers}[On Event Halt]
-
-<<< @/examples/methodFunctions/on_event_tick.rs{rust:line-numbers}[On Event Tick]
 
 :::
 

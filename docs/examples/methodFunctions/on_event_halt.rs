@@ -1,6 +1,6 @@
 use lightvm::vmevent::VmEvent;
 
-vm.on(VmEvent.Halt, |data| {
+vm.on(VmEvent::Halt, |data| {
   println!("Event: {:?}", data.event);
   println!("Payload: {:?}", data.payload);
 });
