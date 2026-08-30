@@ -668,7 +668,7 @@ mod tests {
     let payload = Arc::new(Mutex::new(String::new()));
     let payload_ref = payload.clone();
     vm.on_internal(VmEvent::Tick, move |data| {
-      *payload_ref.lock().unwrap() = data;
+      *payload_ref.lock().unwrap() = data.payload.to_string();
     })
     .unwrap();
     vm.emit(VmEvent::Tick, serde_json::json!({"hello":"world"}));
