@@ -17,4 +17,6 @@ pub enum VmEvent {
   Tick,
   Halt,
   Panic,
+  Start,
+  Finish,
 }

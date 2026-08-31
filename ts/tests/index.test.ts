@@ -120,6 +120,38 @@ setTimeout(() => {
         });
       });
 
+      test("on should deliver start and finish event data", () => {
+        const result = spawnSync(
+          process.execPath,
+          [
+            "--input-type=module",
+            "--eval",
+            `import { Capability, LightVM, VMEvent } from './dist/index.min.mjs';
+const vm = new LightVM({ caps: [Capability.Observe, Capability.Control] });
+const delivered = [];
+vm.load([["push", 1]]);
+const receive = (data) => {
+  delivered.push(data);
+  if (delivered.length === 2) console.log(JSON.stringify(delivered));
+};
+vm.on(VMEvent.Start, receive);
+vm.on(VMEvent.Finish, receive);
+vm.run();
+setTimeout(() => {
+  if (delivered.length !== 2) process.exitCode = 1;
+}, 50);`,
+          ],
+          { cwd: process.cwd(), encoding: "utf8", timeout: 1_000 },
+        );
+
+        expect(result.error).toBe(undefined);
+        expect(result.status).toBe(0);
+        expect(JSON.parse(result.stdout.trim())).toEqual([
+          { event: "Start", payload: { operation: "run" } },
+          { event: "Finish", payload: { operation: "run" } },
+        ]);
+      });
+
       test("on should not keep the process alive without an event", () => {
         const result = spawnSync(
           process.execPath,

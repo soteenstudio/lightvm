@@ -34,6 +34,8 @@ export enum VMEvent {
   Tick = 0,
   Halt = 1,
   Panic = 2,
+  Start = 3,
+  Finish = 4,
 }
 export enum TargetArch {
   AArch64 = 0,

@@ -300,6 +300,8 @@ impl NodeLightVM {
       0 => VmEvent::Tick,
       1 => VmEvent::Halt,
       2 => VmEvent::Panic,
+      3 => VmEvent::Start,
+      4 => VmEvent::Finish,
       _ => {
         return Err(into_napi_error(system_error(format!(
           "Unknown event: {}",

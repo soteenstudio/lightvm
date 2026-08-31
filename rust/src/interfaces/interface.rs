@@ -242,6 +242,7 @@ impl LightVM {
       });
     }
     self.state = VmState::Running;
+    self.emit(VmEvent::Start, serde_json::json!({ "operation": "run" }));
     self.emit(VmEvent::Tick, serde_json::json!({ "state": "start" }));
     let bytecode_json = serde_json::to_string(&self.bytecode).map_err(|e| {
       VMError::SystemError(smol_str::SmolStr::new(format!(
@@ -274,6 +275,7 @@ impl LightVM {
     let result = crate::vm::run::run(&bytecode_json, &mut opt_wrapper)?;
     self.last_run_options = opt_wrapper;
     self.state = VmState::Idle;
+    self.emit(VmEvent::Finish, serde_json::json!({ "operation": "run" }));
     Ok(result)
   }
   #[inline]
@@ -292,6 +294,10 @@ impl LightVM {
     }
     self.state = VmState::Running;
     let emit_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+      self.emit(
+        VmEvent::Start,
+        serde_json::json!({ "operation": "compile" }),
+      );
       self.emit(
         VmEvent::Tick,
         serde_json::json!({ "state": "compile_start" }),
@@ -315,6 +321,10 @@ impl LightVM {
       self.emit(
         VmEvent::Tick,
         serde_json::json!({ "state": "compile_success" }),
+      );
+      self.emit(
+        VmEvent::Finish,
+        serde_json::json!({ "operation": "compile" }),
       );
     }));
     if emit_result.is_err() {
@@ -760,6 +770,62 @@ mod tests {
     let mut vm = make_vm(vec![Capability::Control]);
     let result = vm.run_internal(None);
     assert!(result.is_err());
+  }
+  #[test]
+  fn run_internal_emits_start_and_finish_with_event_data() {
+    let mut vm = make_vm(vec![Capability::Control]);
+    vm.bytecode = vec![Instructions::Push(crate::types::value::Value::Float64(
+      42.0,
+    ))];
+    let events = Arc::new(Mutex::new(Vec::new()));
+    let starts = events.clone();
+    vm.on_internal(VmEvent::Start, move |data| {
+      starts
+        .lock()
+        .unwrap()
+        .push((format!("{:?}", data.event), data.payload.clone()));
+    })
+    .unwrap();
+    let finishes = events.clone();
+    vm.on_internal(VmEvent::Finish, move |data| {
+      finishes
+        .lock()
+        .unwrap()
+        .push((format!("{:?}", data.event), data.payload.clone()));
+    })
+    .unwrap();
+
+    vm.run_internal(None).unwrap();
+
+    assert_eq!(
+      *events.lock().unwrap(),
+      vec![
+        (
+          "Start".to_string(),
+          serde_json::json!({ "operation": "run" })
+        ),
+        (
+          "Finish".to_string(),
+          serde_json::json!({ "operation": "run" })
+        ),
+      ]
+    );
+  }
+  #[test]
+  fn failed_run_does_not_emit_finish() {
+    let mut vm = make_vm(vec![Capability::Control]);
+    vm.bytecode = vec![Instructions::Add(
+      crate::types::primitive_types::PrimitiveTypes::Int,
+    )];
+    let finished = Arc::new(AtomicBool::new(false));
+    let flag = finished.clone();
+    vm.on_internal(VmEvent::Finish, move |_| {
+      flag.store(true, Ordering::SeqCst);
+    })
+    .unwrap();
+
+    assert!(vm.run_internal(None).is_err());
+    assert!(!finished.load(Ordering::SeqCst));
   }
   #[test]
   fn var_exported_internal_runs_loaded_program_lazily() {
