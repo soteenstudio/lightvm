@@ -31,9 +31,9 @@ export declare enum Capability {
 export declare enum VMEvent {
     Tick = 0,
     Halt = 1,
-    Panic = 2,
-    Start = 3,
-    Finish = 4
+  Panic = 2,
+  Start = 3,
+  Finish = 4
 }
 export declare enum TargetArch {
     AArch64 = 0
