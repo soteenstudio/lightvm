@@ -794,9 +794,7 @@ mod tests {
         .push((format!("{:?}", data.event), data.payload.clone()));
     })
     .unwrap();
-
     vm.run_internal(None).unwrap();
-
     assert_eq!(
       *events.lock().unwrap(),
       vec![
@@ -823,7 +821,6 @@ mod tests {
       flag.store(true, Ordering::SeqCst);
     })
     .unwrap();
-
     assert!(vm.run_internal(None).is_err());
     assert!(!finished.load(Ordering::SeqCst));
   }

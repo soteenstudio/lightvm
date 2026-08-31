@@ -659,9 +659,7 @@ mod tests {
         .unwrap()
         .push((format!("{:?}", data.event), data.payload.clone()));
     });
-
     vm.run(None);
-
     assert_eq!(
       *events.lock().unwrap(),
       vec![
