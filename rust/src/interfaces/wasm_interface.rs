@@ -11,8 +11,20 @@
 #![cfg(feature = "wasm")]
 use crate::interfaces::interface::LightVM;
 use crate::modules::vmerror::VMError;
-use crate::types::{capability::Capability, time_budget::TimeBudget, vmconfig::VmWasmConfig};
+use crate::types::{
+  capability::Capability, time_budget::TimeBudget, vmconfig::VmWasmConfig, vmevent::VmEvent,
+};
 use wasm_bindgen::prelude::*;
+fn parse_event(event_type: &str) -> Option<VmEvent> {
+  match event_type {
+    "tick" => Some(VmEvent::Tick),
+    "halt" => Some(VmEvent::Halt),
+    "panic" => Some(VmEvent::Panic),
+    "start" => Some(VmEvent::Start),
+    "finish" => Some(VmEvent::Finish),
+    _ => None,
+  }
+}
 #[wasm_bindgen(js_name = "LightVM")]
 pub struct WasmLightVM {
   inner: LightVM,
@@ -228,24 +240,23 @@ impl WasmLightVM {
   }
   #[wasm_bindgen]
   pub fn on(&mut self, event_type: String, callback: js_sys::Function) -> Result<(), JsValue> {
-    use crate::types::vmevent::VmEvent;
-    let event = match event_type.as_str() {
-      "tick" => VmEvent::Tick,
-      "halt" => VmEvent::Halt,
-      "panic" => VmEvent::Panic,
-      _ => {
-        return Err(wasm_bindgen::JsValue::from(js_sys::Error::new(&format!(
-          "Unknown event: {}",
-          event_type
-        ))));
-      }
-    };
+    use crate::interfaces::interface::VmEventData;
+    let event = parse_event(&event_type).ok_or_else(|| {
+      wasm_bindgen::JsValue::from(js_sys::Error::new(&format!(
+        "Unknown event: {}",
+        event_type
+      )))
+    })?;
     let js_func = RcFnWrapper::new(callback);
     self
       .inner
-      .on_internal(event, move |payload| {
+      .on_internal(event, move |data: &VmEventData| {
         let this = JsValue::null();
-        let arg0 = JsValue::from_str(&payload);
+        let arg0 = serde_wasm_bindgen::to_value(&serde_json::json!({
+          "event": data.event,
+          "payload": data.payload,
+        }))
+        .unwrap_or(JsValue::NULL);
         let _ = js_func.inner.call1(&this, &arg0);
       })
       .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e)))
@@ -502,6 +513,11 @@ mod tests {
       assert_eq!(vm.inner.hint, false);
     }
     assert_eq!(config.runtime_config.unwrap().nightly, Some(true));
+  }
+  #[test]
+  fn start_and_finish_event_names_are_supported() {
+    assert_eq!(parse_event("start"), Some(VmEvent::Start));
+    assert_eq!(parse_event("finish"), Some(VmEvent::Finish));
   }
   #[test]
   fn tools_optimizer_uses_normal_time_budget_for_more_optimization() {

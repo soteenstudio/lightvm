@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use lightvm::{LightVM, types::{vmconfig::VmConfig, capability::Capability, time_budget::TimeBudget}};
+use lightvm::{LightVM, types::{vmconfig::VmConfig, capability::Capability, time_budget::TimeBudget, vmevent::VmEvent}};
 
 fn main() {
   let mut vm = LightVM::new(VmConfig {
@@ -28,7 +28,9 @@ fn main() {
     ["val", "x"],
     ["push", 5],
     ["set", "x"],
-    ["export", "x"]
+    ["export", "x"],
+    ["push", 5],
+    ["println"]
   ]"#;
   let tools = vm.tools();
   let optimized_json = tools
@@ -46,4 +48,10 @@ fn main() {
   println!("{:?}", x_var.call(&mut vm, vec![]));
 
   println!("{}", vm.info());
+
+  vm.on(VmEvent::Tick, |data| {
+    println!("Event: {:?}", data.event);
+    println!("Payload: {:?}", data.payload);
+  });
+  vm.run(None);
 }

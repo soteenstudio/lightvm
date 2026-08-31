@@ -29,6 +29,8 @@ function main() {
     ['push', 5],
     ['set', 'x'],
     ['export', 'x'],
+    ['push', 5],
+    ['println'],
   ];
   const optimized = tools.optimizeBytecode(raw);
   vm.load(optimized);
@@ -37,5 +39,11 @@ function main() {
   const xVar = vm.export('x');
   console.log(xVar.call());
   console.log(vm.info());
+
+  vm.on(VMEvent.Tick, (data) => {
+    console.log('Event: ', data.event);
+    console.log('Payload: ', data.payload);
+  });
+  vm.run();
 }
 main();

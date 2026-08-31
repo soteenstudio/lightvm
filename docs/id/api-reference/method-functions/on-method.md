@@ -6,7 +6,13 @@ Untuk **TypeScript**, metode `on` memungkinkan Anda untuk melampirkan pendengar 
 
 ::: code-group
 
-<<< @/examples/methodFunctions/onCode.ts{ts:line-numbers}[Kode]
+<<< @/examples/methodFunctions/onEventTick.ts{ts:line-numbers}[On Event Tick]
+
+<<< @/examples/methodFunctions/onEventHalt.ts{ts:line-numbers}[On Event Halt]
+
+<<< @/examples/methodFunctions/onEventStart.ts{ts:line-numbers}[On Event Start]
+
+<<< @/examples/methodFunctions/onEventFinish.ts{ts:line-numbers}[On Event Finish]
 
 :::
 
@@ -15,12 +21,18 @@ Dalam **Rust**, metode `on` memungkinkan Anda untuk mendefinisikan penanganan pe
 
 ::: code-group
 
-<<< @/examples/methodFunctions/on_code.rs{rust:line-numbers}[Kode]
+<<< @/examples/methodFunctions/on_event_tick.rs{rust:line-numbers}[On Event Tick]
+
+<<< @/examples/methodFunctions/on_event_halt.rs{rust:line-numbers}[On Event Halt]
+
+<<< @/examples/methodFunctions/on_event_start.rs{rust:line-numbers}[On Event Start]
+
+<<< @/examples/methodFunctions/on_event_finish.rs{rust:line-numbers}[On Event Finish]
 
 :::
 
 ::: info
 **Kapabilitas yang Dibutuhkan**: tidak ada kapabilitas khusus
 
-**Event yang Dimiliki**: `Tick`, `Halt`, dan `Panic`
+**Event yang Dimiliki**: `Tick`, `Halt`, `Panic`, `Start`, dan `Finish`
 :::

@@ -9,7 +9,7 @@
  */
 
 #![cfg(not(feature = "node"))]
-use crate::interfaces::interface::LightVM;
+use crate::interfaces::interface::{LightVM, VmEventData};
 use crate::modules::itme::benchmark::Benchmark;
 use crate::modules::vmerror::VMError;
 use crate::traits::{json_value_trait::IntoJsonValue, vmevent_trait::IntoVmEvent};
@@ -395,7 +395,7 @@ impl LightVM {
   pub fn on<E, F>(&mut self, event: E, callback: F) -> &mut Self
   where
     E: IntoVmEvent,
-    F: Fn(String) + Send + Sync + 'static,
+    F: Fn(&VmEventData) + Send + Sync + 'static,
   {
     let vm_event = event.to_vm_event();
     let _ = self.on_internal(vm_event, callback);
@@ -578,7 +578,7 @@ impl LightVMTools {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::types::vmconfig::VmConfig;
+  use crate::types::{instructions::Instructions, vmconfig::VmConfig};
   use serde_json::json;
   use std::sync::{
     Arc, Mutex,
@@ -629,10 +629,44 @@ mod tests {
     let payload = Arc::new(Mutex::new(String::new()));
     let out = payload.clone();
     vm.on(VmEvent::Tick, move |data| {
-      *out.lock().unwrap() = data;
+      *out.lock().unwrap() = data.payload.to_string();
     });
     vm.emit(VmEvent::Tick, json!({"hello":"world"}));
     assert_eq!(*payload.lock().unwrap(), r#"{"hello":"world"}"#);
+  }
+  #[test]
+  fn run_delivers_start_and_finish_events() {
+    let config = VmConfig {
+      caps: vec![Capability::Control],
+      ..Default::default()
+    };
+    let mut vm = LightVM::new(config);
+    vm.bytecode = vec![Instructions::Push(crate::types::value::Value::Float64(
+      42.0,
+    ))];
+    let events = Arc::new(Mutex::new(Vec::new()));
+    let starts = events.clone();
+    vm.on(VmEvent::Start, move |data| {
+      starts
+        .lock()
+        .unwrap()
+        .push((format!("{:?}", data.event), data.payload.clone()));
+    });
+    let finishes = events.clone();
+    vm.on(VmEvent::Finish, move |data| {
+      finishes
+        .lock()
+        .unwrap()
+        .push((format!("{:?}", data.event), data.payload.clone()));
+    });
+    vm.run(None);
+    assert_eq!(
+      *events.lock().unwrap(),
+      vec![
+        ("Start".to_string(), json!({ "operation": "run" })),
+        ("Finish".to_string(), json!({ "operation": "run" })),
+      ]
+    );
   }
   #[test]
   fn provide_adds_imports() {

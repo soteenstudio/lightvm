@@ -294,11 +294,14 @@ impl NodeLightVM {
   }
   #[napi]
   pub fn on(&mut self, event_type: u32, callback: Function<String, ()>) -> Result<()> {
+    use crate::interfaces::interface::VmEventData;
     use crate::types::vmevent::VmEvent;
     let event = match event_type {
       0 => VmEvent::Tick,
       1 => VmEvent::Halt,
       2 => VmEvent::Panic,
+      3 => VmEvent::Start,
+      4 => VmEvent::Finish,
       _ => {
         return Err(into_napi_error(system_error(format!(
           "Unknown event: {}",
@@ -306,21 +309,18 @@ impl NodeLightVM {
         ))));
       }
     };
-    let mut threadsafe_callback = match callback.build_threadsafe_function().build() {
+    let threadsafe_callback = match callback.build_threadsafe_function().weak::<true>().build() {
       Ok(value) => value,
       Err(e) => return Err(e),
     };
-    #[allow(deprecated)]
-    {
-      let env = napi::bindgen_prelude::Env::from_raw(std::ptr::null_mut());
-      match threadsafe_callback.unref(&env) {
-        Ok(_) => {}
-        Err(e) => return Err(e),
-      };
-    }
     self
       .inner
-      .on_internal(event, move |payload| {
+      .on_internal(event, move |data: &VmEventData| {
+        let payload = serde_json::json!({
+            "event": data.event,
+            "payload": data.payload,
+        });
+        let payload = payload.to_string();
         let _ = threadsafe_callback.call(payload, ThreadsafeFunctionCallMode::NonBlocking);
       })
       .map_err(|e| into_napi_error(system_error(e)))
