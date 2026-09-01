@@ -267,18 +267,33 @@ impl WasmLightVM {
       .inner
       .clear_outputs_internal()
       .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))?;
-    self
+    let raw_result = self
       .inner
-      .run_internal(None)
+      .run_internal(Some(crate::types::value::RunOptions {
+        capture_return: true,
+        ..Default::default()
+      }))
       .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))?;
     let outputs = self
       .inner
       .get_outputs_internal()
       .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))?;
+    let result: serde_json::Value = serde_json::from_str(&raw_result).map_err(|e| {
+      wasm_bindgen::JsValue::from(js_sys::Error::new(&format!(
+        "Failed to parse embedded result: {}",
+        e
+      )))
+    })?;
+    let value = result
+      .get("result")
+      .filter(|result| result.get("defined").and_then(|defined| defined.as_bool()) == Some(true))
+      .and_then(|result| result.get("value"))
+      .cloned()
+      .unwrap_or(serde_json::Value::Null);
     let res_json = serde_json::json!({
-      "value": serde_json::Value::Null,
+      "value": value,
       "outputs": outputs,
-      "halted": true
+      "halted": self.inner.should_halt.load(std::sync::atomic::Ordering::Relaxed)
     });
     serde_wasm_bindgen::to_value(&res_json).map_err(|e| {
       wasm_bindgen::JsValue::from(js_sys::Error::new(&format!(

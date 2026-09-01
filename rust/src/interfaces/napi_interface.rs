@@ -327,22 +327,27 @@ impl NodeLightVM {
   }
   #[napi]
   pub fn embedded(&mut self) -> Result<serde_json::Value> {
-    match self.inner.clear_outputs_internal().map_err(into_napi_error) {
-      Ok(_) => {}
-      Err(e) => return Err(e),
-    };
-    let _ = match self.inner.run_internal(None).map_err(into_napi_error) {
-      Ok(value) => value,
-      Err(e) => return Err(e),
-    };
-    let outputs = match self.inner.get_outputs_internal().map_err(into_napi_error) {
-      Ok(value) => value,
-      Err(e) => return Err(e),
-    };
+    self.inner.clear_outputs_internal().map_err(into_napi_error)?;
+    let raw_result = self
+      .inner
+      .run_internal(Some(crate::types::value::RunOptions {
+        capture_return: true,
+        ..Default::default()
+      }))
+      .map_err(into_napi_error)?;
+    let outputs = self.inner.get_outputs_internal().map_err(into_napi_error)?;
+    let result: serde_json::Value = serde_json::from_str(&raw_result)
+      .map_err(|error| into_napi_error(system_error(error.to_string())))?;
+    let value = result
+      .get("result")
+      .filter(|result| result.get("defined").and_then(|defined| defined.as_bool()) == Some(true))
+      .and_then(|result| result.get("value"))
+      .cloned()
+      .unwrap_or(serde_json::Value::Null);
     Ok(serde_json::json!({
-      "value": serde_json::Value::Null,
+      "value": value,
       "outputs": outputs,
-      "halted": true
+      "halted": self.inner.should_halt.load(std::sync::atomic::Ordering::Relaxed)
     }))
   }
   #[napi(js_name = "callExport")]
