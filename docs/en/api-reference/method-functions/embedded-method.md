@@ -1,31 +1,31 @@
 # Embedded Method
 
-The `.embedded()` method executes the program currently loaded in the VM and returns a `VMResult`.
-
-Before execution, the method clears outputs from the previous embedded execution. The returned `VMResult.outputs` therefore contains only output produced by the current execution.
+The `.embedded()` method executes the program currently loaded in the VM and returns its defined `value`, current execution `outputs`, and VM `halted` state. An undefined result or halted VM supplies `null` for `value`.
 
 ## Using TypeScript
-
-Create the VM with both `Control` and `Observe`, load a program, and call `.embedded()`:
+For **TypeScript**, create the VM with `Control` and `Observe`, load a raw bytecode array, and call `.embedded()`.
 
 ::: code-group
 
-<<< @/examples/methodFunctions/embeddedCode.ts{ts:line-numbers}[Embedded Execution]
+<<< @/examples/methodFunctions/embeddedCode.ts{ts:line-numbers}[With Array]
 
 :::
 
-## Result
+## Using Rust
+In **Rust**, you can load a serialized bytecode string or a `serde_json` value before calling `.embedded()`.
 
-`VMResult` contains these fields:
+::: code-group
 
-- `value`: The program's defined return value. It is `null` when the program returns no value or when the VM is halted.
-- `outputs`: Output produced only by the current embedded execution.
-- `halted`: The VM's current halt state.
+<<< @/examples/methodFunctions/embedded_with_raw_string.rs{rust:line-numbers}[With Raw String]
+
+<<< @/examples/methodFunctions/embedded_with_serde.rs{rust:line-numbers}[With Serde]
+
+:::
 
 ::: info
 **Capabilities Required**: `Control` executes the program, and `Observe` retrieves its outputs.
 :::
 
-## Errors
-
-Native `.embedded()` returns `{ status: "error", message }` when execution fails. The N-API and WebAssembly bindings propagate failures through their binding error mechanisms.
+::: tip
+Before each embedded execution, `.embedded()` clears outputs left by the prior embedded execution. The returned `outputs` belong to the current execution, `value` contains a defined result or `null` for an undefined result or halted VM, and `halted` reports the VM halt state. Native execution failures return `{ status: "error", message }`, while N-API and WebAssembly propagate failures through their binding error mechanisms.
+:::
