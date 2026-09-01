@@ -54,4 +54,7 @@ fn main() {
     println!("Payload: {:?}", data.payload);
   });
   vm.run(None);
+
+  let res = vm.embedded();
+  println!("Embedded: {:?}", res);
 }
