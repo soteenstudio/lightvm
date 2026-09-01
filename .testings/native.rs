@@ -47,11 +47,14 @@ fn main() {
 
   println!("{:?}", x_var.call(&mut vm, vec![]));
 
-  println!("{}", vm.info());
+  //println!("{}", vm.info());
 
   vm.on(VmEvent::Tick, |data| {
     println!("Event: {:?}", data.event);
     println!("Payload: {:?}", data.payload);
   });
   vm.run(None);
+
+  let res = vm.embedded();
+  println!("Embedded: {:?}", res);
 }

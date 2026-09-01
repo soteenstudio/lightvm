@@ -48,6 +48,17 @@ describe("LightVM Suite", () => {
       expect(res).toBeInstanceOf(LightVM);
     });
 
+    test("embedded should return the N-API execution result", () => {
+      const vm = createVM();
+      vm.load([["push", 42], ["stop"]]);
+
+      expect(vm.embedded()).toEqual({
+        value: 42,
+        outputs: [],
+        halted: false,
+      });
+    });
+
     test("export should return handles for functions and variables", () => {
       const vm = new LightVM({
         caps: [Capability.Observe, Capability.Control],

@@ -38,12 +38,14 @@ function main() {
   console.log(addFunc.call(5, 6));
   const xVar = vm.export('x');
   console.log(xVar.call());
-  console.log(vm.info());
+  //console.log(vm.info());
 
   vm.on(VMEvent.Tick, (data) => {
     console.log('Event: ', data.event);
     console.log('Payload: ', data.payload);
   });
   vm.run();
+  const res = vm.embedded();
+  console.log('Embedded: ', res);
 }
 main();

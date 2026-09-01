@@ -228,7 +228,7 @@ impl LightVM {
     self.last_run_options = None;
     Ok(())
   }
-  pub fn run_internal(&mut self, _options: Option<RunOptions>) -> Result<String, VMError> {
+  pub fn run_internal(&mut self, options: Option<RunOptions>) -> Result<String, VMError> {
     self.set_mode(self.backtrace, self.explain, self.hint);
     crate::modules::vmerror::get_backtrace::clear_backtrace();
     if self.backtrace {
@@ -253,7 +253,7 @@ impl LightVM {
     let options = RunOptions {
       entry: None,
       args: Vec::new(),
-      capture_return: false,
+      capture_return: options.is_some_and(|options| options.capture_return),
       imports: self._imports.clone(),
       halt_flag: self.should_halt.clone(),
       security_config: SecurityConfig {
@@ -770,6 +770,32 @@ mod tests {
     let mut vm = make_vm(vec![Capability::Control]);
     let result = vm.run_internal(None);
     assert!(result.is_err());
+  }
+  #[test]
+  fn run_internal_uses_only_caller_capture_return_option() {
+    let mut vm = make_vm(vec![Capability::Control]);
+    vm.bytecode = vec![Instructions::Push(Value::Int32(42)), Instructions::Stop];
+    vm.max_ticks = 100;
+    let result = vm
+      .run_internal(Some(RunOptions {
+        capture_return: true,
+        security_config: SecurityConfig {
+          max_ticks: 0,
+          ..Default::default()
+        },
+        ..Default::default()
+      }))
+      .unwrap();
+    let payload: serde_json::Value = serde_json::from_str(&result).unwrap();
+    assert_eq!(payload["result"]["value"], 42);
+    assert_eq!(
+      vm.last_run_options
+        .as_ref()
+        .unwrap()
+        .security_config
+        .max_ticks,
+      100
+    );
   }
   #[test]
   fn run_internal_emits_start_and_finish_with_event_data() {

@@ -415,13 +415,42 @@ impl LightVM {
     }
   }
   pub fn embedded(&mut self) -> serde_json::Value {
-    let _ = self.clear_outputs_internal();
-    let _ = self.run_internal(None);
-    let outputs = self.get_outputs_internal().unwrap_or_default();
+    let error_response = |error: VMError| {
+      serde_json::json!({
+        "status": "error",
+        "message": error.to_string()
+      })
+    };
+    if let Err(error) = self.clear_outputs_internal() {
+      return error_response(error);
+    }
+    let raw_result = match self.run_internal(Some(RunOptions {
+      capture_return: true,
+      ..Default::default()
+    })) {
+      Ok(result) => result,
+      Err(run_error) => return error_response(run_error),
+    };
+    let outputs = match self.get_outputs_internal() {
+      Ok(outputs) => outputs,
+      Err(output_error) => return error_response(output_error),
+    };
+    let result: serde_json::Value = match serde_json::from_str(&raw_result) {
+      Ok(result) => result,
+      Err(parse_error) => {
+        return error_response(VMError::SystemError(parse_error.to_string().into()));
+      }
+    };
+    let value = result
+      .get("result")
+      .filter(|result| result.get("defined").and_then(|defined| defined.as_bool()) == Some(true))
+      .and_then(|result| result.get("value"))
+      .cloned()
+      .unwrap_or(serde_json::Value::Null);
     serde_json::json!({
-      "value": serde_json::Value::Null,
+      "value": value,
       "outputs": outputs,
-      "halted": true
+      "halted": self.should_halt.load(std::sync::atomic::Ordering::Relaxed)
     })
   }
   /// Functions used to call utilities
@@ -819,15 +848,51 @@ mod tests {
     assert!(result.is_ok());
   }
   #[test]
-  fn embedded_returns_object() {
+  fn embedded_returns_defined_value() {
     let config = VmConfig {
       caps: vec![Capability::Observe, Capability::Control],
       ..Default::default()
     };
     let mut vm = LightVM::new(config);
+    vm.load_internal(r#"[["push",42],["stop"]]"#.to_string())
+      .unwrap();
     let result = vm.embedded();
-    assert!(result.is_object());
-    assert!(result.get("outputs").is_some());
+    assert_eq!(result["value"], 42);
+    assert_eq!(result["outputs"], json!([]));
+    assert_eq!(result["halted"], false);
+  }
+  #[test]
+  fn embedded_clears_outputs_from_prior_execution() {
+    let config = VmConfig {
+      caps: vec![Capability::Observe, Capability::Control],
+      ..Default::default()
+    };
+    let mut vm = LightVM::new(config);
+    vm._outputs.push("stale output".to_string());
+    vm.load_internal(r#"[["push",7],["stop"]]"#.to_string())
+      .unwrap();
+    let result = vm.embedded();
+    assert_eq!(result["outputs"], json!([]));
+  }
+  #[test]
+  fn embedded_reports_missing_capability() {
+    let mut vm = LightVM::new(VmConfig::default());
+    let result = vm.embedded();
+    assert_eq!(result["status"], "error");
+    assert!(result["message"].as_str().unwrap().contains("Control"));
+  }
+  #[test]
+  fn embedded_reports_halted_vm() {
+    let config = VmConfig {
+      caps: vec![Capability::Observe, Capability::Control],
+      ..Default::default()
+    };
+    let mut vm = LightVM::new(config);
+    vm.load_internal(r#"[["jump",0]]"#.to_string()).unwrap();
+    vm.should_halt.store(true, Ordering::Relaxed);
+    let result = vm.embedded();
+    assert_eq!(result["value"], serde_json::Value::Null);
+    assert_eq!(result["halted"], true);
   }
   #[test]
   fn time_budget_cheap_is_configured() {
