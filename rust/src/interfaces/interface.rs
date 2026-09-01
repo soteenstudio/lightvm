@@ -788,7 +788,14 @@ mod tests {
       .unwrap();
     let payload: serde_json::Value = serde_json::from_str(&result).unwrap();
     assert_eq!(payload["result"]["value"], 42);
-    assert_eq!(vm.last_run_options.as_ref().unwrap().security_config.max_ticks, 100);
+    assert_eq!(
+      vm.last_run_options
+        .as_ref()
+        .unwrap()
+        .security_config
+        .max_ticks,
+      100
+    );
   }
   #[test]
   fn run_internal_emits_start_and_finish_with_event_data() {
