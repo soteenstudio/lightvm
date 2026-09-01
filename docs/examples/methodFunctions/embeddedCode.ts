@@ -1,15 +1,8 @@
-import { Capability, LightVM } from 'lightvm';
-
-const vm = new LightVM({
-  caps: [Capability.Control, Capability.Observe],
-});
-
-vm.load([
+const raw = [
   ['push', 42],
   ['stop'],
-]);
-
+];
+const optimized = tools.optimizeBytecode(raw);
+vm.load(optimized)
 const result = vm.embedded();
-
 console.log(result);
-// { value: 42, outputs: [], halted: false }
