@@ -415,6 +415,7 @@ impl LightVM {
     }
   }
   pub fn embedded(&mut self) -> serde_json::Value {
+    // TODO: look this
     let _ = self.clear_outputs_internal();
     let _ = self.run_internal(None);
     let outputs = self.get_outputs_internal().unwrap_or_default();
