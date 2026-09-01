@@ -232,15 +232,7 @@ export class LightVM {
   }
 
   embedded(): VMResult {
-    return this.wrap(() => {
-      this.instance.clear_outputs();
-      this.instance.run({});
-      return {
-        value: undefined,
-        outputs: this.instance.get_outputs(),
-        halted: true,
-      };
-    });
+    return this.wrap(() => this.instance.embedded());
   }
 
   tools() {
