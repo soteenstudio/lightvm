@@ -327,7 +327,10 @@ impl NodeLightVM {
   }
   #[napi]
   pub fn embedded(&mut self) -> Result<serde_json::Value> {
-    self.inner.clear_outputs_internal().map_err(into_napi_error)?;
+    self
+      .inner
+      .clear_outputs_internal()
+      .map_err(into_napi_error)?;
     let raw_result = self
       .inner
       .run_internal(Some(crate::types::value::RunOptions {
