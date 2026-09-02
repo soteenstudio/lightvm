@@ -8,7 +8,10 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub(crate) mod cross;
-pub(crate) mod cross_func;
-pub(crate) mod dot;
-pub(crate) mod dot_func;
+pub(crate) mod cross_f16in;
+pub(crate) mod cross_f32in;
+pub(crate) mod cross_f64in;
+pub(crate) mod cross_i128in;
+pub(crate) mod cross_i16in;
+pub(crate) mod cross_i32in;
+pub(crate) mod cross_i64in;
