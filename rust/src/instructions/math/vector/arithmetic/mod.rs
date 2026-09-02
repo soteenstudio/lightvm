@@ -8,8 +8,10 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub(crate) mod arithmetic;
-pub(crate) mod cross;
-pub(crate) mod cross_func;
-pub(crate) mod dot;
-pub(crate) mod dot_func;
+pub(crate) mod addv;
+mod common;
+pub(crate) mod divv;
+pub(crate) mod modv;
+pub(crate) mod mulv;
+pub(crate) mod negv;
+pub(crate) mod subv;
