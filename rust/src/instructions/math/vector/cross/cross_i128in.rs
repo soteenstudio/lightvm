@@ -15,7 +15,7 @@ pub fn cross_i128in(a: &[Value], b: &[Value]) -> Value {
   if !a.iter().chain(b.iter()).all(Value::is_number) {
     return Value::NaN;
   }
-  let component = |ai, aj, bi, bj| {
+  let component = |ai: usize, aj: usize, bi: usize, bj: usize| {
     a[ai]
       .as_i128()
       .wrapping_mul(b[bi].as_i128())
