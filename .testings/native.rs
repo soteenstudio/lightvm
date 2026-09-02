@@ -29,8 +29,9 @@ fn main() {
     ["push", 5],
     ["set", "x"],
     ["export", "x"],
-    ["push", 5],
-    ["println"]
+    ["push_array", [5, 6, 7]],
+    ["push_array", [8, 9, 10]],
+    ["dot", "int"]
   ]"#;
   let tools = vm.tools();
   let optimized_json = tools

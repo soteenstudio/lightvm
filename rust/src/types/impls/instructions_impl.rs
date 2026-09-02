@@ -259,6 +259,7 @@ impl Instructions {
       b"le" => Ok(Instructions::Le(map_primitive(arg1))),
       b"eq" => Ok(Instructions::Eq(map_primitive(arg1))),
       b"neq" => Ok(Instructions::Neq(map_primitive(arg1))),
+      b"dot" => Ok(Instructions::Dot(map_primitive(arg1))),
       b"and" => Ok(Instructions::And),
       b"or" => Ok(Instructions::Or),
       b"xor" => Ok(Instructions::Xor),

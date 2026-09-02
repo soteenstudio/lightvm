@@ -8,12 +8,5 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub(crate) mod arithmetic;
-pub(crate) mod bitwise;
-pub(crate) mod exp;
-pub(crate) mod exp_func;
-pub(crate) mod inc_dec;
-pub(crate) mod logarithm;
-pub(crate) mod root;
-pub(crate) mod trigonometry;
-pub(crate) mod vector;
+pub(crate) mod dot_i16in;
+pub(crate) mod dot_i32in;

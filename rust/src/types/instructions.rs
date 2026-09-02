@@ -87,6 +87,7 @@ pub enum Instructions {
   Le(PrimitiveTypes),
   Eq(PrimitiveTypes),
   Neq(PrimitiveTypes),
+  Dot(PrimitiveTypes),
   And,
   Or,
   Xor,
