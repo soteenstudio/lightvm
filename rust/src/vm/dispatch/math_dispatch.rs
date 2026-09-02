@@ -33,7 +33,7 @@ use crate::instructions::math::{
       acos_func::acos_func, asin_func::asin_func, atan_func::atan_func, atan2_func::atan2_func,
     },
   },
-  vector::dot_func::dot_func,
+  vector::{cross_func::cross_func, dot_func::dot_func},
 };
 use crate::modules::vmerror::VMError;
 use crate::types::stack::Stack;
@@ -79,6 +79,7 @@ pub fn math_dispatch(
     Instructions::Log2(num_type) => log2_func(stack, *num_type, ip),
     Instructions::Log10(num_type) => log10_func(stack, *num_type, ip),
     Instructions::Dot(num_type) => dot_func(stack, *num_type, ip),
+    Instructions::Cross(num_type) => cross_func(stack, *num_type, ip),
     Instructions::IncIdx(idx, num_type) => Ok(inc_func(vars, stack, *idx, *num_type, ip)?),
     Instructions::DecIdx(idx, num_type) => Ok(dec_func(vars, *idx, *num_type, ip)?),
     _ => unsafe { std::hint::unreachable_unchecked() },
