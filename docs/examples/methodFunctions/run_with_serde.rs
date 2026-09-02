@@ -5,4 +5,4 @@ let raw = serde_json::json!([
 ]);
 let optimized = tools.optimize_bytecode(raw);
 vm.load(optimized.clone())
-  .run(None);
+  .run();

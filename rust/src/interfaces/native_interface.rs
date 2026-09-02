@@ -24,7 +24,7 @@ use crate::types::{
   runtime_config::RuntimeConfig,
   security_config::SecurityConfig,
   time_budget::TimeBudget,
-  value::{RunOptions, Value},
+  value::Value,
   vmconfig::VmConfig,
   vmstate::VmState,
 };
@@ -315,11 +315,11 @@ impl LightVM {
   ///   ["set", "x"]
   /// ]"#;
   /// vm.load(vm.tools().optimize_bytecode(raw).clone())
-  ///   .run(None);
+  ///   .run();
   /// ```
-  pub fn run(&mut self, options: Option<RunOptions>) -> String {
+  pub fn run(&mut self) -> String {
     self
-      .run_internal(options)
+      .run_internal(None)
       .unwrap_or_else(|e| format!(r#"{{"status": "error", "message": "{}"}}"#, e))
   }
   pub fn compile(&mut self, config: CompileConfig) -> String {
@@ -386,7 +386,7 @@ impl LightVM {
   /// # Examples
   /// ```rust,ignore
   /// vm.halt();
-  /// vm.run(None); // will not be executed
+  /// vm.run(); // will not be executed
   /// println!("The VM has been terminated.");
   /// ```
   pub fn halt(&mut self) {
@@ -424,10 +424,7 @@ impl LightVM {
     if let Err(error) = self.clear_outputs_internal() {
       return error_response(error);
     }
-    let raw_result = match self.run_internal(Some(RunOptions {
-      capture_return: true,
-      ..Default::default()
-    })) {
+    let raw_result = match self.run_capture_return_internal() {
       Ok(result) => result,
       Err(run_error) => return error_response(run_error),
     };
@@ -688,7 +685,7 @@ mod tests {
         .unwrap()
         .push((format!("{:?}", data.event), data.payload.clone()));
     });
-    vm.run(None);
+    vm.run();
     assert_eq!(
       *events.lock().unwrap(),
       vec![
@@ -854,10 +851,12 @@ mod tests {
       ..Default::default()
     };
     let mut vm = LightVM::new(config);
-    vm.load_internal(r#"[["push",42],["stop"]]"#.to_string())
+    vm.load_internal(
+      r#"[["push",5.0],["push",6.0],["push",7.0],["make_array",3],["push",8.0],["push",9.0],["push",10.0],["make_array",3],["dot","flt"],["return"]]"#.to_string(),
+    )
       .unwrap();
     let result = vm.embedded();
-    assert_eq!(result["value"], 42);
+    assert_eq!(result["value"], 164.0);
     assert_eq!(result["outputs"], json!([]));
     assert_eq!(result["halted"], false);
   }
@@ -932,7 +931,7 @@ mod tests {
       ["val", "unset"],
       ["export", "unset"]
     ]));
-    vm.run(None);
+    vm.run();
     let add_func = vm.export("add".to_string());
     let x_var = vm.export("x".to_string());
     let unset_var = vm.export("unset".to_string());

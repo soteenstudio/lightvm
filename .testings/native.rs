@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use lightvm::{LightVM, RunOptions, types::{vmconfig::VmConfig, capability::Capability, time_budget::TimeBudget}};
+use lightvm::{LightVM, types::{vmconfig::VmConfig, capability::Capability, time_budget::TimeBudget}};
 
 fn main() {
   let mut vm = LightVM::new(VmConfig {
@@ -32,9 +32,6 @@ fn main() {
   let optimized_json = tools
     .optimize_bytecode(raw);
   vm.load(optimized_json);
-  let result: serde_json::Value = serde_json::from_str(&vm.run(Some(RunOptions {
-    capture_return: true,
-    ..Default::default()
-  }))).expect("expected VM result JSON");
-  assert_eq!(result["result"]["value"], 164);
+  let result = vm.embedded();
+  assert_eq!(result["value"], 164);
 }

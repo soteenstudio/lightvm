@@ -17,7 +17,7 @@ fn bench_vm_execution(c: &mut Criterion) {
   vm.load(raw.into());
   let mut group = c.benchmark_group("LightVM Execution");
   group.bench_function("assign_bench", |b: &mut Bencher| {
-    b.iter(|| vm.run(None));
+    b.iter(|| vm.run());
   });
   group.finish();
 }

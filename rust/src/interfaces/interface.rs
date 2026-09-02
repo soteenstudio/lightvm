@@ -278,6 +278,12 @@ impl LightVM {
     self.emit(VmEvent::Finish, serde_json::json!({ "operation": "run" }));
     Ok(result)
   }
+  pub(crate) fn run_capture_return_internal(&mut self) -> Result<String, VMError> {
+    self.run_internal(Some(RunOptions {
+      capture_return: true,
+      ..Default::default()
+    }))
+  }
   #[inline]
   pub fn compile_internal(&mut self, config: CompileConfig) -> Result<(), VMError> {
     self.set_mode(self.backtrace, self.explain, self.hint);

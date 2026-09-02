@@ -5,4 +5,4 @@ let raw = r#"[
 ]"#;
 let optimized = tools.optimize_bytecode(raw);
 vm.load(optimized.clone())
-  .run(None);
+  .run();

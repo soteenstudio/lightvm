@@ -19,7 +19,7 @@ fn bench_vm_execution(c: &mut Criterion) {
   group.bench_function("io_bench", |b: &mut Bencher| {
     b.iter(|| {
       let _sink = std::io::sink();
-      vm.run(None)
+      vm.run()
     });
   });
   group.finish();

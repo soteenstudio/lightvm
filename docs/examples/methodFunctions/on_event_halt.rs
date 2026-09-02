@@ -5,4 +5,4 @@ vm.on(VmEvent::Halt, |data| {
   println!("Payload: {:?}", data.payload);
 });
 vm.halt();
-vm.run(None); // will not be executed
+vm.run(); // will not be executed
