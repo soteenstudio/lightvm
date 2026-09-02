@@ -21,6 +21,12 @@ fn main() {
     ["push", 5],
     ["push", 5],
     ["make_array", 3],
+    ["println"],
+    ["push", "name"],
+    ["push", "John Doe"],
+    ["push", "age"],
+    ["push", 39],
+    ["make_obj", 2],
     ["println"]
   ]"#;
   let tools = vm.tools();

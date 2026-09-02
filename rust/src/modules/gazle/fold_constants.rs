@@ -170,13 +170,11 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
     i += 1;
   }
 }
-
 #[cfg(test)]
 mod tests {
   use super::*;
   use crate::types::{primitive_types::PrimitiveTypes, value::Value};
   use smol_str::SmolStr;
-
   #[test]
   fn folds_constant_make_array() {
     let mut bytecode = vec![
@@ -184,9 +182,7 @@ mod tests {
       Instructions::PushInt16(2),
       Instructions::MakeArray(2),
     ];
-
     fold_constants(&mut bytecode);
-
     assert_eq!(
       bytecode,
       vec![
@@ -196,7 +192,6 @@ mod tests {
       ]
     );
   }
-
   #[test]
   fn leaves_non_constant_make_array_unchanged() {
     let mut bytecode = vec![
@@ -204,12 +199,9 @@ mod tests {
       Instructions::MakeArray(1),
     ];
     let expected = bytecode.clone();
-
     fold_constants(&mut bytecode);
-
     assert_eq!(bytecode, expected);
   }
-
   #[test]
   fn folds_arithmetic_with_make_array_present() {
     let mut bytecode = vec![
@@ -219,9 +211,7 @@ mod tests {
       Instructions::PushInt16(3),
       Instructions::Add(PrimitiveTypes::Sht),
     ];
-
     fold_constants(&mut bytecode);
-
     assert_eq!(
       bytecode,
       vec![
@@ -233,7 +223,6 @@ mod tests {
       ]
     );
   }
-
   #[test]
   fn folds_constant_make_obj() {
     let mut bytecode = vec![
@@ -246,9 +235,7 @@ mod tests {
     let mut expected_object = AHashMap::new();
     expected_object.insert(SmolStr::new("first"), Value::Int16(1));
     expected_object.insert(SmolStr::new("second"), Value::Int16(2));
-
     fold_constants(&mut bytecode);
-
     assert_eq!(
       bytecode,
       vec![
@@ -260,7 +247,6 @@ mod tests {
       ]
     );
   }
-
   #[test]
   fn leaves_non_constant_make_obj_unchanged() {
     let bytecodes = [
@@ -275,15 +261,12 @@ mod tests {
         Instructions::MakeObj(1),
       ],
     ];
-
     for mut bytecode in bytecodes {
       let expected = bytecode.clone();
       fold_constants(&mut bytecode);
-
       assert_eq!(bytecode, expected);
     }
   }
-
   #[test]
   fn leaves_non_string_make_obj_key_unchanged() {
     let mut bytecode = vec![
@@ -292,9 +275,7 @@ mod tests {
       Instructions::MakeObj(1),
     ];
     let expected = bytecode.clone();
-
     fold_constants(&mut bytecode);
-
     assert_eq!(bytecode, expected);
   }
 }
