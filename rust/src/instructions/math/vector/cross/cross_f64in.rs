@@ -15,10 +15,9 @@ pub fn cross_f64in(a: &[Value], b: &[Value]) -> Value {
   if !a.iter().chain(b.iter()).all(Value::is_number) {
     return Value::NaN;
   }
-  let component =
-    |ai: usize, aj: usize, bi: usize, bj: usize| {
-      a[ai].as_f64() * b[bi].as_f64() - a[aj].as_f64() * b[bj].as_f64()
-    };
+  let component = |ai: usize, aj: usize, bi: usize, bj: usize| {
+    a[ai].as_f64() * b[bi].as_f64() - a[aj].as_f64() * b[bj].as_f64()
+  };
   Value::Array(Arc::new(vec![
     Value::Float64(component(1, 2, 2, 1)),
     Value::Float64(component(2, 0, 0, 2)),
