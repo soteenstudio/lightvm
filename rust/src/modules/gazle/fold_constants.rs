@@ -42,8 +42,8 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
       if i >= count {
         let mut all_const = true;
         let mut vals = Vec::with_capacity(count);
-        for j in (i - count)..i {
-          if let Some(val) = extract_value(&bytecode[j]) {
+        for instr in bytecode.iter().take(i).skip(i - count) {
+          if let Some(val) = extract_value(instr) {
             vals.push(val);
           } else {
             all_const = false;
@@ -52,8 +52,8 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         }
         if all_const {
           bytecode[i - count] = Instructions::PushArray(Arc::new(vals));
-          for j in (i - count + 1)..=i {
-            bytecode[j] = Instructions::Nop;
+          for instr in bytecode.iter_mut().take(i + 1).skip(i - count + 1) {
+            *instr = Instructions::Nop;
           }
           i += 1;
           continue;
@@ -71,19 +71,21 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
           }
         }
         let valid_keys = operands
-          .chunks_exact(2)
+          .as_chunks::<2>()
+          .0
+          .iter()
           .all(|pair| matches!(&pair[0], Value::String(_)));
         if operands.len() == operand_count && valid_keys {
           let mut object = AHashMap::with_capacity(*count as usize);
-          for pair in operands.chunks_exact(2).rev() {
+          for pair in operands.as_chunks::<2>().0.iter().rev() {
             let Value::String(key) = &pair[0] else {
               unreachable!();
             };
             object.insert(key.clone(), pair[1].clone());
           }
           bytecode[i - operand_count] = Instructions::PushObject(Arc::new(object));
-          for j in (i - operand_count + 1)..=i {
-            bytecode[j] = Instructions::Nop;
+          for instr in bytecode.iter_mut().take(i + 1).skip(i - operand_count + 1) {
+            *instr = Instructions::Nop;
           }
         }
       }
