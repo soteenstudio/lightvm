@@ -854,10 +854,12 @@ mod tests {
       ..Default::default()
     };
     let mut vm = LightVM::new(config);
-    vm.load_internal(r#"[["push",42],["stop"]]"#.to_string())
-      .unwrap();
+    vm.load_internal(
+      r#"[["push",5.0],["push",6.0],["push",7.0],["make_array",3],["push",8.0],["push",9.0],["push",10.0],["make_array",3],["dot","flt"],["stop"]]"#.to_string(),
+    )
+    .unwrap();
     let result = vm.embedded();
-    assert_eq!(result["value"], 42);
+    assert_eq!(result["value"], 164.0);
     assert_eq!(result["outputs"], json!([]));
     assert_eq!(result["halted"], false);
   }
