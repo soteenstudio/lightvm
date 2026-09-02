@@ -17,34 +17,31 @@ use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
 #[inline(always)]
-pub fn addv_values(a_val: Value, b_val: Value, num_type: PrimitiveTypes) -> Value {
+pub fn addv_values(
+  a_val: Value,
+  b_val: Value,
+  num_type: PrimitiveTypes,
+) -> Result<Value, &'static str> {
   let arr_a = match a_val.as_array() {
     Some(v) => v,
-    None => return Value::NaN,
+    None => return Ok(Value::NaN),
   };
   let arr_b = match b_val.as_array() {
     Some(v) => v,
-    None => return Value::NaN,
+    None => return Ok(Value::NaN),
   };
   if arr_a.len() != arr_b.len() {
-    return Value::NaN;
+    return Ok(Value::NaN);
   }
-  let validator: fn(&Value) -> bool = match num_type {
-    PrimitiveTypes::Sht => |v| matches!(v, Value::Int16(_)),
-    PrimitiveTypes::Int => |v| matches!(v, Value::Int32(_)),
-    PrimitiveTypes::Lng => |v| matches!(v, Value::Int64(_)),
-    PrimitiveTypes::Oct => |v| matches!(v, Value::Int128(_)),
-    PrimitiveTypes::Hlf => |v| matches!(v, Value::Float16(_)),
-    PrimitiveTypes::Flt => |v| matches!(v, Value::Float32(_)),
-    PrimitiveTypes::Dbl => |v| matches!(v, Value::Float64(_)),
-    _ => return Value::NaN,
-  };
+  if num_type == PrimitiveTypes::Str {
+    return Ok(Value::NaN);
+  }
   for x in arr_a.iter().chain(arr_b.iter()) {
-    if !validator(x) {
-      return Value::NaN;
+    if !x.is_number() {
+      return Err(x.type_of());
     }
   }
-  match num_type {
+  Ok(match num_type {
     PrimitiveTypes::Sht => Value::Array(addv_i16in(&arr_a, &arr_b)),
     PrimitiveTypes::Int => Value::Array(addv_i32in(&arr_a, &arr_b)),
     PrimitiveTypes::Lng => Value::Array(addv_i64in(&arr_a, &arr_b)),
@@ -53,19 +50,38 @@ pub fn addv_values(a_val: Value, b_val: Value, num_type: PrimitiveTypes) -> Valu
     PrimitiveTypes::Flt => Value::Array(addv_f32in(&arr_a, &arr_b)),
     PrimitiveTypes::Dbl => Value::Array(addv_f64in(&arr_a, &arr_b)),
     _ => Value::NaN,
-  }
+  })
 }
 #[inline]
 pub fn addv_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
-  let b_val = stack
-    .pop()
-    .ok_or(VMError::StackUnderflow { ip, opcode: "ADDV" })?;
-  let a_ref = stack
-    .last_mut()
-    .ok_or(VMError::StackUnderflow { ip, opcode: "ADDV" })?;
-  let a_val = std::mem::take(a_ref);
-  *a_ref = addv_values(a_val, b_val, num_type);
+  if stack.len() < 2 {
+    return Err(VMError::StackUnderflow { ip, opcode: "ADDV" });
+  }
+  let result = addv_values(
+    stack[stack.len() - 2].clone(),
+    stack[stack.len() - 1].clone(),
+    num_type,
+  )
+  .map_err(|found| VMError::TypeMismatch {
+    ip,
+    expected: expected_type(num_type),
+    found,
+  })?;
+  stack.pop();
+  *stack.last_mut().unwrap() = result;
   Ok(())
+}
+fn expected_type(num_type: PrimitiveTypes) -> &'static str {
+  match num_type {
+    PrimitiveTypes::Sht => "Int16",
+    PrimitiveTypes::Int => "Int32",
+    PrimitiveTypes::Lng => "Int64",
+    PrimitiveTypes::Oct => "Int128",
+    PrimitiveTypes::Hlf => "Float16",
+    PrimitiveTypes::Flt => "Float32",
+    PrimitiveTypes::Dbl => "Float64",
+    PrimitiveTypes::Str => "String",
+  }
 }
 #[cfg(test)]
 mod tests {
@@ -81,7 +97,7 @@ mod tests {
       array(vec![Value::Int32(10), Value::Int32(20)]),
       PrimitiveTypes::Int,
     );
-    assert_eq!(result, array(vec![Value::Int32(11), Value::Int32(22)]));
+    assert_eq!(result, Ok(array(vec![Value::Int32(11), Value::Int32(22)])));
   }
   #[test]
   fn addv_rejects_non_numeric_and_mixed_or_invalid_lengths() {
@@ -90,18 +106,42 @@ mod tests {
       array(vec![Value::String("invalid".into())]),
       PrimitiveTypes::Int,
     );
-    assert_eq!(result, Value::NaN);
+    assert_eq!(result, Err("string"));
     let result = addv_values(
       array(vec![Value::Int32(1)]),
       array(vec![Value::Int64(1)]),
       PrimitiveTypes::Int,
     );
-    assert_eq!(result, Value::NaN);
+    assert_eq!(result, Ok(array(vec![Value::Int32(2)])));
     let result = addv_values(
       array(vec![Value::Int32(1), Value::Int32(2)]),
       array(vec![Value::Int32(1)]),
       PrimitiveTypes::Int,
     );
-    assert_eq!(result, Value::NaN);
+    assert_eq!(result, Ok(Value::NaN));
+  }
+  #[test]
+  fn addv_reports_element_type_without_mutating_stack() {
+    let mut stack = Stack::from_vec(vec![
+      array(vec![Value::Int32(1)]),
+      array(vec![Value::String("invalid".into())]),
+    ]);
+    let original = stack.clone();
+    assert!(matches!(
+      addv_func(&mut stack, PrimitiveTypes::Int, 13),
+      Err(VMError::TypeMismatch {
+        ip: 13,
+        expected: "Int32",
+        found: "string"
+      })
+    ));
+    assert_eq!(stack, original);
+  }
+  #[test]
+  fn addv_non_array_remains_nan() {
+    assert_eq!(
+      addv_values(Value::Bool(false), array(vec![]), PrimitiveTypes::Int),
+      Ok(Value::NaN)
+    );
   }
 }
