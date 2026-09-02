@@ -31,9 +31,35 @@ use crate::modules::gazle::utils::{
   extract_value::extract_value, value_to_instruction::value_to_instruction,
 };
 use crate::types::instructions::Instructions;
+use std::sync::Arc;
 #[inline(always)]
 pub fn fold_constants(bytecode: &mut [Instructions]) {
   let mut i = 0;
+  while i < bytecode.len() {
+    if let Some(Instructions::MakeArray(count)) = bytecode.get(i) {
+      let count = *count as usize;
+      if i >= count {
+        let mut all_const = true;
+        let mut vals = Vec::with_capacity(count);
+        for j in (i - count)..i {
+          if let Some(val) = extract_value(&bytecode[j]) {
+            vals.push(val);
+          } else {
+            all_const = false;
+            break;
+          }
+        }
+        if all_const {
+          bytecode[i - count] = Instructions::PushArray(Arc::new(vals));
+          for j in (i - count + 1)..=i {
+            bytecode[j] = Instructions::Nop;
+          }
+          i += 1;
+          continue;
+        }
+      }
+    }
+  }
   while i < bytecode.len().saturating_sub(2) {
     let instr1 = &bytecode[i];
     let instr2 = &bytecode[i + 1];
