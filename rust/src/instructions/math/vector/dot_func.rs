@@ -138,7 +138,11 @@ mod tests {
       Ok(Value::NaN)
     );
     assert_eq!(
-      dot_values(array(vec![Value::Int32(1)]), array(vec![]), PrimitiveTypes::Int),
+      dot_values(
+        array(vec![Value::Int32(1)]),
+        array(vec![]),
+        PrimitiveTypes::Int
+      ),
       Ok(Value::NaN)
     );
   }
