@@ -39,6 +39,7 @@ pub use interfaces::interface::LightVM;
 use napi_derive::napi;
 #[cfg(feature = "node")]
 use std::fs;
+pub use types::value::RunOptions;
 #[cfg(feature = "node")]
 const PUBLIC_KEY_BYTES: [u8; 32] = [
   16, 241, 151, 48, 19, 252, 107, 117, 224, 89, 203, 89, 162, 96, 43, 50, 13, 24, 97, 169, 163,

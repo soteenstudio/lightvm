@@ -10,12 +10,15 @@
 
 use crate::types::value::Value;
 use std::sync::Arc;
-pub fn dot_i128in(arr_a: &Arc<Vec<Value>>, arr_b: &Arc<Vec<Value>>) -> i128 {
+pub fn dot_i128in(arr_a: &Arc<Vec<Value>>, arr_b: &Arc<Vec<Value>>) -> Value {
   let mut sum: i128 = 0;
   for (x, y) in arr_a.iter().zip(arr_b.iter()) {
+    if !x.is_number() || !y.is_number() {
+      return Value::NaN;
+    }
     let vx: i128 = x.as_i128();
     let vy: i128 = y.as_i128();
     sum = sum.wrapping_add(vx.wrapping_mul(vy));
   }
-  sum
+  Value::Int128(sum)
 }
