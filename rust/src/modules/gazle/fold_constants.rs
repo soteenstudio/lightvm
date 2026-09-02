@@ -30,10 +30,69 @@ use crate::instructions::{
 use crate::modules::gazle::utils::{
   extract_value::extract_value, value_to_instruction::value_to_instruction,
 };
-use crate::types::instructions::Instructions;
+use crate::types::{instructions::Instructions, value::Value};
+use ahash::AHashMap;
+use std::sync::Arc;
 #[inline(always)]
 pub fn fold_constants(bytecode: &mut [Instructions]) {
   let mut i = 0;
+  while i < bytecode.len() {
+    if let Some(Instructions::MakeArray(count)) = bytecode.get(i) {
+      let count = *count as usize;
+      if i >= count {
+        let mut all_const = true;
+        let mut vals = Vec::with_capacity(count);
+        for instr in bytecode.iter().take(i).skip(i - count) {
+          if let Some(val) = extract_value(instr) {
+            vals.push(val);
+          } else {
+            all_const = false;
+            break;
+          }
+        }
+        if all_const {
+          bytecode[i - count] = Instructions::PushArray(Arc::new(vals));
+          for instr in bytecode.iter_mut().take(i + 1).skip(i - count + 1) {
+            *instr = Instructions::Nop;
+          }
+          i += 1;
+          continue;
+        }
+      }
+    } else if let Some(Instructions::MakeObj(count)) = bytecode.get(i) {
+      let operand_count = *count as usize * 2;
+      if i >= operand_count {
+        let mut operands = Vec::with_capacity(operand_count);
+        for instr in &bytecode[(i - operand_count)..i] {
+          if let Some(value) = extract_value(instr) {
+            operands.push(value);
+          } else {
+            break;
+          }
+        }
+        let valid_keys = operands
+          .as_chunks::<2>()
+          .0
+          .iter()
+          .all(|pair| matches!(&pair[0], Value::String(_)));
+        if operands.len() == operand_count && valid_keys {
+          let mut object = AHashMap::with_capacity(*count as usize);
+          for pair in operands.as_chunks::<2>().0.iter().rev() {
+            let Value::String(key) = &pair[0] else {
+              unreachable!();
+            };
+            object.insert(key.clone(), pair[1].clone());
+          }
+          bytecode[i - operand_count] = Instructions::PushObject(Arc::new(object));
+          for instr in bytecode.iter_mut().take(i + 1).skip(i - operand_count + 1) {
+            *instr = Instructions::Nop;
+          }
+        }
+      }
+    }
+    i += 1;
+  }
+  i = 0;
   while i < bytecode.len().saturating_sub(2) {
     let instr1 = &bytecode[i];
     let instr2 = &bytecode[i + 1];
@@ -111,5 +170,114 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
       }
     }
     i += 1;
+  }
+}
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::types::{primitive_types::PrimitiveTypes, value::Value};
+  use smol_str::SmolStr;
+  #[test]
+  fn folds_constant_make_array() {
+    let mut bytecode = vec![
+      Instructions::PushInt16(1),
+      Instructions::PushInt16(2),
+      Instructions::MakeArray(2),
+    ];
+    fold_constants(&mut bytecode);
+    assert_eq!(
+      bytecode,
+      vec![
+        Instructions::PushArray(Arc::new(vec![Value::Int16(1), Value::Int16(2)])),
+        Instructions::Nop,
+        Instructions::Nop,
+      ]
+    );
+  }
+  #[test]
+  fn leaves_non_constant_make_array_unchanged() {
+    let mut bytecode = vec![
+      Instructions::Get(SmolStr::new("value")),
+      Instructions::MakeArray(1),
+    ];
+    let expected = bytecode.clone();
+    fold_constants(&mut bytecode);
+    assert_eq!(bytecode, expected);
+  }
+  #[test]
+  fn folds_arithmetic_with_make_array_present() {
+    let mut bytecode = vec![
+      Instructions::PushInt16(1),
+      Instructions::MakeArray(1),
+      Instructions::PushInt16(2),
+      Instructions::PushInt16(3),
+      Instructions::Add(PrimitiveTypes::Sht),
+    ];
+    fold_constants(&mut bytecode);
+    assert_eq!(
+      bytecode,
+      vec![
+        Instructions::PushArray(Arc::new(vec![Value::Int16(1)])),
+        Instructions::Nop,
+        Instructions::PushInt16(5),
+        Instructions::Nop,
+        Instructions::Nop,
+      ]
+    );
+  }
+  #[test]
+  fn folds_constant_make_obj() {
+    let mut bytecode = vec![
+      Instructions::PushString(SmolStr::new("first")),
+      Instructions::PushInt16(1),
+      Instructions::PushString(SmolStr::new("second")),
+      Instructions::PushInt16(2),
+      Instructions::MakeObj(2),
+    ];
+    let mut expected_object = AHashMap::new();
+    expected_object.insert(SmolStr::new("first"), Value::Int16(1));
+    expected_object.insert(SmolStr::new("second"), Value::Int16(2));
+    fold_constants(&mut bytecode);
+    assert_eq!(
+      bytecode,
+      vec![
+        Instructions::PushObject(Arc::new(expected_object)),
+        Instructions::Nop,
+        Instructions::Nop,
+        Instructions::Nop,
+        Instructions::Nop,
+      ]
+    );
+  }
+  #[test]
+  fn leaves_non_constant_make_obj_unchanged() {
+    let bytecodes = [
+      vec![
+        Instructions::Get(SmolStr::new("key")),
+        Instructions::PushInt16(1),
+        Instructions::MakeObj(1),
+      ],
+      vec![
+        Instructions::PushString(SmolStr::new("key")),
+        Instructions::Get(SmolStr::new("value")),
+        Instructions::MakeObj(1),
+      ],
+    ];
+    for mut bytecode in bytecodes {
+      let expected = bytecode.clone();
+      fold_constants(&mut bytecode);
+      assert_eq!(bytecode, expected);
+    }
+  }
+  #[test]
+  fn leaves_non_string_make_obj_key_unchanged() {
+    let mut bytecode = vec![
+      Instructions::PushInt16(1),
+      Instructions::PushInt16(2),
+      Instructions::MakeObj(1),
+    ];
+    let expected = bytecode.clone();
+    fold_constants(&mut bytecode);
+    assert_eq!(bytecode, expected);
   }
 }

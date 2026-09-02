@@ -85,7 +85,8 @@ export default {
     'atanh',
     'sqrt',
     'cbrt',
-    'bluel'
+    'bluel',
+    'bytecodes'
   ],
   ignorePaths: [
     'node_modules/**',
