@@ -24,6 +24,7 @@ use crate::instructions::{
       shift::{shl_func::shl_values, shr_func::shr_values},
     },
     trigonometry::inverse::atan2_func::atan2_values,
+    vector::dot_func::dot_values,
   },
   stack::concat_func::concat_values,
 };
@@ -122,6 +123,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         Instructions::Powi(t) => Some(powi_values(val1, val2, *t)),
         Instructions::Powf(t) => Some(powf_values(val1, val2, *t)),
         Instructions::Atan2(t) => Some(atan2_values(val1, val2, *t)),
+        Instructions::Dot(t) => Some(dot_values(val1, val2, *t)),
         _ => None,
       };
       if let Some(res_val) = result {

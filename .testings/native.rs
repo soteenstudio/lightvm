@@ -18,11 +18,15 @@ fn main() {
   
   let raw = r#"[
     ["push", 5],
-    ["set", "x"],
-    ["export", "x"],
-    ["push_array", [5, 6, 7]],
-    ["push_array", [8, 9, 10]],
-    ["dot", "int"]
+    ["push", 6],
+    ["push", 7],
+    ["make_array", 3],
+    ["push", 8],
+    ["push", 9],
+    ["push", 10],
+    ["make_array", 3],
+    ["dot", "int"],
+    ["println"]
   ]"#;
   let tools = vm.tools();
   let optimized_json = tools

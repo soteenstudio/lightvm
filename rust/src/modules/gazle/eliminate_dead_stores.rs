@@ -80,7 +80,8 @@ pub fn eliminate_dead_stores(bytecode: &mut [Instructions], usage: &Usage) {
       | Instructions::Rol(_)
       | Instructions::Pow(_)
       | Instructions::Powi(_)
-      | Instructions::Powf(_) => {
+      | Instructions::Powf(_)
+      | Instructions::Dot(_) => {
         if let Some(demand) = stack_demands.pop() {
           if demand == Demand::Keep {
             stack_demands.push(Demand::Keep);
