@@ -29,6 +29,21 @@ pub fn addv_values(a_val: Value, b_val: Value, num_type: PrimitiveTypes) -> Valu
   if arr_a.len() != arr_b.len() {
     return Value::NaN;
   }
+  let validator: fn(&Value) -> bool = match num_type {
+    PrimitiveTypes::Sht => |v| matches!(v, Value::Int16(_)),
+    PrimitiveTypes::Int => |v| matches!(v, Value::Int32(_)),
+    PrimitiveTypes::Lng => |v| matches!(v, Value::Int64(_)),
+    PrimitiveTypes::Oct => |v| matches!(v, Value::Int128(_)),
+    PrimitiveTypes::Hlf => |v| matches!(v, Value::Float16(_)),
+    PrimitiveTypes::Flt => |v| matches!(v, Value::Float32(_)),
+    PrimitiveTypes::Dbl => |v| matches!(v, Value::Float64(_)),
+    _ => return Value::NaN,
+  };
+  for x in arr_a.iter().chain(arr_b.iter()) {
+    if !validator(x) {
+      return Value::NaN;
+    }
+  }
   match num_type {
     PrimitiveTypes::Sht => Value::Array(addv_i16in(&arr_a, &arr_b)),
     PrimitiveTypes::Int => Value::Array(addv_i32in(&arr_a, &arr_b)),
@@ -67,5 +82,26 @@ mod tests {
       PrimitiveTypes::Int,
     );
     assert_eq!(result, array(vec![Value::Int32(11), Value::Int32(22)]));
+  }
+  #[test]
+  fn addv_rejects_non_numeric_and_mixed_or_invalid_lengths() {
+    let result = addv_values(
+      array(vec![Value::Int32(1)]),
+      array(vec![Value::String("invalid".into())]),
+      PrimitiveTypes::Int,
+    );
+    assert_eq!(result, Value::NaN);
+    let result = addv_values(
+      array(vec![Value::Int32(1)]),
+      array(vec![Value::Int64(1)]),
+      PrimitiveTypes::Int,
+    );
+    assert_eq!(result, Value::NaN);
+    let result = addv_values(
+      array(vec![Value::Int32(1), Value::Int32(2)]),
+      array(vec![Value::Int32(1)]),
+      PrimitiveTypes::Int,
+    );
+    assert_eq!(result, Value::NaN);
   }
 }

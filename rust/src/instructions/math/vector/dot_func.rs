@@ -29,6 +29,21 @@ pub fn dot_values(a_val: Value, b_val: Value, num_type: PrimitiveTypes) -> Value
   if arr_a.len() != arr_b.len() {
     return Value::NaN;
   }
+  let validator: fn(&Value) -> bool = match num_type {
+    PrimitiveTypes::Sht => |v| matches!(v, Value::Int16(_)),
+    PrimitiveTypes::Int => |v| matches!(v, Value::Int32(_)),
+    PrimitiveTypes::Lng => |v| matches!(v, Value::Int64(_)),
+    PrimitiveTypes::Oct => |v| matches!(v, Value::Int128(_)),
+    PrimitiveTypes::Hlf => |v| matches!(v, Value::Float16(_)),
+    PrimitiveTypes::Flt => |v| matches!(v, Value::Float32(_)),
+    PrimitiveTypes::Dbl => |v| matches!(v, Value::Float64(_)),
+    _ => return Value::NaN,
+  };
+  for x in arr_a.iter().chain(arr_b.iter()) {
+    if !validator(x) {
+      return Value::NaN;
+    }
+  }
   match num_type {
     PrimitiveTypes::Sht => Value::Int16(dot_i16in(&arr_a, &arr_b)),
     PrimitiveTypes::Int => Value::Int32(dot_i32in(&arr_a, &arr_b)),

@@ -30,6 +30,21 @@ pub fn cross_values(a_val: Value, b_val: Value, num_type: PrimitiveTypes) -> Val
   if arr_a.len() != 3 || arr_b.len() != 3 {
     return Value::NaN;
   }
+  let validator: fn(&Value) -> bool = match num_type {
+    PrimitiveTypes::Sht => |v| matches!(v, Value::Int16(_)),
+    PrimitiveTypes::Int => |v| matches!(v, Value::Int32(_)),
+    PrimitiveTypes::Lng => |v| matches!(v, Value::Int64(_)),
+    PrimitiveTypes::Oct => |v| matches!(v, Value::Int128(_)),
+    PrimitiveTypes::Hlf => |v| matches!(v, Value::Float16(_)),
+    PrimitiveTypes::Flt => |v| matches!(v, Value::Float32(_)),
+    PrimitiveTypes::Dbl => |v| matches!(v, Value::Float64(_)),
+    _ => return Value::NaN,
+  };
+  for x in arr_a.iter().chain(arr_b.iter()) {
+    if !validator(x) {
+      return Value::NaN;
+    }
+  }
   match num_type {
     PrimitiveTypes::Sht => cross_i16in(&arr_a, &arr_b),
     PrimitiveTypes::Int => cross_i32in(&arr_a, &arr_b),
@@ -38,7 +53,7 @@ pub fn cross_values(a_val: Value, b_val: Value, num_type: PrimitiveTypes) -> Val
     PrimitiveTypes::Hlf => cross_f16in(&arr_a, &arr_b),
     PrimitiveTypes::Flt => cross_f32in(&arr_a, &arr_b),
     PrimitiveTypes::Dbl => cross_f64in(&arr_a, &arr_b),
-    PrimitiveTypes::Str => Value::NaN,
+    _ => Value::NaN,
   }
 }
 #[inline]
