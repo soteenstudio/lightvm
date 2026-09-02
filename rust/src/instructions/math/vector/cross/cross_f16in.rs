@@ -16,7 +16,7 @@ pub fn cross_f16in(a: &[Value], b: &[Value]) -> Value {
   if !a.iter().chain(b.iter()).all(Value::is_number) {
     return Value::NaN;
   }
-  let component = |ai, aj, bi, bj| {
+  let component = |ai: usize, aj: usize, bi: usize, bj: usize| {
     f16::from_f32(
       a[ai].as_f16().to_f32() * b[bi].as_f16().to_f32()
         - a[aj].as_f16().to_f32() * b[bj].as_f16().to_f32(),
