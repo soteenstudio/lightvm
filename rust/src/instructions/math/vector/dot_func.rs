@@ -8,12 +8,14 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::vector::dot::{dot_i16in::dot_i16in, dot_i32in::dot_i32in};
+use crate::instructions::math::vector::dot::{
+  dot_f16in::dot_f16in, dot_f32in::dot_f32in, dot_f64in::dot_f64in, dot_i16in::dot_i16in,
+  dot_i32in::dot_i32in, dot_i64in::dot_i64in, dot_i128in::dot_i128in,
+};
 use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use half::f16;
 #[inline(always)]
 pub fn dot_values(a_val: Value, b_val: Value, num_type: PrimitiveTypes) -> Value {
   let arr_a = match a_val.as_array() {
@@ -30,42 +32,11 @@ pub fn dot_values(a_val: Value, b_val: Value, num_type: PrimitiveTypes) -> Value
   match num_type {
     PrimitiveTypes::Sht => Value::Int16(dot_i16in(&arr_a, &arr_b)),
     PrimitiveTypes::Int => Value::Int32(dot_i32in(&arr_a, &arr_b)),
-    PrimitiveTypes::Lng => {
-      let mut sum: i64 = 0;
-      for (x, y) in arr_a.iter().zip(arr_b.iter()) {
-        sum = sum.wrapping_add(x.as_i64().wrapping_mul(y.as_i64()));
-      }
-      Value::Int64(sum)
-    }
-    PrimitiveTypes::Oct => {
-      let mut sum: i128 = 0;
-      for (x, y) in arr_a.iter().zip(arr_b.iter()) {
-        sum = sum.wrapping_add(x.as_i128().wrapping_mul(y.as_i128()));
-      }
-      Value::Int128(sum)
-    }
-    PrimitiveTypes::Hlf => {
-      let mut sum = f16::ZERO;
-      for (x, y) in arr_a.iter().zip(arr_b.iter()) {
-        let prod = f16::from_f32(x.as_f16().to_f32() * y.as_f16().to_f32());
-        sum = f16::from_f32(sum.to_f32() + prod.to_f32());
-      }
-      Value::Float16(sum)
-    }
-    PrimitiveTypes::Flt => {
-      let mut sum: f32 = 0.0;
-      for (x, y) in arr_a.iter().zip(arr_b.iter()) {
-        sum += x.as_f32() * y.as_f32();
-      }
-      Value::Float32(sum)
-    }
-    PrimitiveTypes::Dbl => {
-      let mut sum: f64 = 0.0;
-      for (x, y) in arr_a.iter().zip(arr_b.iter()) {
-        sum += x.as_f64() * y.as_f64();
-      }
-      Value::Float64(sum)
-    }
+    PrimitiveTypes::Lng => Value::Int64(dot_i64in(&arr_a, &arr_b)),
+    PrimitiveTypes::Oct => Value::Int128(dot_i128in(&arr_a, &arr_b)),
+    PrimitiveTypes::Hlf => Value::Float16(dot_f16in(&arr_a, &arr_b)),
+    PrimitiveTypes::Flt => Value::Float32(dot_f32in(&arr_a, &arr_b)),
+    PrimitiveTypes::Dbl => Value::Float64(dot_f64in(&arr_a, &arr_b)),
     _ => Value::NaN,
   }
 }
