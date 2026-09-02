@@ -33,9 +33,9 @@ pub fn dot_values(a_val: Value, b_val: Value, num_type: PrimitiveTypes) -> Value
     PrimitiveTypes::Sht => Value::Int16(dot_i16in(&arr_a, &arr_b)),
     PrimitiveTypes::Int => Value::Int32(dot_i32in(&arr_a, &arr_b)),
     PrimitiveTypes::Lng => Value::Int64(dot_i64in(&arr_a, &arr_b)),
-    PrimitiveTypes::Oct => Value::Int128(dot_i128in(&arr_a, &arr_b)),
+    PrimitiveTypes::Oct => dot_i128in(&arr_a, &arr_b),
     PrimitiveTypes::Hlf => Value::Float16(dot_f16in(&arr_a, &arr_b)),
-    PrimitiveTypes::Flt => Value::Float32(dot_f32in(&arr_a, &arr_b)),
+    PrimitiveTypes::Flt => dot_f32in(&arr_a, &arr_b),
     PrimitiveTypes::Dbl => Value::Float64(dot_f64in(&arr_a, &arr_b)),
     _ => Value::NaN,
   }
@@ -51,4 +51,41 @@ pub fn dot_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resul
   let a_val = std::mem::take(a_ref);
   *a_ref = dot_values(a_val, b_val, num_type);
   Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use std::sync::Arc;
+
+  fn array(values: Vec<Value>) -> Value {
+    Value::Array(Arc::new(values))
+  }
+
+  #[test]
+  fn dot_i128_preserves_valid_values_and_rejects_non_numeric_elements() {
+    let result = dot_values(
+      array(vec![Value::Int128(5), Value::Int128(6), Value::Int128(7)]),
+      array(vec![Value::Int128(8), Value::Int128(9), Value::Int128(10)]),
+      PrimitiveTypes::Oct,
+    );
+    assert_eq!(result, Value::Int128(164));
+
+    let result = dot_values(
+      array(vec![Value::Int128(5)]),
+      array(vec![Value::String("invalid".into())]),
+      PrimitiveTypes::Oct,
+    );
+    assert_eq!(result, Value::NaN);
+  }
+
+  #[test]
+  fn dot_f32_rejects_non_numeric_elements() {
+    let result = dot_values(
+      array(vec![Value::Float32(5.0)]),
+      array(vec![Value::String("invalid".into())]),
+      PrimitiveTypes::Flt,
+    );
+    assert_eq!(result, Value::NaN);
+  }
 }

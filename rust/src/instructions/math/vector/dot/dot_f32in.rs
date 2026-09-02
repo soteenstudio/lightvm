@@ -10,12 +10,15 @@
 
 use crate::types::value::Value;
 use std::sync::Arc;
-pub fn dot_f32in(arr_a: &Arc<Vec<Value>>, arr_b: &Arc<Vec<Value>>) -> f32 {
+pub fn dot_f32in(arr_a: &Arc<Vec<Value>>, arr_b: &Arc<Vec<Value>>) -> Value {
   let mut sum: f32 = 0.0;
   for (x, y) in arr_a.iter().zip(arr_b.iter()) {
+    if !x.is_number() || !y.is_number() {
+      return Value::NaN;
+    }
     let vx: f32 = x.as_f32();
     let vy: f32 = y.as_f32();
     sum += vx * vy;
   }
-  sum
+  Value::Float32(sum)
 }
