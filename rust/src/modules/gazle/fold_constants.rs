@@ -59,7 +59,9 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         }
       }
     }
+    i += 1;
   }
+  i = 0;
   while i < bytecode.len().saturating_sub(2) {
     let instr1 = &bytecode[i];
     let instr2 = &bytecode[i + 1];
@@ -137,5 +139,69 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
       }
     }
     i += 1;
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::types::{primitive_types::PrimitiveTypes, value::Value};
+  use smol_str::SmolStr;
+
+  #[test]
+  fn folds_constant_make_array() {
+    let mut bytecode = vec![
+      Instructions::PushInt16(1),
+      Instructions::PushInt16(2),
+      Instructions::MakeArray(2),
+    ];
+
+    fold_constants(&mut bytecode);
+
+    assert_eq!(
+      bytecode,
+      vec![
+        Instructions::PushArray(Arc::new(vec![Value::Int16(1), Value::Int16(2)])),
+        Instructions::Nop,
+        Instructions::Nop,
+      ]
+    );
+  }
+
+  #[test]
+  fn leaves_non_constant_make_array_unchanged() {
+    let mut bytecode = vec![
+      Instructions::Get(SmolStr::new("value")),
+      Instructions::MakeArray(1),
+    ];
+    let expected = bytecode.clone();
+
+    fold_constants(&mut bytecode);
+
+    assert_eq!(bytecode, expected);
+  }
+
+  #[test]
+  fn folds_arithmetic_with_make_array_present() {
+    let mut bytecode = vec![
+      Instructions::PushInt16(1),
+      Instructions::MakeArray(1),
+      Instructions::PushInt16(2),
+      Instructions::PushInt16(3),
+      Instructions::Add(PrimitiveTypes::Sht),
+    ];
+
+    fold_constants(&mut bytecode);
+
+    assert_eq!(
+      bytecode,
+      vec![
+        Instructions::PushArray(Arc::new(vec![Value::Int16(1)])),
+        Instructions::Nop,
+        Instructions::PushInt16(5),
+        Instructions::Nop,
+        Instructions::Nop,
+      ]
+    );
   }
 }
