@@ -24,7 +24,7 @@ use crate::instructions::{
       shift::{shl_func::shl_values, shr_func::shr_values},
     },
     trigonometry::inverse::atan2_func::atan2_values,
-    vector::{cross_func::cross_values, dot_func::dot_values},
+    vector::{arithmetic::addv_func::addv_values, cross_func::cross_values, dot_func::dot_values},
   },
   stack::concat_func::concat_values,
 };
@@ -101,6 +101,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
     if let (Some(val1), Some(val2)) = (extract_value(instr1), extract_value(instr2)) {
       let result = match instr3 {
         Instructions::Add(t) => Some(add_values(val1, val2, *t)),
+        Instructions::Addv(t) => Some(addv_values(val1, val2, *t)),
         Instructions::Sub(t) => Some(sub_values(val1, val2, *t)),
         Instructions::Div(t) => Some(div_values(val1, val2, *t)),
         Instructions::Mul(t) => Some(mul_values(val1, val2, *t)),
@@ -140,6 +141,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
     {
       let result = match instr3 {
         Instructions::Add(t) => Some(add_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Addv(t) => Some(addv_values(val1.clone(), val1.clone(), *t)),
         Instructions::Sub(t) => Some(sub_values(val1.clone(), val1.clone(), *t)),
         Instructions::Div(t) => Some(div_values(val1.clone(), val1.clone(), *t)),
         Instructions::Mul(t) => Some(mul_values(val1.clone(), val1.clone(), *t)),
@@ -162,6 +164,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         Instructions::Powi(t) => Some(powi_values(val1.clone(), val1.clone(), *t)),
         Instructions::Powf(t) => Some(powf_values(val1.clone(), val1.clone(), *t)),
         Instructions::Atan2(t) => Some(atan2_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Dot(t) => Some(dot_values(val1.clone(), val1.clone(), *t)),
         Instructions::Cross(t) => Some(cross_values(val1.clone(), val1.clone(), *t)),
         _ => None,
       };

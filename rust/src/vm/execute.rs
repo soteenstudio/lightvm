@@ -129,6 +129,7 @@ pub fn execute(
           import_func(&mut vars, options, module_name, *alias_idx, ip)?;
         }
         Instructions::Add(_)
+        | Instructions::Addv(_)
         | Instructions::Sub(_)
         | Instructions::Mul(_)
         | Instructions::Div(_)

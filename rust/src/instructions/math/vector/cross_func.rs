@@ -17,7 +17,6 @@ use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-
 #[inline(always)]
 pub fn cross_values(a_val: Value, b_val: Value, num_type: PrimitiveTypes) -> Value {
   let arr_a = match a_val.as_array() {
@@ -42,7 +41,6 @@ pub fn cross_values(a_val: Value, b_val: Value, num_type: PrimitiveTypes) -> Val
     PrimitiveTypes::Str => Value::NaN,
   }
 }
-
 #[inline]
 pub fn cross_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
   let b_val = stack.pop().ok_or(VMError::StackUnderflow {
@@ -57,21 +55,17 @@ pub fn cross_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Res
   *a_ref = cross_values(a_val, b_val, num_type);
   Ok(())
 }
-
 #[cfg(test)]
 mod tests {
   use super::*;
   use half::f16;
   use std::sync::Arc;
-
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
   }
-
   fn ints(values: [i32; 3]) -> Value {
     array(values.into_iter().map(Value::Int32).collect())
   }
-
   #[test]
   fn cross_integer_vectors() {
     assert_eq!(
@@ -79,7 +73,6 @@ mod tests {
       ints([-3, 6, -3])
     );
   }
-
   #[test]
   fn cross_float_vectors_preserve_element_type() {
     let result = cross_values(
@@ -103,7 +96,6 @@ mod tests {
         Value::Float32(-3.0)
       ])
     );
-
     let result = cross_values(
       array(vec![
         Value::Float16(f16::ONE),
@@ -119,7 +111,6 @@ mod tests {
     );
     assert!(matches!(result.as_array().unwrap()[0], Value::Float16(_)));
   }
-
   #[test]
   fn cross_reversed_operands_negate_components() {
     assert_eq!(
@@ -127,7 +118,6 @@ mod tests {
       ints([3, -6, 3])
     );
   }
-
   #[test]
   fn cross_parallel_vectors_return_zero_vector() {
     assert_eq!(
@@ -135,7 +125,6 @@ mod tests {
       ints([0, 0, 0])
     );
   }
-
   #[test]
   fn cross_rejects_invalid_inputs() {
     assert_eq!(
@@ -167,7 +156,6 @@ mod tests {
       Value::NaN
     );
   }
-
   #[test]
   fn cross_reports_stack_underflow() {
     let mut stack = Stack::new();
@@ -178,7 +166,6 @@ mod tests {
         opcode: "CROSS"
       })
     ));
-
     stack.push(ints([1, 2, 3]));
     assert!(matches!(
       cross_func(&mut stack, PrimitiveTypes::Int, 8),

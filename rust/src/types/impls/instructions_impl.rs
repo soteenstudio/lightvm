@@ -222,6 +222,7 @@ impl Instructions {
         Ok(Instructions::Push(value_internal))
       }
       b"add" => Ok(Instructions::Add(map_primitive(arg1))),
+      b"addv" => Ok(Instructions::Addv(map_primitive(arg1))),
       b"sub" => Ok(Instructions::Sub(map_primitive(arg1))),
       b"mul" => Ok(Instructions::Mul(map_primitive(arg1))),
       b"div" => Ok(Instructions::Div(map_primitive(arg1))),

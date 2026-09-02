@@ -50,6 +50,7 @@ pub enum Instructions {
   Get(SmolStr),
   GetIdx(usize),
   Add(PrimitiveTypes),
+  Addv(PrimitiveTypes),
   Sub(PrimitiveTypes),
   Mul(PrimitiveTypes),
   Div(PrimitiveTypes),

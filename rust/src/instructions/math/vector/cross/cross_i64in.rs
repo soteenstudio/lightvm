@@ -10,7 +10,6 @@
 
 use crate::types::value::Value;
 use std::sync::Arc;
-
 pub fn cross_i64in(a: &[Value], b: &[Value]) -> Value {
   if !a.iter().chain(b.iter()).all(Value::is_number) {
     return Value::NaN;

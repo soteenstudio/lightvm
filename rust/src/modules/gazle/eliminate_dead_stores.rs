@@ -70,6 +70,7 @@ pub fn eliminate_dead_stores(bytecode: &mut [Instructions], usage: &Usage) {
         stack_demands.push(Demand::Keep);
       }
       Instructions::Add(_)
+      | Instructions::Addv(_)
       | Instructions::Sub(_)
       | Instructions::Mul(_)
       | Instructions::Div(_)

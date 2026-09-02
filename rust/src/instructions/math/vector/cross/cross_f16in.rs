@@ -11,7 +11,6 @@
 use crate::types::value::Value;
 use half::f16;
 use std::sync::Arc;
-
 pub fn cross_f16in(a: &[Value], b: &[Value]) -> Value {
   if !a.iter().chain(b.iter()).all(Value::is_number) {
     return Value::NaN;

@@ -52,16 +52,13 @@ pub fn dot_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resul
   *a_ref = dot_values(a_val, b_val, num_type);
   Ok(())
 }
-
 #[cfg(test)]
 mod tests {
   use super::*;
   use std::sync::Arc;
-
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
   }
-
   #[test]
   fn dot_i128_preserves_valid_values_and_rejects_non_numeric_elements() {
     let result = dot_values(
@@ -70,7 +67,6 @@ mod tests {
       PrimitiveTypes::Oct,
     );
     assert_eq!(result, Value::Int128(164));
-
     let result = dot_values(
       array(vec![Value::Int128(5)]),
       array(vec![Value::String("invalid".into())]),
@@ -78,7 +74,6 @@ mod tests {
     );
     assert_eq!(result, Value::NaN);
   }
-
   #[test]
   fn dot_f32_rejects_non_numeric_elements() {
     let result = dot_values(
