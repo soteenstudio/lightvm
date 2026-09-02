@@ -18,34 +18,31 @@ use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
 #[inline(always)]
-pub fn cross_values(a_val: Value, b_val: Value, num_type: PrimitiveTypes) -> Value {
+pub fn cross_values(
+  a_val: Value,
+  b_val: Value,
+  num_type: PrimitiveTypes,
+) -> Result<Value, &'static str> {
   let arr_a = match a_val.as_array() {
     Some(v) => v,
-    None => return Value::NaN,
+    None => return Ok(Value::NaN),
   };
   let arr_b = match b_val.as_array() {
     Some(v) => v,
-    None => return Value::NaN,
+    None => return Ok(Value::NaN),
   };
   if arr_a.len() != 3 || arr_b.len() != 3 {
-    return Value::NaN;
+    return Ok(Value::NaN);
   }
-  let validator: fn(&Value) -> bool = match num_type {
-    PrimitiveTypes::Sht => |v| matches!(v, Value::Int16(_)),
-    PrimitiveTypes::Int => |v| matches!(v, Value::Int32(_)),
-    PrimitiveTypes::Lng => |v| matches!(v, Value::Int64(_)),
-    PrimitiveTypes::Oct => |v| matches!(v, Value::Int128(_)),
-    PrimitiveTypes::Hlf => |v| matches!(v, Value::Float16(_)),
-    PrimitiveTypes::Flt => |v| matches!(v, Value::Float32(_)),
-    PrimitiveTypes::Dbl => |v| matches!(v, Value::Float64(_)),
-    _ => return Value::NaN,
-  };
+  if num_type == PrimitiveTypes::Str {
+    return Ok(Value::NaN);
+  }
   for x in arr_a.iter().chain(arr_b.iter()) {
-    if !validator(x) {
-      return Value::NaN;
+    if !x.is_number() {
+      return Err(x.type_of());
     }
   }
-  match num_type {
+  Ok(match num_type {
     PrimitiveTypes::Sht => cross_i16in(&arr_a, &arr_b),
     PrimitiveTypes::Int => cross_i32in(&arr_a, &arr_b),
     PrimitiveTypes::Lng => cross_i64in(&arr_a, &arr_b),
@@ -54,21 +51,41 @@ pub fn cross_values(a_val: Value, b_val: Value, num_type: PrimitiveTypes) -> Val
     PrimitiveTypes::Flt => cross_f32in(&arr_a, &arr_b),
     PrimitiveTypes::Dbl => cross_f64in(&arr_a, &arr_b),
     _ => Value::NaN,
-  }
+  })
 }
 #[inline]
 pub fn cross_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
-  let b_val = stack.pop().ok_or(VMError::StackUnderflow {
+  if stack.len() < 2 {
+    return Err(VMError::StackUnderflow {
+      ip,
+      opcode: "CROSS",
+    });
+  }
+  let result = cross_values(
+    stack[stack.len() - 2].clone(),
+    stack[stack.len() - 1].clone(),
+    num_type,
+  )
+  .map_err(|found| VMError::TypeMismatch {
     ip,
-    opcode: "CROSS",
+    expected: expected_type(num_type),
+    found,
   })?;
-  let a_ref = stack.last_mut().ok_or(VMError::StackUnderflow {
-    ip,
-    opcode: "CROSS",
-  })?;
-  let a_val = std::mem::take(a_ref);
-  *a_ref = cross_values(a_val, b_val, num_type);
+  stack.pop();
+  *stack.last_mut().unwrap() = result;
   Ok(())
+}
+fn expected_type(num_type: PrimitiveTypes) -> &'static str {
+  match num_type {
+    PrimitiveTypes::Sht => "Int16",
+    PrimitiveTypes::Int => "Int32",
+    PrimitiveTypes::Lng => "Int64",
+    PrimitiveTypes::Oct => "Int128",
+    PrimitiveTypes::Hlf => "Float16",
+    PrimitiveTypes::Flt => "Float32",
+    PrimitiveTypes::Dbl => "Float64",
+    PrimitiveTypes::Str => "String",
+  }
 }
 #[cfg(test)]
 mod tests {
@@ -85,7 +102,7 @@ mod tests {
   fn cross_integer_vectors() {
     assert_eq!(
       cross_values(ints([1, 2, 3]), ints([4, 5, 6]), PrimitiveTypes::Int),
-      ints([-3, 6, -3])
+      Ok(ints([-3, 6, -3]))
     );
   }
   #[test]
@@ -105,11 +122,11 @@ mod tests {
     );
     assert_eq!(
       result,
-      array(vec![
+      Ok(array(vec![
         Value::Float32(-3.0),
         Value::Float32(6.0),
         Value::Float32(-3.0)
-      ])
+      ]))
     );
     let result = cross_values(
       array(vec![
@@ -124,27 +141,30 @@ mod tests {
       ]),
       PrimitiveTypes::Hlf,
     );
-    assert!(matches!(result.as_array().unwrap()[0], Value::Float16(_)));
+    assert!(matches!(
+      result.unwrap().as_array().unwrap()[0],
+      Value::Float16(_)
+    ));
   }
   #[test]
   fn cross_reversed_operands_negate_components() {
     assert_eq!(
       cross_values(ints([4, 5, 6]), ints([1, 2, 3]), PrimitiveTypes::Int),
-      ints([3, -6, 3])
+      Ok(ints([3, -6, 3]))
     );
   }
   #[test]
   fn cross_parallel_vectors_return_zero_vector() {
     assert_eq!(
       cross_values(ints([1, 2, 3]), ints([2, 4, 6]), PrimitiveTypes::Int),
-      ints([0, 0, 0])
+      Ok(ints([0, 0, 0]))
     );
   }
   #[test]
   fn cross_rejects_invalid_inputs() {
     assert_eq!(
       cross_values(Value::Int32(1), ints([1, 2, 3]), PrimitiveTypes::Int),
-      Value::NaN
+      Ok(Value::NaN)
     );
     assert_eq!(
       cross_values(
@@ -152,7 +172,7 @@ mod tests {
         ints([1, 2, 3]),
         PrimitiveTypes::Int
       ),
-      Value::NaN
+      Ok(Value::NaN)
     );
     assert_eq!(
       cross_values(
@@ -164,11 +184,11 @@ mod tests {
         ints([1, 2, 3]),
         PrimitiveTypes::Int,
       ),
-      Value::NaN
+      Err("string")
     );
     assert_eq!(
       cross_values(ints([1, 2, 3]), ints([4, 5, 6]), PrimitiveTypes::Str),
-      Value::NaN
+      Ok(Value::NaN)
     );
   }
   #[test]
@@ -189,5 +209,22 @@ mod tests {
         opcode: "CROSS"
       })
     ));
+  }
+  #[test]
+  fn cross_reports_element_type_without_mutating_stack() {
+    let mut stack = Stack::from_vec(vec![
+      ints([1, 2, 3]),
+      array(vec![Value::Int32(1), Value::Bool(false), Value::Int32(3)]),
+    ]);
+    let original = stack.clone();
+    assert!(matches!(
+      cross_func(&mut stack, PrimitiveTypes::Int, 14),
+      Err(VMError::TypeMismatch {
+        ip: 14,
+        expected: "Int32",
+        found: "bool"
+      })
+    ));
+    assert_eq!(stack, original);
   }
 }

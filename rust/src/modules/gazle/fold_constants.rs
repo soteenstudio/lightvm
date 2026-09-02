@@ -101,7 +101,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
     if let (Some(val1), Some(val2)) = (extract_value(instr1), extract_value(instr2)) {
       let result = match instr3 {
         Instructions::Add(t) => Some(add_values(val1, val2, *t)),
-        Instructions::Addv(t) => Some(addv_values(val1, val2, *t)),
+        Instructions::Addv(t) => addv_values(val1, val2, *t).ok(),
         Instructions::Sub(t) => Some(sub_values(val1, val2, *t)),
         Instructions::Div(t) => Some(div_values(val1, val2, *t)),
         Instructions::Mul(t) => Some(mul_values(val1, val2, *t)),
@@ -124,8 +124,8 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         Instructions::Powi(t) => Some(powi_values(val1, val2, *t)),
         Instructions::Powf(t) => Some(powf_values(val1, val2, *t)),
         Instructions::Atan2(t) => Some(atan2_values(val1, val2, *t)),
-        Instructions::Dot(t) => Some(dot_values(val1, val2, *t)),
-        Instructions::Cross(t) => Some(cross_values(val1, val2, *t)),
+        Instructions::Dot(t) => dot_values(val1, val2, *t).ok(),
+        Instructions::Cross(t) => cross_values(val1, val2, *t).ok(),
         _ => None,
       };
       if let Some(res_val) = result {
@@ -141,7 +141,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
     {
       let result = match instr3 {
         Instructions::Add(t) => Some(add_values(val1.clone(), val1.clone(), *t)),
-        Instructions::Addv(t) => Some(addv_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Addv(t) => addv_values(val1.clone(), val1.clone(), *t).ok(),
         Instructions::Sub(t) => Some(sub_values(val1.clone(), val1.clone(), *t)),
         Instructions::Div(t) => Some(div_values(val1.clone(), val1.clone(), *t)),
         Instructions::Mul(t) => Some(mul_values(val1.clone(), val1.clone(), *t)),
@@ -164,8 +164,8 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         Instructions::Powi(t) => Some(powi_values(val1.clone(), val1.clone(), *t)),
         Instructions::Powf(t) => Some(powf_values(val1.clone(), val1.clone(), *t)),
         Instructions::Atan2(t) => Some(atan2_values(val1.clone(), val1.clone(), *t)),
-        Instructions::Dot(t) => Some(dot_values(val1.clone(), val1.clone(), *t)),
-        Instructions::Cross(t) => Some(cross_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Dot(t) => dot_values(val1.clone(), val1.clone(), *t).ok(),
+        Instructions::Cross(t) => cross_values(val1.clone(), val1.clone(), *t).ok(),
         _ => None,
       };
       if let Some(res_val) = result {
@@ -286,5 +286,37 @@ mod tests {
     let expected = bytecode.clone();
     fold_constants(&mut bytecode);
     assert_eq!(bytecode, expected);
+  }
+  #[test]
+  fn leaves_invalid_constant_vector_operations_for_runtime_errors() {
+    let valid = Arc::new(vec![Value::Int32(1), Value::Int32(2), Value::Int32(3)]);
+    let invalid = Arc::new(vec![
+      Value::Int32(1),
+      Value::String("invalid".into()),
+      Value::Int32(3),
+    ]);
+    for operation in [
+      Instructions::Dot(PrimitiveTypes::Int),
+      Instructions::Cross(PrimitiveTypes::Int),
+      Instructions::Addv(PrimitiveTypes::Int),
+    ] {
+      let mut bytecode = vec![
+        Instructions::PushArray(valid.clone()),
+        Instructions::PushArray(invalid.clone()),
+        operation,
+        Instructions::Stop,
+      ];
+      let expected = bytecode.clone();
+      fold_constants(&mut bytecode);
+      assert_eq!(bytecode, expected);
+      assert!(matches!(
+        crate::vm::execute::execute(bytecode, &mut None, None),
+        Err(crate::modules::vmerror::VMError::TypeMismatch {
+          ip: 2,
+          expected: "Int32",
+          found: "string"
+        })
+      ));
+    }
   }
 }
