@@ -31,6 +31,7 @@ use crate::instructions::{
       },
       inverse::{acos_func::acos_values, asin_func::asin_values, atan_func::atan_values},
     },
+    vector::arithmetic_func::negv_values,
   },
   metadata::typeof_func::typeof_values,
 };
@@ -71,6 +72,7 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         Instructions::Sqrt(t) => Some(sqrt_values(val, *t)),
         Instructions::Cbrt(t) => Some(cbrt_values(val, *t)),
         Instructions::Neg(t) => Some(neg_values(val, *t)),
+        Instructions::Negv(t) => Some(negv_values(val, *t)),
         Instructions::Ln(t) => Some(ln_values(val, *t)),
         Instructions::Exp(t) => Some(exp_values(val, *t)),
         _ => None,

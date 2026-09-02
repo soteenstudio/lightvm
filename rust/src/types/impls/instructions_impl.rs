@@ -226,6 +226,12 @@ impl Instructions {
       b"mul" => Ok(Instructions::Mul(map_primitive(arg1))),
       b"div" => Ok(Instructions::Div(map_primitive(arg1))),
       b"mod" => Ok(Instructions::Mod(map_primitive(arg1))),
+      b"addv" => Ok(Instructions::Addv(map_primitive(arg1))),
+      b"subv" => Ok(Instructions::Subv(map_primitive(arg1))),
+      b"mulv" => Ok(Instructions::Mulv(map_primitive(arg1))),
+      b"divv" => Ok(Instructions::Divv(map_primitive(arg1))),
+      b"modv" => Ok(Instructions::Modv(map_primitive(arg1))),
+      b"negv" => Ok(Instructions::Negv(map_primitive(arg1))),
       b"shl" => Ok(Instructions::Shl(map_primitive(arg1))),
       b"shr" => Ok(Instructions::Shr(map_primitive(arg1))),
       b"ror" => Ok(Instructions::Ror(map_primitive(arg1))),
@@ -483,5 +489,22 @@ mod tests {
     let json_input = json!(["random_nonsense", 1]);
     let result = Instructions::from_json_array(&json_input, 0);
     assert!(result.is_err());
+  }
+  #[test]
+  fn parses_vector_arithmetic_opcodes() {
+    let cases = [
+      ("addv", Instructions::Addv(PrimitiveTypes::Int)),
+      ("subv", Instructions::Subv(PrimitiveTypes::Int)),
+      ("mulv", Instructions::Mulv(PrimitiveTypes::Int)),
+      ("divv", Instructions::Divv(PrimitiveTypes::Int)),
+      ("modv", Instructions::Modv(PrimitiveTypes::Int)),
+      ("negv", Instructions::Negv(PrimitiveTypes::Int)),
+    ];
+    for (opcode, expected) in cases {
+      assert_eq!(
+        Instructions::from_json_array(&json!([opcode, "int"]), 0).unwrap(),
+        expected
+      );
+    }
   }
 }

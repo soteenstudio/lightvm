@@ -33,7 +33,11 @@ use crate::instructions::math::{
       acos_func::acos_func, asin_func::asin_func, atan_func::atan_func, atan2_func::atan2_func,
     },
   },
-  vector::{cross_func::cross_func, dot_func::dot_func},
+  vector::{
+    arithmetic_func::{addv_func, divv_func, modv_func, mulv_func, negv_func, subv_func},
+    cross_func::cross_func,
+    dot_func::dot_func,
+  },
 };
 use crate::modules::vmerror::VMError;
 use crate::types::stack::Stack;
@@ -51,6 +55,12 @@ pub fn math_dispatch(
     Instructions::Mul(num_type) => mul_func(stack, *num_type, ip),
     Instructions::Div(num_type) => div_func(stack, *num_type, ip),
     Instructions::Mod(num_type) => mod_func(stack, *num_type, ip),
+    Instructions::Addv(num_type) => addv_func(stack, *num_type, ip),
+    Instructions::Subv(num_type) => subv_func(stack, *num_type, ip),
+    Instructions::Mulv(num_type) => mulv_func(stack, *num_type, ip),
+    Instructions::Divv(num_type) => divv_func(stack, *num_type, ip),
+    Instructions::Modv(num_type) => modv_func(stack, *num_type, ip),
+    Instructions::Negv(num_type) => negv_func(stack, *num_type, ip),
     Instructions::Shl(num_type) => shl_func(stack, *num_type, ip),
     Instructions::Shr(num_type) => shr_func(stack, *num_type, ip),
     Instructions::Ror(num_type) => ror_func(stack, *num_type, ip),

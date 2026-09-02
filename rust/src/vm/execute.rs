@@ -162,6 +162,12 @@ pub fn execute(
         | Instructions::Log10(_)
         | Instructions::Dot(_)
         | Instructions::Cross(_)
+        | Instructions::Addv(_)
+        | Instructions::Subv(_)
+        | Instructions::Mulv(_)
+        | Instructions::Divv(_)
+        | Instructions::Modv(_)
+        | Instructions::Negv(_)
         | Instructions::IncIdx(_, _)
         | Instructions::DecIdx(_, _) => {
           math_dispatch(instr, &mut stack, &mut vars, ip)?;

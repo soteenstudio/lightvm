@@ -82,7 +82,12 @@ pub fn eliminate_dead_stores(bytecode: &mut [Instructions], usage: &Usage) {
       | Instructions::Powi(_)
       | Instructions::Powf(_)
       | Instructions::Dot(_)
-      | Instructions::Cross(_) => {
+      | Instructions::Cross(_)
+      | Instructions::Addv(_)
+      | Instructions::Subv(_)
+      | Instructions::Mulv(_)
+      | Instructions::Divv(_)
+      | Instructions::Modv(_) => {
         if let Some(demand) = stack_demands.pop() {
           if demand == Demand::Keep {
             stack_demands.push(Demand::Keep);
@@ -134,7 +139,8 @@ pub fn eliminate_dead_stores(bytecode: &mut [Instructions], usage: &Usage) {
       | Instructions::InspectArr
       | Instructions::Sin(_)
       | Instructions::Cos(_)
-      | Instructions::Tan(_) => {
+      | Instructions::Tan(_)
+      | Instructions::Negv(_) => {
         if let Some(demand) = stack_demands.pop() {
           if demand == Demand::Keep {
             stack_demands.push(Demand::Keep);
