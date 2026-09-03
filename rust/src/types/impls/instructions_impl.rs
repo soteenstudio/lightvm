@@ -226,7 +226,9 @@ impl Instructions {
       b"sub" => Ok(Instructions::Sub(map_primitive(arg1))),
       b"subv" => Ok(Instructions::Subv(map_primitive(arg1))),
       b"mul" => Ok(Instructions::Mul(map_primitive(arg1))),
+      b"mulv" => Ok(Instructions::Mulv(map_primitive(arg1))),
       b"div" => Ok(Instructions::Div(map_primitive(arg1))),
+      b"divv" => Ok(Instructions::Divv(map_primitive(arg1))),
       b"mod" => Ok(Instructions::Mod(map_primitive(arg1))),
       b"shl" => Ok(Instructions::Shl(map_primitive(arg1))),
       b"shr" => Ok(Instructions::Shr(map_primitive(arg1))),
@@ -491,5 +493,23 @@ mod tests {
     let json_input = json!(["subv", "int"]);
     let instr = Instructions::from_json_array(&json_input, 0).unwrap();
     assert_eq!(instr, Instructions::Subv(PrimitiveTypes::Int));
+  }
+  #[test]
+  fn test_mulv_and_divv_instructions() {
+    for (json_input, expected) in [
+      (
+        json!(["mulv", "oct"]),
+        Instructions::Mulv(PrimitiveTypes::Oct),
+      ),
+      (
+        json!(["divv", "flt"]),
+        Instructions::Divv(PrimitiveTypes::Flt),
+      ),
+    ] {
+      assert_eq!(
+        Instructions::from_json_array(&json_input, 0).unwrap(),
+        expected
+      );
+    }
   }
 }

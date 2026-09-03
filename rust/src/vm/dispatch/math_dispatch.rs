@@ -34,7 +34,9 @@ use crate::instructions::math::{
     },
   },
   vector::{
-    arithmetic::{addv_func::addv_func, subv_func::subv_func},
+    arithmetic::{
+      addv_func::addv_func, divv_func::divv_func, mulv_func::mulv_func, subv_func::subv_func,
+    },
     cross_func::cross_func,
     dot_func::dot_func,
   },
@@ -55,7 +57,9 @@ pub fn math_dispatch(
     Instructions::Sub(num_type) => sub_func(stack, *num_type, ip),
     Instructions::Subv(num_type) => subv_func(stack, *num_type, ip),
     Instructions::Mul(num_type) => mul_func(stack, *num_type, ip),
+    Instructions::Mulv(num_type) => mulv_func(stack, *num_type, ip),
     Instructions::Div(num_type) => div_func(stack, *num_type, ip),
+    Instructions::Divv(num_type) => divv_func(stack, *num_type, ip),
     Instructions::Mod(num_type) => mod_func(stack, *num_type, ip),
     Instructions::Shl(num_type) => shl_func(stack, *num_type, ip),
     Instructions::Shr(num_type) => shr_func(stack, *num_type, ip),

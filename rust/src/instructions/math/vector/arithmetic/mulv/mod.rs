@@ -8,11 +8,10 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub(crate) mod addv;
-pub(crate) mod addv_func;
-pub(crate) mod divv;
-pub(crate) mod divv_func;
-pub(crate) mod mulv;
-pub(crate) mod mulv_func;
-pub(crate) mod subv;
-pub(crate) mod subv_func;
+pub(crate) mod mulv_f16in;
+pub(crate) mod mulv_f32in;
+pub(crate) mod mulv_f64in;
+pub(crate) mod mulv_i128in;
+pub(crate) mod mulv_i16in;
+pub(crate) mod mulv_i32in;
+pub(crate) mod mulv_i64in;
