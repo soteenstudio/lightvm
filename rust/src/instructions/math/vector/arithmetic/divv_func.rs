@@ -95,7 +95,7 @@ mod tests {
       PrimitiveTypes::Flt,
     )
     .unwrap();
-    assert!(matches!(&*result.as_array().unwrap()[..], [Value::Float32(value)] if value.is_nan()));
+    assert!(matches!(&(*result.as_array().unwrap())[..], [Value::Float32(value)] if value.is_nan()));
     assert_eq!(
       divv_values(
         array(vec![Value::Float16(f16::from_f32(4.0))]),
