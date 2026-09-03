@@ -131,6 +131,7 @@ pub fn execute(
         Instructions::Add(_)
         | Instructions::Addv(_)
         | Instructions::Sub(_)
+        | Instructions::Subv(_)
         | Instructions::Mul(_)
         | Instructions::Div(_)
         | Instructions::Mod(_)

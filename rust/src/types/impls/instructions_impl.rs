@@ -224,6 +224,7 @@ impl Instructions {
       b"add" => Ok(Instructions::Add(map_primitive(arg1))),
       b"addv" => Ok(Instructions::Addv(map_primitive(arg1))),
       b"sub" => Ok(Instructions::Sub(map_primitive(arg1))),
+      b"subv" => Ok(Instructions::Subv(map_primitive(arg1))),
       b"mul" => Ok(Instructions::Mul(map_primitive(arg1))),
       b"div" => Ok(Instructions::Div(map_primitive(arg1))),
       b"mod" => Ok(Instructions::Mod(map_primitive(arg1))),
@@ -484,5 +485,11 @@ mod tests {
     let json_input = json!(["random_nonsense", 1]);
     let result = Instructions::from_json_array(&json_input, 0);
     assert!(result.is_err());
+  }
+  #[test]
+  fn test_subv_instruction() {
+    let json_input = json!(["subv", "int"]);
+    let instr = Instructions::from_json_array(&json_input, 0).unwrap();
+    assert_eq!(instr, Instructions::Subv(PrimitiveTypes::Int));
   }
 }

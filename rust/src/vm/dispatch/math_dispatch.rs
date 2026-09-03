@@ -33,7 +33,11 @@ use crate::instructions::math::{
       acos_func::acos_func, asin_func::asin_func, atan_func::atan_func, atan2_func::atan2_func,
     },
   },
-  vector::{arithmetic::addv_func::addv_func, cross_func::cross_func, dot_func::dot_func},
+  vector::{
+    arithmetic::{addv_func::addv_func, subv_func::subv_func},
+    cross_func::cross_func,
+    dot_func::dot_func,
+  },
 };
 use crate::modules::vmerror::VMError;
 use crate::types::stack::Stack;
@@ -49,6 +53,7 @@ pub fn math_dispatch(
     Instructions::Add(num_type) => add_func(stack, *num_type, ip),
     Instructions::Addv(num_type) => addv_func(stack, *num_type, ip),
     Instructions::Sub(num_type) => sub_func(stack, *num_type, ip),
+    Instructions::Subv(num_type) => subv_func(stack, *num_type, ip),
     Instructions::Mul(num_type) => mul_func(stack, *num_type, ip),
     Instructions::Div(num_type) => div_func(stack, *num_type, ip),
     Instructions::Mod(num_type) => mod_func(stack, *num_type, ip),
