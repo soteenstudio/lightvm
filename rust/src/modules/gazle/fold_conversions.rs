@@ -31,6 +31,7 @@ use crate::instructions::{
       },
       inverse::{acos_func::acos_values, asin_func::asin_values, atan_func::atan_values},
     },
+    vector::arithmetic::negv_func::negv_values,
   },
   metadata::typeof_func::typeof_values,
 };
@@ -71,6 +72,7 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         Instructions::Sqrt(t) => Some(sqrt_values(val, *t)),
         Instructions::Cbrt(t) => Some(cbrt_values(val, *t)),
         Instructions::Neg(t) => Some(neg_values(val, *t)),
+        Instructions::Negv(t) => negv_values(val, *t).ok(),
         Instructions::Ln(t) => Some(ln_values(val, *t)),
         Instructions::Exp(t) => Some(exp_values(val, *t)),
         _ => None,
@@ -83,5 +85,36 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
       }
     }
     i += 1;
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::types::{primitive_types::PrimitiveTypes, value::Value};
+  use std::sync::Arc;
+
+  #[test]
+  fn folds_valid_negv_and_leaves_invalid_negv_for_runtime() {
+    let mut valid = vec![
+      Instructions::PushArray(Arc::new(vec![Value::Int32(1), Value::Int32(i32::MIN)])),
+      Instructions::Negv(PrimitiveTypes::Int),
+    ];
+    fold_conversions(&mut valid);
+    assert_eq!(
+      valid,
+      vec![
+        Instructions::PushArray(Arc::new(vec![Value::Int32(-1), Value::Int32(i32::MIN)])),
+        Instructions::Nop,
+      ]
+    );
+
+    let mut invalid = vec![
+      Instructions::PushArray(Arc::new(vec![Value::String("invalid".into())])),
+      Instructions::Negv(PrimitiveTypes::Int),
+    ];
+    let expected = invalid.clone();
+    fold_conversions(&mut invalid);
+    assert_eq!(invalid, expected);
   }
 }

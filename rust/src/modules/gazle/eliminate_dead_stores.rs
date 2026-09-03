@@ -78,6 +78,7 @@ pub fn eliminate_dead_stores(bytecode: &mut [Instructions], usage: &Usage) {
       | Instructions::Div(_)
       | Instructions::Divv(_)
       | Instructions::Mod(_)
+      | Instructions::Modv(_)
       | Instructions::Shl(_)
       | Instructions::Shr(_)
       | Instructions::Ror(_)
@@ -124,6 +125,7 @@ pub fn eliminate_dead_stores(bytecode: &mut [Instructions], usage: &Usage) {
         }
       }
       Instructions::Not
+      | Instructions::Negv(_)
       | Instructions::ToString
       | Instructions::ToShort
       | Instructions::ToInteger
