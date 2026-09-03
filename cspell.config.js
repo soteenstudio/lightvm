@@ -88,7 +88,9 @@ export default {
     'bluel',
     'bytecodes',
     'addv',
-    'subv'
+    'subv',
+    'mulv',
+    'divv',
   ],
   ignorePaths: [
     'node_modules/**',

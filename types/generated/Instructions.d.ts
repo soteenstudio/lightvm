@@ -47,7 +47,11 @@ export type Instructions = {
 } | {
     "mul": PrimitiveTypes;
 } | {
+    "mulv": PrimitiveTypes;
+} | {
     "div": PrimitiveTypes;
+} | {
+    "divv": PrimitiveTypes;
 } | {
     "mod": PrimitiveTypes;
 } | {

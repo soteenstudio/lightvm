@@ -25,7 +25,10 @@ use crate::instructions::{
     },
     trigonometry::inverse::atan2_func::atan2_values,
     vector::{
-      arithmetic::{addv_func::addv_values, subv_func::subv_values},
+      arithmetic::{
+        addv_func::addv_values, divv_func::divv_values, mulv_func::mulv_values,
+        subv_func::subv_values,
+      },
       cross_func::cross_values,
       dot_func::dot_values,
     },
@@ -109,7 +112,9 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         Instructions::Sub(t) => Some(sub_values(val1, val2, *t)),
         Instructions::Subv(t) => subv_values(val1, val2, *t).ok(),
         Instructions::Div(t) => Some(div_values(val1, val2, *t)),
+        Instructions::Divv(t) => divv_values(val1, val2, *t).ok(),
         Instructions::Mul(t) => Some(mul_values(val1, val2, *t)),
+        Instructions::Mulv(t) => mulv_values(val1, val2, *t).ok(),
         Instructions::Mod(t) => Some(mod_values(val1, val2, *t)),
         Instructions::Gt(t) => Some(gt_values(val1, val2, *t)),
         Instructions::Lt(t) => Some(lt_values(val1, val2, *t)),
@@ -150,7 +155,9 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         Instructions::Sub(t) => Some(sub_values(val1.clone(), val1.clone(), *t)),
         Instructions::Subv(t) => subv_values(val1.clone(), val1.clone(), *t).ok(),
         Instructions::Div(t) => Some(div_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Divv(t) => divv_values(val1.clone(), val1.clone(), *t).ok(),
         Instructions::Mul(t) => Some(mul_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Mulv(t) => mulv_values(val1.clone(), val1.clone(), *t).ok(),
         Instructions::Mod(t) => Some(mod_values(val1.clone(), val1.clone(), *t)),
         Instructions::Gt(t) => Some(gt_values(val1.clone(), val1.clone(), *t)),
         Instructions::Lt(t) => Some(lt_values(val1.clone(), val1.clone(), *t)),
@@ -306,6 +313,8 @@ mod tests {
       Instructions::Cross(PrimitiveTypes::Int),
       Instructions::Addv(PrimitiveTypes::Int),
       Instructions::Subv(PrimitiveTypes::Int),
+      Instructions::Mulv(PrimitiveTypes::Int),
+      Instructions::Divv(PrimitiveTypes::Int),
     ] {
       let mut bytecode = vec![
         Instructions::PushArray(valid.clone()),
@@ -342,5 +351,33 @@ mod tests {
         Instructions::Nop,
       ]
     );
+  }
+  #[test]
+  fn folds_constant_mulv_and_divv() {
+    for (operation, expected) in [
+      (
+        Instructions::Mulv(PrimitiveTypes::Int),
+        vec![Value::Int32(20), Value::Int32(18)],
+      ),
+      (
+        Instructions::Divv(PrimitiveTypes::Int),
+        vec![Value::Int32(0), Value::Int32(2)],
+      ),
+    ] {
+      let mut bytecode = vec![
+        Instructions::PushArray(Arc::new(vec![Value::Int32(4), Value::Int32(6)])),
+        Instructions::PushArray(Arc::new(vec![Value::Int32(5), Value::Int32(3)])),
+        operation,
+      ];
+      fold_constants(&mut bytecode);
+      assert_eq!(
+        bytecode,
+        vec![
+          Instructions::PushArray(Arc::new(expected)),
+          Instructions::Nop,
+          Instructions::Nop
+        ]
+      );
+    }
   }
 }
