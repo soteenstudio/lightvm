@@ -35,7 +35,8 @@ use crate::instructions::math::{
   },
   vector::{
     arithmetic::{
-      addv_func::addv_func, divv_func::divv_func, mulv_func::mulv_func, subv_func::subv_func,
+      addv_func::addv_func, divv_func::divv_func, modv_func::modv_func, mulv_func::mulv_func,
+      negv_func::negv_func, subv_func::subv_func,
     },
     cross_func::cross_func,
     dot_func::dot_func,
@@ -61,6 +62,7 @@ pub fn math_dispatch(
     Instructions::Div(num_type) => div_func(stack, *num_type, ip),
     Instructions::Divv(num_type) => divv_func(stack, *num_type, ip),
     Instructions::Mod(num_type) => mod_func(stack, *num_type, ip),
+    Instructions::Modv(num_type) => modv_func(stack, *num_type, ip),
     Instructions::Shl(num_type) => shl_func(stack, *num_type, ip),
     Instructions::Shr(num_type) => shr_func(stack, *num_type, ip),
     Instructions::Ror(num_type) => ror_func(stack, *num_type, ip),
@@ -84,6 +86,7 @@ pub fn math_dispatch(
     Instructions::Sqrt(num_type) => sqrt_func(stack, *num_type, ip),
     Instructions::Cbrt(num_type) => cbrt_func(stack, *num_type, ip),
     Instructions::Neg(num_type) => neg_func(stack, *num_type, ip),
+    Instructions::Negv(num_type) => negv_func(stack, *num_type, ip),
     Instructions::Ln(num_type) => ln_func(stack, *num_type, ip),
     Instructions::Exp(num_type) => exp_func(stack, *num_type, ip),
     Instructions::Log2(num_type) => log2_func(stack, *num_type, ip),

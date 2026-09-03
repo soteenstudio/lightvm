@@ -230,6 +230,7 @@ impl Instructions {
       b"div" => Ok(Instructions::Div(map_primitive(arg1))),
       b"divv" => Ok(Instructions::Divv(map_primitive(arg1))),
       b"mod" => Ok(Instructions::Mod(map_primitive(arg1))),
+      b"modv" => Ok(Instructions::Modv(map_primitive(arg1))),
       b"shl" => Ok(Instructions::Shl(map_primitive(arg1))),
       b"shr" => Ok(Instructions::Shr(map_primitive(arg1))),
       b"ror" => Ok(Instructions::Ror(map_primitive(arg1))),
@@ -250,6 +251,7 @@ impl Instructions {
       b"sqrt" => Ok(Instructions::Sqrt(map_primitive(arg1))),
       b"cbrt" => Ok(Instructions::Cbrt(map_primitive(arg1))),
       b"neg" => Ok(Instructions::Neg(map_primitive(arg1))),
+      b"negv" => Ok(Instructions::Negv(map_primitive(arg1))),
       b"ln" => Ok(Instructions::Ln(map_primitive(arg1))),
       b"exp" => Ok(Instructions::Exp(map_primitive(arg1))),
       b"log2" => Ok(Instructions::Log2(map_primitive(arg1))),
@@ -504,6 +506,24 @@ mod tests {
       (
         json!(["divv", "flt"]),
         Instructions::Divv(PrimitiveTypes::Flt),
+      ),
+    ] {
+      assert_eq!(
+        Instructions::from_json_array(&json_input, 0).unwrap(),
+        expected
+      );
+    }
+  }
+  #[test]
+  fn test_modv_and_negv_instructions() {
+    for (json_input, expected) in [
+      (
+        json!(["modv", "int"]),
+        Instructions::Modv(PrimitiveTypes::Int),
+      ),
+      (
+        json!(["negv", "dbl"]),
+        Instructions::Negv(PrimitiveTypes::Dbl),
       ),
     ] {
       assert_eq!(

@@ -1,0 +1,16 @@
+/*
+ * Copyright 2025-2026 SoTeen Studio
+ * Licensed under the Apache License, Version 2.0
+ */
+
+use crate::instructions::math::arithmetic::neg::neg_i128in::neg_i128in;
+use crate::types::value::Value;
+use std::sync::Arc;
+
+pub fn negv_i128in(a: &Arc<Vec<Value>>) -> Arc<Vec<Value>> {
+  Arc::new(
+    a.iter()
+      .map(|a| Value::Int128(neg_i128in(a.as_i128())))
+      .collect(),
+  )
+}

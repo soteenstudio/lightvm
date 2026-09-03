@@ -91,6 +91,8 @@ export default {
     'subv',
     'mulv',
     'divv',
+    'modv',
+    'negv',
   ],
   ignorePaths: [
     'node_modules/**',

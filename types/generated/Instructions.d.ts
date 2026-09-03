@@ -55,6 +55,8 @@ export type Instructions = {
 } | {
     "mod": PrimitiveTypes;
 } | {
+    "modv": PrimitiveTypes;
+} | {
     "shl": PrimitiveTypes;
 } | {
     "shr": PrimitiveTypes;
@@ -94,6 +96,8 @@ export type Instructions = {
     "cbrt": PrimitiveTypes;
 } | {
     "neg": PrimitiveTypes;
+} | {
+    "negv": PrimitiveTypes;
 } | {
     "ln": PrimitiveTypes;
 } | {
