@@ -87,7 +87,8 @@ export default {
     'cbrt',
     'bluel',
     'bytecodes',
-    'addv'
+    'addv',
+    'subv'
   ],
   ignorePaths: [
     'node_modules/**',

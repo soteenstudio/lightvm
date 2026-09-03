@@ -52,6 +52,7 @@ pub enum Instructions {
   Add(PrimitiveTypes),
   Addv(PrimitiveTypes),
   Sub(PrimitiveTypes),
+  Subv(PrimitiveTypes),
   Mul(PrimitiveTypes),
   Div(PrimitiveTypes),
   Mod(PrimitiveTypes),
