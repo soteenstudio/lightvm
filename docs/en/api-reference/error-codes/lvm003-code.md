@@ -1,5 +1,4 @@
 # LVM003 (Invalid Opcode)
-
 Runtime error type: `InvalidOpcode`.
 
 This error occurs when the parser or executor encounters an illegal instruction. The runtime message reports the unrecognized instruction in `code` and the instruction pointer where it was encountered.

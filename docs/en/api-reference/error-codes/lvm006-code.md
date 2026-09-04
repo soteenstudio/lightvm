@@ -1,5 +1,4 @@
 # LVM006 (Invalid Jump Target)
-
 Runtime error type: `InvalidJumpTarget`.
 
 This error occurs when control flow attempts to jump outside the bytecode. The runtime message reports the requested `target`, the bytecode `len`, and the instruction pointer of the jump.

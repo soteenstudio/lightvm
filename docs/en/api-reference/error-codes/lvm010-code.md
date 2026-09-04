@@ -1,5 +1,4 @@
 # LVM010 (Unauthorized Module)
-
 Runtime error type: `UnauthorizedModule`.
 
 This error occurs when bytecode attempts to import a module that is not whitelisted. The runtime message reports the rejected `module` and the instruction pointer of the import.
