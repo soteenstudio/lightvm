@@ -1,5 +1,5 @@
 # LVM009 (Batas Impor Tercapai)
-Runtime error type: `ImportLimitReached`.
+Tipe eror runtime: `ImportLimitReached`.
 
 Error ini terjadi ketika bytecode berisi lebih banyak impor modul daripada yang diizinkan oleh `SecurityConfig`. Runtime melaporkan instruction pointer tempat batas terlampaui.
 

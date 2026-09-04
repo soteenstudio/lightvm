@@ -1,5 +1,5 @@
 # LVM013 (Batas Lompatan Terlampaui)
-Runtime error type: `JumpLimitExceeded`.
+Tipe eror runtime: `JumpLimitExceeded`.
 
 Error ini terjadi ketika bytecode melampaui jumlah lompatan alur kontrol yang diizinkan, termasuk instruksi `Jump`, `IfFalse`, dan `Break`. Runtime melaporkan instruction pointer tempat batas terlampaui.
 

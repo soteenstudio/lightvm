@@ -1,0 +1,14 @@
+[
+    {
+        "name": "NoodleCSS",
+        "description": "NoodleCSS is a lightweight and flexible CSS framework that provides a set of pre-designed components and utilities for building responsive web interfaces. It is designed to be easy to use and customize, making it a great choice for developers looking to quickly create modern web applications.",
+        "logo": "https://raw.githubusercontent.com/fictional/noodlecss/main/logo.png",
+        "website": "https://github.com/fictional/noodlecss"
+    },
+    {
+        "name": "LightVM",
+        "description": "LightVM is a lightweight virtual machine that allows developers to run and test their code in a secure and isolated environment. It supports multiple programming languages and provides a simple interface for managing virtual machines.",
+        "logo": "https://raw.githubusercontent.com/fictional/lightvm/main/logo.png",
+        "website": "https://github.com/fictional/lightvm"
+    }
+]

@@ -1,5 +1,5 @@
 # LVM012 (Batas Panggilan Terlampaui)
-Runtime error type: `CallLimitExceeded`.
+Tipe eror runtime: `CallLimitExceeded`.
 
 Error ini terjadi ketika bytecode melampaui jumlah instruksi pemanggilan fungsi yang diizinkan. Runtime melaporkan instruction pointer tempat batas terlampaui.
 

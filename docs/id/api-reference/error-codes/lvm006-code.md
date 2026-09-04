@@ -1,5 +1,5 @@
 # LVM006 (Target Lompatan Tidak Valid)
-Runtime error type: `InvalidJumpTarget`.
+Tipe eror runtime: `InvalidJumpTarget`.
 
 Error ini terjadi ketika alur kontrol mencoba melompat ke luar bytecode. Pesan runtime melaporkan `target` yang diminta, `len` bytecode, dan instruction pointer dari lompatan tersebut.
 

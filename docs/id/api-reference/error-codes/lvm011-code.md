@@ -1,5 +1,5 @@
 # LVM011 (Batas Memori Terlampaui)
-Runtime error type: `MemoryLimitExceeded`.
+Tipe eror runtime: `MemoryLimitExceeded`.
 
 Error ini terjadi ketika bytecode melampaui jumlah alokasi memori yang diizinkan, termasuk operasi `MakeObj` dan `MakeArray`. Runtime melaporkan instruction pointer tempat batas terlampaui.
 

@@ -1,5 +1,5 @@
 # LVM016 (Batas Tick Terlampaui)
-Runtime error type: `TickLimitExceeded`.
+Tipe eror runtime: `TickLimitExceeded`.
 
 Error ini terjadi ketika eksekusi mencapai jumlah tick maksimum, yang mewakili unit kompleksitas atau waktu yang diizinkan oleh `SecurityConfig`. Error ini melaporkan instruction pointer `0`.
 

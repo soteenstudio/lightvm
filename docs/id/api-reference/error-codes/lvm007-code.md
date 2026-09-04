@@ -1,5 +1,5 @@
 # LVM007 (Fitur Dibatasi)
-Runtime error type: `FeatureRestricted`.
+Tipe eror runtime: `FeatureRestricted`.
 
 Error ini terjadi ketika bytecode menggunakan opcode nightly atau eksperimental saat mode nightly dinonaktifkan. Pesan runtime melaporkan `feature` yang dibatasi dan instruction pointer tempat fitur tersebut digunakan.
 

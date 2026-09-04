@@ -1,5 +1,5 @@
 # LVM005 (Di Luar Batas)
-Runtime error type: `OutOfBounds`.
+Tipe eror runtime: `OutOfBounds`.
 
 Error ini terjadi ketika akses array atau objek menggunakan indeks di luar koleksi. Pesan runtime melaporkan `index` yang dicoba, `len` koleksi, dan instruction pointer tempat akses terjadi.
 

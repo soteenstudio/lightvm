@@ -1,5 +1,5 @@
 # LVM015 (Konfigurasi Max Ticks Tidak Valid)
-Runtime error type: `InvalidMaxTicksConfig`.
+Tipe eror runtime: `InvalidMaxTicksConfig`.
 
 Error ini terjadi ketika `SecurityConfig` diinisialisasi dengan `max_ticks` bernilai `0`. Batas nol tidak valid karena akan memungkinkan eksekusi tanpa batas. Error ini melaporkan instruction pointer `0`.
 

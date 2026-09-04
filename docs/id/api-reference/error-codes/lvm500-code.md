@@ -1,5 +1,5 @@
 # LVM500 (Error Sistem)
-Runtime error type: `SystemError`.
+Tipe eror runtime: `SystemError`.
 
 Error ini terjadi ketika operasi yang melibatkan sistem host atau sistem operasi gagal. Pesannya berasal dari error sistem host dan dapat berbeda-beda. Runtime menggunakan instruction pointer `0` untuk error ini, tetapi tidak menyertakan instruction pointer atau tipe error dalam pesan yang ditampilkan.
 

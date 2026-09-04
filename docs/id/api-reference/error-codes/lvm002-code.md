@@ -1,5 +1,5 @@
 # LVM002 (Stack Underflow)
-Runtime error type: `StackUnderflow`.
+Tipe eror runtime: `StackUnderflow`.
 
 Error ini terjadi ketika sebuah instruksi mencoba mengambil nilai dari tumpukan kosong. Pesan runtime mengidentifikasi instruksi melalui `opcode` dan melaporkan instruction pointer tempat kegagalan terjadi.
 

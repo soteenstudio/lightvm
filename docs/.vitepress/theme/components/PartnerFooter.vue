@@ -1,25 +1,47 @@
-<script setup>
-// Nggak butuh logic rumit, cukup markup HTML & CSS styling
-</script>
-
 <template>
   <div class="partner-footer-container">
     <div class="partner-footer-content">
-      <p class="collab-text">Official Documentation Partner</p>
+      <p class="collab-text">{{ collabText }}</p>
       <div class="logo-wrapper">
         <!-- Logo Library (NoodleCSS) -->
-        <a href="https://github.com/fictional/noodlecss" target="_blank" rel="noopener" class="brand-link">
-          <span class="brand-name">🍜 NoodleCSS</span>
+        <a href="{{ partnerData[0].website }}" target="_blank" rel="noopener" class="brand-link">
+          <span class="brand-name"><img class="brand-icon" :src="partnerData[0].logo" :alt="partnerData[0].name"> {{ partnerData[0].name }}</span>
         </a>
 
         <!-- Logo Toko Partner (Kopi Koding) -->
-        <a href="https://kopikoding.fictional" target="_blank" rel="noopener" class="brand-link">
-          <span class="brand-name">☕ Kopi Koding</span>
+        <a href="{{ partnerData[1].website }}" target="_blank" rel="noopener" class="brand-link">
+          <span class="brand-name"><img class="brand-icon" :src="partnerData[1].logo" :alt="partnerData[1].name"> {{ partnerData[1].name }}</span>
         </a>
       </div>
     </div>
   </div>
 </template>
+
+<script setup>
+import { computed } from 'vue';
+import { useData } from 'vitepress';
+import partnerData from '../../../data/partner.json';
+
+const { lang } = useData();
+
+const translations = {
+  en: {
+    collabText: 'Official Documentation Partner'
+  },
+  id: {
+    collabText: 'Mitra Dokumentasi Resmi'
+  }
+};
+
+const currentLocale = computed(() => {
+  const shortLang = lang.value ? lang.value.split('-')[0] : 'en';
+  return translations[shortLang] ? shortLang : 'en';
+});
+
+const collabText = computed(() => {
+  return translations[currentLocale.value]?.collabText || translations.en.collabText;
+});
+</script>
 
 <style scoped>
 .partner-footer-container {
