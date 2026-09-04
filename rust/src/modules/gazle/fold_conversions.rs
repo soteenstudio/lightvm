@@ -87,13 +87,11 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
     i += 1;
   }
 }
-
 #[cfg(test)]
 mod tests {
   use super::*;
   use crate::types::{primitive_types::PrimitiveTypes, value::Value};
   use std::sync::Arc;
-
   #[test]
   fn folds_valid_negv_and_leaves_invalid_negv_for_runtime() {
     let mut valid = vec![
@@ -108,7 +106,6 @@ mod tests {
         Instructions::Nop,
       ]
     );
-
     let mut invalid = vec![
       Instructions::PushArray(Arc::new(vec![Value::String("invalid".into())])),
       Instructions::Negv(PrimitiveTypes::Int),

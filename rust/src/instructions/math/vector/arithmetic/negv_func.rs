@@ -17,7 +17,6 @@ use crate::instructions::math::vector::arithmetic::{
 };
 use crate::modules::vmerror::VMError;
 use crate::types::{primitive_types::PrimitiveTypes, stack::Stack, value::Value};
-
 #[inline(always)]
 pub fn negv_values(a_val: Value, num_type: PrimitiveTypes) -> Result<Value, &'static str> {
   let Some(arr) = a_val.as_array() else {
@@ -40,7 +39,6 @@ pub fn negv_values(a_val: Value, num_type: PrimitiveTypes) -> Result<Value, &'st
     PrimitiveTypes::Str => Value::NaN,
   })
 }
-
 #[inline]
 pub fn negv_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
   let Some(value) = stack.last().cloned() else {
@@ -54,7 +52,6 @@ pub fn negv_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resu
   *stack.last_mut().unwrap() = result;
   Ok(())
 }
-
 fn expected_type(num_type: PrimitiveTypes) -> &'static str {
   match num_type {
     PrimitiveTypes::Sht => "Int16",
@@ -67,17 +64,14 @@ fn expected_type(num_type: PrimitiveTypes) -> &'static str {
     PrimitiveTypes::Str => "String",
   }
 }
-
 #[cfg(test)]
 mod tests {
   use super::*;
   use half::f16;
   use std::sync::Arc;
-
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
   }
-
   #[test]
   fn negv_supports_all_types_and_boundaries() {
     let cases = [
@@ -124,7 +118,6 @@ mod tests {
       );
     }
   }
-
   #[test]
   fn negv_validates_without_mutating_stack() {
     assert_eq!(

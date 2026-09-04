@@ -1,15 +1,3 @@
-use crate::instructions::math::arithmetic::div::div_i64in::div_i64in;
-use crate::types::value::Value;
-use std::sync::Arc;
-
-pub fn divv_i64in(a: &Arc<Vec<Value>>, b: &Arc<Vec<Value>>) -> Arc<Vec<Value>> {
-  Arc::new(
-    a.iter()
-      .zip(b.iter())
-      .map(|(a, b)| Value::Int64(div_i64in(a.as_i64(), b.as_i64())))
-      .collect(),
-  )
-}
 /*
  * Copyright 2025-2026 SoTeen Studio
  *
@@ -19,3 +7,15 @@ pub fn divv_i64in(a: &Arc<Vec<Value>>, b: &Arc<Vec<Value>>) -> Arc<Vec<Value>> {
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
+
+use crate::instructions::math::arithmetic::div::div_i64in::div_i64in;
+use crate::types::value::Value;
+use std::sync::Arc;
+pub fn divv_i64in(a: &Arc<Vec<Value>>, b: &Arc<Vec<Value>>) -> Arc<Vec<Value>> {
+  Arc::new(
+    a.iter()
+      .zip(b.iter())
+      .map(|(a, b)| Value::Int64(div_i64in(a.as_i64(), b.as_i64())))
+      .collect(),
+  )
+}

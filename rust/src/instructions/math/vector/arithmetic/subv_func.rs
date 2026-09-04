@@ -16,7 +16,6 @@ use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-
 #[inline(always)]
 pub fn subv_values(
   a_val: Value,
@@ -50,7 +49,6 @@ pub fn subv_values(
     PrimitiveTypes::Str => Value::NaN,
   })
 }
-
 #[inline]
 pub fn subv_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
   if stack.len() < 2 {
@@ -70,7 +68,6 @@ pub fn subv_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resu
   *stack.last_mut().unwrap() = result;
   Ok(())
 }
-
 fn expected_type(num_type: PrimitiveTypes) -> &'static str {
   match num_type {
     PrimitiveTypes::Sht => "Int16",
@@ -83,17 +80,14 @@ fn expected_type(num_type: PrimitiveTypes) -> &'static str {
     PrimitiveTypes::Str => "String",
   }
 }
-
 #[cfg(test)]
 mod tests {
   use super::*;
   use half::f16;
   use std::sync::Arc;
-
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
   }
-
   #[test]
   fn subv_preserves_operand_order_and_wraps_integers() {
     assert_eq!(
@@ -113,7 +107,6 @@ mod tests {
       Ok(array(vec![Value::Int128(i128::MAX)]))
     );
   }
-
   #[test]
   fn subv_float_types_are_preserved() {
     let cases = [
@@ -143,7 +136,6 @@ mod tests {
       );
     }
   }
-
   #[test]
   fn subv_structural_and_string_inputs_return_nan() {
     assert_eq!(
@@ -163,7 +155,6 @@ mod tests {
       Ok(Value::NaN)
     );
   }
-
   #[test]
   fn subv_reports_element_type_without_mutating_stack() {
     let mut stack = Stack::from_vec(vec![
@@ -181,7 +172,6 @@ mod tests {
     ));
     assert_eq!(stack, original);
   }
-
   #[test]
   fn subv_reports_stack_underflow() {
     for mut stack in [Stack::new(), Stack::from_vec(vec![array(vec![])])] {

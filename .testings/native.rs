@@ -17,7 +17,7 @@ fn main() {
   }).set_max_io(5000000).set_max_ticks(1000).set_max_stack_size(0).with_nightly(true).with_backtrace(false).with_explain(false).with_hint(true).set_time_budget(TimeBudget::Cheap);
   
   let raw = r#"[
-    ["push", "5"],
+    ["push", 5],
     ["push", 6],
     ["push", 7],
     ["make_array", 3],
@@ -25,7 +25,7 @@ fn main() {
     ["push", 9],
     ["push", 10],
     ["make_array", 3],
-    ["addv", "int"],
+    ["subv", "int"],
     ["println"]
   ]"#;
   let tools = vm.tools();

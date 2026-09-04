@@ -14,7 +14,6 @@ use crate::instructions::math::vector::arithmetic::mulv::{
 };
 use crate::modules::vmerror::VMError;
 use crate::types::{primitive_types::PrimitiveTypes, stack::Stack, value::Value};
-
 #[inline(always)]
 pub fn mulv_values(
   a_val: Value,
@@ -48,12 +47,10 @@ pub fn mulv_values(
     PrimitiveTypes::Str => Value::NaN,
   })
 }
-
 #[inline]
 pub fn mulv_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
   apply(stack, num_type, ip, "MULV", mulv_values)
 }
-
 pub(super) fn apply(
   stack: &mut Stack,
   num_type: PrimitiveTypes,
@@ -78,7 +75,6 @@ pub(super) fn apply(
   *stack.last_mut().unwrap() = result;
   Ok(())
 }
-
 fn expected_type(num_type: PrimitiveTypes) -> &'static str {
   match num_type {
     PrimitiveTypes::Sht => "Int16",
@@ -91,17 +87,14 @@ fn expected_type(num_type: PrimitiveTypes) -> &'static str {
     PrimitiveTypes::Str => "String",
   }
 }
-
 #[cfg(test)]
 mod tests {
   use super::*;
   use half::f16;
   use std::sync::Arc;
-
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
   }
-
   #[test]
   fn mulv_integer_results_wrap_and_support_oct() {
     assert_eq!(
@@ -121,7 +114,6 @@ mod tests {
       Ok(array(vec![Value::Int128(-2)]))
     );
   }
-
   #[test]
   fn mulv_preserves_float_output_types() {
     for (num_type, a, expected) in [
@@ -147,7 +139,6 @@ mod tests {
       );
     }
   }
-
   #[test]
   fn mulv_validates_structure_type_and_stack() {
     assert_eq!(

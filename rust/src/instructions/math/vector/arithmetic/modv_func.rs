@@ -17,7 +17,6 @@ use crate::instructions::math::vector::arithmetic::{
 };
 use crate::modules::vmerror::VMError;
 use crate::types::{primitive_types::PrimitiveTypes, stack::Stack, value::Value};
-
 #[inline(always)]
 pub fn modv_values(
   a_val: Value,
@@ -51,12 +50,10 @@ pub fn modv_values(
     PrimitiveTypes::Str => Value::NaN,
   })
 }
-
 #[inline]
 pub fn modv_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
   apply(stack, num_type, ip, "MODV", modv_values)
 }
-
 pub(super) fn matches_type(value: &Value, num_type: PrimitiveTypes) -> bool {
   matches!(
     (value, num_type),
@@ -69,17 +66,14 @@ pub(super) fn matches_type(value: &Value, num_type: PrimitiveTypes) -> bool {
       | (Value::Float64(_), PrimitiveTypes::Dbl)
   )
 }
-
 #[cfg(test)]
 mod tests {
   use super::*;
   use half::f16;
   use std::sync::Arc;
-
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
   }
-
   #[test]
   fn modv_supports_all_types_and_scalar_edge_cases() {
     let cases = [
@@ -148,7 +142,6 @@ mod tests {
     .unwrap();
     assert!(matches!(&result.as_array().unwrap()[..], [Value::Float32(value)] if value.is_nan()));
   }
-
   #[test]
   fn modv_validates_without_mutating_stack() {
     assert_eq!(

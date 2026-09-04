@@ -17,7 +17,6 @@ use crate::instructions::math::vector::arithmetic::{
 };
 use crate::modules::vmerror::VMError;
 use crate::types::{primitive_types::PrimitiveTypes, stack::Stack, value::Value};
-
 #[inline(always)]
 pub fn divv_values(
   a_val: Value,
@@ -51,22 +50,18 @@ pub fn divv_values(
     PrimitiveTypes::Str => Value::NaN,
   })
 }
-
 #[inline]
 pub fn divv_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
   apply(stack, num_type, ip, "DIVV", divv_values)
 }
-
 #[cfg(test)]
 mod tests {
   use super::*;
   use half::f16;
   use std::sync::Arc;
-
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
   }
-
   #[test]
   fn divv_preserves_order_handles_zero_and_supports_oct() {
     assert_eq!(
@@ -86,7 +81,6 @@ mod tests {
       Ok(array(vec![Value::Int128(7)]))
     );
   }
-
   #[test]
   fn divv_preserves_float_types_and_zero_behavior() {
     let result = divv_values(
@@ -115,7 +109,6 @@ mod tests {
       Ok(array(vec![Value::Float64(2.0)]))
     );
   }
-
   #[test]
   fn divv_validates_structure_type_and_stack() {
     assert_eq!(
