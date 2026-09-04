@@ -1,5 +1,8 @@
 <template>
-  <div class="partner-footer-container">
+  <div
+    v-if="frontmatter.layout === 'home'"
+    class="partner-footer-container"
+  >
     <div class="partner-footer-content">
       <p class="collab-text">{{ collabText }}</p>
 
@@ -36,12 +39,11 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { useData } from 'vitepress';
 import partnerData from '../../../data/partner.json';
 
-const { lang } = useData();
-const activePartner = ref(null);
+const { frontmatter, lang } = useData();
 
 const translations = {
   en: { collabText: 'Official Documentation Partner' },
