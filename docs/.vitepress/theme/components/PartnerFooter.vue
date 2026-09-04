@@ -5,12 +5,24 @@
       <div class="logo-wrapper">
         <!-- Logo Library (NoodleCSS) -->
         <a href="{{ partnerData[0].website }}" target="_blank" rel="noopener" class="brand-link">
-          <span class="brand-name"><img class="brand-icon" :src="partnerData[0].logo" :alt="partnerData[0].name"> {{ partnerData[0].name }}</span>
+          <span class="brand-name">
+            <div class="brand-desc" id="partner1">
+              <p class="brand-desc-text">{{ partnerData[0].description }}</p>
+            </div>
+            <img class="brand-icon" :src="partnerData[0].logo" :alt="partnerData[0].name">
+            {{ partnerData[0].name }}
+          </span>
         </a>
 
         <!-- Logo Toko Partner (Kopi Koding) -->
         <a href="{{ partnerData[1].website }}" target="_blank" rel="noopener" class="brand-link">
-          <span class="brand-name"><img class="brand-icon" :src="partnerData[1].logo" :alt="partnerData[1].name"> {{ partnerData[1].name }}</span>
+          <span class="brand-name">
+            <div class="brand-desc" id="partner2">
+              <p class="brand-desc-text">{{ partnerData[1].description }}</p>
+            </div>
+            <img class="brand-icon" :src="partnerData[1].logo" :alt="partnerData[1].name">
+            {{ partnerData[1].name }}
+          </span>
         </a>
       </div>
     </div>
@@ -40,6 +52,25 @@ const currentLocale = computed(() => {
 
 const collabText = computed(() => {
   return translations[currentLocale.value]?.collabText || translations.en.collabText;
+});
+
+const partner1 = document.getElementById('partner1');
+const partner2 = document.getElementById('partner2');
+
+partner1.addEventListener('mouseover', () => {
+  partner1.querySelector('#partner1').style.display = 'block';
+});
+
+partner1.addEventListener('mouseout', () => {
+  partner1.querySelector('#partner1').style.display = 'none';
+});
+
+partner2.addEventListener('mouseover', () => {
+  partner2.querySelector('#partner2').style.display = 'block';
+});
+
+partner2.addEventListener('mouseout', () => {
+  partner2.querySelector('#partner2').style.display = 'none';
 });
 </script>
 
