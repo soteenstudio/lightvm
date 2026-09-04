@@ -5,25 +5,23 @@
 
       <div class="logo-wrapper">
         <a
-          v-for="partner in partnerData"
+          v-for="(partner, index) in partnerData"
           :key="partner.name"
           :href="partner.website"
+          :aria-describedby="`partner-tooltip-${index}`"
           target="_blank"
           rel="noopener noreferrer"
           class="brand-link"
         >
-          <span
-            class="brand-name"
-            @mouseenter="activePartner = partner.name"
-            @mouseleave="activePartner = null"
-          >
+          <span class="brand-name">
             <span
-              v-if="activePartner === partner.name"
+              :id="`partner-tooltip-${index}`"
+              role="tooltip"
               class="brand-desc"
             >
               {{ getLocaleDescription(partner, currentLocale) }}
             </span>
-
+        
             <img
               class="brand-icon"
               :src="partner.logo"
@@ -106,29 +104,71 @@ function getLocaleDescription(partner, locale) {
 }
 
 .brand-link {
+  position: relative;
   text-decoration: none;
-  transition: opacity 0.25s;
-}
-
-.brand-link:hover {
-  opacity: 0.7;
 }
 
 .brand-name {
-  display: flex;
-  flex-direction: column;
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  font-weight: 600;
   font-size: 0.95rem;
+  font-weight: 600;
   color: var(--vp-c-text-1);
 }
 
 .brand-desc {
-  max-width: 20rem;
-  margin-top: 0.5rem;
+  position: absolute;
+  z-index: 10;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  width: max-content;
+  max-width: min(20rem, calc(100vw - 32px));
+  padding: 10px 12px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  background: var(--vp-c-bg-soft);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 15%);
+  color: var(--vp-c-text-2);
   font-size: 0.75rem;
   font-weight: 400;
-  color: var(--vp-c-text-2);
+  line-height: 1.5;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.brand-desc::after {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border-right: 1px solid var(--vp-c-divider);
+  border-bottom: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg-soft);
+  content: '';
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.brand-link:hover .brand-desc,
+.brand-link:focus-visible .brand-desc {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.brand-link:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-desc {
+    transition: none;
+  }
 }
 
 .brand-icon {
