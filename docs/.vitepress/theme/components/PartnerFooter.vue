@@ -94,8 +94,16 @@ const collabText = computed(() => {
 }
 
 .brand-name {
+  display: flex;
   font-weight: 600;
   font-size: 0.95rem;
   color: var(--vp-c-text-1);
+}
+
+.brand-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  vertical-align: middle;
 }
 </style>
