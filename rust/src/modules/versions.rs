@@ -16,7 +16,6 @@ use std::fmt;
 #[derive(Deserialize)]
 struct GitHubRelease {
   tag_name: String,
-  published_at: Option<String>,
 }
 fn humanize_version(raw_version: &str) -> String {
   if let Some(nightly_idx) = raw_version.find("-nightly.") {
@@ -55,35 +54,22 @@ fn humanize_version(raw_version: &str) -> String {
   raw_version.to_string()
 }
 fn fetch_latest_github_version() -> Option<String> {
-  let url = "https://api.github.com/repos/soteenstudio/lightvm/releases";
+  let url = "https://api.github.com/repos/soteenstudio/lightvm/releases?per_page=1";
   let response = ureq::get(url)
     .set("User-Agent", "lightvm-cli")
     .call()
     .ok()?;
   let body: String = response.into_string().ok()?;
-  let mut releases: Vec<(String, String)> = serde_json::from_str::<Vec<GitHubRelease>>(&body)
-    .ok()?
-    .into_iter()
-    .filter_map(|release| {
-      release
-        .published_at
-        .map(|published_at| (published_at, release.tag_name))
-    })
-    .collect();
-  if releases.is_empty() {
+  let releases: Vec<GitHubRelease> = serde_json::from_str(&body).ok()?;
+  let release = releases.into_iter().next()?;
+  let mut version = release.tag_name;
+  if version.contains("-proto") || version.contains(".proto") {
     return None;
   }
-  releases.sort_by(|a, b| b.0.cmp(&a.0));
-  for (_, mut version) in releases {
-    if version.contains("-proto") || version.contains(".proto") {
-      continue;
-    }
-    if version.starts_with('v') || version.starts_with('V') {
-      version.remove(0);
-    }
-    return Some(version);
+  if version.starts_with('v') || version.starts_with('V') {
+    version.remove(0);
   }
-  None
+  Some(version)
 }
 pub fn get_versions() -> InfoVM {
   let github_latest = fetch_latest_github_version();
