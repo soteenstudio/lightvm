@@ -6,7 +6,13 @@ For **TypeScript**, the `on` method allows you to attach event listeners that ex
 
 ::: code-group
 
-<<< @/examples/methodFunctions/onCode.ts{ts:line-numbers}[Code]
+<<< @/examples/methodFunctions/onEventTick.ts{ts:line-numbers}[On Event Tick]
+
+<<< @/examples/methodFunctions/onEventHalt.ts{ts:line-numbers}[On Event Halt]
+
+<<< @/examples/methodFunctions/onEventStart.ts{ts:line-numbers}[On Event Start]
+
+<<< @/examples/methodFunctions/onEventFinish.ts{ts:line-numbers}[On Event Finish]
 
 :::
 
@@ -15,12 +21,18 @@ In **Rust**, the `on` method enables you to define event handlers that integrate
 
 ::: code-group
 
-<<< @/examples/methodFunctions/on_code.rs{rust:line-numbers}[Code]
+<<< @/examples/methodFunctions/on_event_tick.rs{rust:line-numbers}[On Event Tick]
+
+<<< @/examples/methodFunctions/on_event_halt.rs{rust:line-numbers}[On Event Halt]
+
+<<< @/examples/methodFunctions/on_event_start.rs{rust:line-numbers}[On Event Start]
+
+<<< @/examples/methodFunctions/on_event_finish.rs{rust:line-numbers}[On Event Finish]
 
 :::
 
 ::: info
 **Capability Required**: no specific capability
 
-**Owned Events**: `Tick`, `Halt`, and `Panic`
+**Owned Events**: `Tick`, `Halt`, `Panic`, `Start`, and `Finish`
 :::

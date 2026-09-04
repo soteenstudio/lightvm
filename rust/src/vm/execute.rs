@@ -129,10 +129,15 @@ pub fn execute(
           import_func(&mut vars, options, module_name, *alias_idx, ip)?;
         }
         Instructions::Add(_)
+        | Instructions::Addv(_)
         | Instructions::Sub(_)
+        | Instructions::Subv(_)
         | Instructions::Mul(_)
+        | Instructions::Mulv(_)
         | Instructions::Div(_)
+        | Instructions::Divv(_)
         | Instructions::Mod(_)
+        | Instructions::Modv(_)
         | Instructions::Shl(_)
         | Instructions::Shr(_)
         | Instructions::Ror(_)
@@ -156,10 +161,13 @@ pub fn execute(
         | Instructions::Sqrt(_)
         | Instructions::Cbrt(_)
         | Instructions::Neg(_)
+        | Instructions::Negv(_)
         | Instructions::Ln(_)
         | Instructions::Exp(_)
         | Instructions::Log2(_)
         | Instructions::Log10(_)
+        | Instructions::Dot(_)
+        | Instructions::Cross(_)
         | Instructions::IncIdx(_, _)
         | Instructions::DecIdx(_, _) => {
           math_dispatch(instr, &mut stack, &mut vars, ip)?;

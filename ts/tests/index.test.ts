@@ -8,10 +8,11 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-import { test, expect, describe, fn, suppressConsole } from "unitry";
+import { test, expect, describe, suppressConsole } from "unitry";
+import { spawnSync } from "node:child_process";
 import { importVM } from "./helper/importVM.js";
 
-const { LightVM, Capability } = await importVM();
+const { LightVM, Capability, VMEvent } = await importVM();
 
 describe("LightVM Suite", () => {
   
@@ -45,6 +46,17 @@ describe("LightVM Suite", () => {
       const vm = createVM();
       const res = vm.load([{ push: 10 }]);
       expect(res).toBeInstanceOf(LightVM);
+    });
+
+    test("embedded should return the N-API execution result", () => {
+      const vm = createVM();
+      vm.load([["push", 42], ["stop"]]);
+
+      expect(vm.embedded()).toEqual({
+        value: 42,
+        outputs: [],
+        halted: false,
+      });
     });
 
     test("export should return handles for functions and variables", () => {
@@ -88,13 +100,86 @@ describe("LightVM Suite", () => {
   });
 
   describe("Event Emitter", () => {
-    test("on should register listener", () => {
-      const vm = createVM();
-      const mockHandler = fn();
-      
-      vm.on('tick', mockHandler);
-      expect(typeof vm.on).toBe('function');
-    });
+    if (process.env.LIGHTVM_TEST_SCENARIO !== "reject-invalid-sig") {
+      test("on should deliver tick event data", () => {
+        const result = spawnSync(
+          process.execPath,
+          [
+            "--input-type=module",
+            "--eval",
+            `import { Capability, LightVM, VMEvent } from './dist/index.min.mjs';
+const vm = new LightVM({ caps: [Capability.Observe, Capability.Control] });
+let delivered = false;
+vm.load([["push", 1]]);
+vm.on(VMEvent.Tick, (data) => {
+  delivered = true;
+  console.log(JSON.stringify(data));
+});
+vm.run();
+setTimeout(() => {
+  if (!delivered) process.exitCode = 1;
+}, 50);`,
+          ],
+          { cwd: process.cwd(), encoding: "utf8", timeout: 1_000 },
+        );
+
+        expect(result.error).toBe(undefined);
+        expect(result.status).toBe(0);
+        expect(JSON.parse(result.stdout.trim())).toEqual({
+          event: "Tick",
+          payload: { state: "start" },
+        });
+      });
+
+      test("on should deliver start and finish event data", () => {
+        const result = spawnSync(
+          process.execPath,
+          [
+            "--input-type=module",
+            "--eval",
+            `import { Capability, LightVM, VMEvent } from './dist/index.min.mjs';
+const vm = new LightVM({ caps: [Capability.Observe, Capability.Control] });
+const delivered = [];
+vm.load([["push", 1]]);
+const receive = (data) => {
+  delivered.push(data);
+  if (delivered.length === 2) console.log(JSON.stringify(delivered));
+};
+vm.on(VMEvent.Start, receive);
+vm.on(VMEvent.Finish, receive);
+vm.run();
+setTimeout(() => {
+  if (delivered.length !== 2) process.exitCode = 1;
+}, 50);`,
+          ],
+          { cwd: process.cwd(), encoding: "utf8", timeout: 1_000 },
+        );
+
+        expect(result.error).toBe(undefined);
+        expect(result.status).toBe(0);
+        expect(JSON.parse(result.stdout.trim())).toEqual([
+          { event: "Start", payload: { operation: "run" } },
+          { event: "Finish", payload: { operation: "run" } },
+        ]);
+      });
+
+      test("on should not keep the process alive without an event", () => {
+        const result = spawnSync(
+          process.execPath,
+          [
+            "--input-type=module",
+            "--eval",
+            `import { LightVM, VMEvent } from './dist/index.min.mjs';
+const vm = new LightVM();
+vm.on(VMEvent.Tick, () => {});`,
+          ],
+          { cwd: process.cwd(), timeout: 1_000 },
+        );
+
+        expect(result.error).toBe(undefined);
+        expect(result.status).toBe(0);
+      });
+    }
   });
   
   describe("Capability Validation", () => {

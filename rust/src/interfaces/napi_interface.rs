@@ -294,11 +294,14 @@ impl NodeLightVM {
   }
   #[napi]
   pub fn on(&mut self, event_type: u32, callback: Function<String, ()>) -> Result<()> {
+    use crate::interfaces::interface::VmEventData;
     use crate::types::vmevent::VmEvent;
     let event = match event_type {
       0 => VmEvent::Tick,
       1 => VmEvent::Halt,
       2 => VmEvent::Panic,
+      3 => VmEvent::Start,
+      4 => VmEvent::Finish,
       _ => {
         return Err(into_napi_error(system_error(format!(
           "Unknown event: {}",
@@ -306,43 +309,48 @@ impl NodeLightVM {
         ))));
       }
     };
-    let mut threadsafe_callback = match callback.build_threadsafe_function().build() {
+    let threadsafe_callback = match callback.build_threadsafe_function().weak::<true>().build() {
       Ok(value) => value,
       Err(e) => return Err(e),
     };
-    #[allow(deprecated)]
-    {
-      let env = napi::bindgen_prelude::Env::from_raw(std::ptr::null_mut());
-      match threadsafe_callback.unref(&env) {
-        Ok(_) => {}
-        Err(e) => return Err(e),
-      };
-    }
     self
       .inner
-      .on_internal(event, move |payload| {
+      .on_internal(event, move |data: &VmEventData| {
+        let payload = serde_json::json!({
+            "event": data.event,
+            "payload": data.payload,
+        });
+        let payload = payload.to_string();
         let _ = threadsafe_callback.call(payload, ThreadsafeFunctionCallMode::NonBlocking);
       })
       .map_err(|e| into_napi_error(system_error(e)))
   }
   #[napi]
   pub fn embedded(&mut self) -> Result<serde_json::Value> {
-    match self.inner.clear_outputs_internal().map_err(into_napi_error) {
-      Ok(_) => {}
-      Err(e) => return Err(e),
-    };
-    let _ = match self.inner.run_internal(None).map_err(into_napi_error) {
-      Ok(value) => value,
-      Err(e) => return Err(e),
-    };
-    let outputs = match self.inner.get_outputs_internal().map_err(into_napi_error) {
-      Ok(value) => value,
-      Err(e) => return Err(e),
-    };
+    self
+      .inner
+      .clear_outputs_internal()
+      .map_err(into_napi_error)?;
+    let raw_result = self
+      .inner
+      .run_internal(Some(crate::types::value::RunOptions {
+        capture_return: true,
+        ..Default::default()
+      }))
+      .map_err(into_napi_error)?;
+    let outputs = self.inner.get_outputs_internal().map_err(into_napi_error)?;
+    let result: serde_json::Value = serde_json::from_str(&raw_result)
+      .map_err(|error| into_napi_error(system_error(error.to_string())))?;
+    let value = result
+      .get("result")
+      .filter(|result| result.get("defined").and_then(|defined| defined.as_bool()) == Some(true))
+      .and_then(|result| result.get("value"))
+      .cloned()
+      .unwrap_or(serde_json::Value::Null);
     Ok(serde_json::json!({
-      "value": serde_json::Value::Null,
+      "value": value,
       "outputs": outputs,
-      "halted": true
+      "halted": self.inner.should_halt.load(std::sync::atomic::Ordering::Relaxed)
     }))
   }
   #[napi(js_name = "callExport")]

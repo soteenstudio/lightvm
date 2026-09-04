@@ -36,7 +36,12 @@ use std::collections::HashSet;
 use std::sync::Arc;
 use std::sync::OnceLock;
 use std::sync::atomic::{AtomicBool, Ordering};
-pub type VmCallback = Box<dyn Fn(String) + Send + Sync>;
+#[derive(Debug)]
+pub struct VmEventData {
+  pub event: VmEvent,
+  pub payload: serde_json::Value,
+}
+pub type VmCallback = Box<dyn Fn(&VmEventData) + Send + Sync>;
 pub type VmEventMap = AHashMap<VmEvent, Vec<VmCallback>>;
 #[derive(Serialize)]
 struct ValuePayload {
@@ -152,10 +157,10 @@ impl LightVM {
     }
   }
   pub fn emit(&self, event: VmEvent, payload: serde_json::Value) {
-    if let Some(list) = self.listeners.get(&event) {
-      let json_payload = payload.to_string();
-      for listener in list {
-        listener(json_payload.clone());
+    if let Some(listeners) = self.listeners.get(&event) {
+      let data = VmEventData { event, payload };
+      for listener in listeners {
+        listener(&data);
       }
     }
   }
@@ -223,7 +228,7 @@ impl LightVM {
     self.last_run_options = None;
     Ok(())
   }
-  pub fn run_internal(&mut self, _options: Option<RunOptions>) -> Result<String, VMError> {
+  pub fn run_internal(&mut self, options: Option<RunOptions>) -> Result<String, VMError> {
     self.set_mode(self.backtrace, self.explain, self.hint);
     crate::modules::vmerror::get_backtrace::clear_backtrace();
     if self.backtrace {
@@ -237,6 +242,7 @@ impl LightVM {
       });
     }
     self.state = VmState::Running;
+    self.emit(VmEvent::Start, serde_json::json!({ "operation": "run" }));
     self.emit(VmEvent::Tick, serde_json::json!({ "state": "start" }));
     let bytecode_json = serde_json::to_string(&self.bytecode).map_err(|e| {
       VMError::SystemError(smol_str::SmolStr::new(format!(
@@ -247,7 +253,7 @@ impl LightVM {
     let options = RunOptions {
       entry: None,
       args: Vec::new(),
-      capture_return: false,
+      capture_return: options.is_some_and(|options| options.capture_return),
       imports: self._imports.clone(),
       halt_flag: self.should_halt.clone(),
       security_config: SecurityConfig {
@@ -269,6 +275,7 @@ impl LightVM {
     let result = crate::vm::run::run(&bytecode_json, &mut opt_wrapper)?;
     self.last_run_options = opt_wrapper;
     self.state = VmState::Idle;
+    self.emit(VmEvent::Finish, serde_json::json!({ "operation": "run" }));
     Ok(result)
   }
   #[inline]
@@ -287,6 +294,10 @@ impl LightVM {
     }
     self.state = VmState::Running;
     let emit_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+      self.emit(
+        VmEvent::Start,
+        serde_json::json!({ "operation": "compile" }),
+      );
       self.emit(
         VmEvent::Tick,
         serde_json::json!({ "state": "compile_start" }),
@@ -311,6 +322,10 @@ impl LightVM {
         VmEvent::Tick,
         serde_json::json!({ "state": "compile_success" }),
       );
+      self.emit(
+        VmEvent::Finish,
+        serde_json::json!({ "operation": "compile" }),
+      );
     }));
     if emit_result.is_err() {
       return Err(VMError::SystemError(
@@ -322,7 +337,7 @@ impl LightVM {
   #[inline]
   pub fn on_internal<F>(&mut self, event: VmEvent, callback: F) -> Result<(), String>
   where
-    F: Fn(String) + Send + Sync + 'static,
+    F: Fn(&VmEventData) + Send + Sync + 'static,
   {
     self
       .listeners
@@ -663,7 +678,7 @@ mod tests {
     let payload = Arc::new(Mutex::new(String::new()));
     let payload_ref = payload.clone();
     vm.on_internal(VmEvent::Tick, move |data| {
-      *payload_ref.lock().unwrap() = data;
+      *payload_ref.lock().unwrap() = data.payload.to_string();
     })
     .unwrap();
     vm.emit(VmEvent::Tick, serde_json::json!({"hello":"world"}));
@@ -757,6 +772,85 @@ mod tests {
     assert!(result.is_err());
   }
   #[test]
+  fn run_internal_uses_only_caller_capture_return_option() {
+    let mut vm = make_vm(vec![Capability::Control]);
+    vm.bytecode = vec![Instructions::Push(Value::Int32(42)), Instructions::Stop];
+    vm.max_ticks = 100;
+    let result = vm
+      .run_internal(Some(RunOptions {
+        capture_return: true,
+        security_config: SecurityConfig {
+          max_ticks: 0,
+          ..Default::default()
+        },
+        ..Default::default()
+      }))
+      .unwrap();
+    let payload: serde_json::Value = serde_json::from_str(&result).unwrap();
+    assert_eq!(payload["result"]["value"], 42);
+    assert_eq!(
+      vm.last_run_options
+        .as_ref()
+        .unwrap()
+        .security_config
+        .max_ticks,
+      100
+    );
+  }
+  #[test]
+  fn run_internal_emits_start_and_finish_with_event_data() {
+    let mut vm = make_vm(vec![Capability::Control]);
+    vm.bytecode = vec![Instructions::Push(crate::types::value::Value::Float64(
+      42.0,
+    ))];
+    let events = Arc::new(Mutex::new(Vec::new()));
+    let starts = events.clone();
+    vm.on_internal(VmEvent::Start, move |data| {
+      starts
+        .lock()
+        .unwrap()
+        .push((format!("{:?}", data.event), data.payload.clone()));
+    })
+    .unwrap();
+    let finishes = events.clone();
+    vm.on_internal(VmEvent::Finish, move |data| {
+      finishes
+        .lock()
+        .unwrap()
+        .push((format!("{:?}", data.event), data.payload.clone()));
+    })
+    .unwrap();
+    vm.run_internal(None).unwrap();
+    assert_eq!(
+      *events.lock().unwrap(),
+      vec![
+        (
+          "Start".to_string(),
+          serde_json::json!({ "operation": "run" })
+        ),
+        (
+          "Finish".to_string(),
+          serde_json::json!({ "operation": "run" })
+        ),
+      ]
+    );
+  }
+  #[test]
+  fn failed_run_does_not_emit_finish() {
+    let mut vm = make_vm(vec![Capability::Control]);
+    vm.bytecode = vec![Instructions::Add(
+      crate::types::primitive_types::PrimitiveTypes::Int,
+    )];
+    let finished = Arc::new(AtomicBool::new(false));
+    let flag = finished.clone();
+    vm.on_internal(VmEvent::Finish, move |_| {
+      flag.store(true, Ordering::SeqCst);
+    })
+    .unwrap();
+    assert!(vm.run_internal(None).is_err());
+    assert!(!finished.load(Ordering::SeqCst));
+  }
+  #[test]
   fn var_exported_internal_runs_loaded_program_lazily() {
     let mut vm = make_vm(vec![Capability::Observe, Capability::Control]);
     vm.nightly = true;
@@ -829,8 +923,8 @@ mod tests {
     vm.bytecode = vec![Instructions::Push(crate::types::value::Value::Float64(
       42.0,
     ))];
-    vm.on_internal(VmEvent::Tick, |payload| {
-      if payload.contains("compile_start") {
+    vm.on_internal(VmEvent::Tick, |data| {
+      if data.payload.to_string().contains("compile_start") {
         panic!("Intentional panic in listener");
       }
     })

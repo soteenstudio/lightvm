@@ -24,16 +24,83 @@ use crate::instructions::{
       shift::{shl_func::shl_values, shr_func::shr_values},
     },
     trigonometry::inverse::atan2_func::atan2_values,
+    vector::{
+      arithmetic::{
+        addv_func::addv_values, divv_func::divv_values, modv_func::modv_values,
+        mulv_func::mulv_values, subv_func::subv_values,
+      },
+      cross_func::cross_values,
+      dot_func::dot_values,
+    },
   },
   stack::concat_func::concat_values,
 };
 use crate::modules::gazle::utils::{
   extract_value::extract_value, value_to_instruction::value_to_instruction,
 };
-use crate::types::instructions::Instructions;
+use crate::types::{instructions::Instructions, value::Value};
+use ahash::AHashMap;
+use std::sync::Arc;
 #[inline(always)]
 pub fn fold_constants(bytecode: &mut [Instructions]) {
   let mut i = 0;
+  while i < bytecode.len() {
+    if let Some(Instructions::MakeArray(count)) = bytecode.get(i) {
+      let count = *count as usize;
+      if i >= count {
+        let mut all_const = true;
+        let mut vals = Vec::with_capacity(count);
+        for instr in bytecode.iter().take(i).skip(i - count) {
+          if let Some(val) = extract_value(instr) {
+            vals.push(val);
+          } else {
+            all_const = false;
+            break;
+          }
+        }
+        if all_const {
+          bytecode[i - count] = Instructions::PushArray(Arc::new(vals));
+          for instr in bytecode.iter_mut().take(i + 1).skip(i - count + 1) {
+            *instr = Instructions::Nop;
+          }
+          i += 1;
+          continue;
+        }
+      }
+    } else if let Some(Instructions::MakeObj(count)) = bytecode.get(i) {
+      let operand_count = *count as usize * 2;
+      if i >= operand_count {
+        let mut operands = Vec::with_capacity(operand_count);
+        for instr in &bytecode[(i - operand_count)..i] {
+          if let Some(value) = extract_value(instr) {
+            operands.push(value);
+          } else {
+            break;
+          }
+        }
+        let valid_keys = operands
+          .as_chunks::<2>()
+          .0
+          .iter()
+          .all(|pair| matches!(&pair[0], Value::String(_)));
+        if operands.len() == operand_count && valid_keys {
+          let mut object = AHashMap::with_capacity(*count as usize);
+          for pair in operands.as_chunks::<2>().0.iter().rev() {
+            let Value::String(key) = &pair[0] else {
+              unreachable!();
+            };
+            object.insert(key.clone(), pair[1].clone());
+          }
+          bytecode[i - operand_count] = Instructions::PushObject(Arc::new(object));
+          for instr in bytecode.iter_mut().take(i + 1).skip(i - operand_count + 1) {
+            *instr = Instructions::Nop;
+          }
+        }
+      }
+    }
+    i += 1;
+  }
+  i = 0;
   while i < bytecode.len().saturating_sub(2) {
     let instr1 = &bytecode[i];
     let instr2 = &bytecode[i + 1];
@@ -41,10 +108,15 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
     if let (Some(val1), Some(val2)) = (extract_value(instr1), extract_value(instr2)) {
       let result = match instr3 {
         Instructions::Add(t) => Some(add_values(val1, val2, *t)),
+        Instructions::Addv(t) => addv_values(val1, val2, *t).ok(),
         Instructions::Sub(t) => Some(sub_values(val1, val2, *t)),
+        Instructions::Subv(t) => subv_values(val1, val2, *t).ok(),
         Instructions::Div(t) => Some(div_values(val1, val2, *t)),
+        Instructions::Divv(t) => divv_values(val1, val2, *t).ok(),
         Instructions::Mul(t) => Some(mul_values(val1, val2, *t)),
+        Instructions::Mulv(t) => mulv_values(val1, val2, *t).ok(),
         Instructions::Mod(t) => Some(mod_values(val1, val2, *t)),
+        Instructions::Modv(t) => modv_values(val1, val2, *t).ok(),
         Instructions::Gt(t) => Some(gt_values(val1, val2, *t)),
         Instructions::Lt(t) => Some(lt_values(val1, val2, *t)),
         Instructions::Ge(t) => Some(ge_values(val1, val2, *t)),
@@ -63,6 +135,8 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         Instructions::Powi(t) => Some(powi_values(val1, val2, *t)),
         Instructions::Powf(t) => Some(powf_values(val1, val2, *t)),
         Instructions::Atan2(t) => Some(atan2_values(val1, val2, *t)),
+        Instructions::Dot(t) => dot_values(val1, val2, *t).ok(),
+        Instructions::Cross(t) => cross_values(val1, val2, *t).ok(),
         _ => None,
       };
       if let Some(res_val) = result {
@@ -78,10 +152,15 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
     {
       let result = match instr3 {
         Instructions::Add(t) => Some(add_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Addv(t) => addv_values(val1.clone(), val1.clone(), *t).ok(),
         Instructions::Sub(t) => Some(sub_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Subv(t) => subv_values(val1.clone(), val1.clone(), *t).ok(),
         Instructions::Div(t) => Some(div_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Divv(t) => divv_values(val1.clone(), val1.clone(), *t).ok(),
         Instructions::Mul(t) => Some(mul_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Mulv(t) => mulv_values(val1.clone(), val1.clone(), *t).ok(),
         Instructions::Mod(t) => Some(mod_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Modv(t) => modv_values(val1.clone(), val1.clone(), *t).ok(),
         Instructions::Gt(t) => Some(gt_values(val1.clone(), val1.clone(), *t)),
         Instructions::Lt(t) => Some(lt_values(val1.clone(), val1.clone(), *t)),
         Instructions::Ge(t) => Some(ge_values(val1.clone(), val1.clone(), *t)),
@@ -100,6 +179,8 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         Instructions::Powi(t) => Some(powi_values(val1.clone(), val1.clone(), *t)),
         Instructions::Powf(t) => Some(powf_values(val1.clone(), val1.clone(), *t)),
         Instructions::Atan2(t) => Some(atan2_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Dot(t) => dot_values(val1.clone(), val1.clone(), *t).ok(),
+        Instructions::Cross(t) => cross_values(val1.clone(), val1.clone(), *t).ok(),
         _ => None,
       };
       if let Some(res_val) = result {
@@ -111,5 +192,212 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
       }
     }
     i += 1;
+  }
+}
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::types::{primitive_types::PrimitiveTypes, value::Value};
+  use smol_str::SmolStr;
+  #[test]
+  fn folds_constant_make_array() {
+    let mut bytecode = vec![
+      Instructions::PushInt16(1),
+      Instructions::PushInt16(2),
+      Instructions::MakeArray(2),
+    ];
+    fold_constants(&mut bytecode);
+    assert_eq!(
+      bytecode,
+      vec![
+        Instructions::PushArray(Arc::new(vec![Value::Int16(1), Value::Int16(2)])),
+        Instructions::Nop,
+        Instructions::Nop,
+      ]
+    );
+  }
+  #[test]
+  fn leaves_non_constant_make_array_unchanged() {
+    let mut bytecode = vec![
+      Instructions::Get(SmolStr::new("value")),
+      Instructions::MakeArray(1),
+    ];
+    let expected = bytecode.clone();
+    fold_constants(&mut bytecode);
+    assert_eq!(bytecode, expected);
+  }
+  #[test]
+  fn folds_arithmetic_with_make_array_present() {
+    let mut bytecode = vec![
+      Instructions::PushInt16(1),
+      Instructions::MakeArray(1),
+      Instructions::PushInt16(2),
+      Instructions::PushInt16(3),
+      Instructions::Add(PrimitiveTypes::Sht),
+    ];
+    fold_constants(&mut bytecode);
+    assert_eq!(
+      bytecode,
+      vec![
+        Instructions::PushArray(Arc::new(vec![Value::Int16(1)])),
+        Instructions::Nop,
+        Instructions::PushInt16(5),
+        Instructions::Nop,
+        Instructions::Nop,
+      ]
+    );
+  }
+  #[test]
+  fn folds_constant_make_obj() {
+    let mut bytecode = vec![
+      Instructions::PushString(SmolStr::new("first")),
+      Instructions::PushInt16(1),
+      Instructions::PushString(SmolStr::new("second")),
+      Instructions::PushInt16(2),
+      Instructions::MakeObj(2),
+    ];
+    let mut expected_object = AHashMap::new();
+    expected_object.insert(SmolStr::new("first"), Value::Int16(1));
+    expected_object.insert(SmolStr::new("second"), Value::Int16(2));
+    fold_constants(&mut bytecode);
+    assert_eq!(
+      bytecode,
+      vec![
+        Instructions::PushObject(Arc::new(expected_object)),
+        Instructions::Nop,
+        Instructions::Nop,
+        Instructions::Nop,
+        Instructions::Nop,
+      ]
+    );
+  }
+  #[test]
+  fn leaves_non_constant_make_obj_unchanged() {
+    let bytecodes = [
+      vec![
+        Instructions::Get(SmolStr::new("key")),
+        Instructions::PushInt16(1),
+        Instructions::MakeObj(1),
+      ],
+      vec![
+        Instructions::PushString(SmolStr::new("key")),
+        Instructions::Get(SmolStr::new("value")),
+        Instructions::MakeObj(1),
+      ],
+    ];
+    for mut bytecode in bytecodes {
+      let expected = bytecode.clone();
+      fold_constants(&mut bytecode);
+      assert_eq!(bytecode, expected);
+    }
+  }
+  #[test]
+  fn leaves_non_string_make_obj_key_unchanged() {
+    let mut bytecode = vec![
+      Instructions::PushInt16(1),
+      Instructions::PushInt16(2),
+      Instructions::MakeObj(1),
+    ];
+    let expected = bytecode.clone();
+    fold_constants(&mut bytecode);
+    assert_eq!(bytecode, expected);
+  }
+  #[test]
+  fn leaves_invalid_constant_vector_operations_for_runtime_errors() {
+    let valid = Arc::new(vec![Value::Int32(1), Value::Int32(2), Value::Int32(3)]);
+    let invalid = Arc::new(vec![
+      Value::Int32(1),
+      Value::String("invalid".into()),
+      Value::Int32(3),
+    ]);
+    for operation in [
+      Instructions::Dot(PrimitiveTypes::Int),
+      Instructions::Cross(PrimitiveTypes::Int),
+      Instructions::Addv(PrimitiveTypes::Int),
+      Instructions::Subv(PrimitiveTypes::Int),
+      Instructions::Mulv(PrimitiveTypes::Int),
+      Instructions::Divv(PrimitiveTypes::Int),
+      Instructions::Modv(PrimitiveTypes::Int),
+    ] {
+      let mut bytecode = vec![
+        Instructions::PushArray(valid.clone()),
+        Instructions::PushArray(invalid.clone()),
+        operation,
+        Instructions::Stop,
+      ];
+      let expected = bytecode.clone();
+      fold_constants(&mut bytecode);
+      assert_eq!(bytecode, expected);
+      assert!(matches!(
+        crate::vm::execute::execute(bytecode, &mut None, None),
+        Err(crate::modules::vmerror::VMError::TypeMismatch {
+          ip: 2,
+          expected: "Int32",
+          found: "string"
+        })
+      ));
+    }
+  }
+  #[test]
+  fn folds_constant_subv() {
+    let mut bytecode = vec![
+      Instructions::PushArray(Arc::new(vec![Value::Int32(5), Value::Int32(9)])),
+      Instructions::PushArray(Arc::new(vec![Value::Int32(2), Value::Int32(4)])),
+      Instructions::Subv(PrimitiveTypes::Int),
+    ];
+    fold_constants(&mut bytecode);
+    assert_eq!(
+      bytecode,
+      vec![
+        Instructions::PushArray(Arc::new(vec![Value::Int32(3), Value::Int32(5)])),
+        Instructions::Nop,
+        Instructions::Nop,
+      ]
+    );
+  }
+  #[test]
+  fn folds_constant_mulv_and_divv() {
+    for (operation, expected) in [
+      (
+        Instructions::Mulv(PrimitiveTypes::Int),
+        vec![Value::Int32(20), Value::Int32(18)],
+      ),
+      (
+        Instructions::Divv(PrimitiveTypes::Int),
+        vec![Value::Int32(0), Value::Int32(2)],
+      ),
+    ] {
+      let mut bytecode = vec![
+        Instructions::PushArray(Arc::new(vec![Value::Int32(4), Value::Int32(6)])),
+        Instructions::PushArray(Arc::new(vec![Value::Int32(5), Value::Int32(3)])),
+        operation,
+      ];
+      fold_constants(&mut bytecode);
+      assert_eq!(
+        bytecode,
+        vec![
+          Instructions::PushArray(Arc::new(expected)),
+          Instructions::Nop,
+          Instructions::Nop
+        ]
+      );
+    }
+  }
+  #[test]
+  fn folds_constant_modv() {
+    let mut bytecode = vec![
+      Instructions::PushArray(Arc::new(vec![Value::Int32(7), Value::Int32(8)])),
+      Instructions::PushArray(Arc::new(vec![Value::Int32(4), Value::Int32(3)])),
+      Instructions::Modv(PrimitiveTypes::Int),
+    ];
+    fold_constants(&mut bytecode);
+    assert_eq!(
+      bytecode,
+      vec![
+        Instructions::PushArray(Arc::new(vec![Value::Int32(3), Value::Int32(2)])),
+        Instructions::Nop,
+        Instructions::Nop,
+      ]
+    );
   }
 }

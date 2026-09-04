@@ -34,6 +34,8 @@ export enum VMEvent {
   Tick = 0,
   Halt = 1,
   Panic = 2,
+  Start = 3,
+  Finish = 4,
 }
 export enum TargetArch {
   AArch64 = 0,
@@ -217,8 +219,11 @@ export class LightVM {
 
   on(event: VMEvent, fn: Listener) {
     this.wrap(() =>
-      this.instance.on(event, (payload: string) => fn(this.parseSafe(payload))),
+      this.instance.on(event, (payload: string) => {
+        fn(this.parseSafe(payload));
+      }),
     );
+
     return this;
   }
 
@@ -227,15 +232,7 @@ export class LightVM {
   }
 
   embedded(): VMResult {
-    return this.wrap(() => {
-      this.instance.clear_outputs();
-      this.instance.run({});
-      return {
-        value: undefined,
-        outputs: this.instance.get_outputs(),
-        halted: true,
-      };
-    });
+    return this.wrap(() => this.instance.embedded());
   }
 
   tools() {

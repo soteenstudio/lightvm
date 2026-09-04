@@ -90,6 +90,7 @@ impl Value {
       Value::Int16(_)
         | Value::Int32(_)
         | Value::Int64(_)
+        | Value::Int128(_)
         | Value::Float16(_)
         | Value::Float32(_)
         | Value::Float64(_)

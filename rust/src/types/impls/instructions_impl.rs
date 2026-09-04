@@ -222,10 +222,15 @@ impl Instructions {
         Ok(Instructions::Push(value_internal))
       }
       b"add" => Ok(Instructions::Add(map_primitive(arg1))),
+      b"addv" => Ok(Instructions::Addv(map_primitive(arg1))),
       b"sub" => Ok(Instructions::Sub(map_primitive(arg1))),
+      b"subv" => Ok(Instructions::Subv(map_primitive(arg1))),
       b"mul" => Ok(Instructions::Mul(map_primitive(arg1))),
+      b"mulv" => Ok(Instructions::Mulv(map_primitive(arg1))),
       b"div" => Ok(Instructions::Div(map_primitive(arg1))),
+      b"divv" => Ok(Instructions::Divv(map_primitive(arg1))),
       b"mod" => Ok(Instructions::Mod(map_primitive(arg1))),
+      b"modv" => Ok(Instructions::Modv(map_primitive(arg1))),
       b"shl" => Ok(Instructions::Shl(map_primitive(arg1))),
       b"shr" => Ok(Instructions::Shr(map_primitive(arg1))),
       b"ror" => Ok(Instructions::Ror(map_primitive(arg1))),
@@ -246,6 +251,7 @@ impl Instructions {
       b"sqrt" => Ok(Instructions::Sqrt(map_primitive(arg1))),
       b"cbrt" => Ok(Instructions::Cbrt(map_primitive(arg1))),
       b"neg" => Ok(Instructions::Neg(map_primitive(arg1))),
+      b"negv" => Ok(Instructions::Negv(map_primitive(arg1))),
       b"ln" => Ok(Instructions::Ln(map_primitive(arg1))),
       b"exp" => Ok(Instructions::Exp(map_primitive(arg1))),
       b"log2" => Ok(Instructions::Log2(map_primitive(arg1))),
@@ -259,6 +265,8 @@ impl Instructions {
       b"le" => Ok(Instructions::Le(map_primitive(arg1))),
       b"eq" => Ok(Instructions::Eq(map_primitive(arg1))),
       b"neq" => Ok(Instructions::Neq(map_primitive(arg1))),
+      b"dot" => Ok(Instructions::Dot(map_primitive(arg1))),
+      b"cross" => Ok(Instructions::Cross(map_primitive(arg1))),
       b"and" => Ok(Instructions::And),
       b"or" => Ok(Instructions::Or),
       b"xor" => Ok(Instructions::Xor),
@@ -481,5 +489,47 @@ mod tests {
     let json_input = json!(["random_nonsense", 1]);
     let result = Instructions::from_json_array(&json_input, 0);
     assert!(result.is_err());
+  }
+  #[test]
+  fn test_subv_instruction() {
+    let json_input = json!(["subv", "int"]);
+    let instr = Instructions::from_json_array(&json_input, 0).unwrap();
+    assert_eq!(instr, Instructions::Subv(PrimitiveTypes::Int));
+  }
+  #[test]
+  fn test_mulv_and_divv_instructions() {
+    for (json_input, expected) in [
+      (
+        json!(["mulv", "oct"]),
+        Instructions::Mulv(PrimitiveTypes::Oct),
+      ),
+      (
+        json!(["divv", "flt"]),
+        Instructions::Divv(PrimitiveTypes::Flt),
+      ),
+    ] {
+      assert_eq!(
+        Instructions::from_json_array(&json_input, 0).unwrap(),
+        expected
+      );
+    }
+  }
+  #[test]
+  fn test_modv_and_negv_instructions() {
+    for (json_input, expected) in [
+      (
+        json!(["modv", "int"]),
+        Instructions::Modv(PrimitiveTypes::Int),
+      ),
+      (
+        json!(["negv", "dbl"]),
+        Instructions::Negv(PrimitiveTypes::Dbl),
+      ),
+    ] {
+      assert_eq!(
+        Instructions::from_json_array(&json_input, 0).unwrap(),
+        expected
+      );
+    }
   }
 }
