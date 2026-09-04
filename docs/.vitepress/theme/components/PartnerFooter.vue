@@ -7,7 +7,7 @@
         <a href="{{ partnerData[0].website }}" target="_blank" rel="noopener" class="brand-link">
           <span class="brand-name">
             <div class="brand-desc" id="partner1">
-              <p class="brand-desc-text">{{ partnerData[0].description }}</p>
+              <p class="brand-desc-text"></p>
             </div>
             <img class="brand-icon" :src="partnerData[0].logo" :alt="partnerData[0].name">
             {{ partnerData[0].name }}
@@ -18,7 +18,7 @@
         <a href="{{ partnerData[1].website }}" target="_blank" rel="noopener" class="brand-link">
           <span class="brand-name">
             <div class="brand-desc" id="partner2">
-              <p class="brand-desc-text">{{ partnerData[1].description }}</p>
+              <p class="brand-desc-text"></p>
             </div>
             <img class="brand-icon" :src="partnerData[1].logo" :alt="partnerData[1].name">
             {{ partnerData[1].name }}
@@ -57,8 +57,16 @@ const collabText = computed(() => {
 const partner1 = document.getElementById('partner1');
 const partner2 = document.getElementById('partner2');
 
+function getLocaleDescription(partner, locale) {
+  if (partner.description && typeof partner.description === 'object') {
+    return partner.description[locale] || partner.description.en || '';
+  }
+  return partner.description || '';
+}
+
 partner1.addEventListener('mouseover', () => {
   partner1.querySelector('#partner1').style.display = 'block';
+  partner1.querySelector('.brand-desc-text').textContent = getLocaleDescription(partnerData[0], currentLocale.value);
 });
 
 partner1.addEventListener('mouseout', () => {
@@ -67,6 +75,7 @@ partner1.addEventListener('mouseout', () => {
 
 partner2.addEventListener('mouseover', () => {
   partner2.querySelector('#partner2').style.display = 'block';
+  partner2.querySelector('.brand-desc-text').textContent = getLocaleDescription(partnerData[1], currentLocale.value);
 });
 
 partner2.addEventListener('mouseout', () => {
