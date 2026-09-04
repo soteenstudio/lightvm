@@ -39,13 +39,23 @@ export type Instructions = {
 } | {
     "add": PrimitiveTypes;
 } | {
+    "addv": PrimitiveTypes;
+} | {
     "sub": PrimitiveTypes;
+} | {
+    "subv": PrimitiveTypes;
 } | {
     "mul": PrimitiveTypes;
 } | {
+    "mulv": PrimitiveTypes;
+} | {
     "div": PrimitiveTypes;
 } | {
+    "divv": PrimitiveTypes;
+} | {
     "mod": PrimitiveTypes;
+} | {
+    "modv": PrimitiveTypes;
 } | {
     "shl": PrimitiveTypes;
 } | {
@@ -87,6 +97,8 @@ export type Instructions = {
 } | {
     "neg": PrimitiveTypes;
 } | {
+    "negv": PrimitiveTypes;
+} | {
     "ln": PrimitiveTypes;
 } | {
     "exp": PrimitiveTypes;
@@ -112,6 +124,10 @@ export type Instructions = {
     "eq": PrimitiveTypes;
 } | {
     "neq": PrimitiveTypes;
+} | {
+    "dot": PrimitiveTypes;
+} | {
+    "cross": PrimitiveTypes;
 } | "and" | "or" | "xor" | "not" | "print" | "println" | "stdout" | "stdoutln" | "stdin" | "clear_screen" | {
     "if_false": number;
 } | {

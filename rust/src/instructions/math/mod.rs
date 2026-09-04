@@ -16,3 +16,4 @@ pub(crate) mod inc_dec;
 pub(crate) mod logarithm;
 pub(crate) mod root;
 pub(crate) mod trigonometry;
+pub(crate) mod vector;

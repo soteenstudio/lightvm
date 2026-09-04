@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use lightvm::{LightVM, types::{vmconfig::VmConfig, capability::Capability, time_budget::TimeBudget, vmevent::VmEvent}};
+use lightvm::{LightVM, types::{vmconfig::VmConfig, capability::Capability, time_budget::TimeBudget}};
 
 fn main() {
   let mut vm = LightVM::new(VmConfig {
@@ -18,15 +18,14 @@ fn main() {
   
   let raw = r#"[
     ["push", 5],
-    ["push", 5],
-    ["push", 5],
+    ["push", 6],
+    ["push", 7],
     ["make_array", 3],
-    ["println"],
-    ["push", "name"],
-    ["push", "John Doe"],
-    ["push", "age"],
-    ["push", 39],
-    ["make_obj", 2],
+    ["push", 8],
+    ["push", 9],
+    ["push", 10],
+    ["make_array", 3],
+    ["subv", "int"],
     ["println"]
   ]"#;
   let tools = vm.tools();
@@ -35,4 +34,20 @@ fn main() {
   println!("{}", optimized_json);
   vm.load(optimized_json);
   vm.run(None);
+  
+  /*let raw = r#"[
+    ["push", 1],
+    ["push", 2],
+    ["push", 3],
+    ["make_array", 3],
+    ["push", 4],
+    ["push", 5],
+    ["push", 6],
+    ["make_array", 3],
+    ["cross", "int"],
+    ["println"]
+  ]"#;
+  let optimized_json = tools.optimize_bytecode(raw);
+  vm.load(optimized_json);
+  vm.run(None);*/
 }

@@ -86,7 +86,13 @@ export default {
     'sqrt',
     'cbrt',
     'bluel',
-    'bytecodes'
+    'bytecodes',
+    'addv',
+    'subv',
+    'mulv',
+    'divv',
+    'modv',
+    'negv',
   ],
   ignorePaths: [
     'node_modules/**',

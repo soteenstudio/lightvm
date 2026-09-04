@@ -18,5 +18,13 @@ export const sidebarMathematics = {
       text: 'Advanced Math',
       link: '/api-reference/instruction-set/mathematics/advanced-math',
     },
+    {
+      text: 'Vector Arithmetic',
+      link: '/api-reference/instruction-set/mathematics/vector-arithmetic',
+    },
+    {
+      text: 'Vector Products',
+      link: '/api-reference/instruction-set/mathematics/vector-products',
+    },
   ],
 };

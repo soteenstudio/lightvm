@@ -33,6 +33,14 @@ use crate::instructions::math::{
       acos_func::acos_func, asin_func::asin_func, atan_func::atan_func, atan2_func::atan2_func,
     },
   },
+  vector::{
+    arithmetic::{
+      addv_func::addv_func, divv_func::divv_func, modv_func::modv_func, mulv_func::mulv_func,
+      negv_func::negv_func, subv_func::subv_func,
+    },
+    cross_func::cross_func,
+    dot_func::dot_func,
+  },
 };
 use crate::modules::vmerror::VMError;
 use crate::types::stack::Stack;
@@ -46,10 +54,15 @@ pub fn math_dispatch(
 ) -> Result<(), VMError> {
   match instr {
     Instructions::Add(num_type) => add_func(stack, *num_type, ip),
+    Instructions::Addv(num_type) => addv_func(stack, *num_type, ip),
     Instructions::Sub(num_type) => sub_func(stack, *num_type, ip),
+    Instructions::Subv(num_type) => subv_func(stack, *num_type, ip),
     Instructions::Mul(num_type) => mul_func(stack, *num_type, ip),
+    Instructions::Mulv(num_type) => mulv_func(stack, *num_type, ip),
     Instructions::Div(num_type) => div_func(stack, *num_type, ip),
+    Instructions::Divv(num_type) => divv_func(stack, *num_type, ip),
     Instructions::Mod(num_type) => mod_func(stack, *num_type, ip),
+    Instructions::Modv(num_type) => modv_func(stack, *num_type, ip),
     Instructions::Shl(num_type) => shl_func(stack, *num_type, ip),
     Instructions::Shr(num_type) => shr_func(stack, *num_type, ip),
     Instructions::Ror(num_type) => ror_func(stack, *num_type, ip),
@@ -73,10 +86,13 @@ pub fn math_dispatch(
     Instructions::Sqrt(num_type) => sqrt_func(stack, *num_type, ip),
     Instructions::Cbrt(num_type) => cbrt_func(stack, *num_type, ip),
     Instructions::Neg(num_type) => neg_func(stack, *num_type, ip),
+    Instructions::Negv(num_type) => negv_func(stack, *num_type, ip),
     Instructions::Ln(num_type) => ln_func(stack, *num_type, ip),
     Instructions::Exp(num_type) => exp_func(stack, *num_type, ip),
     Instructions::Log2(num_type) => log2_func(stack, *num_type, ip),
     Instructions::Log10(num_type) => log10_func(stack, *num_type, ip),
+    Instructions::Dot(num_type) => dot_func(stack, *num_type, ip),
+    Instructions::Cross(num_type) => cross_func(stack, *num_type, ip),
     Instructions::IncIdx(idx, num_type) => Ok(inc_func(vars, stack, *idx, *num_type, ip)?),
     Instructions::DecIdx(idx, num_type) => Ok(dec_func(vars, *idx, *num_type, ip)?),
     _ => unsafe { std::hint::unreachable_unchecked() },
