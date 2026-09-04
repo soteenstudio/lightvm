@@ -14,8 +14,8 @@
         >
           <span
             class="brand-name"
-            `@mouseenter`="activePartner = partner.name"
-            `@mouseleave`="activePartner = null"
+            @mouseenter="activePartner = partner.name"
+            @mouseleave="activePartner = null"
           >
             <span
               v-if="activePartner === partner.name"
@@ -116,9 +116,19 @@ function getLocaleDescription(partner, locale) {
 
 .brand-name {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   font-weight: 600;
   font-size: 0.95rem;
   color: var(--vp-c-text-1);
+}
+
+.brand-desc {
+  max-width: 20rem;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--vp-c-text-2);
 }
 
 .brand-icon {
