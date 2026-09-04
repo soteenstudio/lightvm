@@ -2,26 +2,34 @@
   <div class="partner-footer-container">
     <div class="partner-footer-content">
       <p class="collab-text">{{ collabText }}</p>
-      <div class="logo-wrapper">
-        <!-- Logo Library (NoodleCSS) -->
-        <a href="{{ partnerData[0].website }}" target="_blank" rel="noopener" class="brand-link">
-          <span class="brand-name">
-            <div class="brand-desc" id="partner1">
-              <p class="brand-desc-text"></p>
-            </div>
-            <img class="brand-icon" :src="partnerData[0].logo" :alt="partnerData[0].name">
-            {{ partnerData[0].name }}
-          </span>
-        </a>
 
-        <!-- Logo Toko Partner (Kopi Koding) -->
-        <a href="{{ partnerData[1].website }}" target="_blank" rel="noopener" class="brand-link">
-          <span class="brand-name">
-            <div class="brand-desc" id="partner2">
-              <p class="brand-desc-text"></p>
-            </div>
-            <img class="brand-icon" :src="partnerData[1].logo" :alt="partnerData[1].name">
-            {{ partnerData[1].name }}
+      <div class="logo-wrapper">
+        <a
+          v-for="partner in partnerData"
+          :key="partner.name"
+          :href="partner.website"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="brand-link"
+        >
+          <span
+            class="brand-name"
+            `@mouseenter`="activePartner = partner.name"
+            `@mouseleave`="activePartner = null"
+          >
+            <span
+              v-if="activePartner === partner.name"
+              class="brand-desc"
+            >
+              {{ getLocaleDescription(partner, currentLocale) }}
+            </span>
+
+            <img
+              class="brand-icon"
+              :src="partner.logo"
+              :alt="partner.name"
+            >
+            {{ partner.name }}
           </span>
         </a>
       </div>
@@ -30,57 +38,30 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useData } from 'vitepress';
 import partnerData from '../../../data/partner.json';
 
 const { lang } = useData();
+const activePartner = ref(null);
 
 const translations = {
-  en: {
-    collabText: 'Official Documentation Partner'
-  },
-  id: {
-    collabText: 'Mitra Dokumentasi Resmi'
-  }
+  en: { collabText: 'Official Documentation Partner' },
+  id: { collabText: 'Mitra Dokumentasi Resmi' },
 };
 
 const currentLocale = computed(() => {
-  const shortLang = lang.value ? lang.value.split('-')[0] : 'en';
+  const shortLang = lang.value?.split('-')[0] ?? 'en';
   return translations[shortLang] ? shortLang : 'en';
 });
 
-const collabText = computed(() => {
-  return translations[currentLocale.value]?.collabText || translations.en.collabText;
-});
-
-const partner1 = document.getElementById('partner1');
-const partner2 = document.getElementById('partner2');
+const collabText = computed(
+  () => translations[currentLocale.value].collabText,
+);
 
 function getLocaleDescription(partner, locale) {
-  if (partner.description && typeof partner.description === 'object') {
-    return partner.description[locale] || partner.description.en || '';
-  }
-  return partner.description || '';
+  return partner.description?.[locale] ?? partner.description?.en ?? '';
 }
-
-partner1.addEventListener('mouseover', () => {
-  partner1.querySelector('#partner1').style.display = 'block';
-  partner1.querySelector('.brand-desc-text').textContent = getLocaleDescription(partnerData[0], currentLocale.value);
-});
-
-partner1.addEventListener('mouseout', () => {
-  partner1.querySelector('#partner1').style.display = 'none';
-});
-
-partner2.addEventListener('mouseover', () => {
-  partner2.querySelector('#partner2').style.display = 'block';
-  partner2.querySelector('.brand-desc-text').textContent = getLocaleDescription(partnerData[1], currentLocale.value);
-});
-
-partner2.addEventListener('mouseout', () => {
-  partner2.querySelector('#partner2').style.display = 'none';
-});
 </script>
 
 <style scoped>
