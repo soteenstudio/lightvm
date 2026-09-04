@@ -17,44 +17,22 @@ fn main() {
   }).set_max_io(5000000).set_max_ticks(1000).set_max_stack_size(0).with_nightly(true).with_backtrace(false).with_explain(false).with_hint(true).set_time_budget(TimeBudget::Cheap);
   
   let raw = r#"[
-    ["jump", 7],
-    ["func", "add", 2, 2, 6, "a", "b"],
-    ["get", "a"],
-    ["get", "b"],
-    ["add", "int"],
-    ["return"],
-    ["stop"],
-    ["export", "add"],
-    ["val", "x"],
     ["push", 5],
-    ["set", "x"],
-    ["export", "x"],
     ["push", 5],
+    ["push", 5],
+    ["make_array", 3],
+    ["println"],
+    ["push", "name"],
+    ["push", "John Doe"],
+    ["push", "age"],
+    ["push", 39],
+    ["make_obj", 2],
     ["println"]
   ]"#;
   let tools = vm.tools();
   let optimized_json = tools
     .optimize_bytecode(raw);
   println!("{}", optimized_json);
-
   vm.load(optimized_json);
   vm.run(None);
-  let add_func = vm.export("add".to_string());
-  let x_var = vm.export("x".to_string());
-
-  let result = add_func.call(&mut vm, vec![5.into(), 6.into()]);
-  println!("Result: {:?}", result);
-
-  println!("{:?}", x_var.call(&mut vm, vec![]));
-
-  println!("{}", vm.info());
-
-  vm.on(VmEvent::Tick, |data| {
-    println!("Event: {:?}", data.event);
-    println!("Payload: {:?}", data.payload);
-  });
-  vm.run(None);
-
-  let res = vm.embedded();
-  println!("Embedded: {:?}", res);
 }
