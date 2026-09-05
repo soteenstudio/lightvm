@@ -37,7 +37,12 @@ use crate::instructions::{
         tanv_func::tanv_values,
       },
       trigonometry::hyperbolic::{
-        coshv_func::coshv_values, sinhv_func::sinhv_values, tanhv_func::tanhv_values,
+        coshv_func::coshv_values,
+        inverse::{
+          acoshv_func::acoshv_values, asinhv_func::asinhv_values, atanhv_func::atanhv_values,
+        },
+        sinhv_func::sinhv_values,
+        tanhv_func::tanhv_values,
       },
     },
   },
@@ -83,6 +88,9 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         Instructions::Asinh(t) => Some(asinh_values(val, *t)),
         Instructions::Acosh(t) => Some(acosh_values(val, *t)),
         Instructions::Atanh(t) => Some(atanh_values(val, *t)),
+        Instructions::Asinhv(t) => asinhv_values(val, *t).ok(),
+        Instructions::Acoshv(t) => acoshv_values(val, *t).ok(),
+        Instructions::Atanhv(t) => atanhv_values(val, *t).ok(),
         Instructions::Sqrt(t) => Some(sqrt_values(val, *t)),
         Instructions::Cbrt(t) => Some(cbrt_values(val, *t)),
         Instructions::Neg(t) => Some(neg_values(val, *t)),

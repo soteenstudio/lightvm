@@ -42,7 +42,10 @@ use crate::instructions::math::{
     cross_func::cross_func,
     dot_func::dot_func,
     trigonometry::hyperbolic::{
-      coshv_func::coshv_func, sinhv_func::sinhv_func, tanhv_func::tanhv_func,
+      coshv_func::coshv_func,
+      inverse::{acoshv_func::acoshv_func, asinhv_func::asinhv_func, atanhv_func::atanhv_func},
+      sinhv_func::sinhv_func,
+      tanhv_func::tanhv_func,
     },
   },
 };
@@ -93,6 +96,9 @@ pub fn math_dispatch(
     Instructions::Asinh(num_type) => asinh_func(stack, *num_type, ip),
     Instructions::Acosh(num_type) => acosh_func(stack, *num_type, ip),
     Instructions::Atanh(num_type) => atanh_func(stack, *num_type, ip),
+    Instructions::Asinhv(num_type) => asinhv_func(stack, *num_type, ip),
+    Instructions::Acoshv(num_type) => acoshv_func(stack, *num_type, ip),
+    Instructions::Atanhv(num_type) => atanhv_func(stack, *num_type, ip),
     Instructions::Sqrt(num_type) => sqrt_func(stack, *num_type, ip),
     Instructions::Cbrt(num_type) => cbrt_func(stack, *num_type, ip),
     Instructions::Neg(num_type) => neg_func(stack, *num_type, ip),

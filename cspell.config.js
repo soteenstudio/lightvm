@@ -98,7 +98,10 @@ export default {
     'tanhv',
     'sinv',
     'cosv',
-    'tanv'
+    'tanv',
+    'asinhv',
+    'acoshv',
+    'atanhv',
   ],
   ignorePaths: [
     'node_modules/**',

@@ -10,6 +10,7 @@
 
 pub(crate) mod coshv;
 pub(crate) mod coshv_func;
+pub(crate) mod inverse;
 pub(crate) mod sinhv;
 pub(crate) mod sinhv_func;
 pub(crate) mod tanhv;
