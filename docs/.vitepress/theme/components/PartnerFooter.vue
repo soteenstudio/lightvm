@@ -41,11 +41,11 @@
 <script setup>
 import { computed } from 'vue';
 import { useData } from 'vitepress';
-import { useLayout } from 'vitepress/theme';
+import { useSidebar } from 'vitepress/theme';
 import partnerData from '../../../data/partner.json';
 
 const { lang } = useData();
-const { hasSidebar } = useLayout();
+const { hasSidebar } = useSidebar();
 
 const translations = {
   en: { collabText: 'Official Documentation Partner' },

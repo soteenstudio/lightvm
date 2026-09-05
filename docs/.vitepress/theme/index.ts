@@ -46,7 +46,7 @@ export default {
           ]),
         ]),
       // Slot ini sekarang akan berjalan normal
-      'layout-bottom': () => h(PartnerFooter), 
+      'layout-bottom': () => h(PartnerFooter),
     });
   },
 };
