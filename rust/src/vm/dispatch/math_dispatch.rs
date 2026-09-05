@@ -41,11 +41,17 @@ use crate::instructions::math::{
     },
     cross_func::cross_func,
     dot_func::dot_func,
-    trigonometry::hyperbolic::{
-      coshv_func::coshv_func,
-      inverse::{acoshv_func::acoshv_func, asinhv_func::asinhv_func, atanhv_func::atanhv_func},
-      sinhv_func::sinhv_func,
-      tanhv_func::tanhv_func,
+    trigonometry::{
+      hyperbolic::{
+        coshv_func::coshv_func,
+        inverse::{acoshv_func::acoshv_func, asinhv_func::asinhv_func, atanhv_func::atanhv_func},
+        sinhv_func::sinhv_func,
+        tanhv_func::tanhv_func,
+      },
+      inverse::{
+        acosv_func::acosv_func, asinv_func::asinv_func, atan2v_func::atan2v_func,
+        atanv_func::atanv_func,
+      },
     },
   },
 };
@@ -87,6 +93,10 @@ pub fn math_dispatch(
     Instructions::Acos(num_type) => acos_func(stack, *num_type, ip),
     Instructions::Atan(num_type) => atan_func(stack, *num_type, ip),
     Instructions::Atan2(num_type) => atan2_func(stack, *num_type, ip),
+    Instructions::Asinv(num_type) => asinv_func(stack, *num_type, ip),
+    Instructions::Acosv(num_type) => acosv_func(stack, *num_type, ip),
+    Instructions::Atanv(num_type) => atanv_func(stack, *num_type, ip),
+    Instructions::Atan2v(num_type) => atan2v_func(stack, *num_type, ip),
     Instructions::Sinh(num_type) => sinh_func(stack, *num_type, ip),
     Instructions::Cosh(num_type) => cosh_func(stack, *num_type, ip),
     Instructions::Tanh(num_type) => tanh_func(stack, *num_type, ip),

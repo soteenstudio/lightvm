@@ -102,6 +102,10 @@ export default {
     'asinhv',
     'acoshv',
     'atanhv',
+    'asinv',
+    'acosv',
+    'atanv',
+    'atan2v',
   ],
   ignorePaths: [
     'node_modules/**',

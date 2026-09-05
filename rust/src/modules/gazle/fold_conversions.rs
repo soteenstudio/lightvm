@@ -36,13 +36,16 @@ use crate::instructions::{
         cosv_func::cosv_values, negv_func::negv_values, sinv_func::sinv_values,
         tanv_func::tanv_values,
       },
-      trigonometry::hyperbolic::{
-        coshv_func::coshv_values,
-        inverse::{
-          acoshv_func::acoshv_values, asinhv_func::asinhv_values, atanhv_func::atanhv_values,
+      trigonometry::{
+        hyperbolic::{
+          coshv_func::coshv_values,
+          inverse::{
+            acoshv_func::acoshv_values, asinhv_func::asinhv_values, atanhv_func::atanhv_values,
+          },
+          sinhv_func::sinhv_values,
+          tanhv_func::tanhv_values,
         },
-        sinhv_func::sinhv_values,
-        tanhv_func::tanhv_values,
+        inverse::{acosv_func::acosv_values, asinv_func::asinv_values, atanv_func::atanv_values},
       },
     },
   },
@@ -88,6 +91,9 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         Instructions::Asinh(t) => Some(asinh_values(val, *t)),
         Instructions::Acosh(t) => Some(acosh_values(val, *t)),
         Instructions::Atanh(t) => Some(atanh_values(val, *t)),
+        Instructions::Asinv(t) => asinv_values(val, *t).ok(),
+        Instructions::Acosv(t) => acosv_values(val, *t).ok(),
+        Instructions::Atanv(t) => atanv_values(val, *t).ok(),
         Instructions::Asinhv(t) => asinhv_values(val, *t).ok(),
         Instructions::Acoshv(t) => acoshv_values(val, *t).ok(),
         Instructions::Atanhv(t) => atanhv_values(val, *t).ok(),
