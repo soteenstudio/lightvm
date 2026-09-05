@@ -35,8 +35,9 @@ use crate::instructions::math::{
   },
   vector::{
     arithmetic::{
-      addv_func::addv_func, divv_func::divv_func, modv_func::modv_func, mulv_func::mulv_func,
-      negv_func::negv_func, subv_func::subv_func,
+      addv_func::addv_func, cosv_func::cosv_func, divv_func::divv_func, modv_func::modv_func,
+      mulv_func::mulv_func, negv_func::negv_func, sinv_func::sinv_func, subv_func::subv_func,
+      tanv_func::tanv_func,
     },
     cross_func::cross_func,
     dot_func::dot_func,
@@ -76,6 +77,9 @@ pub fn math_dispatch(
     Instructions::Sin(num_type) => sin_func(stack, *num_type, ip),
     Instructions::Cos(num_type) => cos_func(stack, *num_type, ip),
     Instructions::Tan(num_type) => tan_func(stack, *num_type, ip),
+    Instructions::Sinv(num_type) => sinv_func(stack, *num_type, ip),
+    Instructions::Cosv(num_type) => cosv_func(stack, *num_type, ip),
+    Instructions::Tanv(num_type) => tanv_func(stack, *num_type, ip),
     Instructions::Asin(num_type) => asin_func(stack, *num_type, ip),
     Instructions::Acos(num_type) => acos_func(stack, *num_type, ip),
     Instructions::Atan(num_type) => atan_func(stack, *num_type, ip),

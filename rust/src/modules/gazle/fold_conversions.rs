@@ -32,7 +32,10 @@ use crate::instructions::{
       inverse::{acos_func::acos_values, asin_func::asin_values, atan_func::atan_values},
     },
     vector::{
-      arithmetic::negv_func::negv_values,
+      arithmetic::{
+        cosv_func::cosv_values, negv_func::negv_values, sinv_func::sinv_values,
+        tanv_func::tanv_values,
+      },
       trigonometry::hyperbolic::{
         coshv_func::coshv_values, sinhv_func::sinhv_values, tanhv_func::tanhv_values,
       },
@@ -65,6 +68,9 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         Instructions::Sin(t) => Some(sin_values(val, *t)),
         Instructions::Cos(t) => Some(cos_values(val, *t)),
         Instructions::Tan(t) => Some(tan_values(val, *t)),
+        Instructions::Sinv(t) => sinv_values(val, *t).ok(),
+        Instructions::Cosv(t) => cosv_values(val, *t).ok(),
+        Instructions::Tanv(t) => tanv_values(val, *t).ok(),
         Instructions::Asin(t) => Some(asin_values(val, *t)),
         Instructions::Acos(t) => Some(acos_values(val, *t)),
         Instructions::Atan(t) => Some(atan_values(val, *t)),
@@ -81,6 +87,7 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         Instructions::Cbrt(t) => Some(cbrt_values(val, *t)),
         Instructions::Neg(t) => Some(neg_values(val, *t)),
         Instructions::Negv(t) => negv_values(val, *t).ok(),
+
         Instructions::Ln(t) => Some(ln_values(val, *t)),
         Instructions::Exp(t) => Some(exp_values(val, *t)),
         _ => None,

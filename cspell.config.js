@@ -95,7 +95,10 @@ export default {
     'negv',
     'sinhv',
     'coshv',
-    'tanhv'
+    'tanhv',
+    'sinv',
+    'cosv',
+    'tanv'
   ],
   ignorePaths: [
     'node_modules/**',
