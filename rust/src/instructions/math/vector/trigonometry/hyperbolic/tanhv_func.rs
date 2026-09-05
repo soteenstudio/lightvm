@@ -38,20 +38,17 @@ pub fn tanhv_values(a_val: Value, num_type: PrimitiveTypes) -> Result<Value, &'s
 }
 #[inline]
 pub fn tanhv_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
-  if stack.len() < 2 {
+  let Some(value) = stack.last().cloned() else {
     return Err(VMError::StackUnderflow {
       ip,
       opcode: "TANHV",
     });
-  }
-  let result = tanhv_values(stack[stack.len() - 1].clone(), num_type).map_err(|found| {
-    VMError::TypeMismatch {
-      ip,
-      expected: expected_type(num_type),
-      found,
-    }
+  };
+  let result = tanhv_values(value, num_type).map_err(|found| VMError::TypeMismatch {
+    ip,
+    expected: expected_type(num_type),
+    found,
   })?;
-  stack.pop();
   *stack.last_mut().unwrap() = result;
   Ok(())
 }
@@ -75,57 +72,44 @@ mod tests {
     Value::Array(Arc::new(values))
   }
   #[test]
-  fn addv_i32_works() {
-    let result = addv_values(
-      array(vec![Value::Int32(1), Value::Int32(2)]),
-      array(vec![Value::Int32(10), Value::Int32(20)]),
-      PrimitiveTypes::Int,
+  fn tanhv_dbl_works_and_preserves_preceding_stack_values() {
+    let expected = array(vec![Value::Float64(0.0)]);
+    assert_eq!(
+      tanhv_values(array(vec![Value::Float64(0.0)]), PrimitiveTypes::Dbl),
+      Ok(expected.clone())
     );
-    assert_eq!(result, Ok(array(vec![Value::Int32(11), Value::Int32(22)])));
+    let mut stack = Stack::from_vec(vec![Value::Bool(true), array(vec![Value::Float64(0.0)])]);
+    tanhv_func(&mut stack, PrimitiveTypes::Dbl, 12).unwrap();
+    assert_eq!(stack, Stack::from_vec(vec![Value::Bool(true), expected]));
   }
   #[test]
-  fn addv_rejects_non_numeric_and_mixed_or_invalid_lengths() {
-    let result = addv_values(
-      array(vec![Value::Int32(1)]),
-      array(vec![Value::String("invalid".into())]),
-      PrimitiveTypes::Int,
-    );
-    assert_eq!(result, Err("string"));
-    let result = addv_values(
-      array(vec![Value::Int32(1)]),
-      array(vec![Value::Int64(1)]),
-      PrimitiveTypes::Int,
-    );
-    assert_eq!(result, Ok(array(vec![Value::Int32(2)])));
-    let result = addv_values(
-      array(vec![Value::Int32(1), Value::Int32(2)]),
-      array(vec![Value::Int32(1)]),
-      PrimitiveTypes::Int,
-    );
-    assert_eq!(result, Ok(Value::NaN));
-  }
-  #[test]
-  fn addv_reports_element_type_without_mutating_stack() {
+  fn tanhv_rejects_invalid_elements_without_mutating_stack() {
     let mut stack = Stack::from_vec(vec![
-      array(vec![Value::Int32(1)]),
+      Value::Bool(true),
       array(vec![Value::String("invalid".into())]),
     ]);
     let original = stack.clone();
     assert!(matches!(
-      addv_func(&mut stack, PrimitiveTypes::Int, 13),
+      tanhv_func(&mut stack, PrimitiveTypes::Dbl, 13),
       Err(VMError::TypeMismatch {
         ip: 13,
-        expected: "Int32",
+        expected: "Float64",
         found: "string"
       })
     ));
     assert_eq!(stack, original);
   }
   #[test]
-  fn addv_non_array_remains_nan() {
-    assert_eq!(
-      addv_values(Value::Bool(false), array(vec![]), PrimitiveTypes::Int),
-      Ok(Value::NaN)
-    );
+  fn tanhv_handles_non_array_input_and_underflow() {
+    let mut stack = Stack::from_vec(vec![Value::Bool(false)]);
+    tanhv_func(&mut stack, PrimitiveTypes::Dbl, 14).unwrap();
+    assert_eq!(stack, Stack::from_vec(vec![Value::NaN]));
+    assert!(matches!(
+      tanhv_func(&mut Stack::new(), PrimitiveTypes::Dbl, 15),
+      Err(VMError::StackUnderflow {
+        ip: 15,
+        opcode: "TANHV"
+      })
+    ));
   }
 }
