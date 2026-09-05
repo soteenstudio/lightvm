@@ -1,5 +1,6 @@
 import { sidebarMethodFunctions } from './sidebarMethodFunctions.js';
 import { sidebarInstructionSet } from './sidebarInstructionSet.js';
+import { sidebarErrorCodes } from './sidebarErrorCodes.js';
 
 export const sidebarAPIReferences = [
   sidebarMethodFunctions,
@@ -7,4 +8,5 @@ export const sidebarAPIReferences = [
   { text: 'Capabilities', link: '/api-reference/capabilities' },
   { text: 'Time Budget', link: '/api-reference/time-budget' },
   sidebarInstructionSet,
+  sidebarErrorCodes,
 ];
