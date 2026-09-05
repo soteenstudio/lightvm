@@ -13,3 +13,4 @@ pub(crate) mod cross;
 pub(crate) mod cross_func;
 pub(crate) mod dot;
 pub(crate) mod dot_func;
+pub(crate) mod trigonometry;

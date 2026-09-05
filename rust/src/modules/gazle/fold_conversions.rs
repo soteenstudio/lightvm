@@ -31,7 +31,12 @@ use crate::instructions::{
       },
       inverse::{acos_func::acos_values, asin_func::asin_values, atan_func::atan_values},
     },
-    vector::arithmetic::negv_func::negv_values,
+    vector::{
+      arithmetic::negv_func::negv_values,
+      trigonometry::hyperbolic::{
+        coshv_func::coshv_values, sinhv_func::sinhv_values, tanhv_func::tanhv_values,
+      },
+    },
   },
   metadata::typeof_func::typeof_values,
 };
@@ -66,6 +71,9 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         Instructions::Sinh(t) => Some(sinh_values(val, *t)),
         Instructions::Cosh(t) => Some(cosh_values(val, *t)),
         Instructions::Tanh(t) => Some(tanh_values(val, *t)),
+        Instructions::Sinhv(t) => sinhv_values(val, *t).ok(),
+        Instructions::Coshv(t) => coshv_values(val, *t).ok(),
+        Instructions::Tanhv(t) => tanhv_values(val, *t).ok(),
         Instructions::Asinh(t) => Some(asinh_values(val, *t)),
         Instructions::Acosh(t) => Some(acosh_values(val, *t)),
         Instructions::Atanh(t) => Some(atanh_values(val, *t)),

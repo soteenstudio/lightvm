@@ -93,6 +93,9 @@ export default {
     'divv',
     'modv',
     'negv',
+    'sinhv',
+    'coshv',
+    'tanhv'
   ],
   ignorePaths: [
     'node_modules/**',

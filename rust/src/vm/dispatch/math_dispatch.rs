@@ -40,6 +40,12 @@ use crate::instructions::math::{
     },
     cross_func::cross_func,
     dot_func::dot_func,
+    trigonometry::hyperbolic::{
+      coshv_func::coshv_func,
+      //inverse::{acosh_func::acosh_func, asinh_func::asinh_func, atanh_func::atanh_func},
+      sinhv_func::sinhv_func,
+      tanhv_func::tanhv_func,
+    },
   },
 };
 use crate::modules::vmerror::VMError;
@@ -80,6 +86,9 @@ pub fn math_dispatch(
     Instructions::Sinh(num_type) => sinh_func(stack, *num_type, ip),
     Instructions::Cosh(num_type) => cosh_func(stack, *num_type, ip),
     Instructions::Tanh(num_type) => tanh_func(stack, *num_type, ip),
+    Instructions::Sinhv(num_type) => sinhv_func(stack, *num_type, ip),
+    Instructions::Coshv(num_type) => coshv_func(stack, *num_type, ip),
+    Instructions::Tanhv(num_type) => tanhv_func(stack, *num_type, ip),
     Instructions::Asinh(num_type) => asinh_func(stack, *num_type, ip),
     Instructions::Acosh(num_type) => acosh_func(stack, *num_type, ip),
     Instructions::Atanh(num_type) => atanh_func(stack, *num_type, ip),
