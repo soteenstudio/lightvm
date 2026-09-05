@@ -75,10 +75,10 @@ mod tests {
   fn acoshv_dbl_works_and_preserves_preceding_stack_values() {
     let expected = array(vec![Value::Float64(0.0)]);
     assert_eq!(
-      acoshv_values(array(vec![Value::Float64(0.0)]), PrimitiveTypes::Dbl),
+      acoshv_values(array(vec![Value::Float64(1.0)]), PrimitiveTypes::Dbl),
       Ok(expected.clone())
     );
-    let mut stack = Stack::from_vec(vec![Value::Bool(true), array(vec![Value::Float64(0.0)])]);
+    let mut stack = Stack::from_vec(vec![Value::Bool(true), array(vec![Value::Float64(1.0)])]);
     acoshv_func(&mut stack, PrimitiveTypes::Dbl, 12).unwrap();
     assert_eq!(stack, Stack::from_vec(vec![Value::Bool(true), expected]));
   }

@@ -32,7 +32,7 @@ pub fn atan2v_values(
   if num_type == PrimitiveTypes::Str {
     return Ok(Value::NaN);
   }
-  for x in arr_a.iter() {
+  for x in arr_a.iter().chain(arr_b.iter()) {
     if !x.is_number() {
       return Err(x.type_of());
     }
@@ -46,19 +46,23 @@ pub fn atan2v_values(
 }
 #[inline]
 pub fn atan2v_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
-  let Some(value) = stack.last().cloned() else {
+  if stack.len() < 2 {
     return Err(VMError::StackUnderflow {
       ip,
       opcode: "ATAN2V",
     });
-  };
-  let result = atan2v_values(value, stack[stack.len() - 2].clone(), num_type).map_err(|found| {
-    VMError::TypeMismatch {
-      ip,
-      expected: expected_type(num_type),
-      found,
-    }
+  }
+  let result = atan2v_values(
+    stack[stack.len() - 1].clone(),
+    stack[stack.len() - 2].clone(),
+    num_type,
+  )
+  .map_err(|found| VMError::TypeMismatch {
+    ip,
+    expected: expected_type(num_type),
+    found,
   })?;
+  stack.pop();
   *stack.last_mut().unwrap() = result;
   Ok(())
 }
@@ -87,20 +91,24 @@ mod tests {
     assert_eq!(
       atan2v_values(
         array(vec![Value::Float64(0.0)]),
-        array(vec![Value::Float64(0.0)]),
+        array(vec![Value::Float64(1.0)]),
         PrimitiveTypes::Dbl
       ),
       Ok(expected.clone())
     );
-    let mut stack = Stack::from_vec(vec![Value::Bool(true), array(vec![Value::Float64(0.0)])]);
+    let mut stack = Stack::from_vec(vec![
+      Value::Bool(true),
+      array(vec![Value::Float64(1.0)]),
+      array(vec![Value::Float64(0.0)]),
+    ]);
     atan2v_func(&mut stack, PrimitiveTypes::Dbl, 12).unwrap();
     assert_eq!(stack, Stack::from_vec(vec![Value::Bool(true), expected]));
   }
   #[test]
   fn atan2v_rejects_invalid_elements_without_mutating_stack() {
     let mut stack = Stack::from_vec(vec![
-      Value::Bool(true),
       array(vec![Value::String("invalid".into())]),
+      array(vec![Value::Float64(0.0)]),
     ]);
     let original = stack.clone();
     assert!(matches!(
@@ -115,9 +123,19 @@ mod tests {
   }
   #[test]
   fn atan2v_handles_non_array_input_and_underflow() {
+    let mut non_array_stack =
+      Stack::from_vec(vec![array(vec![Value::Float64(0.0)]), Value::Bool(false)]);
+    atan2v_func(&mut non_array_stack, PrimitiveTypes::Dbl, 13).unwrap();
+    assert_eq!(non_array_stack, Stack::from_vec(vec![Value::NaN]));
     let mut stack = Stack::from_vec(vec![Value::Bool(false)]);
-    atan2v_func(&mut stack, PrimitiveTypes::Dbl, 14).unwrap();
-    assert_eq!(stack, Stack::from_vec(vec![Value::NaN]));
+    assert!(matches!(
+      atan2v_func(&mut stack, PrimitiveTypes::Dbl, 14),
+      Err(VMError::StackUnderflow {
+        ip: 14,
+        opcode: "ATAN2V"
+      })
+    ));
+    assert_eq!(stack, Stack::from_vec(vec![Value::Bool(false)]));
     assert!(matches!(
       atan2v_func(&mut Stack::new(), PrimitiveTypes::Dbl, 15),
       Err(VMError::StackUnderflow {

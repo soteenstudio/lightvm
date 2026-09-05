@@ -342,6 +342,26 @@ mod tests {
     }
   }
   #[test]
+  fn leaves_invalid_constant_atan2v_for_runtime_error() {
+    let mut bytecode = vec![
+      Instructions::PushArray(Arc::new(vec![Value::Float64(1.0)])),
+      Instructions::PushArray(Arc::new(vec![Value::String("invalid".into())])),
+      Instructions::Atan2v(PrimitiveTypes::Dbl),
+      Instructions::Stop,
+    ];
+    let expected = bytecode.clone();
+    fold_constants(&mut bytecode);
+    assert_eq!(bytecode, expected);
+    assert!(matches!(
+      crate::vm::execute::execute(bytecode, &mut None, None),
+      Err(crate::modules::vmerror::VMError::TypeMismatch {
+        ip: 2,
+        expected: "Float64",
+        found: "string"
+      })
+    ));
+  }
+  #[test]
   fn folds_constant_subv() {
     let mut bytecode = vec![
       Instructions::PushArray(Arc::new(vec![Value::Int32(5), Value::Int32(9)])),

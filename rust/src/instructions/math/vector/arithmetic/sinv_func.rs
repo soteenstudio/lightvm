@@ -38,7 +38,7 @@ pub fn sinv_values(a_val: Value, num_type: PrimitiveTypes) -> Result<Value, &'st
 }
 #[inline]
 pub fn sinv_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
-  if stack.len() < 1 {
+  if stack.is_empty() {
     return Err(VMError::StackUnderflow { ip, opcode: "SINV" });
   }
   let result = sinv_values(stack[stack.len() - 1].clone(), num_type).map_err(|found| {
@@ -48,7 +48,6 @@ pub fn sinv_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resu
       found,
     }
   })?;
-  stack.pop();
   *stack.last_mut().unwrap() = result;
   Ok(())
 }
@@ -72,24 +71,24 @@ mod tests {
     Value::Array(Arc::new(values))
   }
   #[test]
-  fn sinv_i32_works() {
-    let result = sinv_values(
-      array(vec![Value::Int32(1), Value::Int32(2)]),
-      PrimitiveTypes::Int,
-    );
-    assert_eq!(result, Ok(array(vec![Value::Int32(11), Value::Int32(22)])));
+  fn sinv_f64_works() {
+    let input = array(vec![Value::Float64(0.0), Value::Float64(0.0)]);
+    let expected = input.clone();
+    let result = sinv_values(input.clone(), PrimitiveTypes::Dbl);
+    assert_eq!(result, Ok(expected.clone()));
+    let mut stack = Stack::from_vec(vec![input]);
+    sinv_func(&mut stack, PrimitiveTypes::Dbl, 12).unwrap();
+    assert_eq!(stack, Stack::from_vec(vec![expected]));
   }
   #[test]
-  fn sinv_rejects_non_numeric_and_mixed_or_invalid_lengths() {
-    let result = sinv_values(array(vec![Value::Int32(1)]), PrimitiveTypes::Int);
-    assert_eq!(result, Err("string"));
-    let result = sinv_values(array(vec![Value::Int32(1)]), PrimitiveTypes::Int);
-    assert_eq!(result, Ok(array(vec![Value::Int32(2)])));
+  fn sinv_rejects_non_numeric_and_accepts_any_length() {
     let result = sinv_values(
-      array(vec![Value::Int32(1), Value::Int32(2)]),
-      PrimitiveTypes::Int,
+      array(vec![Value::Float64(0.0), Value::String("invalid".into())]),
+      PrimitiveTypes::Dbl,
     );
-    assert_eq!(result, Ok(Value::NaN));
+    assert_eq!(result, Err("string"));
+    let result = sinv_values(array(vec![Value::Float64(0.0)]), PrimitiveTypes::Dbl);
+    assert_eq!(result, Ok(array(vec![Value::Float64(0.0)])));
   }
   #[test]
   fn sinv_reports_element_type_without_mutating_stack() {
