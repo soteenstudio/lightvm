@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="frontmatter.layout === 'home'"
+    v-if="!hasSidebar"
     class="partner-footer-container"
   >
     <div class="partner-footer-content">
@@ -43,7 +43,12 @@ import { computed } from 'vue';
 import { useData } from 'vitepress';
 import partnerData from '../../../data/partner.json';
 
-const { frontmatter, lang } = useData();
+const { lang, route, theme } = useData();
+
+const hasSidebar = computed(() => {
+  const routePrefixes = Object.keys(theme.value.sidebar ?? {});
+  return routePrefixes.some((prefix) => route.path.startsWith(prefix));
+});
 
 const translations = {
   en: { collabText: 'Official Documentation Partner' },
