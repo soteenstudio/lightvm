@@ -87,7 +87,6 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         Instructions::Cbrt(t) => Some(cbrt_values(val, *t)),
         Instructions::Neg(t) => Some(neg_values(val, *t)),
         Instructions::Negv(t) => negv_values(val, *t).ok(),
-
         Instructions::Ln(t) => Some(ln_values(val, *t)),
         Instructions::Exp(t) => Some(exp_values(val, *t)),
         _ => None,
