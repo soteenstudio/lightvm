@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "rust-lang.rust-analyzer",
+    "serayuzgur.crates",
+    "vadimcn.vscode-lldb",
+    "ms-vscode.cpptools",
+    "esbenp.prettier-vscode",
+    "GitLens.gitlens",
+    "eamodio.gitlens",
+    "ms-vscode.makefile-tools"
+  ]
+}
