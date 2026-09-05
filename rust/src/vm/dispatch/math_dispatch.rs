@@ -41,10 +41,7 @@ use crate::instructions::math::{
     cross_func::cross_func,
     dot_func::dot_func,
     trigonometry::hyperbolic::{
-      coshv_func::coshv_func,
-      //inverse::{acosh_func::acosh_func, asinh_func::asinh_func, atanh_func::atanh_func},
-      sinhv_func::sinhv_func,
-      tanhv_func::tanhv_func,
+      coshv_func::coshv_func, sinhv_func::sinhv_func, tanhv_func::tanhv_func,
     },
   },
 };
