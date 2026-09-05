@@ -8,9 +8,11 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub(crate) mod arithmetic;
-pub(crate) mod cross;
-pub(crate) mod cross_func;
-pub(crate) mod dot;
-pub(crate) mod dot_func;
-pub(crate) mod trigonometry;
+pub(crate) mod acosv;
+pub(crate) mod acosv_func;
+pub(crate) mod asinv;
+pub(crate) mod asinv_func;
+pub(crate) mod atan2v;
+pub(crate) mod atan2v_func;
+pub(crate) mod atanv;
+pub(crate) mod atanv_func;
