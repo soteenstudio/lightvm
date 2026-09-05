@@ -41,14 +41,11 @@
 <script setup>
 import { computed } from 'vue';
 import { useData } from 'vitepress';
+import { useLayout } from 'vitepress/theme';
 import partnerData from '../../../data/partner.json';
 
-const { lang, route, theme } = useData();
-
-const hasSidebar = computed(() => {
-  const routePrefixes = Object.keys(theme.value.sidebar ?? {});
-  return routePrefixes.some((prefix) => route.path.startsWith(prefix));
-});
+const { lang } = useData();
+const { hasSidebar } = useLayout();
 
 const translations = {
   en: { collabText: 'Official Documentation Partner' },
