@@ -31,6 +31,7 @@ use crate::instructions::{
       },
       cross_func::cross_values,
       dot_func::dot_values,
+      trigonometry::inverse::atan2v_func::atan2v_values,
     },
   },
   stack::concat_func::concat_values,
@@ -135,6 +136,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         Instructions::Powi(t) => Some(powi_values(val1, val2, *t)),
         Instructions::Powf(t) => Some(powf_values(val1, val2, *t)),
         Instructions::Atan2(t) => Some(atan2_values(val1, val2, *t)),
+        Instructions::Atan2v(t) => atan2v_values(val1, val2, *t).ok(),
         Instructions::Dot(t) => dot_values(val1, val2, *t).ok(),
         Instructions::Cross(t) => cross_values(val1, val2, *t).ok(),
         _ => None,
@@ -179,6 +181,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         Instructions::Powi(t) => Some(powi_values(val1.clone(), val1.clone(), *t)),
         Instructions::Powf(t) => Some(powf_values(val1.clone(), val1.clone(), *t)),
         Instructions::Atan2(t) => Some(atan2_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Atan2v(t) => atan2v_values(val1.clone(), val1.clone(), *t).ok(),
         Instructions::Dot(t) => dot_values(val1.clone(), val1.clone(), *t).ok(),
         Instructions::Cross(t) => cross_values(val1.clone(), val1.clone(), *t).ok(),
         _ => None,
@@ -337,6 +340,26 @@ mod tests {
         })
       ));
     }
+  }
+  #[test]
+  fn leaves_invalid_constant_atan2v_for_runtime_error() {
+    let mut bytecode = vec![
+      Instructions::PushArray(Arc::new(vec![Value::Float64(1.0)])),
+      Instructions::PushArray(Arc::new(vec![Value::String("invalid".into())])),
+      Instructions::Atan2v(PrimitiveTypes::Dbl),
+      Instructions::Stop,
+    ];
+    let expected = bytecode.clone();
+    fold_constants(&mut bytecode);
+    assert_eq!(bytecode, expected);
+    assert!(matches!(
+      crate::vm::execute::execute(bytecode, &mut None, None),
+      Err(crate::modules::vmerror::VMError::TypeMismatch {
+        ip: 2,
+        expected: "Float64",
+        found: "string"
+      })
+    ));
   }
   #[test]
   fn folds_constant_subv() {

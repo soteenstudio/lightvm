@@ -23,6 +23,10 @@ export const sidebarMathematics = {
       link: '/id/api-reference/instruction-set/mathematics/vector-arithmetic',
     },
     {
+      text: 'Trigonometri Vektor',
+      link: '/id/api-reference/instruction-set/mathematics/vector-trigonometry',
+    },
+    {
       text: 'Hasil Kali Vektor',
       link: '/id/api-reference/instruction-set/mathematics/vector-products',
     },

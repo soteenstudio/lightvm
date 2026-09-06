@@ -10,6 +10,8 @@
 
 pub(crate) mod addv;
 pub(crate) mod addv_func;
+pub(crate) mod cosv;
+pub(crate) mod cosv_func;
 pub(crate) mod divv;
 pub(crate) mod divv_func;
 pub(crate) mod modv;
@@ -18,5 +20,9 @@ pub(crate) mod mulv;
 pub(crate) mod mulv_func;
 pub(crate) mod negv;
 pub(crate) mod negv_func;
+pub(crate) mod sinv;
+pub(crate) mod sinv_func;
 pub(crate) mod subv;
 pub(crate) mod subv_func;
+pub(crate) mod tanv;
+pub(crate) mod tanv_func;
