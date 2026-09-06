@@ -269,6 +269,7 @@ impl Instructions {
       b"pow" => Ok(Instructions::Pow(map_primitive(arg1))),
       b"powi" => Ok(Instructions::Powi(map_primitive(arg1))),
       b"powf" => Ok(Instructions::Powf(map_primitive(arg1))),
+      b"powv" => Ok(Instructions::Powv(map_primitive(arg1))),
       b"gt" => Ok(Instructions::Gt(map_primitive(arg1))),
       b"lt" => Ok(Instructions::Lt(map_primitive(arg1))),
       b"ge" => Ok(Instructions::Ge(map_primitive(arg1))),
@@ -505,6 +506,12 @@ mod tests {
     let json_input = json!(["subv", "int"]);
     let instr = Instructions::from_json_array(&json_input, 0).unwrap();
     assert_eq!(instr, Instructions::Subv(PrimitiveTypes::Int));
+  }
+  #[test]
+  fn test_powv_instruction() {
+    let json_input = json!(["powv", "lng"]);
+    let instr = Instructions::from_json_array(&json_input, 0).unwrap();
+    assert_eq!(instr, Instructions::Powv(PrimitiveTypes::Lng));
   }
   #[test]
   fn test_mulv_and_divv_instructions() {
