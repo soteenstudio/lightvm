@@ -145,6 +145,7 @@ pub fn execute(
         | Instructions::Pow(_)
         | Instructions::Powi(_)
         | Instructions::Powf(_)
+        | Instructions::Powv(_)
         | Instructions::Sin(_)
         | Instructions::Cos(_)
         | Instructions::Tan(_)
