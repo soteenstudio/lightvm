@@ -15,6 +15,7 @@ Check out our official website for complete documentation.
  - **[Official Documentation](https://lightvm.vercel.app)**
 
 ## Templates
+Use a template to make it easier when developing a new project.
  - [TypeScript Template](https://github.com/soteenstudio/lightvm-typescript)
  - [Rust Template](https://github.com/soteenstudio/lightvm-rust)
 
