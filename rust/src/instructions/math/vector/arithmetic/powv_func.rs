@@ -15,7 +15,6 @@ use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-
 #[inline(always)]
 pub fn powv_values(
   a_val: Value,
@@ -49,7 +48,6 @@ pub fn powv_values(
     _ => Value::NaN,
   })
 }
-
 #[inline]
 pub fn powv_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
   if stack.len() < 2 {
@@ -69,7 +67,6 @@ pub fn powv_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resu
   *stack.last_mut().unwrap() = result;
   Ok(())
 }
-
 fn expected_type(num_type: PrimitiveTypes) -> &'static str {
   match num_type {
     PrimitiveTypes::Sht => "Int16",
@@ -82,16 +79,13 @@ fn expected_type(num_type: PrimitiveTypes) -> &'static str {
     PrimitiveTypes::Str => "String",
   }
 }
-
 #[cfg(test)]
 mod tests {
   use super::*;
   use std::sync::Arc;
-
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
   }
-
   #[test]
   fn powv_i32_works() {
     let result = powv_values(
@@ -101,7 +95,6 @@ mod tests {
     );
     assert_eq!(result, Ok(array(vec![Value::Int32(8), Value::Int32(9)])));
   }
-
   #[test]
   fn powv_rejects_non_numeric_and_mixed_or_invalid_lengths() {
     let result = powv_values(
@@ -110,14 +103,12 @@ mod tests {
       PrimitiveTypes::Int,
     );
     assert_eq!(result, Err("string"));
-
     let result = powv_values(
       array(vec![Value::Int32(2)]),
       array(vec![Value::Int64(3)]),
       PrimitiveTypes::Int,
     );
     assert_eq!(result, Ok(array(vec![Value::Int32(8)])));
-
     let result = powv_values(
       array(vec![Value::Int32(2), Value::Int32(3)]),
       array(vec![Value::Int32(3)]),
@@ -125,7 +116,6 @@ mod tests {
     );
     assert_eq!(result, Ok(Value::NaN));
   }
-
   #[test]
   fn powv_reports_element_type_without_mutating_stack() {
     let mut stack = Stack::from_vec(vec![
@@ -143,7 +133,6 @@ mod tests {
     ));
     assert_eq!(stack, original);
   }
-
   #[test]
   fn powv_non_array_remains_nan() {
     assert_eq!(
