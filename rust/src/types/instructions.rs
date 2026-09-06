@@ -101,6 +101,8 @@ pub enum Instructions {
   Powi(PrimitiveTypes),
   Powf(PrimitiveTypes),
   Powv(PrimitiveTypes),
+  Powiv(PrimitiveTypes),
+  Powfv(PrimitiveTypes),
   Gt(PrimitiveTypes),
   Lt(PrimitiveTypes),
   Ge(PrimitiveTypes),

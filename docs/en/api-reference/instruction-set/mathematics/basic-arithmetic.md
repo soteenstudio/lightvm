@@ -11,3 +11,6 @@ These instructions handle standard mathematical calculations, basic scaling, and
 | `pow` | type | val1, val2 | General power operation (x^y) |
 | `powi` | type | val1, val2 | Power with integer exponent |
 | `powf` | type | val1, val2 | Power with floating-point exponent |
+| `powv` | type | array1, array2 | Element-wise vector power |
+| `powiv` | type | array1, array2 | Element-wise vector power with integer exponents |
+| `powfv` | type | array1, array2 | Element-wise vector power with floating-point exponents |
