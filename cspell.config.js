@@ -106,7 +106,9 @@ export default {
     'acosv',
     'atanv',
     'atan2v',
-    'powv'
+    'powv',
+    'powiv',
+    'powfv'
   ],
   ignorePaths: [
     'node_modules/**',

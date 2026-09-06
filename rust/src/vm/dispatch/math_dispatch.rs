@@ -36,8 +36,8 @@ use crate::instructions::math::{
   vector::{
     arithmetic::{
       addv_func::addv_func, cosv_func::cosv_func, divv_func::divv_func, modv_func::modv_func,
-      mulv_func::mulv_func, negv_func::negv_func, powv_func::powv_func, sinv_func::sinv_func,
-      subv_func::subv_func, tanv_func::tanv_func,
+      mulv_func::mulv_func, negv_func::negv_func, powfv_func::powfv_func, powiv_func::powiv_func,
+      powv_func::powv_func, sinv_func::sinv_func, subv_func::subv_func, tanv_func::tanv_func,
     },
     cross_func::cross_func,
     dot_func::dot_func,
@@ -84,6 +84,8 @@ pub fn math_dispatch(
     Instructions::Powi(num_type) => powi_func(stack, *num_type, ip),
     Instructions::Powf(num_type) => powf_func(stack, *num_type, ip),
     Instructions::Powv(num_type) => powv_func(stack, *num_type, ip),
+    Instructions::Powiv(num_type) => powiv_func(stack, *num_type, ip),
+    Instructions::Powfv(num_type) => powfv_func(stack, *num_type, ip),
     Instructions::Sin(num_type) => sin_func(stack, *num_type, ip),
     Instructions::Cos(num_type) => cos_func(stack, *num_type, ip),
     Instructions::Tan(num_type) => tan_func(stack, *num_type, ip),
