@@ -23,6 +23,10 @@ export const sidebarMathematics = {
       link: '/api-reference/instruction-set/mathematics/vector-arithmetic',
     },
     {
+      text: 'Vector Trigonometry',
+      link: '/api-reference/instruction-set/mathematics/vector-trigonometry',
+    },
+    {
       text: 'Vector Products',
       link: '/api-reference/instruction-set/mathematics/vector-products',
     },
