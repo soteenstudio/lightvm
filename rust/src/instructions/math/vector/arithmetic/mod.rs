@@ -20,6 +20,8 @@ pub(crate) mod mulv;
 pub(crate) mod mulv_func;
 pub(crate) mod negv;
 pub(crate) mod negv_func;
+pub(crate) mod powv;
+pub(crate) mod powv_func;
 pub(crate) mod sinv;
 pub(crate) mod sinv_func;
 pub(crate) mod subv;

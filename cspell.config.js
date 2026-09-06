@@ -50,7 +50,7 @@ export default {
     'ghaction',
     'gpgsign',
     'signingkey',
-    'gazle', 
+    'gazle',
     'torja',
     'krates',
     'nops',
@@ -106,6 +106,7 @@ export default {
     'acosv',
     'atanv',
     'atan2v',
+    'powv'
   ],
   ignorePaths: [
     'node_modules/**',
