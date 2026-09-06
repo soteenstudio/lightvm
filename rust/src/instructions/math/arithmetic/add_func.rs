@@ -16,9 +16,17 @@ use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
+
 #[inline(always)]
-pub fn add_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
-  match num_type {
+pub fn add_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Result<Value, &'static str> {
+  if !a.is_number() {
+    return Err(a.type_of());
+  }
+  if !b.is_number() {
+    return Err(b.type_of());
+  }
+
+  Ok(match num_type {
     PrimitiveTypes::Sht => Value::Int16(add_i16in(a.as_i16(), b.as_i16())),
     PrimitiveTypes::Int => Value::Int32(add_i32in(a.as_i32(), b.as_i32())),
     PrimitiveTypes::Lng => Value::Int64(add_i64in(a.as_i64(), b.as_i64())),
@@ -26,18 +34,38 @@ pub fn add_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Hlf => Value::Float16(add_f16in(a.as_f16(), b.as_f16())),
     PrimitiveTypes::Flt => Value::Float32(add_f32in(a.as_f32(), b.as_f32())),
     PrimitiveTypes::Dbl => Value::Float64(add_f64in(a.as_f64(), b.as_f64())),
-    _ => Value::NaN,
-  }
+    _ => return Err("invalid type"),
+  })
 }
+
 #[inline]
 pub fn add_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
-  let b = stack
-    .pop()
-    .ok_or(VMError::StackUnderflow { ip, opcode: "ADD" })?;
-  let a_ref = stack
-    .last_mut()
-    .ok_or(VMError::StackUnderflow { ip, opcode: "ADD" })?;
-  let a = std::mem::take(a_ref);
-  *a_ref = add_values(a, b, num_type);
+  if stack.len() < 2 {
+    return Err(VMError::StackUnderflow { ip, opcode: "ADD" });
+  }
+
+  let b = stack.pop().unwrap();
+  let a = stack.pop().unwrap();
+
+  let result = add_values(a, b, num_type).map_err(|found| VMError::TypeMismatch {
+    ip,
+    expected: expected_type(num_type),
+    found,
+  })?;
+
+  stack.push(result);
   Ok(())
+}
+
+fn expected_type(num_type: PrimitiveTypes) -> &'static str {
+  match num_type {
+    PrimitiveTypes::Sht => "Int16",
+    PrimitiveTypes::Int => "Int32",
+    PrimitiveTypes::Lng => "Int64",
+    PrimitiveTypes::Oct => "Int128",
+    PrimitiveTypes::Hlf => "Float16",
+    PrimitiveTypes::Flt => "Float32",
+    PrimitiveTypes::Dbl => "Float64",
+    PrimitiveTypes::Str => "String",
+  }
 }
