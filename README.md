@@ -14,6 +14,10 @@ A capability-based virtual machine designed for __secure__, __predictable__, and
 Check out our official website for complete documentation.
  - **[Official Documentation](https://lightvm.vercel.app)**
 
+## Templates
+ - [TypeScript Template](https://github.com/soteenstudio/lightvm-typescript)
+ - [Rust Template](https://github.com/soteenstudio/lightvm-rust)
+
 ## Resource
  - This project is distributed using the [Apache-2.0 license](LICENSE).
  - See [credits](./CREDITS.md) for information regarding the project's origin and originality.
