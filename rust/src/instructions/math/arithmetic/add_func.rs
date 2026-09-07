@@ -25,7 +25,6 @@ pub fn add_values(
   num_type: PrimitiveTypes,
   ip: usize,
 ) -> Result<Value, VMError> {
-  println!("{} {}", a, b.is_number());
   if !a.is_number() {
     return Err(VMError::TypeMismatch {
       ip,

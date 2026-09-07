@@ -73,9 +73,9 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         Instructions::ToFloat => to_float_values(val).ok(),
         Instructions::ToDouble => to_double_values(val).ok(),
         Instructions::ToString => to_string_values(val).ok(),
-        Instructions::Sin(t) => Some(sin_values(val, *t)),
-        Instructions::Cos(t) => Some(cos_values(val, *t)),
-        Instructions::Tan(t) => Some(tan_values(val, *t)),
+        Instructions::Sin(t) => sin_values(val, *t, i).ok(),
+        Instructions::Cos(t) => cos_values(val, *t, i).ok(),
+        Instructions::Tan(t) => tan_values(val, *t, i).ok(),
         Instructions::Sinv(t) => sinv_values(val, *t).ok(),
         Instructions::Cosv(t) => cosv_values(val, *t).ok(),
         Instructions::Tanv(t) => tanv_values(val, *t).ok(),
@@ -99,7 +99,7 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         Instructions::Atanhv(t) => atanhv_values(val, *t).ok(),
         Instructions::Sqrt(t) => Some(sqrt_values(val, *t)),
         Instructions::Cbrt(t) => Some(cbrt_values(val, *t)),
-        Instructions::Neg(t) => Some(neg_values(val, *t)),
+        Instructions::Neg(t) => neg_values(val, *t, i).ok(),
         Instructions::Negv(t) => negv_values(val, *t).ok(),
         Instructions::Ln(t) => Some(ln_values(val, *t)),
         Instructions::Exp(t) => Some(exp_values(val, *t)),
@@ -141,5 +141,24 @@ mod tests {
     let expected = invalid.clone();
     fold_conversions(&mut invalid);
     assert_eq!(invalid, expected);
+  }
+  #[test]
+  fn leaves_invalid_scalar_unary_operation_for_runtime_error() {
+    let mut bytecode = vec![
+      Instructions::PushString("invalid".into()),
+      Instructions::Sin(PrimitiveTypes::Flt),
+      Instructions::Stop,
+    ];
+    let expected = bytecode.clone();
+    fold_conversions(&mut bytecode);
+    assert_eq!(bytecode, expected);
+    assert!(matches!(
+      crate::vm::execute::execute(bytecode, &mut None, None),
+      Err(crate::modules::vmerror::VMError::TypeMismatch {
+        ip: 1,
+        expected: "Float",
+        found: "string"
+      })
+    ));
   }
 }
