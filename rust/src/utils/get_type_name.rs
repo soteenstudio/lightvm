@@ -11,12 +11,12 @@
 use crate::types::value::Value;
 pub fn get_type_name(num_type: Value) -> &'static str {
   match num_type {
-    Value::String(_) => "String",
-    Value::Array(_) => "Array",
-    Value::Object(_) => "Object",
-    Value::Null => "Null",
-    Value::Undefined => "Undefined",
-    Value::NaN => "NaN",
-    _ => "Unknown",
+    Value::String(_) => "string",
+    Value::Array(_) => "array",
+    Value::Object(_) => "object",
+    Value::Null => "null",
+    Value::Undefined => "undefined",
+    Value::NaN => "nan",
+    _ => "unknown",
   }
 }
