@@ -9,6 +9,7 @@
  */
 
 use crate::codegen::compile::compile;
+#[cfg(not(target_arch = "wasm32"))]
 use crate::modules::nutsy::telemetry::TelemetryClient;
 #[cfg(not(feature = "wasm"))]
 use crate::modules::versions::get_versions;
@@ -34,19 +35,22 @@ use regex::Regex;
 use serde::Serialize;
 use smol_str::SmolStr;
 use std::collections::HashSet;
+#[cfg(not(target_arch = "wasm32"))]
 use std::env;
 use std::sync::Arc;
 use std::sync::OnceLock;
 use std::sync::atomic::{AtomicBool, Ordering};
-pub static LOGGER: OnceLock<TelemetryClient> = OnceLock::new();
-pub fn get_logger() -> &'static TelemetryClient {
-  LOGGER.get_or_init(|| {
-    TelemetryClient::new(
-      env::var("LOKI_ENDPOINT"),
-      env::var("AUTH_HEADER"),
-      "lightvm",
-    )
-  })
+#[cfg(not(target_arch = "wasm32"))]
+pub static LOGGER: OnceLock<Option<TelemetryClient>> = OnceLock::new();
+#[cfg(not(target_arch = "wasm32"))]
+pub fn get_logger() -> Option<&'static TelemetryClient> {
+  LOGGER
+    .get_or_init(|| {
+      let endpoint = env::var("LOKI_ENDPOINT").ok()?;
+      let auth_header = env::var("AUTH_HEADER").ok()?;
+      Some(TelemetryClient::new(&endpoint, &auth_header, "lightvm"))
+    })
+    .as_ref()
 }
 #[derive(Debug)]
 pub struct VmEventData {
@@ -288,8 +292,10 @@ impl LightVM {
     self.last_run_options = opt_wrapper;
     self.state = VmState::Idle;
     self.emit(VmEvent::Finish, serde_json::json!({ "operation": "run" }));
-    get_logger().send_log("info", "run function runs successfully!");
-    std::thread::sleep(std::time::Duration::from_secs(1));
+    #[cfg(not(target_arch = "wasm32"))]
+    if let Some(logger) = get_logger() {
+      logger.send_log("info", "run function runs successfully!");
+    }
     Ok(result)
   }
   #[inline]

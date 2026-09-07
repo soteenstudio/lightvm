@@ -8,4 +8,5 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+#[cfg(not(target_arch = "wasm32"))]
 pub(crate) mod telemetry;
