@@ -38,7 +38,7 @@ impl TelemetryClient {
       ]
     })
   }
-  pub fn send_log(&self, level: &str, message: &str) -> Result<(), ureq::Error> {
+  pub fn send_log(&self, level: &str, message: &str) -> Result<(), Box<ureq::Error>> {
     let timestamp_ns = SystemTime::now()
       .duration_since(UNIX_EPOCH)
       .unwrap()
@@ -47,7 +47,8 @@ impl TelemetryClient {
     ureq::post(&self.endpoint)
       .set("Authorization", &self.auth_header)
       .set("Content-Type", "application/json")
-      .send_json(self.payload(level, message, timestamp_ns))?;
+      .send_json(self.payload(level, message, timestamp_ns))
+      .map_err(Box::new)?;
     Ok(())
   }
 }
@@ -86,7 +87,7 @@ mod tests {
 
     let error = client.send_log("info", "run succeeded").unwrap_err();
 
-    assert!(matches!(error, ureq::Error::Status(500, _)));
+    assert!(matches!(*error, ureq::Error::Status(500, _)));
     server.join().unwrap();
   }
 }
