@@ -18,14 +18,8 @@ fn main() {
   
   let raw = r#"[
     ["push", 5],
-    ["push", 6],
-    ["push", 7],
-    ["make_array", 3],
-    ["push", 8],
-    ["push", 9],
-    ["push", 10],
-    ["make_array", 3],
-    ["subv", "int"],
+    ["push", "k"],
+    ["add", "int"],
     ["println"]
   ]"#;
   let tools = vm.tools();
@@ -33,7 +27,7 @@ fn main() {
     .optimize_bytecode(raw);
   println!("{}", optimized_json);
   vm.load(optimized_json);
-  vm.run(None);
+  println!("{}", vm.run(None));
   
   /*let raw = r#"[
     ["push", 1],
