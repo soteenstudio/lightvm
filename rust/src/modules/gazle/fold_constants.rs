@@ -108,7 +108,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
     let instr3 = &bytecode[i + 2];
     if let (Some(val1), Some(val2)) = (extract_value(instr1), extract_value(instr2)) {
       let result = match instr3 {
-        Instructions::Add(t) => add_values(val1, val2, *t).ok(),
+        Instructions::Add(t) => add_values(val1, val2, *t, i).ok(),
         Instructions::Addv(t) => addv_values(val1, val2, *t).ok(),
         Instructions::Sub(t) => Some(sub_values(val1, val2, *t)),
         Instructions::Subv(t) => subv_values(val1, val2, *t).ok(),
@@ -153,7 +153,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
       && let Instructions::Dup = instr2
     {
       let result = match instr3 {
-        Instructions::Add(t) => add_values(val1.clone(), val1.clone(), *t).ok(),
+        Instructions::Add(t) => add_values(val1.clone(), val1.clone(), *t, i).ok(),
         Instructions::Addv(t) => addv_values(val1.clone(), val1.clone(), *t).ok(),
         Instructions::Sub(t) => Some(sub_values(val1.clone(), val1.clone(), *t)),
         Instructions::Subv(t) => subv_values(val1.clone(), val1.clone(), *t).ok(),

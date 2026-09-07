@@ -18,12 +18,25 @@ use crate::types::stack::Stack;
 use crate::types::value::Value;
 
 #[inline(always)]
-pub fn add_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Result<Value, &'static str> {
+pub fn add_values(
+  a: Value,
+  b: Value,
+  num_type: PrimitiveTypes,
+  ip: usize,
+) -> Result<Value, VMError> {
   if !a.is_number() {
-    return Err(a.type_of());
+    return Err(VMError::TypeMismatch {
+      ip,
+      expected: expected_type(num_type),
+      found: a.type_of(),
+    });
   }
   if !b.is_number() {
-    return Err(b.type_of());
+    return Err(VMError::TypeMismatch {
+      ip,
+      expected: expected_type(num_type),
+      found: b.type_of(),
+    });
   }
 
   Ok(match num_type {
@@ -34,7 +47,13 @@ pub fn add_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Result<Value,
     PrimitiveTypes::Hlf => Value::Float16(add_f16in(a.as_f16(), b.as_f16())),
     PrimitiveTypes::Flt => Value::Float32(add_f32in(a.as_f32(), b.as_f32())),
     PrimitiveTypes::Dbl => Value::Float64(add_f64in(a.as_f64(), b.as_f64())),
-    _ => return Err("invalid type"),
+    PrimitiveTypes::Str => {
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: expected_type(num_type),
+        found: a.type_of(),
+      });
+    }
   })
 }
 
@@ -47,11 +66,7 @@ pub fn add_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resul
   let b = stack.last().unwrap().clone();
   let a = stack[stack.len() - 2].clone();
 
-  let result = add_values(a, b, num_type).map_err(|found| VMError::TypeMismatch {
-    ip,
-    expected: expected_type(num_type),
-    found,
-  })?;
+  let result = add_values(a, b, num_type, ip)?;
 
   stack.pop();
   stack.pop();
@@ -90,5 +105,39 @@ mod tests {
       })
     ));
     assert_eq!(stack, original);
+  }
+
+  #[test]
+  fn add_values_reports_type_mismatch_for_string_left_operand() {
+    assert!(matches!(
+      add_values(
+        Value::String("invalid".into()),
+        Value::Int32(1),
+        PrimitiveTypes::Int,
+        21
+      ),
+      Err(VMError::TypeMismatch {
+        ip: 21,
+        expected: "Int32",
+        found: "string"
+      })
+    ));
+  }
+
+  #[test]
+  fn add_values_reports_type_mismatch_for_string_right_operand() {
+    assert!(matches!(
+      add_values(
+        Value::Int32(1),
+        Value::String("invalid".into()),
+        PrimitiveTypes::Dbl,
+        34
+      ),
+      Err(VMError::TypeMismatch {
+        ip: 34,
+        expected: "Float64",
+        found: "string"
+      })
+    ));
   }
 }
