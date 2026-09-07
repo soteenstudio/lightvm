@@ -13,9 +13,11 @@ use crate::instructions::math::arithmetic::add::{
   add_i32in::add_i32in, add_i64in::add_i64in, add_i128in::add_i128in,
 };
 use crate::modules::vmerror::VMError;
+use crate::types::expected_category::ExpectedCategory;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
+use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
 #[inline(always)]
 pub fn add_values(
   a: Value,
@@ -27,14 +29,14 @@ pub fn add_values(
   if !a.is_number() {
     return Err(VMError::TypeMismatch {
       ip,
-      expected: expected_type(num_type),
+      expected: expected_type(num_type, ExpectedCategory::All),
       found: get_type_name(a),
     });
   }
   if !b.is_number() {
     return Err(VMError::TypeMismatch {
       ip,
-      expected: expected_type(num_type),
+      expected: expected_type(num_type, ExpectedCategory::All),
       found: get_type_name(b),
     });
   }
@@ -49,7 +51,7 @@ pub fn add_values(
     PrimitiveTypes::Str => {
       return Err(VMError::TypeMismatch {
         ip,
-        expected: expected_type(num_type),
+        expected: expected_type(num_type, ExpectedCategory::All),
         found: get_type_name(a),
       });
     }
@@ -67,29 +69,6 @@ pub fn add_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resul
   stack.pop();
   stack.push(result);
   Ok(())
-}
-fn expected_type(num_type: PrimitiveTypes) -> &'static str {
-  match num_type {
-    PrimitiveTypes::Sht => "Short",
-    PrimitiveTypes::Int => "Integer",
-    PrimitiveTypes::Lng => "Long",
-    PrimitiveTypes::Oct => "Octa",
-    PrimitiveTypes::Hlf => "Half",
-    PrimitiveTypes::Flt => "Float",
-    PrimitiveTypes::Dbl => "Double",
-    PrimitiveTypes::Str => "String",
-  }
-}
-fn get_type_name(num_type: Value) -> &'static str {
-  match num_type {
-    Value::String(_) => "String",
-    Value::Array(_) => "Array",
-    Value::Object(_) => "Object",
-    Value::Null => "Null",
-    Value::Undefined => "Undefined",
-    Value::NaN => "NaN",
-    _ => "Unknown",
-  }
 }
 #[cfg(test)]
 mod tests {

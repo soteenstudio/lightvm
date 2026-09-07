@@ -8,11 +8,8 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub(crate) mod expected_type;
-pub(crate) mod fast_format;
-pub(crate) mod filtered_writer;
-pub(crate) mod format_output;
-pub(crate) mod get_time_budget;
-pub(crate) mod get_type_name;
-pub(crate) mod loader;
-pub(crate) mod map_primitive;
+pub enum ExpectedCategory {
+  Integer,
+  Float,
+  All,
+}
