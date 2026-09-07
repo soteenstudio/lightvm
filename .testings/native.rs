@@ -27,7 +27,7 @@ fn main() {
     .optimize_bytecode(raw);
   println!("{}", optimized_json);
   vm.load(optimized_json);
-  vm.run(None);
+  println!("{}", vm.run(None));
   
   /*let raw = r#"[
     ["push", 1],
