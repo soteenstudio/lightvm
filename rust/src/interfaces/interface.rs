@@ -9,6 +9,7 @@
  */
 
 use crate::codegen::compile::compile;
+use crate::modules::nutsy::telemetry::TelemetryClient;
 #[cfg(not(feature = "wasm"))]
 use crate::modules::versions::get_versions;
 use crate::modules::vmerror::VMError;
@@ -33,9 +34,20 @@ use regex::Regex;
 use serde::Serialize;
 use smol_str::SmolStr;
 use std::collections::HashSet;
+use std::env;
 use std::sync::Arc;
 use std::sync::OnceLock;
 use std::sync::atomic::{AtomicBool, Ordering};
+pub static LOGGER: OnceLock<TelemetryClient> = OnceLock::new();
+pub fn get_logger() -> &'static TelemetryClient {
+  LOGGER.get_or_init(|| {
+    TelemetryClient::new(
+      env::var("LOKI_ENDPOINT"),
+      env::var("AUTH_HEADER"),
+      "lightvm",
+    )
+  })
+}
 #[derive(Debug)]
 pub struct VmEventData {
   pub event: VmEvent,
@@ -276,6 +288,8 @@ impl LightVM {
     self.last_run_options = opt_wrapper;
     self.state = VmState::Idle;
     self.emit(VmEvent::Finish, serde_json::json!({ "operation": "run" }));
+    get_logger().send_log("info", "run function runs successfully!");
+    std::thread::sleep(std::time::Duration::from_secs(1));
     Ok(result)
   }
   #[inline]

@@ -108,7 +108,8 @@ export default {
     'atan2v',
     'powv',
     'powiv',
-    'powfv'
+    'powfv',
+    'nutsy'
   ],
   ignorePaths: [
     'node_modules/**',
