@@ -322,10 +322,7 @@ impl LightVM {
       Ok(val) => val,
       Err(err) => {
         println!("{}", err);
-        String::from(format!(
-          r#"{{"status": "error", "message": "{}"}}"#,
-          err.to_string()
-        ))
+        format!(r#"{{"status": "error", "message": "{}"}}"#, err)
       }
     }
   }

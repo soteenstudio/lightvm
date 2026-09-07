@@ -8,6 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+#[allow(dead_code)]
 pub enum ExpectedCategory {
   Integer,
   Float,
