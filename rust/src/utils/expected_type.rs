@@ -13,16 +13,16 @@ use crate::types::primitive_types::PrimitiveTypes;
 pub fn expected_type(num_type: PrimitiveTypes, category: ExpectedCategory) -> &'static str {
   match category {
     ExpectedCategory::Integer => match num_type {
-      PrimitiveTypes::Hlf => "Half",
-      PrimitiveTypes::Flt => "Float",
-      PrimitiveTypes::Dbl => "Double",
-      _ => "Unknown",
-    },
-    ExpectedCategory::Float => match num_type {
       PrimitiveTypes::Sht => "Short",
       PrimitiveTypes::Int => "Integer",
       PrimitiveTypes::Lng => "Long",
       PrimitiveTypes::Oct => "Octa",
+      _ => "Unknown",
+    },
+    ExpectedCategory::Float => match num_type {
+      PrimitiveTypes::Hlf => "Half",
+      PrimitiveTypes::Flt => "Float",
+      PrimitiveTypes::Dbl => "Double",
       _ => "Unknown",
     },
     ExpectedCategory::All => match num_type {
