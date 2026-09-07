@@ -314,9 +314,10 @@ impl LightVM {
   ///   ["val", "x"],
   ///   ["set", "x"]
   /// ]"#;
-  /// vm.load(vm.tools().optimize_bytecode(raw).clone())
-  ///   .run(None);
+  /// println!("{}", vm.load(vm.tools().optimize_bytecode(raw).clone())
+  ///   .run(None));
   /// ```
+  #[must_use = "`run` returns a JSON string carrying the execution status; check the `status` field or the caller will not see execution errors"]
   pub fn run(&mut self, options: Option<RunOptions>) -> String {
     self
       .run_internal(options)

@@ -33,7 +33,7 @@ fn main() {
     .optimize_bytecode(raw);
   println!("{}", optimized_json);
   vm.load(optimized_json);
-  vm.run(None);
+  println!("{}", vm.run(None));
   
   /*let raw = r#"[
     ["push", 1],
@@ -49,5 +49,5 @@ fn main() {
   ]"#;
   let optimized_json = tools.optimize_bytecode(raw);
   vm.load(optimized_json);
-  vm.run(None);*/
+  println!("{}", vm.run(None));*/
 }
