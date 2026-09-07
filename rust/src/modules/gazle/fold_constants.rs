@@ -110,13 +110,13 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
       let result = match instr3 {
         Instructions::Add(t) => add_values(val1, val2, *t, i).ok(),
         Instructions::Addv(t) => addv_values(val1, val2, *t).ok(),
-        Instructions::Sub(t) => Some(sub_values(val1, val2, *t)),
+        Instructions::Sub(t) => sub_values(val1, val2, *t, i).ok(),
         Instructions::Subv(t) => subv_values(val1, val2, *t).ok(),
-        Instructions::Div(t) => Some(div_values(val1, val2, *t)),
+        Instructions::Div(t) => div_values(val1, val2, *t, i).ok(),
         Instructions::Divv(t) => divv_values(val1, val2, *t).ok(),
-        Instructions::Mul(t) => Some(mul_values(val1, val2, *t)),
+        Instructions::Mul(t) => mul_values(val1, val2, *t, i).ok(),
         Instructions::Mulv(t) => mulv_values(val1, val2, *t).ok(),
-        Instructions::Mod(t) => Some(mod_values(val1, val2, *t)),
+        Instructions::Mod(t) => mod_values(val1, val2, *t, i).ok(),
         Instructions::Modv(t) => modv_values(val1, val2, *t).ok(),
         Instructions::Gt(t) => Some(gt_values(val1, val2, *t)),
         Instructions::Lt(t) => Some(lt_values(val1, val2, *t)),
@@ -132,9 +132,9 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         Instructions::Or => Some(or_values(val1, val2)),
         Instructions::Xor => Some(xor_values(val1, val2)),
         Instructions::Concat => Some(concat_values(&val1, &val2)),
-        Instructions::Pow(t) => Some(pow_values(val1, val2, *t)),
-        Instructions::Powi(t) => Some(powi_values(val1, val2, *t)),
-        Instructions::Powf(t) => Some(powf_values(val1, val2, *t)),
+        Instructions::Pow(t) => pow_values(val1, val2, *t, i).ok(),
+        Instructions::Powi(t) => powi_values(val1, val2, *t, i).ok(),
+        Instructions::Powf(t) => powf_values(val1, val2, *t, i).ok(),
         Instructions::Atan2(t) => Some(atan2_values(val1, val2, *t)),
         Instructions::Atan2v(t) => atan2v_values(val1, val2, *t).ok(),
         Instructions::Dot(t) => dot_values(val1, val2, *t).ok(),
@@ -155,13 +155,13 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
       let result = match instr3 {
         Instructions::Add(t) => add_values(val1.clone(), val1.clone(), *t, i).ok(),
         Instructions::Addv(t) => addv_values(val1.clone(), val1.clone(), *t).ok(),
-        Instructions::Sub(t) => Some(sub_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Sub(t) => sub_values(val1.clone(), val1.clone(), *t, i).ok(),
         Instructions::Subv(t) => subv_values(val1.clone(), val1.clone(), *t).ok(),
-        Instructions::Div(t) => Some(div_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Div(t) => div_values(val1.clone(), val1.clone(), *t, i).ok(),
         Instructions::Divv(t) => divv_values(val1.clone(), val1.clone(), *t).ok(),
-        Instructions::Mul(t) => Some(mul_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Mul(t) => mul_values(val1.clone(), val1.clone(), *t, i).ok(),
         Instructions::Mulv(t) => mulv_values(val1.clone(), val1.clone(), *t).ok(),
-        Instructions::Mod(t) => Some(mod_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Mod(t) => mod_values(val1.clone(), val1.clone(), *t, i).ok(),
         Instructions::Modv(t) => modv_values(val1.clone(), val1.clone(), *t).ok(),
         Instructions::Gt(t) => Some(gt_values(val1.clone(), val1.clone(), *t)),
         Instructions::Lt(t) => Some(lt_values(val1.clone(), val1.clone(), *t)),
@@ -177,9 +177,9 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         Instructions::Or => Some(or_values(val1.clone(), val1.clone())),
         Instructions::Xor => Some(xor_values(val1.clone(), val1.clone())),
         Instructions::Concat => Some(concat_values(&val1, &val1)),
-        Instructions::Pow(t) => Some(pow_values(val1.clone(), val1.clone(), *t)),
-        Instructions::Powi(t) => Some(powi_values(val1.clone(), val1.clone(), *t)),
-        Instructions::Powf(t) => Some(powf_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Pow(t) => pow_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Powi(t) => powi_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Powf(t) => powf_values(val1.clone(), val1.clone(), *t, i).ok(),
         Instructions::Atan2(t) => Some(atan2_values(val1.clone(), val1.clone(), *t)),
         Instructions::Atan2v(t) => atan2v_values(val1.clone(), val1.clone(), *t).ok(),
         Instructions::Dot(t) => dot_values(val1.clone(), val1.clone(), *t).ok(),
@@ -357,6 +357,26 @@ mod tests {
       Err(crate::modules::vmerror::VMError::TypeMismatch {
         ip: 2,
         expected: "Float64",
+        found: "string"
+      })
+    ));
+  }
+  #[test]
+  fn leaves_invalid_scalar_binary_operation_for_runtime_error() {
+    let mut bytecode = vec![
+      Instructions::PushInt32(1),
+      Instructions::PushString(SmolStr::new("invalid")),
+      Instructions::Sub(PrimitiveTypes::Int),
+      Instructions::Stop,
+    ];
+    let expected = bytecode.clone();
+    fold_constants(&mut bytecode);
+    assert_eq!(bytecode, expected);
+    assert!(matches!(
+      crate::vm::execute::execute(bytecode, &mut None, None),
+      Err(crate::modules::vmerror::VMError::TypeMismatch {
+        ip: 2,
+        expected: "Int32",
         found: "string"
       })
     ));
