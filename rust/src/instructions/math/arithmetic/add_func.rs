@@ -44,8 +44,8 @@ pub fn add_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resul
     return Err(VMError::StackUnderflow { ip, opcode: "ADD" });
   }
 
-  let b = stack.pop().unwrap();
-  let a = stack.pop().unwrap();
+  let b = stack.last().unwrap().clone();
+  let a = stack[stack.len() - 2].clone();
 
   let result = add_values(a, b, num_type).map_err(|found| VMError::TypeMismatch {
     ip,
@@ -53,6 +53,8 @@ pub fn add_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resul
     found,
   })?;
 
+  stack.pop();
+  stack.pop();
   stack.push(result);
   Ok(())
 }
@@ -67,5 +69,26 @@ fn expected_type(num_type: PrimitiveTypes) -> &'static str {
     PrimitiveTypes::Flt => "Float32",
     PrimitiveTypes::Dbl => "Float64",
     PrimitiveTypes::Str => "String",
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn add_reports_type_mismatch_without_mutating_stack() {
+    let mut stack = Stack::from_vec(vec![Value::Int32(1), Value::String("invalid".into())]);
+    let original = stack.clone();
+
+    assert!(matches!(
+      add_func(&mut stack, PrimitiveTypes::Int, 13),
+      Err(VMError::TypeMismatch {
+        ip: 13,
+        expected: "Int32",
+        found: "string"
+      })
+    ));
+    assert_eq!(stack, original);
   }
 }
