@@ -9,6 +9,7 @@
  */
 
 use std::time::{SystemTime, UNIX_EPOCH};
+
 pub struct TelemetryClient {
   endpoint: String,
   auth_header: String,
@@ -22,32 +23,70 @@ impl TelemetryClient {
       app_name: app_name.to_string(),
     }
   }
-  pub fn send_log(&self, level: &str, message: &str) {
+  fn payload(&self, level: &str, message: &str, timestamp_ns: String) -> serde_json::Value {
+    serde_json::json!({
+      "streams": [
+        {
+          "stream": {
+            "app": self.app_name,
+            "level": level
+          },
+          "values": [
+            [timestamp_ns, message]
+          ]
+        }
+      ]
+    })
+  }
+  pub fn send_log(&self, level: &str, message: &str) -> Result<(), ureq::Error> {
     let timestamp_ns = SystemTime::now()
       .duration_since(UNIX_EPOCH)
       .unwrap()
       .as_nanos()
       .to_string();
-    let payload = serde_json::json!({
-        "streams": [
-            {
-                "stream": {
-                    "app": self.app_name,
-                    "level": level
-                },
-                "values": [
-                    [timestamp_ns, message]
-                ]
-            }
-        ]
+    ureq::post(&self.endpoint)
+      .set("Authorization", &self.auth_header)
+      .set("Content-Type", "application/json")
+      .send_json(self.payload(level, message, timestamp_ns))?;
+    Ok(())
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::TelemetryClient;
+  use std::io::{Read, Write};
+  use std::net::TcpListener;
+  use std::thread;
+
+  #[test]
+  fn payload_contains_expected_fields() {
+    let client = TelemetryClient::new("http://localhost", "Bearer token", "lightvm");
+    let payload = client.payload("info", "run succeeded", "123456789".to_string());
+
+    assert_eq!(payload["streams"][0]["stream"]["app"], "lightvm");
+    assert_eq!(payload["streams"][0]["stream"]["level"], "info");
+    assert_eq!(payload["streams"][0]["values"][0][0], "123456789");
+    assert_eq!(payload["streams"][0]["values"][0][1], "run succeeded");
+  }
+
+  #[test]
+  fn send_log_returns_server_error() {
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let endpoint = format!("http://{}", listener.local_addr().unwrap());
+    let server = thread::spawn(move || {
+      let (mut stream, _) = listener.accept().unwrap();
+      let mut request = [0; 4096];
+      stream.read(&mut request).unwrap();
+      stream
+        .write_all(b"HTTP/1.1 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n")
+        .unwrap();
     });
-    let endpoint = self.endpoint.clone();
-    let auth = self.auth_header.clone();
-    std::thread::spawn(move || {
-      let _ = ureq::post(&endpoint)
-        .set("Authorization", &auth)
-        .set("Content-Type", "application/json")
-        .send_json(payload);
-    });
+    let client = TelemetryClient::new(&endpoint, "Bearer token", "lightvm");
+
+    let error = client.send_log("info", "run succeeded").unwrap_err();
+
+    assert!(matches!(error, ureq::Error::Status(500, _)));
+    server.join().unwrap();
   }
 }
