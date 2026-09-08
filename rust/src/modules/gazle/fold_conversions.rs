@@ -101,7 +101,7 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         Instructions::Cbrt(t) => Some(cbrt_values(val, *t)),
         Instructions::Neg(t) => neg_values(val, *t, i).ok(),
         Instructions::Negv(t) => negv_values(val, *t).ok(),
-        Instructions::Ln(t) => Some(ln_values(val, *t)),
+        Instructions::Ln(t) => ln_values(val, *t, i).ok(),
         Instructions::Exp(t) => Some(exp_values(val, *t)),
         _ => None,
       };
@@ -147,6 +147,25 @@ mod tests {
     let mut bytecode = vec![
       Instructions::PushString("invalid".into()),
       Instructions::Sin(PrimitiveTypes::Flt),
+      Instructions::Stop,
+    ];
+    let expected = bytecode.clone();
+    fold_conversions(&mut bytecode);
+    assert_eq!(bytecode, expected);
+    assert!(matches!(
+      crate::vm::execute::execute(bytecode, &mut None, None),
+      Err(crate::modules::vmerror::VMError::TypeMismatch {
+        ip: 1,
+        expected: "Float",
+        found: "string"
+      })
+    ));
+  }
+  #[test]
+  fn leaves_invalid_logarithm_operation_for_runtime_error() {
+    let mut bytecode = vec![
+      Instructions::PushString("invalid".into()),
+      Instructions::Ln(PrimitiveTypes::Flt),
       Instructions::Stop,
     ];
     let expected = bytecode.clone();

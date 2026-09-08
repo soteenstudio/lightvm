@@ -12,28 +12,95 @@ use crate::instructions::math::bitwise::rotate::ror::{
   ror_i16in::ror_i16in, ror_i32in::ror_i32in, ror_i64in::ror_i64in, ror_i128in::ror_i128in,
 };
 use crate::modules::vmerror::VMError;
+use crate::types::expected_category::ExpectedCategory;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
+use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
 #[inline(always)]
-pub fn ror_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
-  match num_type {
+pub fn ror_values(
+  a: Value,
+  b: Value,
+  num_type: PrimitiveTypes,
+  ip: usize,
+) -> Result<Value, VMError> {
+  if !a.is_number() {
+    return Err(VMError::TypeMismatch {
+      ip,
+      expected: expected_type(num_type, ExpectedCategory::Integer),
+      found: get_type_name(a),
+    });
+  }
+  if !b.is_number() {
+    return Err(VMError::TypeMismatch {
+      ip,
+      expected: expected_type(num_type, ExpectedCategory::Integer),
+      found: get_type_name(b),
+    });
+  }
+  Ok(match num_type {
     PrimitiveTypes::Sht => Value::Int16(ror_i16in(a.as_i16(), b.as_i16())),
     PrimitiveTypes::Int => Value::Int32(ror_i32in(a.as_i32(), b.as_i32())),
     PrimitiveTypes::Lng => Value::Int64(ror_i64in(a.as_i64(), b.as_i64())),
     PrimitiveTypes::Oct => Value::Int128(ror_i128in(a.as_i128(), b.as_i128())),
-    _ => Value::NaN,
-  }
+    _ => {
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: expected_type(num_type, ExpectedCategory::Integer),
+        found: "unknown",
+      });
+    }
+  })
 }
 #[inline]
 pub fn ror_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
-  let b = stack
-    .pop()
-    .ok_or(VMError::StackUnderflow { ip, opcode: "ROR" })?;
-  let a_ref = stack
-    .last_mut()
-    .ok_or(VMError::StackUnderflow { ip, opcode: "ROR" })?;
-  let a = std::mem::take(a_ref);
-  *a_ref = ror_values(a, b, num_type);
+  if stack.len() < 2 {
+    return Err(VMError::StackUnderflow { ip, opcode: "ROR" });
+  }
+  let result = ror_values(
+    stack[stack.len() - 2].clone(),
+    stack.last().unwrap().clone(),
+    num_type,
+    ip,
+  )?;
+  stack.pop();
+  stack.pop();
+  stack.push(result);
   Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  #[test]
+  fn invalid_operands_report_type_mismatch_and_preserve_stack() {
+    let invalid = Value::String("invalid".into());
+    assert!(matches!(
+      ror_values(invalid.clone(), Value::Int32(1), PrimitiveTypes::Int, 17),
+      Err(VMError::TypeMismatch {
+        ip: 17,
+        expected: "Integer",
+        found: "string"
+      })
+    ));
+    assert!(matches!(
+      ror_values(Value::Int32(1), invalid.clone(), PrimitiveTypes::Int, 18),
+      Err(VMError::TypeMismatch {
+        ip: 18,
+        expected: "Integer",
+        found: "string"
+      })
+    ));
+    let mut stack = Stack::from_vec(vec![Value::Int32(1), invalid]);
+    let original = stack.clone();
+    assert!(matches!(
+      ror_func(&mut stack, PrimitiveTypes::Int, 19),
+      Err(VMError::TypeMismatch {
+        ip: 19,
+        expected: "Integer",
+        found: "string"
+      })
+    ));
+    assert_eq!(stack, original);
+  }
 }

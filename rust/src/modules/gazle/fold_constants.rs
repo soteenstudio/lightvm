@@ -124,10 +124,10 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         Instructions::Le(t) => Some(le_values(val1, val2, *t)),
         Instructions::Eq(t) => Some(eq_values(val1, val2, *t)),
         Instructions::Neq(t) => Some(neq_values(val1, val2, *t)),
-        Instructions::Shl(t) => Some(shl_values(val1, val2, *t)),
-        Instructions::Shr(t) => Some(shr_values(val1, val2, *t)),
-        Instructions::Rol(t) => Some(rol_values(val1, val2, *t)),
-        Instructions::Ror(t) => Some(ror_values(val1, val2, *t)),
+        Instructions::Shl(t) => shl_values(val1, val2, *t, i).ok(),
+        Instructions::Shr(t) => shr_values(val1, val2, *t, i).ok(),
+        Instructions::Rol(t) => rol_values(val1, val2, *t, i).ok(),
+        Instructions::Ror(t) => ror_values(val1, val2, *t, i).ok(),
         Instructions::And => Some(and_values(val1, val2)),
         Instructions::Or => Some(or_values(val1, val2)),
         Instructions::Xor => Some(xor_values(val1, val2)),
@@ -169,10 +169,10 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         Instructions::Le(t) => Some(le_values(val1.clone(), val1.clone(), *t)),
         Instructions::Eq(t) => Some(eq_values(val1.clone(), val1.clone(), *t)),
         Instructions::Neq(t) => Some(neq_values(val1.clone(), val1.clone(), *t)),
-        Instructions::Shl(t) => Some(shl_values(val1.clone(), val1.clone(), *t)),
-        Instructions::Shr(t) => Some(shr_values(val1.clone(), val1.clone(), *t)),
-        Instructions::Rol(t) => Some(rol_values(val1.clone(), val1.clone(), *t)),
-        Instructions::Ror(t) => Some(ror_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Shl(t) => shl_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Shr(t) => shr_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Rol(t) => rol_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Ror(t) => ror_values(val1.clone(), val1.clone(), *t, i).ok(),
         Instructions::And => Some(and_values(val1.clone(), val1.clone())),
         Instructions::Or => Some(or_values(val1.clone(), val1.clone())),
         Instructions::Xor => Some(xor_values(val1.clone(), val1.clone())),
@@ -377,6 +377,26 @@ mod tests {
       Err(crate::modules::vmerror::VMError::TypeMismatch {
         ip: 2,
         expected: "Int32",
+        found: "string"
+      })
+    ));
+  }
+  #[test]
+  fn leaves_invalid_bitwise_operation_for_runtime_error() {
+    let mut bytecode = vec![
+      Instructions::PushInt32(1),
+      Instructions::PushString(SmolStr::new("invalid")),
+      Instructions::Shl(PrimitiveTypes::Int),
+      Instructions::Stop,
+    ];
+    let expected = bytecode.clone();
+    fold_constants(&mut bytecode);
+    assert_eq!(bytecode, expected);
+    assert!(matches!(
+      crate::vm::execute::execute(bytecode, &mut None, None),
+      Err(crate::modules::vmerror::VMError::TypeMismatch {
+        ip: 2,
+        expected: "Integer",
         found: "string"
       })
     ));
