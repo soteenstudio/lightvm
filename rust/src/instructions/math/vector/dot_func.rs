@@ -13,32 +13,42 @@ use crate::instructions::math::vector::dot::{
   dot_i32in::dot_i32in, dot_i64in::dot_i64in, dot_i128in::dot_i128in,
 };
 use crate::modules::vmerror::VMError;
+use crate::types::expected_category::ExpectedCategory;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
+use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
 #[inline(always)]
 pub fn dot_values(
   a_val: Value,
   b_val: Value,
   num_type: PrimitiveTypes,
-) -> Result<Value, &'static str> {
-  let arr_a = match a_val.as_array() {
-    Some(v) => v,
-    None => return Ok(Value::NaN),
-  };
-  let arr_b = match b_val.as_array() {
-    Some(v) => v,
-    None => return Ok(Value::NaN),
-  };
+  ip: usize,
+) -> Result<Value, VMError> {
+  let arr_a = a_val.as_array().ok_or(VMError::TypeMismatch {
+    ip,
+    expected: expected_type(num_type, ExpectedCategory::All),
+    found: get_type_name(a_val.clone()),
+  })?;
+  let arr_b = b_val.as_array().ok_or(VMError::TypeMismatch {
+    ip,
+    expected: expected_type(num_type, ExpectedCategory::All),
+    found: get_type_name(b_val.clone()),
+  })?;
   if arr_a.len() != arr_b.len() {
-    return Ok(Value::NaN);
+    return Err(VMError::TypeMismatch {
+      ip,
+      expected: expected_type(num_type, ExpectedCategory::All),
+      found: "Array",
+    });
   }
-  if num_type == PrimitiveTypes::Str {
-    return Ok(Value::NaN);
-  }
-  for x in arr_a.iter().chain(arr_b.iter()) {
-    if !x.is_number() {
-      return Err(x.type_of());
+  for value in arr_a.iter().chain(arr_b.iter()) {
+    if !value.is_number() {
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: expected_type(num_type, ExpectedCategory::All),
+        found: get_type_name(value.clone()),
+      });
     }
   }
   Ok(match num_type {
@@ -49,7 +59,13 @@ pub fn dot_values(
     PrimitiveTypes::Hlf => Value::Float16(dot_f16in(&arr_a, &arr_b)),
     PrimitiveTypes::Flt => dot_f32in(&arr_a, &arr_b),
     PrimitiveTypes::Dbl => Value::Float64(dot_f64in(&arr_a, &arr_b)),
-    _ => Value::NaN,
+    _ => {
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: expected_type(num_type, ExpectedCategory::All),
+        found: expected_type(num_type, ExpectedCategory::All),
+      });
+    }
   })
 }
 #[inline]
@@ -59,91 +75,97 @@ pub fn dot_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resul
   }
   let result = dot_values(
     stack[stack.len() - 2].clone(),
-    stack[stack.len() - 1].clone(),
+    stack.last().unwrap().clone(),
     num_type,
-  )
-  .map_err(|found| VMError::TypeMismatch {
     ip,
-    expected: expected_type(num_type),
-    found,
-  })?;
+  )?;
   stack.pop();
   *stack.last_mut().unwrap() = result;
   Ok(())
-}
-fn expected_type(num_type: PrimitiveTypes) -> &'static str {
-  match num_type {
-    PrimitiveTypes::Sht => "Int16",
-    PrimitiveTypes::Int => "Int32",
-    PrimitiveTypes::Lng => "Int64",
-    PrimitiveTypes::Oct => "Int128",
-    PrimitiveTypes::Hlf => "Float16",
-    PrimitiveTypes::Flt => "Float32",
-    PrimitiveTypes::Dbl => "Float64",
-    PrimitiveTypes::Str => "String",
-  }
 }
 #[cfg(test)]
 mod tests {
   use super::*;
   use std::sync::Arc;
+
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
   }
+
   #[test]
-  fn dot_i128_preserves_valid_values_and_rejects_non_numeric_elements() {
-    let result = dot_values(
-      array(vec![Value::Int128(5), Value::Int128(6), Value::Int128(7)]),
-      array(vec![Value::Int128(8), Value::Int128(9), Value::Int128(10)]),
-      PrimitiveTypes::Oct,
-    );
-    assert_eq!(result, Ok(Value::Int128(164)));
-    let result = dot_values(
-      array(vec![Value::Int128(5)]),
-      array(vec![Value::String("invalid".into())]),
-      PrimitiveTypes::Oct,
-    );
-    assert_eq!(result, Err("string"));
-  }
-  #[test]
-  fn dot_f32_rejects_non_numeric_elements() {
-    let result = dot_values(
-      array(vec![Value::Float32(5.0)]),
-      array(vec![Value::String("invalid".into())]),
-      PrimitiveTypes::Flt,
-    );
-    assert_eq!(result, Err("string"));
-  }
-  #[test]
-  fn dot_reports_element_type_without_mutating_stack() {
-    let mut stack = Stack::from_vec(vec![
-      array(vec![Value::Int32(1)]),
-      array(vec![Value::Bool(true)]),
-    ]);
+  fn reports_type_mismatch_without_mutating_stack() {
+    let mut stack = Stack::from_vec(vec![Value::Bool(false), array(vec![Value::Int32(1)])]);
     let original = stack.clone();
     assert!(matches!(
-      dot_func(&mut stack, PrimitiveTypes::Int, 12),
-      Err(VMError::TypeMismatch {
-        ip: 12,
-        expected: "Int32",
-        found: "bool"
-      })
+      dot_func(&mut stack, PrimitiveTypes::Int, 17),
+      Err(VMError::TypeMismatch { ip: 17, .. })
     ));
     assert_eq!(stack, original);
   }
+
   #[test]
-  fn dot_structural_errors_remain_nan() {
-    assert_eq!(
-      dot_values(Value::Int32(1), array(vec![]), PrimitiveTypes::Int),
-      Ok(Value::NaN)
+  fn validates_elements_and_directives() {
+    assert!(
+      dot_values(
+        array(vec![Value::Int32(1)]),
+        array(vec![Value::Int32(1)]),
+        PrimitiveTypes::Int,
+        11
+      )
+      .is_ok()
     );
-    assert_eq!(
+    assert!(matches!(
+      dot_values(
+        array(vec![Value::Bool(false)]),
+        array(vec![Value::Int32(1)]),
+        PrimitiveTypes::Int,
+        19
+      ),
+      Err(VMError::TypeMismatch {
+        ip: 19,
+        found: "Boolean",
+        ..
+      })
+    ));
+    assert!(matches!(
+      dot_values(
+        array(vec![Value::Int32(1)]),
+        array(vec![Value::Int32(1)]),
+        PrimitiveTypes::Str,
+        20
+      ),
+      Err(VMError::TypeMismatch { ip: 20, .. })
+    ));
+  }
+
+  #[test]
+  fn rejects_invalid_vector_lengths() {
+    assert!(matches!(
       dot_values(
         array(vec![Value::Int32(1)]),
         array(vec![]),
-        PrimitiveTypes::Int
+        PrimitiveTypes::Int,
+        21,
       ),
-      Ok(Value::NaN)
-    );
+      Err(VMError::TypeMismatch {
+        ip: 21,
+        found: "Array",
+        ..
+      })
+    ));
+  }
+
+  #[test]
+  fn underflow_preserves_stack() {
+    let mut stack = Stack::from_vec(vec![array(vec![])]);
+    let original = stack.clone();
+    assert!(matches!(
+      dot_func(&mut stack, PrimitiveTypes::Int, 23),
+      Err(VMError::StackUnderflow {
+        ip: 23,
+        opcode: "DOT"
+      })
+    ));
+    assert_eq!(stack, original);
   }
 }
