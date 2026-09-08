@@ -120,8 +120,8 @@ mod tests {
     );
     assert!(matches!(
       cross_values(
-        array(vec![Value::Bool(false)]),
-        array(vec![Value::Int32(1)]),
+        array(vec![Value::Bool(false); 3]),
+        array(vec![Value::Int32(1); 3]),
         PrimitiveTypes::Int,
         19
       ),
