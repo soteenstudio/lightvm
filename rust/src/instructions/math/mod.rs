@@ -17,3 +17,39 @@ pub(crate) mod logarithm;
 pub(crate) mod root;
 pub(crate) mod trigonometry;
 pub(crate) mod vector;
+
+#[cfg(test)]
+fn assert_unary_float_errors(
+  func: fn(
+    &mut crate::types::stack::Stack,
+    crate::types::primitive_types::PrimitiveTypes,
+    usize,
+  ) -> Result<(), crate::modules::vmerror::VMError>,
+  opcode: &'static str,
+) {
+  use crate::modules::vmerror::VMError;
+  use crate::types::primitive_types::PrimitiveTypes;
+  use crate::types::stack::Stack;
+  use crate::types::value::Value;
+
+  let mut stack = Stack::from_vec(vec![Value::String("invalid".into())]);
+  let original = stack.clone();
+  assert!(matches!(
+    func(&mut stack, PrimitiveTypes::Flt, 17),
+    Err(VMError::TypeMismatch {
+      ip: 17,
+      expected: "Float",
+      found: "string"
+    })
+  ));
+  assert_eq!(stack, original);
+
+  let mut stack = Stack::new();
+  assert!(matches!(
+    func(&mut stack, PrimitiveTypes::Flt, 23),
+    Err(VMError::StackUnderflow {
+      ip: 23,
+      opcode: found_opcode
+    }) if found_opcode == opcode
+  ));
+}

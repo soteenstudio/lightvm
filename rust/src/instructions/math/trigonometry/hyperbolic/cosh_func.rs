@@ -12,24 +12,48 @@ use crate::instructions::math::trigonometry::hyperbolic::cosh::{
   cosh_f16in::cosh_f16in, cosh_f32in::cosh_f32in, cosh_f64in::cosh_f64in,
 };
 use crate::modules::vmerror::VMError;
+use crate::types::expected_category::ExpectedCategory;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
+use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
 #[inline(always)]
-pub fn cosh_values(a: Value, num_type: PrimitiveTypes) -> Value {
-  match num_type {
+pub fn cosh_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value, VMError> {
+  if !a.is_number() {
+    return Err(VMError::TypeMismatch {
+      ip,
+      expected: expected_type(num_type, ExpectedCategory::Float),
+      found: get_type_name(a),
+    });
+  }
+  Ok(match num_type {
     PrimitiveTypes::Hlf => Value::Float16(cosh_f16in(a.as_f16())),
     PrimitiveTypes::Flt => Value::Float32(cosh_f32in(a.as_f32())),
     PrimitiveTypes::Dbl => Value::Float64(cosh_f64in(a.as_f64())),
-    _ => Value::NaN,
-  }
+    _ => {
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: expected_type(num_type, ExpectedCategory::Float),
+        found: get_type_name(a),
+      });
+    }
+  })
 }
 #[inline]
 pub fn cosh_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
-  let val_ref = stack
-    .last_mut()
+  let val = stack
+    .last()
+    .cloned()
     .ok_or(VMError::StackUnderflow { ip, opcode: "COSH" })?;
-  let val = std::mem::take(val_ref);
-  *val_ref = cosh_values(val, num_type);
+  let result = cosh_values(val, num_type, ip)?;
+  *stack.last_mut().unwrap() = result;
   Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+  #[test]
+  fn reports_errors_without_mutating_stack() {
+    crate::instructions::math::assert_unary_float_errors(super::cosh_func, "COSH");
+  }
 }
