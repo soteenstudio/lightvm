@@ -376,7 +376,7 @@ mod tests {
       crate::vm::execute::execute(bytecode, &mut None, None),
       Err(crate::modules::vmerror::VMError::TypeMismatch {
         ip: 2,
-        expected: "Int32",
+        expected: "Integer",
         found: "string"
       })
     ));

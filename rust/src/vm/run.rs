@@ -78,7 +78,7 @@ mod tests {
       run(json, &mut None),
       Err(VMError::TypeMismatch {
         ip: 2,
-        expected: "Int32",
+        expected: "Integer",
         found: "string"
       })
     ));

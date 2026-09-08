@@ -82,7 +82,7 @@ mod tests {
       div_values(invalid.clone(), Value::Int32(1), PrimitiveTypes::Int, 17),
       Err(VMError::TypeMismatch {
         ip: 17,
-        expected: "Int32",
+        expected: "Integer",
         found: "string"
       })
     ));
@@ -90,7 +90,7 @@ mod tests {
       div_values(Value::Int32(1), invalid.clone(), PrimitiveTypes::Int, 18),
       Err(VMError::TypeMismatch {
         ip: 18,
-        expected: "Int32",
+        expected: "Integer",
         found: "string"
       })
     ));
@@ -100,7 +100,7 @@ mod tests {
       div_func(&mut stack, PrimitiveTypes::Int, 19),
       Err(VMError::TypeMismatch {
         ip: 19,
-        expected: "Int32",
+        expected: "Integer",
         found: "string"
       })
     ));
