@@ -73,36 +73,36 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         Instructions::ToFloat => to_float_values(val).ok(),
         Instructions::ToDouble => to_double_values(val).ok(),
         Instructions::ToString => to_string_values(val).ok(),
-        Instructions::Sin(t) => Some(sin_values(val, *t)),
-        Instructions::Cos(t) => Some(cos_values(val, *t)),
-        Instructions::Tan(t) => Some(tan_values(val, *t)),
-        Instructions::Sinv(t) => sinv_values(val, *t).ok(),
-        Instructions::Cosv(t) => cosv_values(val, *t).ok(),
-        Instructions::Tanv(t) => tanv_values(val, *t).ok(),
-        Instructions::Asin(t) => Some(asin_values(val, *t)),
-        Instructions::Acos(t) => Some(acos_values(val, *t)),
-        Instructions::Atan(t) => Some(atan_values(val, *t)),
-        Instructions::Sinh(t) => Some(sinh_values(val, *t)),
-        Instructions::Cosh(t) => Some(cosh_values(val, *t)),
-        Instructions::Tanh(t) => Some(tanh_values(val, *t)),
-        Instructions::Sinhv(t) => sinhv_values(val, *t).ok(),
-        Instructions::Coshv(t) => coshv_values(val, *t).ok(),
-        Instructions::Tanhv(t) => tanhv_values(val, *t).ok(),
-        Instructions::Asinh(t) => Some(asinh_values(val, *t)),
-        Instructions::Acosh(t) => Some(acosh_values(val, *t)),
-        Instructions::Atanh(t) => Some(atanh_values(val, *t)),
-        Instructions::Asinv(t) => asinv_values(val, *t).ok(),
-        Instructions::Acosv(t) => acosv_values(val, *t).ok(),
-        Instructions::Atanv(t) => atanv_values(val, *t).ok(),
-        Instructions::Asinhv(t) => asinhv_values(val, *t).ok(),
-        Instructions::Acoshv(t) => acoshv_values(val, *t).ok(),
-        Instructions::Atanhv(t) => atanhv_values(val, *t).ok(),
-        Instructions::Sqrt(t) => Some(sqrt_values(val, *t)),
-        Instructions::Cbrt(t) => Some(cbrt_values(val, *t)),
-        Instructions::Neg(t) => Some(neg_values(val, *t)),
-        Instructions::Negv(t) => negv_values(val, *t).ok(),
-        Instructions::Ln(t) => Some(ln_values(val, *t)),
-        Instructions::Exp(t) => Some(exp_values(val, *t)),
+        Instructions::Sin(t) => sin_values(val, *t, i).ok(),
+        Instructions::Cos(t) => cos_values(val, *t, i).ok(),
+        Instructions::Tan(t) => tan_values(val, *t, i).ok(),
+        Instructions::Sinv(t) => sinv_values(val, *t, i).ok(),
+        Instructions::Cosv(t) => cosv_values(val, *t, i).ok(),
+        Instructions::Tanv(t) => tanv_values(val, *t, i).ok(),
+        Instructions::Asin(t) => asin_values(val, *t, i).ok(),
+        Instructions::Acos(t) => acos_values(val, *t, i).ok(),
+        Instructions::Atan(t) => atan_values(val, *t, i).ok(),
+        Instructions::Sinh(t) => sinh_values(val, *t, i).ok(),
+        Instructions::Cosh(t) => cosh_values(val, *t, i).ok(),
+        Instructions::Tanh(t) => tanh_values(val, *t, i).ok(),
+        Instructions::Sinhv(t) => sinhv_values(val, *t, i).ok(),
+        Instructions::Coshv(t) => coshv_values(val, *t, i).ok(),
+        Instructions::Tanhv(t) => tanhv_values(val, *t, i).ok(),
+        Instructions::Asinh(t) => asinh_values(val, *t, i).ok(),
+        Instructions::Acosh(t) => acosh_values(val, *t, i).ok(),
+        Instructions::Atanh(t) => atanh_values(val, *t, i).ok(),
+        Instructions::Asinv(t) => asinv_values(val, *t, i).ok(),
+        Instructions::Acosv(t) => acosv_values(val, *t, i).ok(),
+        Instructions::Atanv(t) => atanv_values(val, *t, i).ok(),
+        Instructions::Asinhv(t) => asinhv_values(val, *t, i).ok(),
+        Instructions::Acoshv(t) => acoshv_values(val, *t, i).ok(),
+        Instructions::Atanhv(t) => atanhv_values(val, *t, i).ok(),
+        Instructions::Sqrt(t) => sqrt_values(val, *t, i).ok(),
+        Instructions::Cbrt(t) => cbrt_values(val, *t, i).ok(),
+        Instructions::Neg(t) => neg_values(val, *t, i).ok(),
+        Instructions::Negv(t) => negv_values(val, *t, i).ok(),
+        Instructions::Ln(t) => ln_values(val, *t, i).ok(),
+        Instructions::Exp(t) => exp_values(val, *t, i).ok(),
         _ => None,
       };
       if let Some(res_val) = folded {
@@ -141,5 +141,43 @@ mod tests {
     let expected = invalid.clone();
     fold_conversions(&mut invalid);
     assert_eq!(invalid, expected);
+  }
+  #[test]
+  fn leaves_invalid_scalar_unary_operation_for_runtime_error() {
+    let mut bytecode = vec![
+      Instructions::PushString("invalid".into()),
+      Instructions::Sin(PrimitiveTypes::Flt),
+      Instructions::Stop,
+    ];
+    let expected = bytecode.clone();
+    fold_conversions(&mut bytecode);
+    assert_eq!(bytecode, expected);
+    assert!(matches!(
+      crate::vm::execute::execute(bytecode, &mut None, None),
+      Err(crate::modules::vmerror::VMError::TypeMismatch {
+        ip: 1,
+        expected: "Float",
+        found: "String"
+      })
+    ));
+  }
+  #[test]
+  fn leaves_invalid_logarithm_operation_for_runtime_error() {
+    let mut bytecode = vec![
+      Instructions::PushString("invalid".into()),
+      Instructions::Ln(PrimitiveTypes::Flt),
+      Instructions::Stop,
+    ];
+    let expected = bytecode.clone();
+    fold_conversions(&mut bytecode);
+    assert_eq!(bytecode, expected);
+    assert!(matches!(
+      crate::vm::execute::execute(bytecode, &mut None, None),
+      Err(crate::modules::vmerror::VMError::TypeMismatch {
+        ip: 1,
+        expected: "Float",
+        found: "String"
+      })
+    ));
   }
 }

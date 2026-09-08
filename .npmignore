@@ -6,3 +6,4 @@ esbuild.config.js
 package-lock.json
 *.tgz
 **/*.map
+.env

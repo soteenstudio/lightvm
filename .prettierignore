@@ -6,3 +6,4 @@ binaries
 .git
 *.md
 *.tgz
+.env

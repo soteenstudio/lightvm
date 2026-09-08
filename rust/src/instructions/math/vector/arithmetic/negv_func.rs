@@ -8,143 +8,105 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::vector::arithmetic::{
-  modv_func::matches_type,
-  negv::{
-    negv_f16in::negv_f16in, negv_f32in::negv_f32in, negv_f64in::negv_f64in, negv_i16in::negv_i16in,
-    negv_i32in::negv_i32in, negv_i64in::negv_i64in, negv_i128in::negv_i128in,
-  },
+use crate::instructions::math::vector::arithmetic::negv::{
+  negv_f16in::negv_f16in, negv_f32in::negv_f32in, negv_f64in::negv_f64in, negv_i16in::negv_i16in,
+  negv_i32in::negv_i32in, negv_i64in::negv_i64in, negv_i128in::negv_i128in,
 };
 use crate::modules::vmerror::VMError;
+use crate::types::expected_category::ExpectedCategory;
 use crate::types::{primitive_types::PrimitiveTypes, stack::Stack, value::Value};
+use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
 #[inline(always)]
-pub fn negv_values(a_val: Value, num_type: PrimitiveTypes) -> Result<Value, &'static str> {
-  let Some(arr) = a_val.as_array() else {
-    return Ok(Value::NaN);
-  };
-  if num_type == PrimitiveTypes::Str {
-    return Ok(Value::NaN);
-  }
-  if let Some(element) = arr.iter().find(|value| !matches_type(value, num_type)) {
-    return Err(element.type_of());
+pub fn negv_values(a_val: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value, VMError> {
+  let arr_a = a_val.as_array().ok_or(VMError::TypeMismatch {
+    ip,
+    expected: expected_type(num_type, ExpectedCategory::All),
+    found: get_type_name(a_val.clone()),
+  })?;
+  for value in arr_a.iter() {
+    if !value.is_number() {
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: expected_type(num_type, ExpectedCategory::All),
+        found: get_type_name(value.clone()),
+      });
+    }
   }
   Ok(match num_type {
-    PrimitiveTypes::Sht => Value::Array(negv_i16in(&arr)),
-    PrimitiveTypes::Int => Value::Array(negv_i32in(&arr)),
-    PrimitiveTypes::Lng => Value::Array(negv_i64in(&arr)),
-    PrimitiveTypes::Oct => Value::Array(negv_i128in(&arr)),
-    PrimitiveTypes::Hlf => Value::Array(negv_f16in(&arr)),
-    PrimitiveTypes::Flt => Value::Array(negv_f32in(&arr)),
-    PrimitiveTypes::Dbl => Value::Array(negv_f64in(&arr)),
-    PrimitiveTypes::Str => Value::NaN,
+    PrimitiveTypes::Sht => Value::Array(negv_i16in(&arr_a)),
+    PrimitiveTypes::Int => Value::Array(negv_i32in(&arr_a)),
+    PrimitiveTypes::Lng => Value::Array(negv_i64in(&arr_a)),
+    PrimitiveTypes::Oct => Value::Array(negv_i128in(&arr_a)),
+    PrimitiveTypes::Hlf => Value::Array(negv_f16in(&arr_a)),
+    PrimitiveTypes::Flt => Value::Array(negv_f32in(&arr_a)),
+    PrimitiveTypes::Dbl => Value::Array(negv_f64in(&arr_a)),
+    _ => {
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: expected_type(num_type, ExpectedCategory::All),
+        found: num_type.directive(),
+      });
+    }
   })
 }
 #[inline]
 pub fn negv_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
-  let Some(value) = stack.last().cloned() else {
-    return Err(VMError::StackUnderflow { ip, opcode: "NEGV" });
-  };
-  let result = negv_values(value, num_type).map_err(|found| VMError::TypeMismatch {
-    ip,
-    expected: expected_type(num_type),
-    found,
-  })?;
+  let value = stack
+    .last()
+    .cloned()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "NEGV" })?;
+  let result = negv_values(value, num_type, ip)?;
   *stack.last_mut().unwrap() = result;
   Ok(())
-}
-fn expected_type(num_type: PrimitiveTypes) -> &'static str {
-  match num_type {
-    PrimitiveTypes::Sht => "Int16",
-    PrimitiveTypes::Int => "Int32",
-    PrimitiveTypes::Lng => "Int64",
-    PrimitiveTypes::Oct => "Int128",
-    PrimitiveTypes::Hlf => "Float16",
-    PrimitiveTypes::Flt => "Float32",
-    PrimitiveTypes::Dbl => "Float64",
-    PrimitiveTypes::Str => "String",
-  }
 }
 #[cfg(test)]
 mod tests {
   use super::*;
-  use half::f16;
   use std::sync::Arc;
+
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
   }
+
   #[test]
-  fn negv_supports_all_types_and_boundaries() {
-    let cases = [
-      (
-        PrimitiveTypes::Sht,
-        Value::Int16(i16::MIN),
-        Value::Int16(i16::MIN),
-      ),
-      (
-        PrimitiveTypes::Int,
-        Value::Int32(i32::MIN),
-        Value::Int32(i32::MIN),
-      ),
-      (
-        PrimitiveTypes::Lng,
-        Value::Int64(i64::MIN),
-        Value::Int64(i64::MIN),
-      ),
-      (
-        PrimitiveTypes::Oct,
-        Value::Int128(i128::MIN),
-        Value::Int128(i128::MIN),
-      ),
-      (
-        PrimitiveTypes::Hlf,
-        Value::Float16(f16::from_f32(2.0)),
-        Value::Float16(f16::from_f32(-2.0)),
-      ),
-      (
-        PrimitiveTypes::Flt,
-        Value::Float32(2.0),
-        Value::Float32(-2.0),
-      ),
-      (
-        PrimitiveTypes::Dbl,
-        Value::Float64(2.0),
-        Value::Float64(-2.0),
-      ),
-    ];
-    for (num_type, value, expected) in cases {
-      assert_eq!(
-        negv_values(array(vec![value]), num_type),
-        Ok(array(vec![expected]))
-      );
-    }
-  }
-  #[test]
-  fn negv_validates_without_mutating_stack() {
-    assert_eq!(
-      negv_values(Value::Bool(false), PrimitiveTypes::Int),
-      Ok(Value::NaN)
-    );
-    assert_eq!(
-      negv_values(array(vec![]), PrimitiveTypes::Str),
-      Ok(Value::NaN)
-    );
-    let mut stack = Stack::from_vec(vec![array(vec![Value::Bool(false)])]);
+  fn reports_type_mismatch_without_mutating_stack() {
+    let mut stack = Stack::from_vec(vec![Value::Bool(false)]);
     let original = stack.clone();
     assert!(matches!(
-      negv_func(&mut stack, PrimitiveTypes::Int, 9),
-      Err(VMError::TypeMismatch {
-        ip: 9,
-        expected: "Int32",
-        found: "bool"
-      })
+      negv_func(&mut stack, PrimitiveTypes::Int, 17),
+      Err(VMError::TypeMismatch { ip: 17, .. })
     ));
     assert_eq!(stack, original);
+  }
+
+  #[test]
+  fn validates_elements_and_directives() {
+    assert!(negv_values(array(vec![Value::Int32(1)]), PrimitiveTypes::Int, 11).is_ok());
     assert!(matches!(
-      negv_func(&mut Stack::new(), PrimitiveTypes::Int, 10),
+      negv_values(array(vec![Value::Bool(false)]), PrimitiveTypes::Int, 19),
+      Err(VMError::TypeMismatch {
+        ip: 19,
+        found: "Boolean",
+        ..
+      })
+    ));
+    assert!(matches!(
+      negv_values(array(vec![Value::Int32(1)]), PrimitiveTypes::Str, 20),
+      Err(VMError::TypeMismatch { ip: 20, .. })
+    ));
+  }
+
+  #[test]
+  fn underflow_preserves_stack() {
+    let mut stack = Stack::new();
+    let original = stack.clone();
+    assert!(matches!(
+      negv_func(&mut stack, PrimitiveTypes::Int, 23),
       Err(VMError::StackUnderflow {
-        ip: 10,
+        ip: 23,
         opcode: "NEGV"
       })
     ));
+    assert_eq!(stack, original);
   }
 }

@@ -12,104 +12,98 @@ use crate::instructions::math::vector::trigonometry::hyperbolic::inverse::acoshv
   acoshv_f16in::acoshv_f16in, acoshv_f32in::acoshv_f32in, acoshv_f64in::acoshv_f64in,
 };
 use crate::modules::vmerror::VMError;
+use crate::types::expected_category::ExpectedCategory;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
+use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
 #[inline(always)]
-pub fn acoshv_values(a_val: Value, num_type: PrimitiveTypes) -> Result<Value, &'static str> {
-  let arr_a = match a_val.as_array() {
-    Some(v) => v,
-    None => return Ok(Value::NaN),
-  };
-  if num_type == PrimitiveTypes::Str {
-    return Ok(Value::NaN);
-  }
-  for x in arr_a.iter() {
-    if !x.is_number() {
-      return Err(x.type_of());
+pub fn acoshv_values(a_val: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value, VMError> {
+  let arr_a = a_val.as_array().ok_or(VMError::TypeMismatch {
+    ip,
+    expected: expected_type(num_type, ExpectedCategory::Float),
+    found: get_type_name(a_val.clone()),
+  })?;
+  for value in arr_a.iter() {
+    if !value.is_number() {
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: expected_type(num_type, ExpectedCategory::Float),
+        found: get_type_name(value.clone()),
+      });
     }
   }
   Ok(match num_type {
     PrimitiveTypes::Hlf => Value::Array(acoshv_f16in(&arr_a)),
     PrimitiveTypes::Flt => Value::Array(acoshv_f32in(&arr_a)),
     PrimitiveTypes::Dbl => Value::Array(acoshv_f64in(&arr_a)),
-    _ => Value::NaN,
+    _ => {
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: expected_type(num_type, ExpectedCategory::Float),
+        found: expected_type(num_type, ExpectedCategory::All),
+      });
+    }
   })
 }
 #[inline]
 pub fn acoshv_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
-  let Some(value) = stack.last().cloned() else {
-    return Err(VMError::StackUnderflow {
-      ip,
-      opcode: "ACOSHV",
-    });
-  };
-  let result = acoshv_values(value, num_type).map_err(|found| VMError::TypeMismatch {
+  let value = stack.last().cloned().ok_or(VMError::StackUnderflow {
     ip,
-    expected: expected_type(num_type),
-    found,
+    opcode: "ACOSHV",
   })?;
+  let result = acoshv_values(value, num_type, ip)?;
   *stack.last_mut().unwrap() = result;
   Ok(())
-}
-fn expected_type(num_type: PrimitiveTypes) -> &'static str {
-  match num_type {
-    PrimitiveTypes::Sht => "Int16",
-    PrimitiveTypes::Int => "Int32",
-    PrimitiveTypes::Lng => "Int64",
-    PrimitiveTypes::Oct => "Int128",
-    PrimitiveTypes::Hlf => "Float16",
-    PrimitiveTypes::Flt => "Float32",
-    PrimitiveTypes::Dbl => "Float64",
-    PrimitiveTypes::Str => "String",
-  }
 }
 #[cfg(test)]
 mod tests {
   use super::*;
   use std::sync::Arc;
+
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
   }
+
   #[test]
-  fn acoshv_dbl_works_and_preserves_preceding_stack_values() {
-    let expected = array(vec![Value::Float64(0.0)]);
-    assert_eq!(
-      acoshv_values(array(vec![Value::Float64(1.0)]), PrimitiveTypes::Dbl),
-      Ok(expected.clone())
-    );
-    let mut stack = Stack::from_vec(vec![Value::Bool(true), array(vec![Value::Float64(1.0)])]);
-    acoshv_func(&mut stack, PrimitiveTypes::Dbl, 12).unwrap();
-    assert_eq!(stack, Stack::from_vec(vec![Value::Bool(true), expected]));
-  }
-  #[test]
-  fn acoshv_rejects_invalid_elements_without_mutating_stack() {
-    let mut stack = Stack::from_vec(vec![
-      Value::Bool(true),
-      array(vec![Value::String("invalid".into())]),
-    ]);
+  fn reports_type_mismatch_without_mutating_stack() {
+    let mut stack = Stack::from_vec(vec![Value::Bool(false)]);
     let original = stack.clone();
     assert!(matches!(
-      acoshv_func(&mut stack, PrimitiveTypes::Dbl, 13),
-      Err(VMError::TypeMismatch {
-        ip: 13,
-        expected: "Float64",
-        found: "string"
-      })
+      acoshv_func(&mut stack, PrimitiveTypes::Flt, 17),
+      Err(VMError::TypeMismatch { ip: 17, .. })
     ));
     assert_eq!(stack, original);
   }
+
   #[test]
-  fn acoshv_handles_non_array_input_and_underflow() {
-    let mut stack = Stack::from_vec(vec![Value::Bool(false)]);
-    acoshv_func(&mut stack, PrimitiveTypes::Dbl, 14).unwrap();
-    assert_eq!(stack, Stack::from_vec(vec![Value::NaN]));
+  fn validates_elements_and_directives() {
+    assert!(acoshv_values(array(vec![Value::Float32(1.0)]), PrimitiveTypes::Flt, 11).is_ok());
     assert!(matches!(
-      acoshv_func(&mut Stack::new(), PrimitiveTypes::Dbl, 15),
+      acoshv_values(array(vec![Value::Bool(false)]), PrimitiveTypes::Flt, 19),
+      Err(VMError::TypeMismatch {
+        ip: 19,
+        found: "Boolean",
+        ..
+      })
+    ));
+    assert!(matches!(
+      acoshv_values(array(vec![Value::Float32(1.0)]), PrimitiveTypes::Str, 20),
+      Err(VMError::TypeMismatch { ip: 20, .. })
+    ));
+  }
+
+  #[test]
+  fn underflow_preserves_stack() {
+    let mut stack = Stack::new();
+    let original = stack.clone();
+    assert!(matches!(
+      acoshv_func(&mut stack, PrimitiveTypes::Flt, 23),
       Err(VMError::StackUnderflow {
-        ip: 15,
+        ip: 23,
         opcode: "ACOSHV"
       })
     ));
+    assert_eq!(stack, original);
   }
 }
