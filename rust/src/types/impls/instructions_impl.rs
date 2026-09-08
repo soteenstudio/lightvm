@@ -196,15 +196,7 @@ impl Instructions {
         } else if let Some(b) = val.as_bool() {
           Value::Bool(b)
         } else if let Some(s) = val.as_str() {
-          if let Ok(big_n) = s.parse::<i128>() {
-            if big_n >= i64::MIN as i128 && big_n <= i64::MAX as i128 {
-              Value::Int64(big_n as i64)
-            } else {
-              Value::Int128(big_n)
-            }
-          } else {
-            Value::String(SmolStr::new(s))
-          }
+          Value::String(SmolStr::new(s))
         } else if let Some(obj) = val.as_object() {
           let mut map = AHashMap::with_capacity(obj.len());
           for (k, v) in obj {

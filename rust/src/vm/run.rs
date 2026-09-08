@@ -72,6 +72,18 @@ mod tests {
     assert!(result.is_err());
   }
   #[test]
+  fn test_run_rejects_quoted_numeric_add_operand() {
+    let json = r#"[["push", 5], ["push", "5"], ["add", "int"]]"#;
+    assert!(matches!(
+      run(json, &mut None),
+      Err(VMError::TypeMismatch {
+        ip: 2,
+        expected: "Int32",
+        found: "string"
+      })
+    ));
+  }
+  #[test]
   fn test_run_with_malformed_json() {
     let json = r#"not valid json at all"#;
     let result = run(json, &mut None);
