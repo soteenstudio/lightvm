@@ -12,7 +12,6 @@ pub mod capability;
 pub mod compile_config;
 pub(crate) mod control_flow_signal;
 pub mod error_options;
-pub(crate) mod expected_category;
 pub mod file_type;
 pub(crate) mod impls;
 pub(crate) mod info_vm;

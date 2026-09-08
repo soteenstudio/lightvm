@@ -318,13 +318,9 @@ impl LightVM {
   ///   .run(None);
   /// ```
   pub fn run(&mut self, options: Option<RunOptions>) -> String {
-    match self.run_internal(options) {
-      Ok(val) => val,
-      Err(err) => {
-        println!("{}", err);
-        format!(r#"{{"status": "error", "message": "{}"}}"#, err)
-      }
-    }
+    self
+      .run_internal(options)
+      .unwrap_or_else(|e| format!(r#"{{"status": "error", "message": "{}"}}"#, e))
   }
   pub fn compile(&mut self, config: CompileConfig) -> String {
     let output_path = if matches!(config.file_type, FileType::Assembly) {
