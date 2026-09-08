@@ -44,7 +44,7 @@ pub fn negv_values(a_val: Value, num_type: PrimitiveTypes, ip: usize) -> Result<
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::All),
-        found: expected_type(num_type, ExpectedCategory::All),
+        found: num_type.directive(),
       });
     }
   })

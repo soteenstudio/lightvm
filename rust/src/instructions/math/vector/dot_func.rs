@@ -63,7 +63,7 @@ pub fn dot_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::All),
-        found: expected_type(num_type, ExpectedCategory::All),
+        found: num_type.directive(),
       });
     }
   })
