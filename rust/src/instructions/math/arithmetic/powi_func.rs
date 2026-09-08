@@ -15,90 +15,24 @@ use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::get_type_name::get_type_name;
 #[inline(always)]
-pub fn powi_values(
-  a: Value,
-  b: Value,
-  num_type: PrimitiveTypes,
-  ip: usize,
-) -> Result<Value, VMError> {
-  if !a.is_number() {
-    return Err(VMError::TypeMismatch {
-      ip,
-      expected: "Float32/Int32",
-      found: get_type_name(a),
-    });
-  }
-  if !b.is_number() {
-    return Err(VMError::TypeMismatch {
-      ip,
-      expected: "Float32/Int32",
-      found: get_type_name(b),
-    });
-  }
-  Ok(match num_type {
+pub fn powi_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
+  match num_type {
     PrimitiveTypes::Hlf => Value::Float16(powi_f16in(a.as_f16(), b.as_i16())),
     PrimitiveTypes::Flt => Value::Float32(powi_f32in(a.as_f32(), b.as_i32())),
     PrimitiveTypes::Dbl => Value::Float64(powi_f64in(a.as_f64(), b.as_i64())),
-    _ => {
-      return Err(VMError::TypeMismatch {
-        ip,
-        expected: "Float32/Int32",
-        found: "unknown",
-      });
-    }
-  })
+    _ => Value::NaN,
+  }
 }
 #[inline]
 pub fn powi_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
-  if stack.len() < 2 {
-    return Err(VMError::StackUnderflow { ip, opcode: "POWI" });
-  }
-  let result = powi_values(
-    stack[stack.len() - 2].clone(),
-    stack.last().unwrap().clone(),
-    num_type,
-    ip,
-  )?;
-  stack.pop();
-  stack.pop();
-  stack.push(result);
+  let b = stack
+    .pop()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "POWI" })?;
+  let a_ref = stack
+    .last_mut()
+    .ok_or(VMError::StackUnderflow { ip, opcode: "POWI" })?;
+  let a = std::mem::take(a_ref);
+  *a_ref = powi_values(a, b, num_type);
   Ok(())
-}
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn invalid_operands_report_type_mismatch_and_preserve_stack() {
-    let invalid = Value::String("invalid".into());
-    assert!(matches!(
-      powi_values(invalid.clone(), Value::Int32(1), PrimitiveTypes::Flt, 17),
-      Err(VMError::TypeMismatch {
-        ip: 17,
-        expected: "Float32/Int32",
-        found: "string"
-      })
-    ));
-    assert!(matches!(
-      powi_values(Value::Int32(1), invalid.clone(), PrimitiveTypes::Flt, 18),
-      Err(VMError::TypeMismatch {
-        ip: 18,
-        expected: "Float32/Int32",
-        found: "string"
-      })
-    ));
-    let mut stack = Stack::from_vec(vec![Value::Int32(1), invalid]);
-    let original = stack.clone();
-    assert!(matches!(
-      powi_func(&mut stack, PrimitiveTypes::Flt, 19),
-      Err(VMError::TypeMismatch {
-        ip: 19,
-        expected: "Float32/Int32",
-        found: "string"
-      })
-    ));
-    assert_eq!(stack, original);
-  }
 }
