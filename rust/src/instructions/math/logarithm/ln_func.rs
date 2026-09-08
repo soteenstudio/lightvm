@@ -12,24 +12,68 @@ use crate::instructions::math::logarithm::ln::{
   ln_f16in::ln_f16in, ln_f32in::ln_f32in, ln_f64in::ln_f64in,
 };
 use crate::modules::vmerror::VMError;
+use crate::types::expected_category::ExpectedCategory;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
+use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
 #[inline(always)]
-pub fn ln_values(a: Value, num_type: PrimitiveTypes) -> Value {
-  match num_type {
+pub fn ln_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value, VMError> {
+  if !a.is_number() {
+    return Err(VMError::TypeMismatch {
+      ip,
+      expected: expected_type(num_type, ExpectedCategory::Float),
+      found: get_type_name(a),
+    });
+  }
+  Ok(match num_type {
     PrimitiveTypes::Hlf => Value::Float16(ln_f16in(a.as_f16())),
     PrimitiveTypes::Flt => Value::Float32(ln_f32in(a.as_f32())),
     PrimitiveTypes::Dbl => Value::Float64(ln_f64in(a.as_f64())),
-    _ => Value::NaN,
-  }
+    _ => {
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: expected_type(num_type, ExpectedCategory::Float),
+        found: "unknown",
+      });
+    }
+  })
 }
 #[inline]
 pub fn ln_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
-  let val_ref = stack
-    .last_mut()
+  let val = stack
+    .last()
+    .cloned()
     .ok_or(VMError::StackUnderflow { ip, opcode: "LN" })?;
-  let val = std::mem::take(val_ref);
-  *val_ref = ln_values(val, num_type);
+  let result = ln_values(val, num_type, ip)?;
+  *stack.last_mut().unwrap() = result;
   Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  #[test]
+  fn invalid_operand_reports_type_mismatch_and_preserves_stack() {
+    let invalid = Value::String("invalid".into());
+    assert!(matches!(
+      ln_values(invalid.clone(), PrimitiveTypes::Flt, 17),
+      Err(VMError::TypeMismatch {
+        ip: 17,
+        expected: "Float",
+        found: "string"
+      })
+    ));
+    let mut stack = Stack::from_vec(vec![invalid]);
+    let original = stack.clone();
+    assert!(matches!(
+      ln_func(&mut stack, PrimitiveTypes::Flt, 18),
+      Err(VMError::TypeMismatch {
+        ip: 18,
+        expected: "Float",
+        found: "string"
+      })
+    ));
+    assert_eq!(stack, original);
+  }
 }
