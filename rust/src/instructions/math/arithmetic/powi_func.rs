@@ -16,6 +16,16 @@ use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::get_type_name::get_type_name;
+
+fn expected_type(num_type: PrimitiveTypes) -> &'static str {
+  match num_type {
+    PrimitiveTypes::Hlf => "Float16/Int16",
+    PrimitiveTypes::Flt => "Float32/Int32",
+    PrimitiveTypes::Dbl => "Float64/Int64",
+    _ => "Float32/Int32",
+  }
+}
+
 #[inline(always)]
 pub fn powi_values(
   a: Value,
@@ -26,14 +36,14 @@ pub fn powi_values(
   if !a.is_number() {
     return Err(VMError::TypeMismatch {
       ip,
-      expected: "Float32/Int32",
+      expected: expected_type(num_type),
       found: get_type_name(a),
     });
   }
   if !b.is_number() {
     return Err(VMError::TypeMismatch {
       ip,
-      expected: "Float32/Int32",
+      expected: expected_type(num_type),
       found: get_type_name(b),
     });
   }
@@ -100,5 +110,26 @@ mod tests {
       })
     ));
     assert_eq!(stack, original);
+  }
+
+  #[test]
+  fn invalid_operands_report_directive_specific_expected_types() {
+    let invalid = Value::String("invalid".into());
+    assert!(matches!(
+      powi_values(invalid.clone(), Value::Int16(1), PrimitiveTypes::Hlf, 20),
+      Err(VMError::TypeMismatch {
+        ip: 20,
+        expected: "Float16/Int16",
+        found: "string"
+      })
+    ));
+    assert!(matches!(
+      powi_values(Value::Float64(1.0), invalid, PrimitiveTypes::Dbl, 21),
+      Err(VMError::TypeMismatch {
+        ip: 21,
+        expected: "Float64/Int64",
+        found: "string"
+      })
+    ));
   }
 }

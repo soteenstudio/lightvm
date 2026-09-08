@@ -51,7 +51,7 @@ pub fn mod_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: "number",
-        found: "string",
+        found: expected_type(num_type, ExpectedCategory::All),
       });
     }
   })

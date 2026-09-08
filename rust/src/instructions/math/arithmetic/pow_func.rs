@@ -47,7 +47,7 @@ pub fn pow_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Integer),
-        found: "unknown",
+        found: expected_type(num_type, ExpectedCategory::All),
       });
     }
   })
