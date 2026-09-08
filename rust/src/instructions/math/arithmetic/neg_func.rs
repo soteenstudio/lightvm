@@ -64,7 +64,7 @@ mod tests {
       neg_values(invalid.clone(), PrimitiveTypes::Int, 17),
       Err(VMError::TypeMismatch {
         ip: 17,
-        expected: "Int32",
+        expected: "Integer",
         found: "string"
       })
     ));
@@ -74,7 +74,7 @@ mod tests {
       neg_func(&mut stack, PrimitiveTypes::Int, 18),
       Err(VMError::TypeMismatch {
         ip: 18,
-        expected: "Int32",
+        expected: "Integer",
         found: "string"
       })
     ));

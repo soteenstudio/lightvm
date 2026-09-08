@@ -80,7 +80,7 @@ mod tests {
       add_func(&mut stack, PrimitiveTypes::Int, 13),
       Err(VMError::TypeMismatch {
         ip: 13,
-        expected: "Int32",
+        expected: "Integer",
         found: "string"
       })
     ));
@@ -97,7 +97,7 @@ mod tests {
       ),
       Err(VMError::TypeMismatch {
         ip: 21,
-        expected: "Int32",
+        expected: "Integer",
         found: "string"
       })
     ));
@@ -113,7 +113,7 @@ mod tests {
       ),
       Err(VMError::TypeMismatch {
         ip: 34,
-        expected: "Float64",
+        expected: "Double",
         found: "string"
       })
     ));
