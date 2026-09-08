@@ -85,7 +85,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 17,
         expected: "Float32/Int32",
-        found: "string"
+        found: "String"
       })
     ));
     assert!(matches!(
@@ -93,7 +93,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 18,
         expected: "Float32/Int32",
-        found: "string"
+        found: "String"
       })
     ));
     let mut stack = Stack::from_vec(vec![Value::Int32(1), invalid]);
@@ -103,7 +103,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 19,
         expected: "Float32/Int32",
-        found: "string"
+        found: "String"
       })
     ));
     assert_eq!(stack, original);
@@ -116,7 +116,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 20,
         expected: "Float16/Int16",
-        found: "string"
+        found: "String"
       })
     ));
     assert!(matches!(
@@ -124,7 +124,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 21,
         expected: "Float64/Int64",
-        found: "string"
+        found: "String"
       })
     ));
   }

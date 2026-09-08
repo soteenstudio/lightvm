@@ -60,7 +60,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 17,
         expected: "Float",
-        found: "string"
+        found: "String"
       })
     ));
     let mut stack = Stack::from_vec(vec![invalid]);
@@ -70,7 +70,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 18,
         expected: "Float",
-        found: "string"
+        found: "String"
       })
     ));
     assert_eq!(stack, original);

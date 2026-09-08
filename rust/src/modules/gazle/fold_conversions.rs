@@ -157,7 +157,7 @@ mod tests {
       Err(crate::modules::vmerror::VMError::TypeMismatch {
         ip: 1,
         expected: "Float",
-        found: "string"
+        found: "String"
       })
     ));
   }
@@ -176,7 +176,7 @@ mod tests {
       Err(crate::modules::vmerror::VMError::TypeMismatch {
         ip: 1,
         expected: "Float",
-        found: "string"
+        found: "String"
       })
     ));
   }

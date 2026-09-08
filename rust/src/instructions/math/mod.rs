@@ -37,7 +37,7 @@ fn assert_unary_float_errors(
     Err(VMError::TypeMismatch {
       ip: 17,
       expected: "Float",
-      found: "string"
+      found: "String"
     })
   ));
   assert_eq!(stack, original);
