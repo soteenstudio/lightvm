@@ -49,7 +49,6 @@ pub fn acosh_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Res
   *stack.last_mut().unwrap() = result;
   Ok(())
 }
-
 #[cfg(test)]
 mod tests {
   #[test]

@@ -49,7 +49,6 @@ pub fn ln_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result
   *stack.last_mut().unwrap() = result;
   Ok(())
 }
-
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -76,7 +75,6 @@ mod tests {
     ));
     assert_eq!(stack, original);
   }
-
   #[test]
   fn unsupported_directive_reports_numeric_operand_type() {
     assert!(matches!(

@@ -11,22 +11,20 @@
 use crate::types::value::Value;
 pub fn get_type_name(num_type: Value) -> &'static str {
   match num_type {
-    Value::String(_) => "string",
-    Value::Array(_) => "array",
-    Value::Object(_) => "object",
-    Value::Bool(_) => "bool",
-    Value::Marker(_) => "marker",
-    Value::Null => "null",
-    Value::Undefined => "undefined",
-    Value::NaN => "nan",
-    _ => "unknown",
+    Value::String(_) => "String",
+    Value::Array(_) => "Array",
+    Value::Object(_) => "Object",
+    Value::Bool(_) => "Boolean",
+    Value::Marker(_) => "Marker",
+    Value::Null => "Null",
+    Value::Undefined => "Undefined",
+    Value::NaN => "NaN",
+    _ => "Unknown",
   }
 }
-
 #[cfg(test)]
 mod tests {
   use super::*;
-
   #[test]
   fn reports_bool_and_marker_types() {
     assert_eq!(get_type_name(Value::Bool(true)), "bool");

@@ -49,7 +49,6 @@ pub fn tanh_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resu
   *stack.last_mut().unwrap() = result;
   Ok(())
 }
-
 #[cfg(test)]
 mod tests {
   #[test]

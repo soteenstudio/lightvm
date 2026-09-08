@@ -68,7 +68,6 @@ pub fn shr_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resul
   stack.push(result);
   Ok(())
 }
-
 #[cfg(test)]
 mod tests {
   use super::*;

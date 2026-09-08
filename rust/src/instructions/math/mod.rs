@@ -17,7 +17,6 @@ pub(crate) mod logarithm;
 pub(crate) mod root;
 pub(crate) mod trigonometry;
 pub(crate) mod vector;
-
 #[cfg(test)]
 fn assert_unary_float_errors(
   func: fn(
@@ -31,7 +30,6 @@ fn assert_unary_float_errors(
   use crate::types::primitive_types::PrimitiveTypes;
   use crate::types::stack::Stack;
   use crate::types::value::Value;
-
   let mut stack = Stack::from_vec(vec![Value::String("invalid".into())]);
   let original = stack.clone();
   assert!(matches!(
@@ -43,7 +41,6 @@ fn assert_unary_float_errors(
     })
   ));
   assert_eq!(stack, original);
-
   let mut stack = Stack::new();
   assert!(matches!(
     func(&mut stack, PrimitiveTypes::Flt, 23),

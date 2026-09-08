@@ -52,7 +52,6 @@ pub fn sin_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resul
 #[cfg(test)]
 mod tests {
   use super::*;
-
   #[test]
   fn invalid_operand_reports_type_mismatch_and_preserves_stack() {
     let invalid = Value::String("invalid".into());

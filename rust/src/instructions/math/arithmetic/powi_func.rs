@@ -16,7 +16,6 @@ use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::get_type_name::get_type_name;
-
 fn expected_type(num_type: PrimitiveTypes) -> &'static str {
   match num_type {
     PrimitiveTypes::Hlf => "Float16/Int16",
@@ -25,7 +24,6 @@ fn expected_type(num_type: PrimitiveTypes) -> &'static str {
     _ => "Float32/Int32",
   }
 }
-
 #[inline(always)]
 pub fn powi_values(
   a: Value,
@@ -79,7 +77,6 @@ pub fn powi_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resu
 #[cfg(test)]
 mod tests {
   use super::*;
-
   #[test]
   fn invalid_operands_report_type_mismatch_and_preserve_stack() {
     let invalid = Value::String("invalid".into());
@@ -111,7 +108,6 @@ mod tests {
     ));
     assert_eq!(stack, original);
   }
-
   #[test]
   fn invalid_operands_report_directive_specific_expected_types() {
     let invalid = Value::String("invalid".into());
@@ -132,7 +128,6 @@ mod tests {
       })
     ));
   }
-
   #[test]
   fn unsupported_directive_reports_default_expected_and_actual_operand_types() {
     assert!(matches!(

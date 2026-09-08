@@ -18,8 +18,8 @@ fn main() {
   
   let raw = r#"[
     ["push", 5],
-    ["push", { "age": 16 }],
-    ["add", "int"],
+    ["push", "5"],
+    ["add", "sht"],
     ["println"]
   ]"#;
   let tools = vm.tools();

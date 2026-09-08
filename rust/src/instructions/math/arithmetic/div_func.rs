@@ -75,7 +75,6 @@ pub fn div_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resul
 #[cfg(test)]
 mod tests {
   use super::*;
-
   #[test]
   fn invalid_operands_report_type_mismatch_and_preserve_stack() {
     let invalid = Value::String("invalid".into());
