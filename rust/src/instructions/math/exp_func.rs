@@ -34,7 +34,7 @@ pub fn exp_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
-        found: get_type_name(a),
+        found: a.type_of(),
       });
     }
   })

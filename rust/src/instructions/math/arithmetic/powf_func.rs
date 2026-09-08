@@ -46,7 +46,7 @@ pub fn powf_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
-        found: "unknown",
+        found: a.type_of(),
       });
     }
   })

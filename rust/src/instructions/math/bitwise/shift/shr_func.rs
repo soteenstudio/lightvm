@@ -47,7 +47,7 @@ pub fn shr_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Integer),
-        found: "unknown",
+        found: a.type_of(),
       });
     }
   })

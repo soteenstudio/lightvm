@@ -54,8 +54,8 @@ pub fn powi_values(
     _ => {
       return Err(VMError::TypeMismatch {
         ip,
-        expected: "Float32/Int32",
-        found: "unknown",
+        expected: expected_type(num_type),
+        found: a.type_of(),
       });
     }
   })
@@ -129,6 +129,23 @@ mod tests {
         ip: 21,
         expected: "Float64/Int64",
         found: "string"
+      })
+    ));
+  }
+
+  #[test]
+  fn unsupported_directive_reports_default_expected_and_actual_operand_types() {
+    assert!(matches!(
+      powi_values(
+        Value::Float64(2.0),
+        Value::Int32(3),
+        PrimitiveTypes::Int,
+        22
+      ),
+      Err(VMError::TypeMismatch {
+        ip: 22,
+        expected: "Float32/Int32",
+        found: "float64"
       })
     ));
   }

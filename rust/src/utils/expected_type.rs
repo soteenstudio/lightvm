@@ -17,13 +17,13 @@ pub fn expected_type(num_type: PrimitiveTypes, category: ExpectedCategory) -> &'
       PrimitiveTypes::Int => "Integer",
       PrimitiveTypes::Lng => "Long",
       PrimitiveTypes::Oct => "Octa",
-      _ => "Unknown",
+      _ => "Integer",
     },
     ExpectedCategory::Float => match num_type {
       PrimitiveTypes::Hlf => "Half",
       PrimitiveTypes::Flt => "Float",
       PrimitiveTypes::Dbl => "Double",
-      _ => "Unknown",
+      _ => "Float",
     },
     ExpectedCategory::All => match num_type {
       PrimitiveTypes::Sht => "Int16",
@@ -35,5 +35,28 @@ pub fn expected_type(num_type: PrimitiveTypes, category: ExpectedCategory) -> &'
       PrimitiveTypes::Dbl => "Float64",
       PrimitiveTypes::Str => "String",
     },
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::modules::vmerror::VMError;
+
+  #[test]
+  fn unsupported_directives_preserve_expected_category() {
+    let expected = expected_type(PrimitiveTypes::Int, ExpectedCategory::Float);
+    assert_eq!(expected, "Float");
+    assert_eq!(
+      expected_type(PrimitiveTypes::Flt, ExpectedCategory::Integer),
+      "Integer"
+    );
+
+    let error = VMError::TypeMismatch {
+      ip: 7,
+      expected,
+      found: "int32",
+    };
+    assert!(error.to_string().contains("Expected type 'Float'"));
   }
 }

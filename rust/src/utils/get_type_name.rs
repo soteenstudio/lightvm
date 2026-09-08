@@ -14,9 +14,22 @@ pub fn get_type_name(num_type: Value) -> &'static str {
     Value::String(_) => "string",
     Value::Array(_) => "array",
     Value::Object(_) => "object",
+    Value::Bool(_) => "bool",
+    Value::Marker(_) => "marker",
     Value::Null => "null",
     Value::Undefined => "undefined",
     Value::NaN => "nan",
     _ => "unknown",
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn reports_bool_and_marker_types() {
+    assert_eq!(get_type_name(Value::Bool(true)), "bool");
+    assert_eq!(get_type_name(Value::Marker("label".into())), "marker");
   }
 }

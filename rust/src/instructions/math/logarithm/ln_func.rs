@@ -34,7 +34,7 @@ pub fn ln_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value,
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
-        found: "unknown",
+        found: a.type_of(),
       });
     }
   })
@@ -75,5 +75,17 @@ mod tests {
       })
     ));
     assert_eq!(stack, original);
+  }
+
+  #[test]
+  fn unsupported_directive_reports_numeric_operand_type() {
+    assert!(matches!(
+      ln_values(Value::Float32(1.0), PrimitiveTypes::Int, 19),
+      Err(VMError::TypeMismatch {
+        ip: 19,
+        expected: "Float",
+        found: "float32"
+      })
+    ));
   }
 }

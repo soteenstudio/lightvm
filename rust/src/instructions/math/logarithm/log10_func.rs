@@ -34,7 +34,7 @@ pub fn log10_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Val
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
-        found: "unknown",
+        found: a.type_of(),
       });
     }
   })

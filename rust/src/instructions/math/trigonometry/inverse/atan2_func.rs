@@ -46,7 +46,7 @@ pub fn atan2_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
-        found: get_type_name(y),
+        found: y.type_of(),
       });
     }
   })
