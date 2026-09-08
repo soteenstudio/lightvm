@@ -39,7 +39,7 @@ pub fn neg_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value
       return Err(VMError::TypeMismatch {
         ip,
         expected: "number",
-        found: "string",
+        found: expected_type(num_type, ExpectedCategory::All),
       });
     }
   })
