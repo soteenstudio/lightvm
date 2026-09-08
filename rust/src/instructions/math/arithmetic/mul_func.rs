@@ -83,7 +83,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 17,
         expected: "Integer",
-        found: "string"
+        found: "String"
       })
     ));
     assert!(matches!(
@@ -91,7 +91,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 18,
         expected: "Integer",
-        found: "string"
+        found: "String"
       })
     ));
     let mut stack = Stack::from_vec(vec![Value::Int32(1), invalid]);
@@ -101,7 +101,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 19,
         expected: "Integer",
-        found: "string"
+        found: "String"
       })
     ));
     assert_eq!(stack, original);

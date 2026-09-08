@@ -377,7 +377,7 @@ mod tests {
       Err(crate::modules::vmerror::VMError::TypeMismatch {
         ip: 2,
         expected: "Integer",
-        found: "string"
+        found: "String"
       })
     ));
   }
@@ -397,7 +397,7 @@ mod tests {
       Err(crate::modules::vmerror::VMError::TypeMismatch {
         ip: 2,
         expected: "Integer",
-        found: "string"
+        found: "String"
       })
     ));
   }

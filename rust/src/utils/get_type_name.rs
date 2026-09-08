@@ -27,7 +27,7 @@ mod tests {
   use super::*;
   #[test]
   fn reports_bool_and_marker_types() {
-    assert_eq!(get_type_name(Value::Bool(true)), "bool");
-    assert_eq!(get_type_name(Value::Marker("label".into())), "marker");
+    assert_eq!(get_type_name(Value::Bool(true)), "Boolean");
+    assert_eq!(get_type_name(Value::Marker("label".into())), "Marker");
   }
 }

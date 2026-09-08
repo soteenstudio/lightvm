@@ -79,7 +79,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 2,
         expected: "Integer",
-        found: "string"
+        found: "String"
       })
     ));
   }

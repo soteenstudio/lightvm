@@ -81,7 +81,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 13,
         expected: "Integer",
-        found: "string"
+        found: "String"
       })
     ));
     assert_eq!(stack, original);
@@ -98,7 +98,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 21,
         expected: "Integer",
-        found: "string"
+        found: "String"
       })
     ));
   }
@@ -114,7 +114,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 34,
         expected: "Double",
-        found: "string"
+        found: "String"
       })
     ));
   }
