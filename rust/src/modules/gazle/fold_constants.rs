@@ -30,6 +30,7 @@ use crate::instructions::{
         mulv_func::mulv_values, powfv_func::powfv_values, powiv_func::powiv_values,
         powv_func::powv_values, subv_func::subv_values,
       },
+      bitwise_func::{rolv_values, rorv_values, shlv_values, shrv_values},
       cross_func::cross_values,
       dot_func::dot_values,
       trigonometry::inverse::atan2v_func::atan2v_values,
@@ -126,9 +127,13 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         Instructions::Eq(t) => Some(eq_values(val1, val2, *t)),
         Instructions::Neq(t) => Some(neq_values(val1, val2, *t)),
         Instructions::Shl(t) => shl_values(val1, val2, *t, i).ok(),
+        Instructions::Shlv(t) => shlv_values(val1, val2, *t, i).ok(),
         Instructions::Shr(t) => shr_values(val1, val2, *t, i).ok(),
+        Instructions::Shrv(t) => shrv_values(val1, val2, *t, i).ok(),
         Instructions::Rol(t) => rol_values(val1, val2, *t, i).ok(),
+        Instructions::Rolv(t) => rolv_values(val1, val2, *t, i).ok(),
         Instructions::Ror(t) => ror_values(val1, val2, *t, i).ok(),
+        Instructions::Rorv(t) => rorv_values(val1, val2, *t, i).ok(),
         Instructions::And => Some(and_values(val1, val2)),
         Instructions::Or => Some(or_values(val1, val2)),
         Instructions::Xor => Some(xor_values(val1, val2)),
@@ -174,9 +179,13 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         Instructions::Eq(t) => Some(eq_values(val1.clone(), val1.clone(), *t)),
         Instructions::Neq(t) => Some(neq_values(val1.clone(), val1.clone(), *t)),
         Instructions::Shl(t) => shl_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Shlv(t) => shlv_values(val1.clone(), val1.clone(), *t, i).ok(),
         Instructions::Shr(t) => shr_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Shrv(t) => shrv_values(val1.clone(), val1.clone(), *t, i).ok(),
         Instructions::Rol(t) => rol_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Rolv(t) => rolv_values(val1.clone(), val1.clone(), *t, i).ok(),
         Instructions::Ror(t) => ror_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Rorv(t) => rorv_values(val1.clone(), val1.clone(), *t, i).ok(),
         Instructions::And => Some(and_values(val1.clone(), val1.clone())),
         Instructions::Or => Some(or_values(val1.clone(), val1.clone())),
         Instructions::Xor => Some(xor_values(val1.clone(), val1.clone())),
@@ -209,6 +218,33 @@ mod tests {
   use super::*;
   use crate::types::{primitive_types::PrimitiveTypes, value::Value};
   use smol_str::SmolStr;
+  use std::sync::Arc;
+  #[test]
+  fn folds_valid_bitwise_vectors_and_retains_invalid_ones() {
+    let operations = [
+      Instructions::Shlv(PrimitiveTypes::Int),
+      Instructions::Shrv(PrimitiveTypes::Int),
+      Instructions::Rolv(PrimitiveTypes::Int),
+      Instructions::Rorv(PrimitiveTypes::Int),
+    ];
+    for operation in operations {
+      let operand = Instructions::PushArray(Arc::new(vec![Value::Int32(1)]));
+      let mut valid = vec![operand.clone(), operand, operation.clone()];
+      fold_constants(&mut valid);
+      assert!(matches!(
+        valid.as_slice(),
+        [
+          Instructions::PushArray(_),
+          Instructions::Nop,
+          Instructions::Nop
+        ]
+      ));
+      let invalid_operand = Instructions::PushArray(Arc::new(vec![Value::Bool(false)]));
+      let mut invalid = vec![invalid_operand.clone(), invalid_operand, operation.clone()];
+      fold_constants(&mut invalid);
+      assert_eq!(invalid[2], operation);
+    }
+  }
   #[test]
   fn folds_constant_make_array() {
     let mut bytecode = vec![
