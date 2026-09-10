@@ -293,10 +293,10 @@ impl LightVM {
     self.state = VmState::Idle;
     self.emit(VmEvent::Finish, serde_json::json!({ "operation": "run" }));
     #[cfg(not(target_arch = "wasm32"))]
-    if let Some(logger) = get_logger() {
-      if let Err(error) = logger.send_log("info", "run function runs successfully!") {
-        eprintln!("Telemetry delivery failed: {}", error);
-      }
+    if let Some(logger) = get_logger()
+      && let Err(error) = logger.send_log("info", "run function runs successfully!")
+    {
+      eprintln!("Telemetry delivery failed: {}", error);
     }
     Ok(result)
   }
