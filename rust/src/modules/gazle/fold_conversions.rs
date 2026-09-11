@@ -36,6 +36,12 @@ use crate::instructions::{
         cosv_func::cosv_values, negv_func::negv_values, sinv_func::sinv_values,
         tanv_func::tanv_values,
       },
+      cbrtv_func::cbrtv_values,
+      expv_func::expv_values,
+      lnv_func::lnv_values,
+      log2v_func::log2v_values,
+      log10v_func::log10v_values,
+      sqrtv_func::sqrtv_values,
       trigonometry::{
         hyperbolic::{
           coshv_func::coshv_values,
@@ -46,9 +52,6 @@ use crate::instructions::{
           tanhv_func::tanhv_values,
         },
         inverse::{acosv_func::acosv_values, asinv_func::asinv_values, atanv_func::atanv_values},
-      },
-      unary_float_func::{
-        cbrtv_values, expv_values, lnv_values, log2v_values, log10v_values, sqrtv_values,
       },
     },
   },
