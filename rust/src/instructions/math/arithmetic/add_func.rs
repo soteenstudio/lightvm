@@ -13,12 +13,33 @@ use crate::instructions::math::arithmetic::add::{
   add_i32in::add_i32in, add_i64in::add_i64in, add_i128in::add_i128in,
 };
 use crate::modules::vmerror::VMError;
+use crate::types::expected_category::ExpectedCategory;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
+use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
 #[inline(always)]
-pub fn add_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
-  match num_type {
+pub fn add_values(
+  a: Value,
+  b: Value,
+  num_type: PrimitiveTypes,
+  ip: usize,
+) -> Result<Value, VMError> {
+  if !a.is_number() {
+    return Err(VMError::TypeMismatch {
+      ip,
+      expected: expected_type(num_type, ExpectedCategory::All),
+      found: get_type_name(a),
+    });
+  }
+  if !b.is_number() {
+    return Err(VMError::TypeMismatch {
+      ip,
+      expected: expected_type(num_type, ExpectedCategory::All),
+      found: get_type_name(b),
+    });
+  }
+  Ok(match num_type {
     PrimitiveTypes::Sht => Value::Int16(add_i16in(a.as_i16(), b.as_i16())),
     PrimitiveTypes::Int => Value::Int32(add_i32in(a.as_i32(), b.as_i32())),
     PrimitiveTypes::Lng => Value::Int64(add_i64in(a.as_i64(), b.as_i64())),
@@ -26,18 +47,75 @@ pub fn add_values(a: Value, b: Value, num_type: PrimitiveTypes) -> Value {
     PrimitiveTypes::Hlf => Value::Float16(add_f16in(a.as_f16(), b.as_f16())),
     PrimitiveTypes::Flt => Value::Float32(add_f32in(a.as_f32(), b.as_f32())),
     PrimitiveTypes::Dbl => Value::Float64(add_f64in(a.as_f64(), b.as_f64())),
-    _ => Value::NaN,
-  }
+    PrimitiveTypes::Str => {
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: expected_type(num_type, ExpectedCategory::All),
+        found: get_type_name(a),
+      });
+    }
+  })
 }
 #[inline]
 pub fn add_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
-  let b = stack
-    .pop()
-    .ok_or(VMError::StackUnderflow { ip, opcode: "ADD" })?;
-  let a_ref = stack
-    .last_mut()
-    .ok_or(VMError::StackUnderflow { ip, opcode: "ADD" })?;
-  let a = std::mem::take(a_ref);
-  *a_ref = add_values(a, b, num_type);
+  if stack.len() < 2 {
+    return Err(VMError::StackUnderflow { ip, opcode: "ADD" });
+  }
+  let b = stack.last().unwrap().clone();
+  let a = stack[stack.len() - 2].clone();
+  let result = add_values(a, b, num_type, ip)?;
+  stack.pop();
+  stack.pop();
+  stack.push(result);
   Ok(())
+}
+#[cfg(test)]
+mod tests {
+  use super::*;
+  #[test]
+  fn add_reports_type_mismatch_without_mutating_stack() {
+    let mut stack = Stack::from_vec(vec![Value::Int32(1), Value::String("invalid".into())]);
+    let original = stack.clone();
+    assert!(matches!(
+      add_func(&mut stack, PrimitiveTypes::Int, 13),
+      Err(VMError::TypeMismatch {
+        ip: 13,
+        expected: "Integer",
+        found: "String"
+      })
+    ));
+    assert_eq!(stack, original);
+  }
+  #[test]
+  fn add_values_reports_type_mismatch_for_string_left_operand() {
+    assert!(matches!(
+      add_values(
+        Value::String("invalid".into()),
+        Value::Int32(1),
+        PrimitiveTypes::Int,
+        21
+      ),
+      Err(VMError::TypeMismatch {
+        ip: 21,
+        expected: "Integer",
+        found: "String"
+      })
+    ));
+  }
+  #[test]
+  fn add_values_reports_type_mismatch_for_string_right_operand() {
+    assert!(matches!(
+      add_values(
+        Value::Int32(1),
+        Value::String("invalid".into()),
+        PrimitiveTypes::Dbl,
+        34
+      ),
+      Err(VMError::TypeMismatch {
+        ip: 34,
+        expected: "Double",
+        found: "String"
+      })
+    ));
+  }
 }

@@ -9,7 +9,11 @@
  */
 
 pub(crate) mod arithmetic;
+pub(crate) mod bitwise;
 pub(crate) mod cross;
 pub(crate) mod cross_func;
 pub(crate) mod dot;
 pub(crate) mod dot_func;
+pub(crate) mod logarithm;
+pub(crate) mod root;
+pub(crate) mod trigonometry;

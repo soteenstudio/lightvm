@@ -31,7 +31,28 @@ use crate::instructions::{
       },
       inverse::{acos_func::acos_values, asin_func::asin_values, atan_func::atan_values},
     },
-    vector::arithmetic::negv_func::negv_values,
+    vector::{
+      arithmetic::{
+        cosv_func::cosv_values, negv_func::negv_values, sinv_func::sinv_values,
+        tanv_func::tanv_values,
+      },
+      logarithm::{
+        expv_func::expv_values, lnv_func::lnv_values, log2v_func::log2v_values,
+        log10v_func::log10v_values,
+      },
+      root::{cbrtv_func::cbrtv_values, sqrtv_func::sqrtv_values},
+      trigonometry::{
+        hyperbolic::{
+          coshv_func::coshv_values,
+          inverse::{
+            acoshv_func::acoshv_values, asinhv_func::asinhv_values, atanhv_func::atanhv_values,
+          },
+          sinhv_func::sinhv_values,
+          tanhv_func::tanhv_values,
+        },
+        inverse::{acosv_func::acosv_values, asinv_func::asinv_values, atanv_func::atanv_values},
+      },
+    },
   },
   metadata::typeof_func::typeof_values,
 };
@@ -57,24 +78,42 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         Instructions::ToFloat => to_float_values(val).ok(),
         Instructions::ToDouble => to_double_values(val).ok(),
         Instructions::ToString => to_string_values(val).ok(),
-        Instructions::Sin(t) => Some(sin_values(val, *t)),
-        Instructions::Cos(t) => Some(cos_values(val, *t)),
-        Instructions::Tan(t) => Some(tan_values(val, *t)),
-        Instructions::Asin(t) => Some(asin_values(val, *t)),
-        Instructions::Acos(t) => Some(acos_values(val, *t)),
-        Instructions::Atan(t) => Some(atan_values(val, *t)),
-        Instructions::Sinh(t) => Some(sinh_values(val, *t)),
-        Instructions::Cosh(t) => Some(cosh_values(val, *t)),
-        Instructions::Tanh(t) => Some(tanh_values(val, *t)),
-        Instructions::Asinh(t) => Some(asinh_values(val, *t)),
-        Instructions::Acosh(t) => Some(acosh_values(val, *t)),
-        Instructions::Atanh(t) => Some(atanh_values(val, *t)),
-        Instructions::Sqrt(t) => Some(sqrt_values(val, *t)),
-        Instructions::Cbrt(t) => Some(cbrt_values(val, *t)),
-        Instructions::Neg(t) => Some(neg_values(val, *t)),
-        Instructions::Negv(t) => negv_values(val, *t).ok(),
-        Instructions::Ln(t) => Some(ln_values(val, *t)),
-        Instructions::Exp(t) => Some(exp_values(val, *t)),
+        Instructions::Sin(t) => sin_values(val, *t, i).ok(),
+        Instructions::Cos(t) => cos_values(val, *t, i).ok(),
+        Instructions::Tan(t) => tan_values(val, *t, i).ok(),
+        Instructions::Sinv(t) => sinv_values(val, *t, i).ok(),
+        Instructions::Cosv(t) => cosv_values(val, *t, i).ok(),
+        Instructions::Tanv(t) => tanv_values(val, *t, i).ok(),
+        Instructions::Asin(t) => asin_values(val, *t, i).ok(),
+        Instructions::Acos(t) => acos_values(val, *t, i).ok(),
+        Instructions::Atan(t) => atan_values(val, *t, i).ok(),
+        Instructions::Sinh(t) => sinh_values(val, *t, i).ok(),
+        Instructions::Cosh(t) => cosh_values(val, *t, i).ok(),
+        Instructions::Tanh(t) => tanh_values(val, *t, i).ok(),
+        Instructions::Sinhv(t) => sinhv_values(val, *t, i).ok(),
+        Instructions::Coshv(t) => coshv_values(val, *t, i).ok(),
+        Instructions::Tanhv(t) => tanhv_values(val, *t, i).ok(),
+        Instructions::Asinh(t) => asinh_values(val, *t, i).ok(),
+        Instructions::Acosh(t) => acosh_values(val, *t, i).ok(),
+        Instructions::Atanh(t) => atanh_values(val, *t, i).ok(),
+        Instructions::Asinv(t) => asinv_values(val, *t, i).ok(),
+        Instructions::Acosv(t) => acosv_values(val, *t, i).ok(),
+        Instructions::Atanv(t) => atanv_values(val, *t, i).ok(),
+        Instructions::Asinhv(t) => asinhv_values(val, *t, i).ok(),
+        Instructions::Acoshv(t) => acoshv_values(val, *t, i).ok(),
+        Instructions::Atanhv(t) => atanhv_values(val, *t, i).ok(),
+        Instructions::Sqrt(t) => sqrt_values(val, *t, i).ok(),
+        Instructions::Sqrtv(t) => sqrtv_values(val, *t, i).ok(),
+        Instructions::Cbrt(t) => cbrt_values(val, *t, i).ok(),
+        Instructions::Cbrtv(t) => cbrtv_values(val, *t, i).ok(),
+        Instructions::Neg(t) => neg_values(val, *t, i).ok(),
+        Instructions::Negv(t) => negv_values(val, *t, i).ok(),
+        Instructions::Ln(t) => ln_values(val, *t, i).ok(),
+        Instructions::Lnv(t) => lnv_values(val, *t, i).ok(),
+        Instructions::Exp(t) => exp_values(val, *t, i).ok(),
+        Instructions::Expv(t) => expv_values(val, *t, i).ok(),
+        Instructions::Log2v(t) => log2v_values(val, *t, i).ok(),
+        Instructions::Log10v(t) => log10v_values(val, *t, i).ok(),
         _ => None,
       };
       if let Some(res_val) = folded {
@@ -92,6 +131,34 @@ mod tests {
   use super::*;
   use crate::types::{primitive_types::PrimitiveTypes, value::Value};
   use std::sync::Arc;
+  #[test]
+  fn folds_valid_unary_float_vectors_and_retains_invalid_ones() {
+    let operations = [
+      Instructions::Lnv(PrimitiveTypes::Flt),
+      Instructions::Log2v(PrimitiveTypes::Flt),
+      Instructions::Log10v(PrimitiveTypes::Flt),
+      Instructions::Sqrtv(PrimitiveTypes::Flt),
+      Instructions::Cbrtv(PrimitiveTypes::Flt),
+      Instructions::Expv(PrimitiveTypes::Flt),
+    ];
+    for operation in operations {
+      let mut valid = vec![
+        Instructions::PushArray(Arc::new(vec![Value::Float32(1.0)])),
+        operation.clone(),
+      ];
+      fold_conversions(&mut valid);
+      assert!(matches!(
+        valid.as_slice(),
+        [Instructions::PushArray(_), Instructions::Nop]
+      ));
+      let mut invalid = vec![
+        Instructions::PushArray(Arc::new(vec![Value::Bool(false)])),
+        operation.clone(),
+      ];
+      fold_conversions(&mut invalid);
+      assert_eq!(invalid[1], operation);
+    }
+  }
   #[test]
   fn folds_valid_negv_and_leaves_invalid_negv_for_runtime() {
     let mut valid = vec![
@@ -113,5 +180,43 @@ mod tests {
     let expected = invalid.clone();
     fold_conversions(&mut invalid);
     assert_eq!(invalid, expected);
+  }
+  #[test]
+  fn leaves_invalid_scalar_unary_operation_for_runtime_error() {
+    let mut bytecode = vec![
+      Instructions::PushString("invalid".into()),
+      Instructions::Sin(PrimitiveTypes::Flt),
+      Instructions::Stop,
+    ];
+    let expected = bytecode.clone();
+    fold_conversions(&mut bytecode);
+    assert_eq!(bytecode, expected);
+    assert!(matches!(
+      crate::vm::execute::execute(bytecode, &mut None, None),
+      Err(crate::modules::vmerror::VMError::TypeMismatch {
+        ip: 1,
+        expected: "Float",
+        found: "String"
+      })
+    ));
+  }
+  #[test]
+  fn leaves_invalid_logarithm_operation_for_runtime_error() {
+    let mut bytecode = vec![
+      Instructions::PushString("invalid".into()),
+      Instructions::Ln(PrimitiveTypes::Flt),
+      Instructions::Stop,
+    ];
+    let expected = bytecode.clone();
+    fold_conversions(&mut bytecode);
+    assert_eq!(bytecode, expected);
+    assert!(matches!(
+      crate::vm::execute::execute(bytecode, &mut None, None),
+      Err(crate::modules::vmerror::VMError::TypeMismatch {
+        ip: 1,
+        expected: "Float",
+        found: "String"
+      })
+    ));
   }
 }

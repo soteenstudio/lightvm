@@ -196,15 +196,7 @@ impl Instructions {
         } else if let Some(b) = val.as_bool() {
           Value::Bool(b)
         } else if let Some(s) = val.as_str() {
-          if let Ok(big_n) = s.parse::<i128>() {
-            if big_n >= i64::MIN as i128 && big_n <= i64::MAX as i128 {
-              Value::Int64(big_n as i64)
-            } else {
-              Value::Int128(big_n)
-            }
-          } else {
-            Value::String(SmolStr::new(s))
-          }
+          Value::String(SmolStr::new(s))
         } else if let Some(obj) = val.as_object() {
           let mut map = AHashMap::with_capacity(obj.len());
           for (k, v) in obj {
@@ -232,33 +224,56 @@ impl Instructions {
       b"mod" => Ok(Instructions::Mod(map_primitive(arg1))),
       b"modv" => Ok(Instructions::Modv(map_primitive(arg1))),
       b"shl" => Ok(Instructions::Shl(map_primitive(arg1))),
+      b"shlv" => Ok(Instructions::Shlv(map_primitive(arg1))),
       b"shr" => Ok(Instructions::Shr(map_primitive(arg1))),
+      b"shrv" => Ok(Instructions::Shrv(map_primitive(arg1))),
       b"ror" => Ok(Instructions::Ror(map_primitive(arg1))),
+      b"rorv" => Ok(Instructions::Rorv(map_primitive(arg1))),
       b"rol" => Ok(Instructions::Rol(map_primitive(arg1))),
+      b"rolv" => Ok(Instructions::Rolv(map_primitive(arg1))),
       b"sin" => Ok(Instructions::Sin(map_primitive(arg1))),
       b"cos" => Ok(Instructions::Cos(map_primitive(arg1))),
       b"tan" => Ok(Instructions::Tan(map_primitive(arg1))),
+      b"sinv" => Ok(Instructions::Sinv(map_primitive(arg1))),
+      b"cosv" => Ok(Instructions::Cosv(map_primitive(arg1))),
+      b"tanv" => Ok(Instructions::Tanv(map_primitive(arg1))),
       b"asin" => Ok(Instructions::Asin(map_primitive(arg1))),
       b"acos" => Ok(Instructions::Acos(map_primitive(arg1))),
       b"atan" => Ok(Instructions::Atan(map_primitive(arg1))),
       b"atan2" => Ok(Instructions::Atan2(map_primitive(arg1))),
+      b"asinv" => Ok(Instructions::Asinv(map_primitive(arg1))),
+      b"acosv" => Ok(Instructions::Acosv(map_primitive(arg1))),
+      b"atanv" => Ok(Instructions::Atanv(map_primitive(arg1))),
+      b"atan2v" => Ok(Instructions::Atan2v(map_primitive(arg1))),
       b"sinh" => Ok(Instructions::Sinh(map_primitive(arg1))),
       b"cosh" => Ok(Instructions::Cosh(map_primitive(arg1))),
       b"tanh" => Ok(Instructions::Tanh(map_primitive(arg1))),
+      b"sinhv" => Ok(Instructions::Sinhv(map_primitive(arg1))),
+      b"coshv" => Ok(Instructions::Coshv(map_primitive(arg1))),
+      b"tanhv" => Ok(Instructions::Tanhv(map_primitive(arg1))),
       b"asinh" => Ok(Instructions::Asinh(map_primitive(arg1))),
       b"acosh" => Ok(Instructions::Acosh(map_primitive(arg1))),
       b"atanh" => Ok(Instructions::Atanh(map_primitive(arg1))),
       b"sqrt" => Ok(Instructions::Sqrt(map_primitive(arg1))),
+      b"sqrtv" => Ok(Instructions::Sqrtv(map_primitive(arg1))),
       b"cbrt" => Ok(Instructions::Cbrt(map_primitive(arg1))),
+      b"cbrtv" => Ok(Instructions::Cbrtv(map_primitive(arg1))),
       b"neg" => Ok(Instructions::Neg(map_primitive(arg1))),
       b"negv" => Ok(Instructions::Negv(map_primitive(arg1))),
       b"ln" => Ok(Instructions::Ln(map_primitive(arg1))),
+      b"lnv" => Ok(Instructions::Lnv(map_primitive(arg1))),
       b"exp" => Ok(Instructions::Exp(map_primitive(arg1))),
+      b"expv" => Ok(Instructions::Expv(map_primitive(arg1))),
       b"log2" => Ok(Instructions::Log2(map_primitive(arg1))),
+      b"log2v" => Ok(Instructions::Log2v(map_primitive(arg1))),
       b"log10" => Ok(Instructions::Log10(map_primitive(arg1))),
+      b"log10v" => Ok(Instructions::Log10v(map_primitive(arg1))),
       b"pow" => Ok(Instructions::Pow(map_primitive(arg1))),
       b"powi" => Ok(Instructions::Powi(map_primitive(arg1))),
       b"powf" => Ok(Instructions::Powf(map_primitive(arg1))),
+      b"powv" => Ok(Instructions::Powv(map_primitive(arg1))),
+      b"powiv" => Ok(Instructions::Powiv(map_primitive(arg1))),
+      b"powfv" => Ok(Instructions::Powfv(map_primitive(arg1))),
       b"gt" => Ok(Instructions::Gt(map_primitive(arg1))),
       b"lt" => Ok(Instructions::Lt(map_primitive(arg1))),
       b"ge" => Ok(Instructions::Ge(map_primitive(arg1))),
@@ -495,6 +510,28 @@ mod tests {
     let json_input = json!(["subv", "int"]);
     let instr = Instructions::from_json_array(&json_input, 0).unwrap();
     assert_eq!(instr, Instructions::Subv(PrimitiveTypes::Int));
+  }
+  #[test]
+  fn test_powv_instruction() {
+    let json_input = json!(["powv", "lng"]);
+    let instr = Instructions::from_json_array(&json_input, 0).unwrap();
+    assert_eq!(instr, Instructions::Powv(PrimitiveTypes::Lng));
+  }
+  #[test]
+  fn test_vector_float_power_instructions() {
+    for (json_input, expected) in [
+      (
+        json!(["powiv", "flt"]),
+        Instructions::Powiv(PrimitiveTypes::Flt),
+      ),
+      (
+        json!(["powfv", "dbl"]),
+        Instructions::Powfv(PrimitiveTypes::Dbl),
+      ),
+    ] {
+      let instr = Instructions::from_json_array(&json_input, 0).unwrap();
+      assert_eq!(instr, expected);
+    }
   }
   #[test]
   fn test_mulv_and_divv_instructions() {

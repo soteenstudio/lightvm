@@ -23,8 +23,28 @@ export const sidebarMathematics = {
       link: '/id/api-reference/instruction-set/mathematics/vector-arithmetic',
     },
     {
+      text: 'Trigonometri Vektor',
+      link: '/id/api-reference/instruction-set/mathematics/vector-trigonometry',
+    },
+    {
       text: 'Hasil Kali Vektor',
       link: '/id/api-reference/instruction-set/mathematics/vector-products',
+    },
+    {
+      text: 'Operasi Bitwise Vektor',
+      link: '/id/api-reference/instruction-set/mathematics/bitwise-vector',
+    },
+    {
+      text: 'Eksponensiasi Vektor',
+      link: '/id/api-reference/instruction-set/mathematics/exponentiation-vector',
+    },
+    {
+      text: 'Logaritma Vektor',
+      link: '/id/api-reference/instruction-set/mathematics/logarithm-vector',
+    },
+    {
+      text: 'Akar Vektor',
+      link: '/id/api-reference/instruction-set/mathematics/root-vector',
     },
   ],
 };

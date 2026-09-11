@@ -27,10 +27,16 @@ use crate::instructions::{
     vector::{
       arithmetic::{
         addv_func::addv_values, divv_func::divv_values, modv_func::modv_values,
-        mulv_func::mulv_values, subv_func::subv_values,
+        mulv_func::mulv_values, powfv_func::powfv_values, powiv_func::powiv_values,
+        powv_func::powv_values, subv_func::subv_values,
+      },
+      bitwise::{
+        rotate::{rolv_func::rolv_values, rorv_func::rorv_values},
+        shift::{shlv_func::shlv_values, shrv_func::shrv_values},
       },
       cross_func::cross_values,
       dot_func::dot_values,
+      trigonometry::inverse::atan2v_func::atan2v_values,
     },
   },
   stack::concat_func::concat_values,
@@ -107,36 +113,44 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
     let instr3 = &bytecode[i + 2];
     if let (Some(val1), Some(val2)) = (extract_value(instr1), extract_value(instr2)) {
       let result = match instr3 {
-        Instructions::Add(t) => Some(add_values(val1, val2, *t)),
-        Instructions::Addv(t) => addv_values(val1, val2, *t).ok(),
-        Instructions::Sub(t) => Some(sub_values(val1, val2, *t)),
-        Instructions::Subv(t) => subv_values(val1, val2, *t).ok(),
-        Instructions::Div(t) => Some(div_values(val1, val2, *t)),
-        Instructions::Divv(t) => divv_values(val1, val2, *t).ok(),
-        Instructions::Mul(t) => Some(mul_values(val1, val2, *t)),
-        Instructions::Mulv(t) => mulv_values(val1, val2, *t).ok(),
-        Instructions::Mod(t) => Some(mod_values(val1, val2, *t)),
-        Instructions::Modv(t) => modv_values(val1, val2, *t).ok(),
+        Instructions::Add(t) => add_values(val1, val2, *t, i).ok(),
+        Instructions::Addv(t) => addv_values(val1, val2, *t, i).ok(),
+        Instructions::Sub(t) => sub_values(val1, val2, *t, i).ok(),
+        Instructions::Subv(t) => subv_values(val1, val2, *t, i).ok(),
+        Instructions::Div(t) => div_values(val1, val2, *t, i).ok(),
+        Instructions::Divv(t) => divv_values(val1, val2, *t, i).ok(),
+        Instructions::Mul(t) => mul_values(val1, val2, *t, i).ok(),
+        Instructions::Mulv(t) => mulv_values(val1, val2, *t, i).ok(),
+        Instructions::Mod(t) => mod_values(val1, val2, *t, i).ok(),
+        Instructions::Modv(t) => modv_values(val1, val2, *t, i).ok(),
         Instructions::Gt(t) => Some(gt_values(val1, val2, *t)),
         Instructions::Lt(t) => Some(lt_values(val1, val2, *t)),
         Instructions::Ge(t) => Some(ge_values(val1, val2, *t)),
         Instructions::Le(t) => Some(le_values(val1, val2, *t)),
         Instructions::Eq(t) => Some(eq_values(val1, val2, *t)),
         Instructions::Neq(t) => Some(neq_values(val1, val2, *t)),
-        Instructions::Shl(t) => Some(shl_values(val1, val2, *t)),
-        Instructions::Shr(t) => Some(shr_values(val1, val2, *t)),
-        Instructions::Rol(t) => Some(rol_values(val1, val2, *t)),
-        Instructions::Ror(t) => Some(ror_values(val1, val2, *t)),
+        Instructions::Shl(t) => shl_values(val1, val2, *t, i).ok(),
+        Instructions::Shlv(t) => shlv_values(val1, val2, *t, i).ok(),
+        Instructions::Shr(t) => shr_values(val1, val2, *t, i).ok(),
+        Instructions::Shrv(t) => shrv_values(val1, val2, *t, i).ok(),
+        Instructions::Rol(t) => rol_values(val1, val2, *t, i).ok(),
+        Instructions::Rolv(t) => rolv_values(val1, val2, *t, i).ok(),
+        Instructions::Ror(t) => ror_values(val1, val2, *t, i).ok(),
+        Instructions::Rorv(t) => rorv_values(val1, val2, *t, i).ok(),
         Instructions::And => Some(and_values(val1, val2)),
         Instructions::Or => Some(or_values(val1, val2)),
         Instructions::Xor => Some(xor_values(val1, val2)),
         Instructions::Concat => Some(concat_values(&val1, &val2)),
-        Instructions::Pow(t) => Some(pow_values(val1, val2, *t)),
-        Instructions::Powi(t) => Some(powi_values(val1, val2, *t)),
-        Instructions::Powf(t) => Some(powf_values(val1, val2, *t)),
-        Instructions::Atan2(t) => Some(atan2_values(val1, val2, *t)),
-        Instructions::Dot(t) => dot_values(val1, val2, *t).ok(),
-        Instructions::Cross(t) => cross_values(val1, val2, *t).ok(),
+        Instructions::Pow(t) => pow_values(val1, val2, *t, i).ok(),
+        Instructions::Powi(t) => powi_values(val1, val2, *t, i).ok(),
+        Instructions::Powf(t) => powf_values(val1, val2, *t, i).ok(),
+        Instructions::Powv(t) => powv_values(val1, val2, *t, i).ok(),
+        Instructions::Powiv(t) => powiv_values(val1, val2, *t, i).ok(),
+        Instructions::Powfv(t) => powfv_values(val1, val2, *t, i).ok(),
+        Instructions::Atan2(t) => atan2_values(val1, val2, *t, i).ok(),
+        Instructions::Atan2v(t) => atan2v_values(val1, val2, *t, i).ok(),
+        Instructions::Dot(t) => dot_values(val1, val2, *t, i).ok(),
+        Instructions::Cross(t) => cross_values(val1, val2, *t, i).ok(),
         _ => None,
       };
       if let Some(res_val) = result {
@@ -151,36 +165,44 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
       && let Instructions::Dup = instr2
     {
       let result = match instr3 {
-        Instructions::Add(t) => Some(add_values(val1.clone(), val1.clone(), *t)),
-        Instructions::Addv(t) => addv_values(val1.clone(), val1.clone(), *t).ok(),
-        Instructions::Sub(t) => Some(sub_values(val1.clone(), val1.clone(), *t)),
-        Instructions::Subv(t) => subv_values(val1.clone(), val1.clone(), *t).ok(),
-        Instructions::Div(t) => Some(div_values(val1.clone(), val1.clone(), *t)),
-        Instructions::Divv(t) => divv_values(val1.clone(), val1.clone(), *t).ok(),
-        Instructions::Mul(t) => Some(mul_values(val1.clone(), val1.clone(), *t)),
-        Instructions::Mulv(t) => mulv_values(val1.clone(), val1.clone(), *t).ok(),
-        Instructions::Mod(t) => Some(mod_values(val1.clone(), val1.clone(), *t)),
-        Instructions::Modv(t) => modv_values(val1.clone(), val1.clone(), *t).ok(),
+        Instructions::Add(t) => add_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Addv(t) => addv_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Sub(t) => sub_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Subv(t) => subv_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Div(t) => div_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Divv(t) => divv_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Mul(t) => mul_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Mulv(t) => mulv_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Mod(t) => mod_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Modv(t) => modv_values(val1.clone(), val1.clone(), *t, i).ok(),
         Instructions::Gt(t) => Some(gt_values(val1.clone(), val1.clone(), *t)),
         Instructions::Lt(t) => Some(lt_values(val1.clone(), val1.clone(), *t)),
         Instructions::Ge(t) => Some(ge_values(val1.clone(), val1.clone(), *t)),
         Instructions::Le(t) => Some(le_values(val1.clone(), val1.clone(), *t)),
         Instructions::Eq(t) => Some(eq_values(val1.clone(), val1.clone(), *t)),
         Instructions::Neq(t) => Some(neq_values(val1.clone(), val1.clone(), *t)),
-        Instructions::Shl(t) => Some(shl_values(val1.clone(), val1.clone(), *t)),
-        Instructions::Shr(t) => Some(shr_values(val1.clone(), val1.clone(), *t)),
-        Instructions::Rol(t) => Some(rol_values(val1.clone(), val1.clone(), *t)),
-        Instructions::Ror(t) => Some(ror_values(val1.clone(), val1.clone(), *t)),
+        Instructions::Shl(t) => shl_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Shlv(t) => shlv_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Shr(t) => shr_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Shrv(t) => shrv_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Rol(t) => rol_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Rolv(t) => rolv_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Ror(t) => ror_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Rorv(t) => rorv_values(val1.clone(), val1.clone(), *t, i).ok(),
         Instructions::And => Some(and_values(val1.clone(), val1.clone())),
         Instructions::Or => Some(or_values(val1.clone(), val1.clone())),
         Instructions::Xor => Some(xor_values(val1.clone(), val1.clone())),
         Instructions::Concat => Some(concat_values(&val1, &val1)),
-        Instructions::Pow(t) => Some(pow_values(val1.clone(), val1.clone(), *t)),
-        Instructions::Powi(t) => Some(powi_values(val1.clone(), val1.clone(), *t)),
-        Instructions::Powf(t) => Some(powf_values(val1.clone(), val1.clone(), *t)),
-        Instructions::Atan2(t) => Some(atan2_values(val1.clone(), val1.clone(), *t)),
-        Instructions::Dot(t) => dot_values(val1.clone(), val1.clone(), *t).ok(),
-        Instructions::Cross(t) => cross_values(val1.clone(), val1.clone(), *t).ok(),
+        Instructions::Pow(t) => pow_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Powi(t) => powi_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Powf(t) => powf_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Powv(t) => powv_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Powiv(t) => powiv_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Powfv(t) => powfv_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Atan2(t) => atan2_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Atan2v(t) => atan2v_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Dot(t) => dot_values(val1.clone(), val1.clone(), *t, i).ok(),
+        Instructions::Cross(t) => cross_values(val1.clone(), val1.clone(), *t, i).ok(),
         _ => None,
       };
       if let Some(res_val) = result {
@@ -199,6 +221,33 @@ mod tests {
   use super::*;
   use crate::types::{primitive_types::PrimitiveTypes, value::Value};
   use smol_str::SmolStr;
+  use std::sync::Arc;
+  #[test]
+  fn folds_valid_bitwise_vectors_and_retains_invalid_ones() {
+    let operations = [
+      Instructions::Shlv(PrimitiveTypes::Int),
+      Instructions::Shrv(PrimitiveTypes::Int),
+      Instructions::Rolv(PrimitiveTypes::Int),
+      Instructions::Rorv(PrimitiveTypes::Int),
+    ];
+    for operation in operations {
+      let operand = Instructions::PushArray(Arc::new(vec![Value::Int32(1)]));
+      let mut valid = vec![operand.clone(), operand, operation.clone()];
+      fold_constants(&mut valid);
+      assert!(matches!(
+        valid.as_slice(),
+        [
+          Instructions::PushArray(_),
+          Instructions::Nop,
+          Instructions::Nop
+        ]
+      ));
+      let invalid_operand = Instructions::PushArray(Arc::new(vec![Value::Bool(false)]));
+      let mut invalid = vec![invalid_operand.clone(), invalid_operand, operation.clone()];
+      fold_constants(&mut invalid);
+      assert_eq!(invalid[2], operation);
+    }
+  }
   #[test]
   fn folds_constant_make_array() {
     let mut bytecode = vec![
@@ -332,11 +381,71 @@ mod tests {
         crate::vm::execute::execute(bytecode, &mut None, None),
         Err(crate::modules::vmerror::VMError::TypeMismatch {
           ip: 2,
-          expected: "Int32",
-          found: "string"
+          expected: "Integer",
+          found: "String"
         })
       ));
     }
+  }
+  #[test]
+  fn leaves_invalid_constant_atan2v_for_runtime_error() {
+    let mut bytecode = vec![
+      Instructions::PushArray(Arc::new(vec![Value::Float64(1.0)])),
+      Instructions::PushArray(Arc::new(vec![Value::String("invalid".into())])),
+      Instructions::Atan2v(PrimitiveTypes::Dbl),
+      Instructions::Stop,
+    ];
+    let expected = bytecode.clone();
+    fold_constants(&mut bytecode);
+    assert_eq!(bytecode, expected);
+    assert!(matches!(
+      crate::vm::execute::execute(bytecode, &mut None, None),
+      Err(crate::modules::vmerror::VMError::TypeMismatch {
+        ip: 2,
+        expected: "Double",
+        found: "String"
+      })
+    ));
+  }
+  #[test]
+  fn leaves_invalid_scalar_binary_operation_for_runtime_error() {
+    let mut bytecode = vec![
+      Instructions::PushInt32(1),
+      Instructions::PushString(SmolStr::new("invalid")),
+      Instructions::Sub(PrimitiveTypes::Int),
+      Instructions::Stop,
+    ];
+    let expected = bytecode.clone();
+    fold_constants(&mut bytecode);
+    assert_eq!(bytecode, expected);
+    assert!(matches!(
+      crate::vm::execute::execute(bytecode, &mut None, None),
+      Err(crate::modules::vmerror::VMError::TypeMismatch {
+        ip: 2,
+        expected: "Integer",
+        found: "String"
+      })
+    ));
+  }
+  #[test]
+  fn leaves_invalid_bitwise_operation_for_runtime_error() {
+    let mut bytecode = vec![
+      Instructions::PushInt32(1),
+      Instructions::PushString(SmolStr::new("invalid")),
+      Instructions::Shl(PrimitiveTypes::Int),
+      Instructions::Stop,
+    ];
+    let expected = bytecode.clone();
+    fold_constants(&mut bytecode);
+    assert_eq!(bytecode, expected);
+    assert!(matches!(
+      crate::vm::execute::execute(bytecode, &mut None, None),
+      Err(crate::modules::vmerror::VMError::TypeMismatch {
+        ip: 2,
+        expected: "Integer",
+        found: "String"
+      })
+    ));
   }
   #[test]
   fn folds_constant_subv() {
