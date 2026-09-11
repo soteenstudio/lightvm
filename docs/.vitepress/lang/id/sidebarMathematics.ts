@@ -7,7 +7,7 @@ export const sidebarMathematics = {
       link: '/id/api-reference/instruction-set/mathematics/basic-arithmetic',
     },
     {
-      text: 'Logika & Perbandingan',
+      text: 'Perbandingan dan Logika',
       link: '/id/api-reference/instruction-set/mathematics/comparison-logic',
     },
     {
@@ -15,36 +15,20 @@ export const sidebarMathematics = {
       link: '/id/api-reference/instruction-set/mathematics/bitwise-operations',
     },
     {
-      text: 'Matematika Lanjutan',
-      link: '/id/api-reference/instruction-set/mathematics/advanced-math',
+      text: 'Eksponensiasi',
+      link: '/id/api-reference/instruction-set/mathematics/exponentiation',
     },
     {
-      text: 'Aritmatika Vektor',
-      link: '/id/api-reference/instruction-set/mathematics/vector-arithmetic',
+      text: 'Logaritma',
+      link: '/id/api-reference/instruction-set/mathematics/logarithm',
     },
     {
-      text: 'Trigonometri Vektor',
-      link: '/id/api-reference/instruction-set/mathematics/vector-trigonometry',
+      text: 'Akar',
+      link: '/id/api-reference/instruction-set/mathematics/root',
     },
     {
-      text: 'Hasil Kali Vektor',
-      link: '/id/api-reference/instruction-set/mathematics/vector-products',
-    },
-    {
-      text: 'Operasi Bitwise Vektor',
-      link: '/id/api-reference/instruction-set/mathematics/bitwise-vector',
-    },
-    {
-      text: 'Eksponensiasi Vektor',
-      link: '/id/api-reference/instruction-set/mathematics/exponentiation-vector',
-    },
-    {
-      text: 'Logaritma Vektor',
-      link: '/id/api-reference/instruction-set/mathematics/logarithm-vector',
-    },
-    {
-      text: 'Akar Vektor',
-      link: '/id/api-reference/instruction-set/mathematics/root-vector',
+      text: 'Trigonometri',
+      link: '/id/api-reference/instruction-set/mathematics/trigonometry',
     },
   ],
 };

@@ -1,10 +1,29 @@
 # Vector Logarithms
-These instructions evaluate logarithmic functions element-wise on a vector (array).
 
-They accept the float type directives `hlf`, `flt`, and `dbl`. Each instruction consumes one array operand and replaces it with an array containing the element-wise results in the selected type.
+## Purpose
 
-| Opcode | Arguments | Operands (stack) | Description |
-| :--- | :--- | :--- | :--- |
-| `lnv` | type | arr | Evaluates the natural logarithm for every array element |
-| `log2v` | type | arr | Evaluates the base-2 logarithm for every array element |
-| `log10v` | type | arr | Evaluates the base-10 logarithm for every array element |
+Evaluate logarithms element by element.
+
+## Supported instructions
+
+`lnv`, `log2v`, and `log10v`.
+
+## Stack operands and result
+
+Each instruction replaces the top array with one result array.
+
+## Supported numeric types
+
+The type argument accepts `hlf`, `flt`, or `dbl`.
+
+## Constraints and failure conditions
+
+Missing operands produce `StackUnderflow`. Invalid arrays, nonnumeric elements, or unsupported types produce `TypeMismatch`. Domain errors follow floating-point behavior.
+
+## Examples
+
+Applying `lnv dbl` to `[1, 1]` leaves `[0, 0]`.
+
+## Related instructions
+
+See [Logarithms](../mathematics/logarithm) and [Vector Exponentiation](./exponentiation-vector).

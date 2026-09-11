@@ -7,10 +7,6 @@ export const sidebarVectorMathematics = {
       link: '/api-reference/instruction-set/vector-mathematics/vector-arithmetic',
     },
     {
-      text: 'Vector Trigonometry',
-      link: '/api-reference/instruction-set/vector-mathematics/vector-trigonometry',
-    },
-    {
       text: 'Vector Products',
       link: '/api-reference/instruction-set/vector-mathematics/vector-products',
     },
@@ -29,6 +25,10 @@ export const sidebarVectorMathematics = {
     {
       text: 'Vector Roots',
       link: '/api-reference/instruction-set/vector-mathematics/root-vector',
+    },
+    {
+      text: 'Vector Trigonometry',
+      link: '/api-reference/instruction-set/vector-mathematics/vector-trigonometry',
     },
   ],
 };

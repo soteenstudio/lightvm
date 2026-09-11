@@ -1,9 +1,29 @@
-# Comparison & Logic
-These instructions evaluate relations between values and process boolean expressions for conditional flows.
+# Comparison and Logic
 
-| Opcode | Arguments | Operands (stack) | Description |
-| :--- | :--- | :--- | :--- |
-| `gt` / `lt` | type | val1, val2 | Greater Than or Less Than |
-| `ge` / `le` | type | val1, val2 | Greater/Less Than or Equal |
-| `eq` / `neq` | type | val1, val2 | Equal or Not Equal |
-| `and` / `or` | - | val1, val2 | Boolean logic operations (AND / OR) |
+## Purpose
+
+Compare scalar values and evaluate truthiness.
+
+## Supported instructions
+
+`gt`, `lt`, `ge`, `le`, `eq`, `neq`, `and`, `or`, `xor`, and `not`.
+
+## Stack operands and result
+
+Binary instructions consume the next-to-top value as the left operand and the top value as the right operand, then push one boolean. `not` replaces the top value with its boolean negation.
+
+## Supported numeric types
+
+Comparisons use a type argument. Ordered comparisons support numeric types; `eq` and `neq` also support `str`. Logic instructions have no type argument and use value truthiness.
+
+## Constraints and failure conditions
+
+Missing operands produce `StackUnderflow`. These implementations coerce values through the selected comparison type and do not report `TypeMismatch`.
+
+## Examples
+
+With `2` below `3`, `lt int` leaves `true`. Applying `not` to `true` leaves `false`.
+
+## Related instructions
+
+See [Basic Arithmetic](./basic-arithmetic) and [Bitwise Operations](./bitwise-operations).
