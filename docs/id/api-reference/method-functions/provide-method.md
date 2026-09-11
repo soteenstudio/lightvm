@@ -22,5 +22,5 @@ Dalam **Rust**, Anda dapat menyediakan logika Anda menggunakan representasi stri
 :::
 
 ::: info
-**Kapabilitas yang Dibutuhkan**: tidak ada kapabilitas khusus
+**Kapabilitas yang Dibutuhkan**: `Control`
 :::

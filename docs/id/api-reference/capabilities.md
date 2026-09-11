@@ -1,13 +1,24 @@
 # Kapabilitas
-Keamanan dan perilaku `LightVM` dikelola melalui sistem kapabilitas yang tangguh. Gunakan tabel berikut untuk memahami izin apa yang diperlukan untuk kasus penggunaan spesifik Anda:
 
-| Kapabilitas | Level | Deskripsi |
-|------------|-------|-------------|
-| `Control` | Rendah | Memberikan izin untuk memulai/menghentikan eksekusi dan fungsi ekspor. |
-| `Observe` | Sedang | Memungkinkan host untuk memeriksa status internal, tumpukan variabel, dan metrik. |
-| `Debug` | Tinggi | Membuka akses ke log internal yang detail dan status tersembunyi untuk keperluan pemecahan masalah. |
-| `Unsafe` | Kritis | Menghilangkan pengaman, memungkinkan penghentian manual dan akses langsung ke memori/proses. |
+`Capability` memberi izin kepada operasi host untuk mengakses fungsi `LightVM` yang dilindungi. Teruskan nilai yang diperlukan melalui `VMConfig.caps`. TypeScript menggunakan `Observe` secara bawaan.
 
-::: warning Pemberitahuan Keamanan
-Selalu patuhi **Prinsip Hak Akses Minimal**. Aktifkan hanya kemampuan spesifik yang dibutuhkan aplikasi Anda untuk memastikan lingkungan eksekusi yang aman dan dapat diprediksi.
+| Kapabilitas | Nilai numerik | Operasi yang dilindungi |
+| --- | ---: | --- |
+| `Control` | `0` | `run`, `compile`, `embedded`, ekspor fungsi, `provide`, menghapus output, dan optimasi bytecode |
+| `Observe` | `1` | `inspect`, membaca output, dan ekspor variabel |
+| `Debug` | `2` | Benchmark |
+| `Unsafe` | `3` | `halt` |
+
+## Konfigurasi
+
+```ts
+const vm = new LightVM({
+  caps: [Capability.Control, Capability.Observe],
+})
+```
+
+Kapabilitas yang tidak diberikan menyebabkan operasi terlindungi gagal. Kapabilitas tidak menggantikan batas sumber daya dalam `SecurityConfig`; konfigurasikan keduanya untuk bytecode yang tidak tepercaya.
+
+::: warning
+Berikan hanya kapabilitas yang diperlukan aplikasi host. `Unsafe` mengizinkan penghentian eksternal, tetapi tidak mengaktifkan `SecurityConfig.unsafeMode`.
 :::
