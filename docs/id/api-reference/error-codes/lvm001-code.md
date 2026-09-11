@@ -3,7 +3,7 @@ Tipe eror runtime: `StackOverflow`.
 
 ## Penyebab
 
-Error ini terjadi ketika operasi stack mencoba menambahkan nilai setelah stack mencapai kapasitasnya. `SecurityConfig.max_stack_size` mengatur kapasitas awal stack untuk eksekusi; nilai `0` membuat kapasitas bawaan tetap berlaku.
+Kapasitas stack bisa diatur sebelum eksekusi dengan menggunakan `setMaxStackSize(128)` atau `set_max_stack_size(128)`, atau dengan memasukkan nilai `0` untuk tetap menggunakan kapasitas bawaan.
 
 Instruksi `val` juga memunculkan `StackOverflow` ketika indeks variabelnya mencapai batas variabel tetap. Instruksi `make_obj` memunculkan error yang sama ketika kapasitas objek yang diminta melebihi batas implementasi.
 

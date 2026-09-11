@@ -3,7 +3,7 @@ Runtime error type: `StackOverflow`.
 
 ## Cause
 
-This error occurs when a stack operation attempts to add a value after the stack reaches its capacity. `SecurityConfig.max_stack_size` configures the initial stack capacity for execution; a value of `0` leaves the default capacity in effect.
+The stack capacity can be configured before execution by using `setMaxStackSize(128)` or `set_max_stack_size(128)`, or by passing `0` to keep the default capacity.
 
 The `val` instruction also raises `StackOverflow` when its variable index reaches the fixed variable limit. The `make_obj` instruction raises the same error when its requested object capacity exceeds the implementation limit.
 
