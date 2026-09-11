@@ -30,5 +30,21 @@ export const sidebarMathematics = {
       text: 'Vector Products',
       link: '/api-reference/instruction-set/mathematics/vector-products',
     },
+    {
+      text: 'Vector Bitwise Operations',
+      link: '/api-reference/instruction-set/mathematics/bitwise-vector',
+    },
+    {
+      text: 'Vector Exponentiation',
+      link: '/api-reference/instruction-set/mathematics/exponentiation-vector',
+    },
+    {
+      text: 'Vector Logarithms',
+      link: '/api-reference/instruction-set/mathematics/logarithm-vector',
+    },
+    {
+      text: 'Vector Roots',
+      link: '/api-reference/instruction-set/mathematics/root-vector',
+    },
   ],
 };
