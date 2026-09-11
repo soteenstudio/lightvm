@@ -8,7 +8,7 @@
 | `Normal` | `1` | 1,000 ms |
 | `Expensive` | `2` | 5,000 ms |
 
-Set the value with `setTimeBudget(TimeBudget.Cheap)` before calling `tools().optimizeBytecode(...)`. A larger budget lets optimization passes run longer but does not guarantee a specific optimization result.
+Set the value with `setTimeBudget(TimeBudget.Cheap)` (or `set_time_budget(TimeBudget::Cheap)` on Rust) before calling `tools().optimizeBytecode(...)` (or `tools().optimize_bytecode(...)` on Rust). A larger budget lets optimization passes run longer but does not guarantee a specific optimization result.
 
 ::: info
 Use `SecurityConfig.maxTicks` to limit execution work. `TimeBudget` and `maxTicks` apply to different phases.

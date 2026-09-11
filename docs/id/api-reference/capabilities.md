@@ -11,11 +11,13 @@
 
 ## Konfigurasi
 
-```ts
-const vm = new LightVM({
-  caps: [Capability.Control, Capability.Observe],
-})
-```
+::: code-group
+
+<<< @/examples/capsConfig.ts{ts:line-numbers}[TypeScript]
+
+<<< @/examples/caps_config.rs{rs:line-numbers}[Rust]
+
+:::
 
 Kapabilitas yang tidak diberikan menyebabkan operasi terlindungi gagal. Kapabilitas tidak menggantikan batas sumber daya dalam `SecurityConfig`; konfigurasikan keduanya untuk bytecode yang tidak tepercaya.
 

@@ -11,11 +11,13 @@ A `Capability` grants a host operation permission to access a protected `LightVM
 
 ## Configuration
 
-```ts
-const vm = new LightVM({
-  caps: [Capability.Control, Capability.Observe],
-})
-```
+::: code-group
+
+<<< @/examples/capsConfig.ts{ts:line-numbers}[TypeScript]
+
+<<< @/examples/caps_config.rs{rs:line-numbers}[Rust]
+
+:::
 
 Missing capabilities cause the protected operation to fail. Capabilities do not replace resource limits in `SecurityConfig`; configure both for untrusted bytecode.
 
