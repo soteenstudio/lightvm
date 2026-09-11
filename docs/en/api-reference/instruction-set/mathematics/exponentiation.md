@@ -1,29 +1,10 @@
 # Exponentiation
 
-## Purpose
+These instructions evaluate scalar powers and the natural exponential function.
 
-Evaluate scalar powers and the natural exponential function.
-
-## Supported instructions
-
-`pow`, `powi`, `powf`, and `exp`.
-
-## Stack operands and result
-
-`pow`, `powi`, and `powf` consume a base below an exponent and replace both with one result. `exp` replaces the top value with e raised to that value.
-
-## Supported numeric types
-
-`pow` accepts all numeric types, `powi` and `powf` apply their implemented exponent conversions, and `exp` accepts `hlf`, `flt`, or `dbl`.
-
-## Constraints and failure conditions
-
-Missing operands produce `StackUnderflow`. Values or type arguments unsupported by an instruction produce `TypeMismatch`.
-
-## Examples
-
-With `2` below `3`, `pow int` leaves `8`. With `0` on top, `exp dbl` leaves `1`.
-
-## Related instructions
-
-See [Basic Arithmetic](./basic-arithmetic) and [Vector Exponentiation](../vector-mathematics/exponentiation-vector).
+| Opcode | Arguments | Operands (stack) | Description |
+| --- | --- | --- | --- |
+| `pow` | type | base, exponent | Replaces the operands with an integer power; type must be `sht`, `int`, `lng`, or `oct`, and the top value is the exponent. |
+| `powi` | type | base, exponent | Replaces the operands with a floating-point base raised to an integer exponent; type must be `hlf`, `flt`, or `dbl`, and the top value is the exponent. |
+| `powf` | type | base, exponent | Replaces the operands with a floating-point power; type must be `hlf`, `flt`, or `dbl`, and the top value is the exponent. |
+| `exp` | type | value | Replaces one operand with e raised to `value`; type must be `hlf`, `flt`, or `dbl`. |

@@ -1,29 +1,8 @@
 # Roots
 
-## Purpose
+These instructions evaluate scalar square and cube roots.
 
-Evaluate scalar square and cube roots.
-
-## Supported instructions
-
-`sqrt` and `cbrt`.
-
-## Stack operands and result
-
-Each instruction replaces the top stack value with its root.
-
-## Supported numeric types
-
-The type argument accepts `hlf`, `flt`, or `dbl`.
-
-## Constraints and failure conditions
-
-An empty stack produces `StackUnderflow`. A nonnumeric value or unsupported type argument produces `TypeMismatch`. Negative square roots follow floating-point behavior.
-
-## Examples
-
-With `9` on top, `sqrt dbl` leaves `3`.
-
-## Related instructions
-
-See [Exponentiation](./exponentiation) and [Vector Roots](../vector-mathematics/root-vector).
+| Opcode | Arguments | Operands (stack) | Description |
+| --- | --- | --- | --- |
+| `sqrt` | type | value | Replaces one operand with its square root; type must be `hlf`, `flt`, or `dbl`. |
+| `cbrt` | type | value | Replaces one operand with its cube root; type must be `hlf`, `flt`, or `dbl`. |

@@ -1,29 +1,10 @@
 # Eksponensiasi
 
-## Tujuan
+Instruksi ini mengevaluasi perpangkatan skalar dan fungsi eksponensial alami.
 
-Menghitung perpangkatan skalar dan fungsi eksponensial natural.
-
-## Instruksi yang didukung
-
-`pow`, `powi`, `powf`, dan `exp`.
-
-## Operan stack dan hasil
-
-`pow`, `powi`, dan `powf` menggunakan basis di bawah eksponen lalu mengganti keduanya dengan satu hasil. `exp` mengganti nilai teratas dengan e pangkat nilai tersebut.
-
-## Tipe numerik yang didukung
-
-`pow` menerima semua tipe numerik, `powi` dan `powf` menerapkan konversi eksponen yang diimplementasikan, dan `exp` menerima `hlf`, `flt`, atau `dbl`.
-
-## Batasan dan kondisi kegagalan
-
-Operan yang tidak tersedia menghasilkan `StackUnderflow`. Nilai atau argumen tipe yang tidak didukung instruksi menghasilkan `TypeMismatch`.
-
-## Contoh
-
-Dengan `2` di bawah `3`, `pow int` menyisakan `8`. Dengan `0` di atas, `exp dbl` menyisakan `1`.
-
-## Instruksi terkait
-
-Lihat [Aritmatika Dasar](./basic-arithmetic) dan [Eksponensiasi Vektor](../vector-mathematics/exponentiation-vector).
+| Kode Operasi | Argumen | Operan (stack) | Deskripsi |
+| --- | --- | --- | --- |
+| `pow` | tipe | basis, eksponen | Mengganti operan dengan perpangkatan bilangan bulat; tipe harus `sht`, `int`, `lng`, atau `oct`, dan nilai teratas adalah eksponen. |
+| `powi` | tipe | basis, eksponen | Mengganti operan dengan basis floating-point yang dipangkatkan dengan eksponen integer; tipe harus `hlf`, `flt`, atau `dbl`, dan nilai teratas adalah eksponen. |
+| `powf` | tipe | basis, eksponen | Mengganti operan dengan perpangkatan floating-point; tipe harus `hlf`, `flt`, atau `dbl`, dan nilai teratas adalah eksponen. |
+| `exp` | tipe | nilai | Mengganti satu operan dengan e pangkat `value`; tipe harus `hlf`, `flt`, atau `dbl`. |

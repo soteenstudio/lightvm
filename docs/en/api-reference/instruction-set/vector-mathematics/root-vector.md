@@ -1,29 +1,8 @@
 # Vector Roots
 
-## Purpose
+These instructions evaluate roots element by element.
 
-Evaluate square and cube roots element by element.
-
-## Supported instructions
-
-`sqrtv` and `cbrtv`.
-
-## Stack operands and result
-
-Each instruction replaces the top array with one result array.
-
-## Supported numeric types
-
-The type argument accepts `hlf`, `flt`, or `dbl`.
-
-## Constraints and failure conditions
-
-Missing operands produce `StackUnderflow`. Invalid arrays, nonnumeric elements, or unsupported types produce `TypeMismatch`. Negative square roots follow floating-point behavior.
-
-## Examples
-
-Applying `sqrtv dbl` to `[4, 9]` leaves `[2, 3]`.
-
-## Related instructions
-
-See [Roots](../mathematics/root) and [Vector Exponentiation](./exponentiation-vector).
+| Opcode | Arguments | Operands (stack) | Description |
+| --- | --- | --- | --- |
+| `sqrtv` | type | values | Replaces one numeric array with an equal-length array of square roots; type must be `hlf`, `flt`, or `dbl`. |
+| `cbrtv` | type | values | Replaces one numeric array with an equal-length array of cube roots; type must be `hlf`, `flt`, or `dbl`. |

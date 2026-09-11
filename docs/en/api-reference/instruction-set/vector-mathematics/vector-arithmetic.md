@@ -1,29 +1,12 @@
 # Vector Arithmetic
 
-## Purpose
+These instructions perform element-wise arithmetic on arrays.
 
-Perform element-wise arithmetic on arrays.
-
-## Supported instructions
-
-`addv`, `subv`, `mulv`, `divv`, `modv`, and `negv`.
-
-## Stack operands and result
-
-Binary instructions consume two arrays, using the next-to-top array as the left operand, and replace them with one result array. `negv` replaces the top array.
-
-## Supported numeric types
-
-The type argument accepts `sht`, `int`, `lng`, `oct`, `hlf`, `flt`, or `dbl`.
-
-## Constraints and failure conditions
-
-Binary operands must be arrays of equal length. Missing operands produce `StackUnderflow`; nonnumeric elements, invalid arrays, unequal lengths, or unsupported type arguments produce `TypeMismatch`.
-
-## Examples
-
-Applying `addv int` to `[1, 2]` below `[3, 4]` leaves `[4, 6]`.
-
-## Related instructions
-
-See [Basic Arithmetic](../mathematics/basic-arithmetic) and [Vector Products](./vector-products).
+| Opcode | Arguments | Operands (stack) | Description |
+| --- | --- | --- | --- |
+| `addv` | type | left, right | Replaces two equal-length numeric arrays with an array of element-wise sums in the selected type. |
+| `subv` | type | left, right | Replaces two equal-length numeric arrays with an array of `left[i] - right[i]` in the selected type. |
+| `mulv` | type | left, right | Replaces two equal-length numeric arrays with an array of element-wise products in the selected type. |
+| `divv` | type | left, right | Replaces two equal-length numeric arrays with an array of `left[i] / right[i]` in the selected type. |
+| `modv` | type | left, right | Replaces two equal-length numeric arrays with an array of element-wise remainders in the selected type. |
+| `negv` | type | values | Replaces one numeric array with an equal-length array containing each element's negation in the selected type. |
