@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::vector::expv::{
+use crate::instructions::math::vector::logarithm::expv::{
   expv_f16in::expv_f16in, expv_f32in::expv_f32in, expv_f64in::expv_f64in,
 };
 use crate::modules::vmerror::VMError;

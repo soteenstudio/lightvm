@@ -39,18 +39,17 @@ use crate::instructions::math::{
       mulv_func::mulv_func, negv_func::negv_func, powfv_func::powfv_func, powiv_func::powiv_func,
       powv_func::powv_func, sinv_func::sinv_func, subv_func::subv_func, tanv_func::tanv_func,
     },
-    cbrtv_func::cbrtv_func,
+    bitwise::{
+      rotate::{rolv_func::rolv_func, rorv_func::rorv_func},
+      shift::{shlv_func::shlv_func, shrv_func::shrv_func},
+    },
     cross_func::cross_func,
     dot_func::dot_func,
-    expv_func::expv_func,
-    lnv_func::lnv_func,
-    log2v_func::log2v_func,
-    log10v_func::log10v_func,
-    rolv_func::rolv_func,
-    rorv_func::rorv_func,
-    shlv_func::shlv_func,
-    shrv_func::shrv_func,
-    sqrtv_func::sqrtv_func,
+    logarithm::{
+      expv_func::expv_func, lnv_func::lnv_func, log2v_func::log2v_func,
+      log10v_func::log10v_func,
+    },
+    root::{cbrtv_func::cbrtv_func, sqrtv_func::sqrtv_func},
     trigonometry::{
       hyperbolic::{
         coshv_func::coshv_func,

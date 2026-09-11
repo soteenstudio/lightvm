@@ -8,8 +8,8 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::vector::rolv::{
-  rolv_i16in::rolv_i16in, rolv_i32in::rolv_i32in, rolv_i64in::rolv_i64in, rolv_i128in::rolv_i128in,
+use crate::instructions::math::vector::bitwise::shift::shrv::{
+  shrv_i16in::shrv_i16in, shrv_i32in::shrv_i32in, shrv_i64in::shrv_i64in, shrv_i128in::shrv_i128in,
 };
 use crate::modules::vmerror::VMError;
 use crate::types::expected_category::ExpectedCategory;
@@ -19,7 +19,7 @@ use crate::types::value::Value;
 use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
 
 #[inline(always)]
-pub fn rolv_values(
+pub fn shrv_values(
   left_value: Value,
   right_value: Value,
   num_type: PrimitiveTypes,
@@ -52,10 +52,10 @@ pub fn rolv_values(
     }
   }
   Ok(match num_type {
-    PrimitiveTypes::Sht => Value::Array(rolv_i16in(&left, &right)),
-    PrimitiveTypes::Int => Value::Array(rolv_i32in(&left, &right)),
-    PrimitiveTypes::Lng => Value::Array(rolv_i64in(&left, &right)),
-    PrimitiveTypes::Oct => Value::Array(rolv_i128in(&left, &right)),
+    PrimitiveTypes::Sht => Value::Array(shrv_i16in(&left, &right)),
+    PrimitiveTypes::Int => Value::Array(shrv_i32in(&left, &right)),
+    PrimitiveTypes::Lng => Value::Array(shrv_i64in(&left, &right)),
+    PrimitiveTypes::Oct => Value::Array(shrv_i128in(&left, &right)),
     _ => {
       return Err(VMError::TypeMismatch {
         ip,
@@ -67,11 +67,11 @@ pub fn rolv_values(
 }
 
 #[inline]
-pub fn rolv_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
+pub fn shrv_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
   if stack.len() < 2 {
-    return Err(VMError::StackUnderflow { ip, opcode: "ROLV" });
+    return Err(VMError::StackUnderflow { ip, opcode: "SHRV" });
   }
-  let result = rolv_values(
+  let result = shrv_values(
     stack[stack.len() - 2].clone(),
     stack.last().unwrap().clone(),
     num_type,
@@ -100,7 +100,7 @@ mod tests {
       PrimitiveTypes::Oct,
     ] {
       assert!(
-        rolv_values(
+        shrv_values(
           array(vec![Value::Int32(1)]),
           array(vec![Value::Int32(1)]),
           num_type,
@@ -134,7 +134,7 @@ mod tests {
     for (left, right, num_type) in cases {
       let mut stack = Stack::from_vec(vec![left, right]);
       let original = stack.clone();
-      assert!(rolv_func(&mut stack, num_type, 17).is_err());
+      assert!(shrv_func(&mut stack, num_type, 17).is_err());
       assert_eq!(stack, original);
     }
   }
@@ -144,10 +144,10 @@ mod tests {
     let mut stack = Stack::from_vec(vec![array(vec![])]);
     let original = stack.clone();
     assert!(matches!(
-      rolv_func(&mut stack, PrimitiveTypes::Int, 18),
+      shrv_func(&mut stack, PrimitiveTypes::Int, 18),
       Err(VMError::StackUnderflow {
         ip: 18,
-        opcode: "ROLV"
+        opcode: "SHRV"
       })
     ));
     assert_eq!(stack, original);

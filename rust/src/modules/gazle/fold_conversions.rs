@@ -36,12 +36,11 @@ use crate::instructions::{
         cosv_func::cosv_values, negv_func::negv_values, sinv_func::sinv_values,
         tanv_func::tanv_values,
       },
-      cbrtv_func::cbrtv_values,
-      expv_func::expv_values,
-      lnv_func::lnv_values,
-      log2v_func::log2v_values,
-      log10v_func::log10v_values,
-      sqrtv_func::sqrtv_values,
+      logarithm::{
+        expv_func::expv_values, lnv_func::lnv_values, log2v_func::log2v_values,
+        log10v_func::log10v_values,
+      },
+      root::{cbrtv_func::cbrtv_values, sqrtv_func::sqrtv_values},
       trigonometry::{
         hyperbolic::{
           coshv_func::coshv_values,

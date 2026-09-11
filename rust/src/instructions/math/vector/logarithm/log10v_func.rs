@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::vector::log10v::{
+use crate::instructions::math::vector::logarithm::log10v::{
   log10v_f16in::log10v_f16in, log10v_f32in::log10v_f32in, log10v_f64in::log10v_f64in,
 };
 use crate::modules::vmerror::VMError;
