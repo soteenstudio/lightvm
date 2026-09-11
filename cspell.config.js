@@ -106,9 +106,19 @@ export default {
     'acosv',
     'atanv',
     'atan2v',
+    'cbrtv',
+    'expv',
+    'lnv',
+    'log2v',
+    'log10v',
     'powv',
     'powiv',
-    'powfv'
+    'powfv',
+    'rolv',
+    'rorv',
+    'shlv',
+    'shrv',
+    'sqrtv'
   ],
   ignorePaths: [
     'node_modules/**',
