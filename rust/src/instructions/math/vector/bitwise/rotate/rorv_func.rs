@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::vector::rorv::{
+use crate::instructions::math::vector::bitwise::rotate::rorv::{
   rorv_i16in::rorv_i16in, rorv_i32in::rorv_i32in, rorv_i64in::rorv_i64in, rorv_i128in::rorv_i128in,
 };
 use crate::modules::vmerror::VMError;

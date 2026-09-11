@@ -8,7 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use crate::instructions::math::vector::sqrtv::{
+use crate::instructions::math::vector::root::sqrtv::{
   sqrtv_f16in::sqrtv_f16in, sqrtv_f32in::sqrtv_f32in, sqrtv_f64in::sqrtv_f64in,
 };
 use crate::modules::vmerror::VMError;
