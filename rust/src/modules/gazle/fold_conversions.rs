@@ -36,6 +36,11 @@ use crate::instructions::{
         cosv_func::cosv_values, negv_func::negv_values, sinv_func::sinv_values,
         tanv_func::tanv_values,
       },
+      logarithm::{
+        expv_func::expv_values, lnv_func::lnv_values, log2v_func::log2v_values,
+        log10v_func::log10v_values,
+      },
+      root::{cbrtv_func::cbrtv_values, sqrtv_func::sqrtv_values},
       trigonometry::{
         hyperbolic::{
           coshv_func::coshv_values,
@@ -98,11 +103,17 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         Instructions::Acoshv(t) => acoshv_values(val, *t, i).ok(),
         Instructions::Atanhv(t) => atanhv_values(val, *t, i).ok(),
         Instructions::Sqrt(t) => sqrt_values(val, *t, i).ok(),
+        Instructions::Sqrtv(t) => sqrtv_values(val, *t, i).ok(),
         Instructions::Cbrt(t) => cbrt_values(val, *t, i).ok(),
+        Instructions::Cbrtv(t) => cbrtv_values(val, *t, i).ok(),
         Instructions::Neg(t) => neg_values(val, *t, i).ok(),
         Instructions::Negv(t) => negv_values(val, *t, i).ok(),
         Instructions::Ln(t) => ln_values(val, *t, i).ok(),
+        Instructions::Lnv(t) => lnv_values(val, *t, i).ok(),
         Instructions::Exp(t) => exp_values(val, *t, i).ok(),
+        Instructions::Expv(t) => expv_values(val, *t, i).ok(),
+        Instructions::Log2v(t) => log2v_values(val, *t, i).ok(),
+        Instructions::Log10v(t) => log10v_values(val, *t, i).ok(),
         _ => None,
       };
       if let Some(res_val) = folded {
@@ -120,6 +131,34 @@ mod tests {
   use super::*;
   use crate::types::{primitive_types::PrimitiveTypes, value::Value};
   use std::sync::Arc;
+  #[test]
+  fn folds_valid_unary_float_vectors_and_retains_invalid_ones() {
+    let operations = [
+      Instructions::Lnv(PrimitiveTypes::Flt),
+      Instructions::Log2v(PrimitiveTypes::Flt),
+      Instructions::Log10v(PrimitiveTypes::Flt),
+      Instructions::Sqrtv(PrimitiveTypes::Flt),
+      Instructions::Cbrtv(PrimitiveTypes::Flt),
+      Instructions::Expv(PrimitiveTypes::Flt),
+    ];
+    for operation in operations {
+      let mut valid = vec![
+        Instructions::PushArray(Arc::new(vec![Value::Float32(1.0)])),
+        operation.clone(),
+      ];
+      fold_conversions(&mut valid);
+      assert!(matches!(
+        valid.as_slice(),
+        [Instructions::PushArray(_), Instructions::Nop]
+      ));
+      let mut invalid = vec![
+        Instructions::PushArray(Arc::new(vec![Value::Bool(false)])),
+        operation.clone(),
+      ];
+      fold_conversions(&mut invalid);
+      assert_eq!(invalid[1], operation);
+    }
+  }
   #[test]
   fn folds_valid_negv_and_leaves_invalid_negv_for_runtime() {
     let mut valid = vec![
