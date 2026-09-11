@@ -30,7 +30,10 @@ use crate::instructions::{
         mulv_func::mulv_values, powfv_func::powfv_values, powiv_func::powiv_values,
         powv_func::powv_values, subv_func::subv_values,
       },
-      bitwise_func::{rolv_values, rorv_values, shlv_values, shrv_values},
+      bitwise::{
+        rotate::{rolv_func::rolv_values, rorv_func::rorv_values},
+        shift::{shlv_func::shlv_values, shrv_func::shrv_values},
+      },
       cross_func::cross_values,
       dot_func::dot_values,
       trigonometry::inverse::atan2v_func::atan2v_values,

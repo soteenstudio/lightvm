@@ -8,12 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub(crate) mod arithmetic;
-pub(crate) mod bitwise;
-pub(crate) mod cross;
-pub(crate) mod cross_func;
-pub(crate) mod dot;
-pub(crate) mod dot_func;
-pub(crate) mod logarithm;
-pub(crate) mod root;
-pub(crate) mod trigonometry;
+pub(crate) mod cbrtv;
+pub(crate) mod cbrtv_func;
+pub(crate) mod sqrtv;
+pub(crate) mod sqrtv_func;
