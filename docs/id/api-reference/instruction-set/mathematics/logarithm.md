@@ -1,29 +1,9 @@
 # Logaritma
 
-## Tujuan
+Instruksi ini mengevaluasi fungsi logaritma skalar.
 
-Menghitung fungsi logaritma skalar.
-
-## Instruksi yang didukung
-
-`ln`, `log2`, dan `log10`.
-
-## Operan stack dan hasil
-
-Setiap instruksi mengganti nilai teratas stack dengan logaritmanya.
-
-## Tipe numerik yang didukung
-
-Argumen tipe menerima `hlf`, `flt`, atau `dbl`.
-
-## Batasan dan kondisi kegagalan
-
-Stack kosong menghasilkan `StackUnderflow`. Nilai nonnumerik atau argumen tipe yang tidak didukung menghasilkan `TypeMismatch`. Error domain mengikuti perilaku floating-point.
-
-## Contoh
-
-Dengan `1` di atas, `ln dbl` menyisakan `0`.
-
-## Instruksi terkait
-
-Lihat [Eksponensiasi](./exponentiation) dan [Logaritma Vektor](../vector-mathematics/logarithm-vector).
+| Kode Operasi | Argumen | Operan (stack) | Deskripsi |
+| --- | --- | --- | --- |
+| `ln` | tipe | nilai | Mengganti satu operan dengan logaritma alaminya; tipe harus `hlf`, `flt`, atau `dbl`. |
+| `log2` | tipe | nilai | Mengganti satu operan dengan logaritma basis 2; tipe harus `hlf`, `flt`, atau `dbl`. |
+| `log10` | tipe | nilai | Mengganti satu operan dengan logaritma basis 10; tipe harus `hlf`, `flt`, atau `dbl`. |

@@ -1,29 +1,16 @@
 # Comparison and Logic
 
-## Purpose
+These instructions compare scalar values and evaluate value truthiness.
 
-Compare scalar values and evaluate truthiness.
-
-## Supported instructions
-
-`gt`, `lt`, `ge`, `le`, `eq`, `neq`, `and`, `or`, `xor`, and `not`.
-
-## Stack operands and result
-
-Binary instructions consume the next-to-top value as the left operand and the top value as the right operand, then push one boolean. `not` replaces the top value with its boolean negation.
-
-## Supported numeric types
-
-Comparisons use a type argument. Ordered comparisons support numeric types; `eq` and `neq` also support `str`. Logic instructions have no type argument and use value truthiness.
-
-## Constraints and failure conditions
-
-Missing operands produce `StackUnderflow`. These implementations coerce values through the selected comparison type and do not report `TypeMismatch`.
-
-## Examples
-
-With `2` below `3`, `lt int` leaves `true`. Applying `not` to `true` leaves `false`.
-
-## Related instructions
-
-See [Basic Arithmetic](./basic-arithmetic) and [Bitwise Operations](./bitwise-operations).
+| Opcode | Arguments | Operands (stack) | Description |
+| --- | --- | --- | --- |
+| `gt` | type | left, right | Replaces two operands with whether `left > right` after conversion to the selected type. |
+| `lt` | type | left, right | Replaces two operands with whether `left < right` after conversion to the selected type. |
+| `ge` | type | left, right | Replaces two operands with whether `left >= right` after conversion to the selected type. |
+| `le` | type | left, right | Replaces two operands with whether `left <= right` after conversion to the selected type. |
+| `eq` | type | left, right | Replaces two operands with whether they are equal after conversion to the selected type. |
+| `neq` | type | left, right | Replaces two operands with whether they differ after conversion to the selected type. |
+| `and` | - | left, right | Replaces two operands with the Boolean AND of their truthiness. |
+| `or` | - | left, right | Replaces two operands with the Boolean OR of their truthiness. |
+| `xor` | - | left, right | Replaces two operands with the Boolean exclusive OR of their truthiness. |
+| `not` | - | value | Replaces one operand with the Boolean negation of its truthiness. |

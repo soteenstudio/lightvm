@@ -1,29 +1,12 @@
 # Aritmatika Vektor
 
-## Tujuan
+Instruksi ini melakukan aritmatika element-wise pada array.
 
-Melakukan aritmatika element-wise pada array.
-
-## Instruksi yang didukung
-
-`addv`, `subv`, `mulv`, `divv`, `modv`, dan `negv`.
-
-## Operan stack dan hasil
-
-Instruksi biner menggunakan dua array dengan array kedua dari atas sebagai operan kiri, lalu menggantinya dengan satu array hasil. `negv` mengganti array teratas.
-
-## Tipe numerik yang didukung
-
-Argumen tipe menerima `sht`, `int`, `lng`, `oct`, `hlf`, `flt`, atau `dbl`.
-
-## Batasan dan kondisi kegagalan
-
-Operan biner harus berupa array dengan panjang sama. Operan yang tidak tersedia menghasilkan `StackUnderflow`; elemen nonnumerik, array tidak valid, panjang berbeda, atau argumen tipe yang tidak didukung menghasilkan `TypeMismatch`.
-
-## Contoh
-
-Menerapkan `addv int` pada `[1, 2]` di bawah `[3, 4]` menyisakan `[4, 6]`.
-
-## Instruksi terkait
-
-Lihat [Aritmatika Dasar](../mathematics/basic-arithmetic) dan [Hasil Kali Vektor](./vector-products).
+| Kode Operasi | Argumen | Operan (stack) | Deskripsi |
+| --- | --- | --- | --- |
+| `addv` | tipe | kiri, kanan | Mengganti dua array numerik dengan panjang sama dengan array hasil penjumlahan element-wise dalam tipe yang dipilih. |
+| `subv` | tipe | kiri, kanan | Mengganti dua array numerik dengan panjang sama dengan array `left[i] - right[i]` dalam tipe yang dipilih. |
+| `mulv` | tipe | kiri, kanan | Mengganti dua array numerik dengan panjang sama dengan array hasil perkalian element-wise dalam tipe yang dipilih. |
+| `divv` | tipe | kiri, kanan | Mengganti dua array numerik dengan panjang sama dengan array `left[i] / right[i]` dalam tipe yang dipilih. |
+| `modv` | tipe | kiri, kanan | Mengganti dua array numerik dengan panjang sama dengan array sisa pembagian element-wise dalam tipe yang dipilih. |
+| `negv` | tipe | nilai | Mengganti satu array numerik dengan array berpanjang sama yang berisi negasi setiap elemen dalam tipe yang dipilih. |

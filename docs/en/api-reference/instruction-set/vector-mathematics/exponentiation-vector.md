@@ -1,29 +1,10 @@
 # Vector Exponentiation
 
-## Purpose
+These instructions evaluate powers and natural exponentials element by element.
 
-Evaluate powers and natural exponentials element by element.
-
-## Supported instructions
-
-`powv`, `powiv`, `powfv`, and `expv`.
-
-## Stack operands and result
-
-Power instructions consume equally sized base and exponent arrays and leave one result array. `expv` replaces the top array.
-
-## Supported numeric types
-
-`powv`, `powiv`, and `powfv` accept implemented numeric type combinations. `expv` accepts `hlf`, `flt`, or `dbl`.
-
-## Constraints and failure conditions
-
-Power arrays must have equal length. Missing operands produce `StackUnderflow`; invalid arrays, nonnumeric elements, unequal lengths, or unsupported types produce `TypeMismatch`.
-
-## Examples
-
-Applying `powv int` to `[2, 3]` below `[3, 2]` leaves `[8, 9]`.
-
-## Related instructions
-
-See [Exponentiation](../mathematics/exponentiation) and [Vector Logarithms](./logarithm-vector).
+| Opcode | Arguments | Operands (stack) | Description |
+| --- | --- | --- | --- |
+| `powv` | type | bases, exponents | Replaces two equal-length numeric arrays with integer element-wise powers; type must be `sht`, `int`, `lng`, or `oct`, and the top array supplies exponents. |
+| `powiv` | type | bases, exponents | Replaces two equal-length numeric arrays with floating-point bases raised to integer exponents; type must be `hlf`, `flt`, or `dbl`, and the top array supplies exponents. |
+| `powfv` | type | bases, exponents | Replaces two equal-length numeric arrays with floating-point element-wise powers; type must be `hlf`, `flt`, or `dbl`, and the top array supplies exponents. |
+| `expv` | type | values | Replaces one numeric array with an equal-length array containing e raised to each element; type must be `hlf`, `flt`, or `dbl`. |

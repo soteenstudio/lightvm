@@ -1,29 +1,10 @@
 # Eksponensiasi Vektor
 
-## Tujuan
+Instruksi ini mengevaluasi perpangkatan dan eksponensial alami secara element-wise.
 
-Menghitung perpangkatan dan eksponensial natural secara element-wise.
-
-## Instruksi yang didukung
-
-`powv`, `powiv`, `powfv`, dan `expv`.
-
-## Operan stack dan hasil
-
-Instruksi perpangkatan menggunakan array basis dan eksponen berukuran sama lalu menyisakan satu array hasil. `expv` mengganti array teratas.
-
-## Tipe numerik yang didukung
-
-`powv`, `powiv`, dan `powfv` menerima kombinasi tipe numerik yang diimplementasikan. `expv` menerima `hlf`, `flt`, atau `dbl`.
-
-## Batasan dan kondisi kegagalan
-
-Array perpangkatan harus memiliki panjang sama. Operan yang tidak tersedia menghasilkan `StackUnderflow`; array tidak valid, elemen nonnumerik, panjang berbeda, atau tipe yang tidak didukung menghasilkan `TypeMismatch`.
-
-## Contoh
-
-Menerapkan `powv int` pada `[2, 3]` di bawah `[3, 2]` menyisakan `[8, 9]`.
-
-## Instruksi terkait
-
-Lihat [Eksponensiasi](../mathematics/exponentiation) dan [Logaritma Vektor](./logarithm-vector).
+| Kode Operasi | Argumen | Operan (stack) | Deskripsi |
+| --- | --- | --- | --- |
+| `powv` | tipe | basis, eksponen | Mengganti dua array numerik dengan panjang sama dengan perpangkatan integer element-wise; tipe harus `sht`, `int`, `lng`, atau `oct`, dan array teratas menyediakan eksponen. |
+| `powiv` | tipe | basis, eksponen | Mengganti dua array numerik dengan panjang sama dengan basis floating-point yang dipangkatkan dengan eksponen integer; tipe harus `hlf`, `flt`, atau `dbl`, dan array teratas menyediakan eksponen. |
+| `powfv` | tipe | basis, eksponen | Mengganti dua array numerik dengan panjang sama dengan perpangkatan floating-point element-wise; tipe harus `hlf`, `flt`, atau `dbl`, dan array teratas menyediakan eksponen. |
+| `expv` | tipe | nilai | Mengganti satu array numerik dengan array berpanjang sama yang berisi e pangkat setiap elemen; tipe harus `hlf`, `flt`, atau `dbl`. |

@@ -1,29 +1,14 @@
 # Aritmatika Dasar
 
-## Tujuan
+Instruksi ini melakukan aritmatika skalar dan memperbarui variabel numerik.
 
-Melakukan aritmatika skalar dan memperbarui variabel numerik.
-
-## Instruksi yang didukung
-
-`add`, `sub`, `mul`, `div`, `mod`, `neg`, `inc`, dan `dec`.
-
-## Operan stack dan hasil
-
-Instruksi biner menggunakan nilai kedua dari atas sebagai operan kiri dan nilai teratas sebagai operan kanan, lalu menggantinya dengan satu hasil. `neg` mengganti nilai teratas. `inc` dan `dec` memperbarui variabel bernama atau berindeks; `inc` juga mendorong nilai terbaru.
-
-## Tipe numerik yang didukung
-
-Argumen tipe menerima `sht`, `int`, `lng`, `oct`, `hlf`, `flt`, atau `dbl`.
-
-## Batasan dan kondisi kegagalan
-
-Operan yang tidak tersedia menghasilkan `StackUnderflow`. Nilai atau argumen tipe yang tidak sesuai dengan operasi menghasilkan `TypeMismatch`.
-
-## Contoh
-
-Dengan `2` di bawah `3`, `add int` menyisakan `5`. Dengan `7` di bawah `2`, `sub int` menyisakan `5`.
-
-## Instruksi terkait
-
-Lihat [Eksponensiasi](./exponentiation) dan [Aritmatika Vektor](../vector-mathematics/vector-arithmetic).
+| Kode Operasi | Argumen | Operan (stack) | Deskripsi |
+| --- | --- | --- | --- |
+| `add` | tipe | kiri, kanan | Mengganti dua operan numerik dengan `left + right` dalam tipe yang dipilih. |
+| `sub` | tipe | kiri, kanan | Mengganti dua operan numerik dengan `left - right` dalam tipe yang dipilih. |
+| `mul` | tipe | kiri, kanan | Mengganti dua operan numerik dengan `left * right` dalam tipe yang dipilih. |
+| `div` | tipe | kiri, kanan | Mengganti dua operan numerik dengan `left / right` dalam tipe yang dipilih. |
+| `mod` | tipe | kiri, kanan | Mengganti dua operan numerik dengan sisa dari `left / right` dalam tipe yang dipilih. |
+| `neg` | tipe | nilai | Mengganti satu operan numerik dengan negasinya dalam tipe yang dipilih. |
+| `inc` | nama, tipe | - | Menambah variabel numerik bernama atau berindeks dan mendorong nilai terbarunya. |
+| `dec` | nama, tipe | - | Mengurangi variabel numerik bernama atau berindeks tanpa mengubah stack. |
