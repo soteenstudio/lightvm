@@ -1,12 +1,29 @@
 # Vector Arithmetic
-These instructions perform element-wise arithmetic on vectors (arrays).
 
-| Opcode | Arguments | Operands (stack) | Description |
-| :--- | :--- | :--- | :--- |
-| `addv` / `subv` | type | arr1, arr2 | Element-wise Addition or Subtraction of two vectors |
-| `mulv` / `divv` | type | arr1, arr2 | Element-wise Multiplication or Division of two vectors |
-| `modv` | type | arr1, arr2 | Element-wise Modulo (Remainder) of two vectors |
-| `negv` | type | arr | Element-wise Negation of a vector |
-| `powv` | type | array1, array2 | Element-wise vector power |
-| `powiv` | type | array1, array2 | Element-wise vector power with integer exponents |
-| `powfv` | type | array1, array2 | Element-wise vector power with floating-point exponents |
+## Purpose
+
+Perform element-wise arithmetic on arrays.
+
+## Supported instructions
+
+`addv`, `subv`, `mulv`, `divv`, `modv`, and `negv`.
+
+## Stack operands and result
+
+Binary instructions consume two arrays, using the next-to-top array as the left operand, and replace them with one result array. `negv` replaces the top array.
+
+## Supported numeric types
+
+The type argument accepts `sht`, `int`, `lng`, `oct`, `hlf`, `flt`, or `dbl`.
+
+## Constraints and failure conditions
+
+Binary operands must be arrays of equal length. Missing operands produce `StackUnderflow`; nonnumeric elements, invalid arrays, unequal lengths, or unsupported type arguments produce `TypeMismatch`.
+
+## Examples
+
+Applying `addv int` to `[1, 2]` below `[3, 4]` leaves `[4, 6]`.
+
+## Related instructions
+
+See [Basic Arithmetic](../mathematics/basic-arithmetic) and [Vector Products](./vector-products).

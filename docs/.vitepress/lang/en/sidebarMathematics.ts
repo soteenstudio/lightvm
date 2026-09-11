@@ -7,8 +7,8 @@ export const sidebarMathematics = {
       link: '/api-reference/instruction-set/mathematics/basic-arithmetic',
     },
     {
-      text: 'Trigonometry',
-      link: '/api-reference/instruction-set/mathematics/trigonometry',
+      text: 'Comparison and Logic',
+      link: '/api-reference/instruction-set/mathematics/comparison-logic',
     },
     {
       text: 'Bitwise Operations',
@@ -25,6 +25,10 @@ export const sidebarMathematics = {
     {
       text: 'Roots',
       link: '/api-reference/instruction-set/mathematics/root',
+    },
+    {
+      text: 'Trigonometry',
+      link: '/api-reference/instruction-set/mathematics/trigonometry',
     },
   ],
 };

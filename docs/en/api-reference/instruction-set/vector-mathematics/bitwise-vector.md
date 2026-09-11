@@ -1,11 +1,29 @@
 # Vector Bitwise Operations
-These instructions perform bitwise shifts and rotations element-wise on two vectors (arrays).
 
-They accept the integer type directives `sht`, `int`, `lng`, and `oct`. Each instruction consumes the equal-length arrays `arr1` and `arr2`, applies the operation to corresponding elements, and replaces both operands with one result array in the selected type.
+## Purpose
 
-| Opcode | Arguments | Operands (stack) | Description |
-| :--- | :--- | :--- | :--- |
-| `shlv` | type | arr1, arr2 | Shifts each element of arr1 left by the corresponding element of arr2 |
-| `shrv` | type | arr1, arr2 | Shifts each element of arr1 right by the corresponding element of arr2 |
-| `rolv` | type | arr1, arr2 | Rotates each element of arr1 left by the corresponding element of arr2 |
-| `rorv` | type | arr1, arr2 | Rotates each element of arr1 right by the corresponding element of arr2 |
+Shift or rotate corresponding integer elements in two arrays.
+
+## Supported instructions
+
+`shlv`, `shrv`, `rolv`, and `rorv`.
+
+## Stack operands and result
+
+Each instruction consumes two arrays, using the next-to-top array as values and the top array as shift counts, then leaves one result array.
+
+## Supported numeric types
+
+The type argument accepts `sht`, `int`, `lng`, or `oct`.
+
+## Constraints and failure conditions
+
+Arrays must have equal length and numeric elements. Missing operands produce `StackUnderflow`; invalid arrays, unequal lengths, nonnumeric elements, or unsupported types produce `TypeMismatch`.
+
+## Examples
+
+Applying `shlv int` to `[1, 2]` below `[1, 2]` leaves `[2, 8]`.
+
+## Related instructions
+
+See [Bitwise Operations](../mathematics/bitwise-operations) and [Vector Arithmetic](./vector-arithmetic).

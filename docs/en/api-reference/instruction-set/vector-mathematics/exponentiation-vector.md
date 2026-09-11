@@ -1,8 +1,29 @@
 # Vector Exponentiation
-This instruction evaluates the natural exponential function element-wise on a vector (array).
 
-It accepts the float type directives `hlf`, `flt`, and `dbl`. The instruction consumes one array operand and replaces it with an array containing the element-wise results in the selected type.
+## Purpose
 
-| Opcode | Arguments | Operands (stack) | Description |
-| :--- | :--- | :--- | :--- |
-| `expv` | type | arr | Raises e to the power of every array element |
+Evaluate powers and natural exponentials element by element.
+
+## Supported instructions
+
+`powv`, `powiv`, `powfv`, and `expv`.
+
+## Stack operands and result
+
+Power instructions consume equally sized base and exponent arrays and leave one result array. `expv` replaces the top array.
+
+## Supported numeric types
+
+`powv`, `powiv`, and `powfv` accept implemented numeric type combinations. `expv` accepts `hlf`, `flt`, or `dbl`.
+
+## Constraints and failure conditions
+
+Power arrays must have equal length. Missing operands produce `StackUnderflow`; invalid arrays, nonnumeric elements, unequal lengths, or unsupported types produce `TypeMismatch`.
+
+## Examples
+
+Applying `powv int` to `[2, 3]` below `[3, 2]` leaves `[8, 9]`.
+
+## Related instructions
+
+See [Exponentiation](../mathematics/exponentiation) and [Vector Logarithms](./logarithm-vector).
