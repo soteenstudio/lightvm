@@ -22,5 +22,5 @@ In **Rust**, you can provide your logic using raw string representations or by u
 :::
 
 ::: info
-**Capability Required**: no specific capability
+**Capability Required**: `Control`
 :::

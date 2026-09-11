@@ -1,16 +1,15 @@
 # Batas Waktu Eksekusi
-Batas eksekusi di LightVM dikelola melalui prasetel batas waktu untuk mencegah *infinite loop* (pengulangan tanpa henti) dan skrip yang berjalan di luar kendali. Gunakan tabel berikut untuk memahami tingkat durasi dan batasan eksekusi yang tersedia:
 
-| Level Batas Waktu | Durasi | Deskripsi |
+`TimeBudget` membatasi waktu yang dapat digunakan Gazle untuk mengoptimalkan bytecode. Nilai ini tidak membatasi waktu eksekusi VM.
+
+| Nilai | Nilai numerik | Batas optimizer |
 | :--- | :--- | :--- |
-| `Cheap` **(Default)** | ~200ms | Dioptimalkan untuk eksekusi skrip yang cepat, ringan, dan validasi kilat. |
-| `Normal` | ~1000ms | Batas standar yang cocok untuk sebagian besar aplikasi umum. |
-| `Expensive` | ~5000ms | Jendela eksekusi diperpanjang untuk komputasi berat atau logika kompleks. |
+| `Cheap` (bawaan) | `0` | 200 ms |
+| `Normal` | `1` | 1.000 ms |
+| `Expensive` | `2` | 5.000 ms |
+
+Atur nilai dengan `setTimeBudget(TimeBudget.Cheap)` sebelum memanggil `tools().optimizeBytecode(...)`. Batas yang lebih besar memberi waktu lebih lama kepada tahap optimasi, tetapi tidak menjamin hasil optimasi tertentu.
 
 ::: info
-**Time Budget** dan **Max Ticks** tidak akan saling berkonflik, karena **Time Budget** tidak digunakan pada saat eksekusi berlangsung.
-:::
-
-::: warning Peringatan Performa
-Pilih level batas waktu dengan bijak. Mengatur batas waktu yang terlalu tinggi untuk skrip yang tidak tepercaya dapat berisiko menyebabkan kehabisan sumber daya atau *thread* yang menggantung.
+Gunakan `SecurityConfig.maxTicks` untuk membatasi pekerjaan eksekusi. `TimeBudget` dan `maxTicks` berlaku pada tahap yang berbeda.
 :::

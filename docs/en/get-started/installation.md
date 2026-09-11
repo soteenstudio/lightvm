@@ -1,5 +1,6 @@
 # Installation
-Choose one of the installation methods below according to your project environment:
+
+Install LightVM for a Node.js or Rust project. You need a supported Node.js package manager or a stable Rust toolchain.
 
 ## With NPM
 Use this method if you are building a **TypeScript/Node.js-based** project.
@@ -37,3 +38,7 @@ If you're using **Rust**, use **Cargo** to integrate **LightVM** natively.
 <<< @/examples/installation/cargo-specific.sh{sh:line-numbers}[Specific Version]
 
 :::
+
+## Expected result
+
+The package is added to your project manifest and is available to import. Continue with [Quick Usage](/get-started/quick-usage) to create a `LightVM` instance.

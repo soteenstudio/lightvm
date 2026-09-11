@@ -1,12 +1,19 @@
-``` sh
+# Browse the Repository
+
+Clone the LightVM repository, then use the live lists below to inspect maintained branches, published tags, and repository files.
+
+```sh
 git clone https://github.com/soteenstudio/lightvm.git
 ```
 
-## Git Branches
+## Branches
+
 <GitBranches owner="soteenstudio" repo="lightvm" />
 
-## Git Tags
+## Tags
+
 <GitTags owner="soteenstudio" repo="lightvm" />
 
-## Git Browses
+## Files
+
 <GitBrowser owner="soteenstudio" repo="lightvm" />
