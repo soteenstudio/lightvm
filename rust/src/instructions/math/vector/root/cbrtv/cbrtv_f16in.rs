@@ -11,7 +11,6 @@
 use crate::instructions::math::root::cbrt::cbrt_f16in::cbrt_f16in;
 use crate::types::value::Value;
 use std::sync::Arc;
-
 pub fn cbrtv_f16in(values: &Arc<Vec<Value>>) -> Arc<Vec<Value>> {
   Arc::new(
     values

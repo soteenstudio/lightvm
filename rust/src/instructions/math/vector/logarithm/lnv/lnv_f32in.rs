@@ -11,7 +11,6 @@
 use crate::instructions::math::logarithm::ln::ln_f32in::ln_f32in;
 use crate::types::value::Value;
 use std::sync::Arc;
-
 pub fn lnv_f32in(values: &Arc<Vec<Value>>) -> Arc<Vec<Value>> {
   Arc::new(
     values

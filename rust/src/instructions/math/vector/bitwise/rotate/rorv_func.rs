@@ -17,7 +17,6 @@ use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
-
 #[inline(always)]
 pub fn rorv_values(
   left_value: Value,
@@ -65,7 +64,6 @@ pub fn rorv_values(
     }
   })
 }
-
 #[inline]
 pub fn rorv_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
   if stack.len() < 2 {
@@ -81,16 +79,13 @@ pub fn rorv_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resu
   *stack.last_mut().unwrap() = result;
   Ok(())
 }
-
 #[cfg(test)]
 mod tests {
   use super::*;
   use std::sync::Arc;
-
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
   }
-
   #[test]
   fn supports_integer_directives() {
     for num_type in [
@@ -110,7 +105,6 @@ mod tests {
       );
     }
   }
-
   #[test]
   fn validates_operands_and_preserves_stack() {
     let cases = [
@@ -138,7 +132,6 @@ mod tests {
       assert_eq!(stack, original);
     }
   }
-
   #[test]
   fn underflow_preserves_stack() {
     let mut stack = Stack::from_vec(vec![array(vec![])]);

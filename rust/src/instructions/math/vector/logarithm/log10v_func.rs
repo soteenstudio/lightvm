@@ -17,7 +17,6 @@ use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
-
 #[inline(always)]
 pub fn log10v_values(value: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value, VMError> {
   let values = value.as_array().ok_or(VMError::TypeMismatch {
@@ -47,7 +46,6 @@ pub fn log10v_values(value: Value, num_type: PrimitiveTypes, ip: usize) -> Resul
     }
   })
 }
-
 #[inline]
 pub fn log10v_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
   let value = stack.last().cloned().ok_or(VMError::StackUnderflow {
@@ -58,16 +56,13 @@ pub fn log10v_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Re
   *stack.last_mut().unwrap() = result;
   Ok(())
 }
-
 #[cfg(test)]
 mod tests {
   use super::*;
   use std::sync::Arc;
-
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
   }
-
   #[test]
   fn supports_float_directives() {
     for num_type in [
@@ -78,7 +73,6 @@ mod tests {
       assert!(log10v_values(array(vec![Value::Int32(1)]), num_type, 0).is_ok());
     }
   }
-
   #[test]
   fn validates_operands_and_preserves_stack() {
     for value in [Value::Bool(false), array(vec![Value::Bool(false)])] {
@@ -89,7 +83,6 @@ mod tests {
     }
     assert!(log10v_values(array(vec![Value::Float32(1.0)]), PrimitiveTypes::Int, 18).is_err());
   }
-
   #[test]
   fn preserves_nan_behavior() {
     let result = log10v_values(
@@ -102,7 +95,6 @@ mod tests {
       Ok(Value::Array(values)) if values[0].as_f32().is_nan()
     ));
   }
-
   #[test]
   fn underflow_preserves_stack() {
     let mut stack = Stack::new();

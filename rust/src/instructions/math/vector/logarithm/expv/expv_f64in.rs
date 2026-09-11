@@ -11,7 +11,6 @@
 use crate::instructions::math::exp::exp_f64in::exp_f64in;
 use crate::types::value::Value;
 use std::sync::Arc;
-
 pub fn expv_f64in(values: &Arc<Vec<Value>>) -> Arc<Vec<Value>> {
   Arc::new(
     values

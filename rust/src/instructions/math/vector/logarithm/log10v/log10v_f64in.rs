@@ -11,7 +11,6 @@
 use crate::instructions::math::logarithm::log10::log10_f64in::log10_f64in;
 use crate::types::value::Value;
 use std::sync::Arc;
-
 pub fn log10v_f64in(values: &Arc<Vec<Value>>) -> Arc<Vec<Value>> {
   Arc::new(
     values

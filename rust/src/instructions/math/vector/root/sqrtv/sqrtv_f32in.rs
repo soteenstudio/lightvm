@@ -11,7 +11,6 @@
 use crate::instructions::math::root::sqrt::sqrt_f32in::sqrt_f32in;
 use crate::types::value::Value;
 use std::sync::Arc;
-
 pub fn sqrtv_f32in(values: &Arc<Vec<Value>>) -> Arc<Vec<Value>> {
   Arc::new(
     values

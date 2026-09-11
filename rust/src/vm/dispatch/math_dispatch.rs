@@ -46,8 +46,7 @@ use crate::instructions::math::{
     cross_func::cross_func,
     dot_func::dot_func,
     logarithm::{
-      expv_func::expv_func, lnv_func::lnv_func, log2v_func::log2v_func,
-      log10v_func::log10v_func,
+      expv_func::expv_func, lnv_func::lnv_func, log2v_func::log2v_func, log10v_func::log10v_func,
     },
     root::{cbrtv_func::cbrtv_func, sqrtv_func::sqrtv_func},
     trigonometry::{

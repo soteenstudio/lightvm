@@ -11,7 +11,6 @@
 use crate::instructions::math::logarithm::log2::log2_f32in::log2_f32in;
 use crate::types::value::Value;
 use std::sync::Arc;
-
 pub fn log2v_f32in(values: &Arc<Vec<Value>>) -> Arc<Vec<Value>> {
   Arc::new(
     values

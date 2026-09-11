@@ -11,7 +11,6 @@
 use crate::instructions::math::exp::exp_f16in::exp_f16in;
 use crate::types::value::Value;
 use std::sync::Arc;
-
 pub fn expv_f16in(values: &Arc<Vec<Value>>) -> Arc<Vec<Value>> {
   Arc::new(
     values

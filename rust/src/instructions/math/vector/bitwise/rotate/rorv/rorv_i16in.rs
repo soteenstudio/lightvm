@@ -11,7 +11,6 @@
 use crate::instructions::math::bitwise::rotate::ror::ror_i16in::ror_i16in;
 use crate::types::value::Value;
 use std::sync::Arc;
-
 pub fn rorv_i16in(left: &Arc<Vec<Value>>, right: &Arc<Vec<Value>>) -> Arc<Vec<Value>> {
   Arc::new(
     left

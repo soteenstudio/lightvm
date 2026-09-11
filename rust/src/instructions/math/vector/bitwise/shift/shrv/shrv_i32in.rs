@@ -11,7 +11,6 @@
 use crate::instructions::math::bitwise::shift::shr::shr_i32in::shr_i32in;
 use crate::types::value::Value;
 use std::sync::Arc;
-
 pub fn shrv_i32in(left: &Arc<Vec<Value>>, right: &Arc<Vec<Value>>) -> Arc<Vec<Value>> {
   Arc::new(
     left

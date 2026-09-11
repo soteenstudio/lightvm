@@ -11,7 +11,6 @@
 use crate::instructions::math::bitwise::rotate::rol::rol_i128in::rol_i128in;
 use crate::types::value::Value;
 use std::sync::Arc;
-
 pub fn rolv_i128in(left: &Arc<Vec<Value>>, right: &Arc<Vec<Value>>) -> Arc<Vec<Value>> {
   Arc::new(
     left

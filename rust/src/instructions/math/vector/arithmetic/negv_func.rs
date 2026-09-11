@@ -63,11 +63,9 @@ pub fn negv_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resu
 mod tests {
   use super::*;
   use std::sync::Arc;
-
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
   }
-
   #[test]
   fn reports_type_mismatch_without_mutating_stack() {
     let mut stack = Stack::from_vec(vec![Value::Bool(false)]);
@@ -78,7 +76,6 @@ mod tests {
     ));
     assert_eq!(stack, original);
   }
-
   #[test]
   fn validates_elements_and_directives() {
     assert!(negv_values(array(vec![Value::Int32(1)]), PrimitiveTypes::Int, 11).is_ok());
@@ -95,7 +92,6 @@ mod tests {
       Err(VMError::TypeMismatch { ip: 20, .. })
     ));
   }
-
   #[test]
   fn underflow_preserves_stack() {
     let mut stack = Stack::new();

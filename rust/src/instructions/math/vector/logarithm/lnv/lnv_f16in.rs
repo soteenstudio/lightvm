@@ -11,7 +11,6 @@
 use crate::instructions::math::logarithm::ln::ln_f16in::ln_f16in;
 use crate::types::value::Value;
 use std::sync::Arc;
-
 pub fn lnv_f16in(values: &Arc<Vec<Value>>) -> Arc<Vec<Value>> {
   Arc::new(
     values
