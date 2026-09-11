@@ -9,12 +9,12 @@
         "website": "https://github.com/fictional/noodlecss"
     },
     {
-        "name": "LightVM",
+        "name": "RRT Handmade",
         "description": {
-            "en": "LightVM is a lightweight virtual machine that allows developers to run and test their code in a secure and isolated environment. It supports multiple programming languages and provides a simple interface for managing virtual machines.",
-            "id": "LightVM adalah mesin virtual ringan yang memungkinkan pengembang untuk menjalankan dan menguji kode mereka dalam lingkungan yang aman dan terisolasi. Ini mendukung beberapa bahasa pemrograman dan menyediakan antarmuka sederhana untuk mengelola mesin virtual."
+            "en": "",
+            "id": ""
         },
-        "logo": "https://raw.githubusercontent.com/fictional/lightvm/main/logo.png",
-        "website": "https://github.com/fictional/lightvm"
+        "logo": "../public/assets/rrt-icon.jpg",
+        "website": "#"
     }
 ]

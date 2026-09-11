@@ -180,5 +180,6 @@ function getLocaleDescription(partner, locale) {
   height: 24px;
   margin-right: 8px;
   vertical-align: middle;
+  border-radius: 50%;
 }
 </style>
