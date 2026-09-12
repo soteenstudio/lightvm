@@ -37,9 +37,9 @@ pub fn normalize_values(
     }
   }
   Ok(match num_type {
-    PrimitiveTypes::Hlf => normalize_f16in(values),
-    PrimitiveTypes::Flt => normalize_f32in(values),
-    PrimitiveTypes::Dbl => normalize_f64in(values),
+    PrimitiveTypes::Hlf => normalize_f16in(&values),
+    PrimitiveTypes::Flt => normalize_f32in(&values),
+    PrimitiveTypes::Dbl => normalize_f64in(&values),
     _ => {
       return Err(VMError::TypeMismatch {
         ip,
