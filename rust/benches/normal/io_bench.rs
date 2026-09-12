@@ -24,7 +24,7 @@ fn main() {
   benchmark.run(
     || {
       let mut vm = LightVM::new(config());
-      vm.load(raw.into());
+      vm.load(raw);
       vm
     },
     |vm| {
