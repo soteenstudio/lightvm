@@ -11,6 +11,10 @@ export const sidebarVectorMathematics = {
       link: '/api-reference/instruction-set/vector-mathematics/vector-products',
     },
     {
+      text: 'Vector Normalization',
+      link: '/api-reference/instruction-set/vector-mathematics/vector-normalization',
+    },
+    {
       text: 'Vector Bitwise Operations',
       link: '/api-reference/instruction-set/vector-mathematics/bitwise-vector',
     },
