@@ -1,8 +1,9 @@
 # Quick Usage
-LightVM initialization is **very flexible** and allows you to configure the **capabilities** and **debugging features** according to your application needs.
+
+Create and configure a `LightVM` instance. Complete [Installation](/get-started/installation) first.
 
 ## Using TypeScript
-For **TypeScript-based** projects, you can configure a VM instance with an intuitive builder pattern before accessing the main `tools` interface.
+For TypeScript projects, configure the constructor or use the chainable configuration methods.
 
 ::: code-group
 
@@ -13,7 +14,7 @@ For **TypeScript-based** projects, you can configure a VM instance with an intui
 :::
 
 ## Using Rust
-For **Rust** users, configuration is done through `VmConfig`. You can declaratively set VM capabilities before executing bytecode.
+For Rust projects, configure `VmConfig` before creating the VM.
 
 ::: code-group
 
@@ -23,10 +24,10 @@ For **Rust** users, configuration is done through `VmConfig`. You can declarativ
 
 :::
 
-::: tip
-Get the tools interface. Store this as a constant to reuse it for all upcoming tasks.
-:::
+## Expected result
+
+You have a configured VM instance ready to load bytecode. Continue with the [Run Method](/api-reference/method-functions/run-method), or review [Capabilities](/api-reference/capabilities) before granting access.
 
 ::: info Related API Reference
-Want to configure permissions or execution limits? Check out the [Capabilities](/api-reference/capabilities) and [Time Budget](/api-reference/time-budget) references for detailed usage.
+`TimeBudget` limits bytecode optimization time. Use `SecurityConfig.maxTicks` to limit execution work.
 :::

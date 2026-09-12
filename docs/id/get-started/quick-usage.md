@@ -1,8 +1,9 @@
 # Penggunaan Cepat
-Inisialisasi LightVM **sangat fleksibel** dan memungkinkan Anda untuk mengkonfigurasi **kapabilitas** dan fitur **debugging sesuai** dengan kebutuhan aplikasi Anda.
+
+Buat dan konfigurasikan instance `LightVM`. Selesaikan [Instalasi](/id/get-started/installation) terlebih dahulu.
 
 ## Menggunakan TypeScript
-Untuk proyek berbasis **TypeScript**, Anda dapat mengkonfigurasi instance VM dengan pola builder yang intuitif sebelum mengakses antarmuka `tools` utama.
+Untuk proyek TypeScript, gunakan konfigurasi konstruktor atau metode konfigurasi berantai.
 
 ::: code-group
 
@@ -13,7 +14,7 @@ Untuk proyek berbasis **TypeScript**, Anda dapat mengkonfigurasi instance VM den
 :::
 
 ## Menggunakan Rust
-Bagi pengguna **Rust**, konfigurasi dilakukan melalui `VmConfig`. Anda dapat mengatur kemampuan VM secara deklaratif sebelum mengeksekusi bytecode.
+Untuk proyek Rust, konfigurasikan `VmConfig` sebelum membuat VM.
 
 ::: code-group
 
@@ -23,10 +24,10 @@ Bagi pengguna **Rust**, konfigurasi dilakukan melalui `VmConfig`. Anda dapat men
 
 :::
 
-::: tip
-Dapatkan antarmuka alat. Simpan ini sebagai konstanta agar dapat digunakan kembali untuk semua tugas yang akan datang.
-:::
+## Hasil yang diharapkan
+
+Anda memiliki instance VM terkonfigurasi yang siap memuat bytecode. Lanjutkan ke [Metode Run](/id/api-reference/method-functions/run-method), atau tinjau [Kapabilitas](/id/api-reference/capabilities) sebelum memberikan akses.
 
 ::: info Referensi API Terkait
-Untuk mengatur izin akses atau batas eksekusi, lihat panduan lengkapnya di halaman [Kapabilitas](/id/api-reference/capabilities) dan [Batas Waktu Eksekusi](/id/api-reference/time-budget).
+`TimeBudget` membatasi waktu optimasi bytecode. Gunakan `SecurityConfig.maxTicks` untuk membatasi pekerjaan eksekusi.
 :::

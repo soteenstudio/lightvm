@@ -1,13 +1,14 @@
 # Basic Arithmetic
-These instructions handle standard mathematical calculations, basic scaling, and direct variable modifications.
+
+These instructions perform scalar arithmetic and update numeric variables.
 
 | Opcode | Arguments | Operands (stack) | Description |
-| :--- | :--- | :--- | :--- |
-| `add` / `sub` | type | val1, val2 | Addition or Subtraction |
-| `mul` / `div` | type | val1, val2 | Multiplication or Division |
-| `mod` | type | val1, val2 | Modulo (Remainder) |
-| `neg` | type | val | Negation (changes sign: 5 to -5, or -5 to 5) |
-| `inc` / `dec` | name, type | - | Directly add/remove variable contents |
-| `pow` | type | val1, val2 | General power operation (x^y) |
-| `powi` | type | val1, val2 | Power with integer exponent |
-| `powf` | type | val1, val2 | Power with floating-point exponent |
+| --- | --- | --- | --- |
+| `add` | type | left, right | Replaces two numeric operands with `left + right` in the selected type. |
+| `sub` | type | left, right | Replaces two numeric operands with `left - right` in the selected type. |
+| `mul` | type | left, right | Replaces two numeric operands with `left * right` in the selected type. |
+| `div` | type | left, right | Replaces two numeric operands with `left / right` in the selected type. |
+| `mod` | type | left, right | Replaces two numeric operands with the remainder of `left / right` in the selected type. |
+| `neg` | type | value | Replaces one numeric operand with its negation in the selected type. |
+| `inc` | name, type | - | Increments the named or indexed numeric variable and pushes the updated value. |
+| `dec` | name, type | - | Decrements the named or indexed numeric variable without changing the stack. |

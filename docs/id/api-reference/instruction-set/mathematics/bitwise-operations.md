@@ -1,9 +1,10 @@
 # Operasi Bitwise
-Instruksi-instruksi ini melakukan manipulasi biner level rendah, pergeseran bit, dan gerbang logika bitwise.
+
+Instruksi ini menggeser atau merotasi nilai bilangan bulat skalar.
 
 | Kode Operasi | Argumen | Operan (stack) | Deskripsi |
-| :--- | :--- | :--- | :--- |
-| `shl` / `shr` | tipe | val1, val2 | Operasi bitwise Geser Kiri atau Geser Kanan |
-| `rol` / `ror` | tipe | val1, val2 | Geser Kiri atau Kanan secara __Siklik__ (Rotate) |
-| `xor` | - | val1, val2 | Operasi bitwise __Exclusive OR__ antara dua nilai |
-| `not` | - | val | Operasi bitwise __NOT__ (Inversi) pada satu nilai |
+| --- | --- | --- | --- |
+| `shl` | tipe | nilai, jumlah | Mengganti operan dengan `value` yang digeser ke kiri sebanyak `count`; tipe harus `sht`, `int`, `lng`, atau `oct`. |
+| `shr` | tipe | nilai, jumlah | Mengganti operan dengan `value` yang digeser ke kanan sebanyak `count`; tipe harus `sht`, `int`, `lng`, atau `oct`. |
+| `rol` | tipe | nilai, jumlah | Mengganti operan dengan `value` yang dirotasi ke kiri sebanyak `count`; tipe harus `sht`, `int`, `lng`, atau `oct`. |
+| `ror` | tipe | nilai, jumlah | Mengganti operan dengan `value` yang dirotasi ke kanan sebanyak `count`; tipe harus `sht`, `int`, `lng`, atau `oct`. |

@@ -4,6 +4,9 @@ import { idId, idIdSearch } from './id.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { validateI18n } from './validate-i18n.js';
+
+validateI18n();
 
 // Mendapatkan direktori file saat ini
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

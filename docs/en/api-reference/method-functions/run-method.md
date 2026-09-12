@@ -26,5 +26,5 @@ In **Rust**, you typically work with serialized bytecode strings (or `serde_json
 :::
 
 ::: tip
-The ``.run()`` method is the final step in the execution pipeline. Ensure all necessary `capabilities` have been granted during initialization to avoid runtime security exceptions.
+The `.run()` method is the final step in the execution pipeline. Ensure all necessary `capabilities` have been granted during initialization to avoid runtime security exceptions.
 :::
