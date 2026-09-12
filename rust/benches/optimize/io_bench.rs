@@ -8,32 +8,27 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use criterion::{Bencher, Criterion, criterion_group, criterion_main};
 use lightvm::{LightVM, types::capability::Capability};
-use std::time::Duration;
-fn bench_vm_execution(c: &mut Criterion) {
-  let mut vm = LightVM::new(vec![Capability::Control, Capability::Observe]);
+fn main() {
+  let capabilities = vec![
+    Capability::Control,
+    Capability::Debug,
+    Capability::Observe,
+  ];
+  let mut vm = LightVM::new(capabilities.clone());
   let raw = r#"[["push", "Hello from LightVM!"], ["println"]]"#;
-  let optimized_json = LightVM::tools().optimize_bytecode(raw);
-  vm.load(optimized_json.clone());
-  let mut group = c.benchmark_group("LightVM Execution");
-  group.bench_function("io_bench", |b: &mut Bencher| {
-    b.iter(|| {
+  let tools = vm.tools();
+  let optimized_json = tools.optimize_bytecode(raw);
+  let benchmark = tools.bench("io_bench").expect("benchmark requires debug capability");
+  benchmark.run(
+    || {
+      let mut vm = LightVM::new(capabilities.clone());
+      vm.load(optimized_json.clone());
+      vm
+    },
+    |vm| {
       let _sink = std::io::sink();
       vm.run(None)
-    });
-  });
-  group.finish();
+    },
+  );
 }
-fn custom_config() -> Criterion {
-  Criterion::default()
-    .sample_size(300)
-    .measurement_time(Duration::from_secs(15))
-    .warm_up_time(Duration::from_secs(3))
-}
-criterion_group! {
-  name = benches;
-  config = custom_config();
-  targets = bench_vm_execution
-}
-criterion_main!(benches);
