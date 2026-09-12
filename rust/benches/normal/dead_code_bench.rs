@@ -9,13 +9,17 @@
  */
 
 use lightvm::{LightVM, types::capability::Capability};
-fn main() {
-  let capabilities = vec![
+
+fn capabilities() -> Vec<Capability> {
+  vec![
     Capability::Control,
     Capability::Debug,
     Capability::Observe,
-  ];
-  let mut vm = LightVM::new(capabilities.clone());
+  ]
+}
+
+fn main() {
+  let mut vm = LightVM::new(capabilities());
   let raw = r#"[
     ["push", 5],
     ["push", 8],
@@ -30,7 +34,7 @@ fn main() {
     .expect("benchmark requires debug capability");
   benchmark.run(
     || {
-      let mut vm = LightVM::new(capabilities.clone());
+      let mut vm = LightVM::new(capabilities());
       vm.load(raw.into());
       vm
     },
