@@ -121,6 +121,7 @@ pub enum Instructions {
   Neq(PrimitiveTypes),
   Dot(PrimitiveTypes),
   Cross(PrimitiveTypes),
+  Normalize(PrimitiveTypes),
   And,
   Or,
   Xor,

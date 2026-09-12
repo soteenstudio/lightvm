@@ -126,6 +126,7 @@ pub fn eliminate_dead_stores(bytecode: &mut [Instructions], usage: &Usage) {
       }
       Instructions::Not
       | Instructions::Negv(_)
+      | Instructions::Normalize(_)
       | Instructions::ToString
       | Instructions::ToShort
       | Instructions::ToInteger
