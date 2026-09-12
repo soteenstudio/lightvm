@@ -5,7 +5,7 @@
             "en": "assets",
             "id": "aset"
         },
-        "logo": "../public/assets/rrt-icon.jpg",
+        "logo": "/public/assets/rrt-icon.jpg",
         "website": ""
     }
 ]
