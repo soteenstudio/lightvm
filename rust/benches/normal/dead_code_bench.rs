@@ -8,11 +8,17 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use criterion::{Bencher, Criterion, criterion_group, criterion_main};
-use lightvm::{LightVM, types::capability::Capability};
-use std::time::Duration;
-fn bench_vm_execution(c: &mut Criterion) {
-  let mut vm = LightVM::new(vec![Capability::Control, Capability::Observe]);
+use lightvm::{LightVM, types::{capability::Capability, vmconfig::VmConfig}};
+
+fn config() -> VmConfig {
+  VmConfig {
+    caps: vec![Capability::Control, Capability::Debug, Capability::Observe],
+    ..Default::default()
+  }
+}
+
+fn main() {
+  let mut vm = LightVM::new(config());
   let raw = r#"[
     ["push", 5],
     ["push", 8],
@@ -21,22 +27,16 @@ fn bench_vm_execution(c: &mut Criterion) {
     ["push", 9],
     ["set", "x"]
   ]"#;
-  vm.load(raw.into());
-  let mut group = c.benchmark_group("LightVM Execution");
-  group.bench_function("dead_code_bench", |b: &mut Bencher| {
-    b.iter(|| vm.run(None));
-  });
-  group.finish();
+  let benchmark = vm
+    .tools()
+    .bench("dead_code_bench")
+    .expect("benchmark requires debug capability");
+  benchmark.run(
+    || {
+      let mut vm = LightVM::new(config());
+      vm.load(raw);
+      vm
+    },
+    |vm| vm.run(None),
+  );
 }
-fn custom_config() -> Criterion {
-  Criterion::default()
-    .sample_size(300)
-    .measurement_time(Duration::from_secs(15))
-    .warm_up_time(Duration::from_secs(3))
-}
-criterion_group! {
-  name = benches;
-  config = custom_config();
-  targets = bench_vm_execution
-}
-criterion_main!(benches);
