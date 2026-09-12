@@ -7,32 +7,40 @@
       <p class="collab-text">{{ collabText }}</p>
 
       <div class="logo-wrapper">
-        <a
-          v-for="(partner, index) in partnerData"
-          :key="partner.name"
-          :href="partner.website"
-          :aria-describedby="`partner-tooltip-${index}`"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="brand-link"
+        <div
+          v-for="section in partnerSections"
+          :key="section.label"
+          class="partner-section"
         >
-          <span class="brand-name">
-            <span
-              :id="`partner-tooltip-${index}`"
-              role="tooltip"
-              class="brand-desc"
-            >
-              {{ getLocaleDescription(partner, currentLocale) }}
+          <p class="section-label">{{ section.label }}</p>
+
+          <a
+            v-for="partner in section.partners"
+            :key="partner.name"
+            :href="partner.website"
+            :aria-describedby="getTooltipId(partner)"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="brand-link"
+          >
+            <span class="brand-name">
+              <span
+                :id="getTooltipId(partner)"
+                role="tooltip"
+                class="brand-desc"
+              >
+                {{ getLocaleDescription(partner, currentLocale) }}
+              </span>
+
+              <img
+                class="brand-icon"
+                :src="partner.logo"
+                :alt="partner.name"
+              >
+              {{ partner.name }}
             </span>
-        
-            <img
-              class="brand-icon"
-              :src="partner.logo"
-              :alt="partner.name"
-            >
-            {{ partner.name }}
-          </span>
-        </a>
+          </a>
+        </div>
       </div>
     </div>
   </div>
@@ -60,6 +68,21 @@ const currentLocale = computed(() => {
 const collabText = computed(
   () => translations[currentLocale.value].collabText,
 );
+
+const partnerSections = [
+  {
+    label: 'Network',
+    partners: partnerData.filter((partner) => partner.name === 'NoodleCSS'),
+  },
+  {
+    label: 'Affiliates',
+    partners: partnerData.filter((partner) => partner.name === 'RRT Handmade'),
+  },
+];
+
+function getTooltipId(partner) {
+  return `partner-tooltip-${partner.name.toLowerCase().replace(/\s+/g, '-')}`;
+}
 
 function getLocaleDescription(partner, locale) {
   return partner.description?.[locale] ?? partner.description?.en ?? '';
@@ -105,6 +128,21 @@ function getLocaleDescription(partner, locale) {
   justify-content: center;
   align-items: center;
   gap: 24px;
+}
+
+.partner-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-label {
+  color: var(--vp-c-text-3);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
 }
 
 .brand-link {
