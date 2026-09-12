@@ -48,6 +48,7 @@ use crate::instructions::math::{
     logarithm::{
       expv_func::expv_func, lnv_func::lnv_func, log2v_func::log2v_func, log10v_func::log10v_func,
     },
+    normalize_func::normalize_func,
     root::{cbrtv_func::cbrtv_func, sqrtv_func::sqrtv_func},
     trigonometry::{
       hyperbolic::{
@@ -140,6 +141,7 @@ pub fn math_dispatch(
     Instructions::Log10v(num_type) => log10v_func(stack, *num_type, ip),
     Instructions::Dot(num_type) => dot_func(stack, *num_type, ip),
     Instructions::Cross(num_type) => cross_func(stack, *num_type, ip),
+    Instructions::Normalize(num_type) => normalize_func(stack, *num_type, ip),
     Instructions::IncIdx(idx, num_type) => Ok(inc_func(vars, stack, *idx, *num_type, ip)?),
     Instructions::DecIdx(idx, num_type) => Ok(dec_func(vars, *idx, *num_type, ip)?),
     _ => unsafe { std::hint::unreachable_unchecked() },

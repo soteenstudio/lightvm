@@ -40,6 +40,7 @@ use crate::instructions::{
         expv_func::expv_values, lnv_func::lnv_values, log2v_func::log2v_values,
         log10v_func::log10v_values,
       },
+      normalize_func::normalize_values,
       root::{cbrtv_func::cbrtv_values, sqrtv_func::sqrtv_values},
       trigonometry::{
         hyperbolic::{
@@ -108,6 +109,7 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         Instructions::Cbrtv(t) => cbrtv_values(val, *t, i).ok(),
         Instructions::Neg(t) => neg_values(val, *t, i).ok(),
         Instructions::Negv(t) => negv_values(val, *t, i).ok(),
+        Instructions::Normalize(t) => normalize_values(val, *t, i).ok(),
         Instructions::Ln(t) => ln_values(val, *t, i).ok(),
         Instructions::Lnv(t) => lnv_values(val, *t, i).ok(),
         Instructions::Exp(t) => exp_values(val, *t, i).ok(),
