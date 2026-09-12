@@ -66,7 +66,6 @@ pub fn execute(
   validate_bytecode(&bytecode, &functions)?;
   validate_security(&bytecode, &security_config)?;
   inject_args(&mut vars, &functions, options, ip);
-  let bytecode_ptr = bytecode.as_ptr();
   let bytecode_len = bytecode.len();
   let threshold = if bytecode_len < 100 { 1 } else { 50 };
   let gas_monitor = GasMonitor::new(&security_config)?;
@@ -86,14 +85,7 @@ pub fn execute(
         return Ok((Value::Undefined, tick));
       }
       tick += 1;
-      unsafe { std::hint::assert_unchecked(ip < bytecode_len) }
-      debug_assert!(
-        ip < bytecode_len,
-        "IP out of bounds! IP: {}, Len: {}",
-        ip,
-        bytecode_len
-      );
-      let instr = unsafe { &*bytecode_ptr.add(ip) };
+      let instr = &bytecode[ip];
       match instr {
         Instructions::PushInt16(_)
         | Instructions::PushInt32(_)
@@ -378,4 +370,16 @@ fn test_halt_flag_behavior() {
   assert!(result.is_ok());
   let (val, _tick) = result.unwrap();
   assert_eq!(val, Value::Undefined);
+}
+#[test]
+fn test_out_of_bounds_jump_is_rejected_before_execution() {
+  let result = execute(vec![Instructions::Jump(1)], &mut None, None);
+  assert!(matches!(
+    result,
+    Err(VMError::OutOfBounds {
+      ip: 0,
+      index: 1,
+      len: 1
+    })
+  ));
 }
