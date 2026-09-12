@@ -7,7 +7,7 @@ export const sidebarMathematics = {
       link: '/api-reference/instruction-set/mathematics/basic-arithmetic',
     },
     {
-      text: 'Comparison & Logic',
+      text: 'Comparison and Logic',
       link: '/api-reference/instruction-set/mathematics/comparison-logic',
     },
     {
@@ -15,36 +15,20 @@ export const sidebarMathematics = {
       link: '/api-reference/instruction-set/mathematics/bitwise-operations',
     },
     {
-      text: 'Advanced Math',
-      link: '/api-reference/instruction-set/mathematics/advanced-math',
+      text: 'Exponentiation',
+      link: '/api-reference/instruction-set/mathematics/exponentiation',
     },
     {
-      text: 'Vector Arithmetic',
-      link: '/api-reference/instruction-set/mathematics/vector-arithmetic',
+      text: 'Logarithms',
+      link: '/api-reference/instruction-set/mathematics/logarithm',
     },
     {
-      text: 'Vector Trigonometry',
-      link: '/api-reference/instruction-set/mathematics/vector-trigonometry',
+      text: 'Roots',
+      link: '/api-reference/instruction-set/mathematics/root',
     },
     {
-      text: 'Vector Products',
-      link: '/api-reference/instruction-set/mathematics/vector-products',
-    },
-    {
-      text: 'Vector Bitwise Operations',
-      link: '/api-reference/instruction-set/mathematics/bitwise-vector',
-    },
-    {
-      text: 'Vector Exponentiation',
-      link: '/api-reference/instruction-set/mathematics/exponentiation-vector',
-    },
-    {
-      text: 'Vector Logarithms',
-      link: '/api-reference/instruction-set/mathematics/logarithm-vector',
-    },
-    {
-      text: 'Vector Roots',
-      link: '/api-reference/instruction-set/mathematics/root-vector',
+      text: 'Trigonometry',
+      link: '/api-reference/instruction-set/mathematics/trigonometry',
     },
   ],
 };

@@ -1,4 +1,5 @@
 import { sidebarMathematics } from './sidebarMathematics.js';
+import { sidebarVectorMathematics } from './sidebarVectorMathematics.js';
 
 export const sidebarInstructionSet = {
   text: 'Set Instruksi',
@@ -9,6 +10,7 @@ export const sidebarInstructionSet = {
       link: '/id/api-reference/instruction-set/stack-variable-management',
     },
     sidebarMathematics,
+    sidebarVectorMathematics,
     {
       text: 'Alur Kontrol & Fungsi',
       link: '/id/api-reference/instruction-set/control-flow-function',

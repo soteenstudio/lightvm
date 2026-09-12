@@ -26,5 +26,5 @@ Dalam **Rust**, Anda biasanya bekerja dengan string bytecode yang diserialisasi 
 :::
 
 ::: tip
-Metode ``.run()`` adalah langkah terakhir dalam alur eksekusi. Pastikan semua `kapabilitas` yang diperlukan telah diberikan selama inisialisasi untuk menghindari pengecualian keamanan saat runtime.
+Metode `.run()` adalah langkah terakhir dalam alur eksekusi. Pastikan semua `capabilities` yang diperlukan telah diberikan selama inisialisasi untuk menghindari pengecualian keamanan saat runtime.
 :::

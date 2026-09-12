@@ -5,7 +5,9 @@ import Forum from './components/Forum.vue';
 import GitBranches from './components/GitBranches.vue';
 import GitTags from './components/GitTags.vue';
 import GitBrowser from './components/GitBrowser.vue';
+import LayoutBottom from './components/LayoutBottom.vue';
 import './style.css';
+import './ecosystemFooter.css';
 import pkg from '../../../package.json' with { type: 'json' };
 import { h } from 'vue';
 import { library } from '@fortawesome/fontawesome-svg-core';
@@ -26,7 +28,8 @@ export default {
     app.component('GitBrowser', GitBrowser);
     app.component('font-awesome-icon', FontAwesomeIcon);
   },
-  Layout() {
+  // UBAH BAGIAN INI MENJADI ARROW FUNCTION
+  Layout: () => {
     return h(DefaultTheme.Layout, null, {
       'sidebar-nav-before': () =>
         h('div', { class: 'custom-sidebar-top' }, [
@@ -43,6 +46,8 @@ export default {
             ),
           ]),
         ]),
+      // Slot ini sekarang akan berjalan normal
+      'layout-bottom': () => h(LayoutBottom),
     });
   },
 };

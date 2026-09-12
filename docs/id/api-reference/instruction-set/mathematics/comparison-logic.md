@@ -1,9 +1,16 @@
-# Perbandingan & Logika
-Instruksi-instruksi ini mengevaluasi hubungan antar nilai dan memproses ekspresi boolean untuk alur bersyarat.
+# Perbandingan dan Logika
+
+Instruksi ini membandingkan nilai skalar dan mengevaluasi truthiness nilai.
 
 | Kode Operasi | Argumen | Operan (stack) | Deskripsi |
-| :--- | :--- | :--- | :--- |
-| `gt` / `lt` | tipe | val1, val2 | Lebih Dari atau Kurang Dari |
-| `ge` / `le` | tipe | val1, val2 | Lebih Dari/Kurang Dari atau Sama Dengan |
-| `eq` / `neq` | tipe | val1, val2 | Sama Dengan atau Tidak Sama Dengan |
-| `and` / `or` | - | val1, val2 | Operasi logika boolean (AND / OR) |
+| --- | --- | --- | --- |
+| `gt` | tipe | kiri, kanan | Mengganti dua operan dengan hasil apakah `left > right` setelah konversi ke tipe yang dipilih. |
+| `lt` | tipe | kiri, kanan | Mengganti dua operan dengan hasil apakah `left < right` setelah konversi ke tipe yang dipilih. |
+| `ge` | tipe | kiri, kanan | Mengganti dua operan dengan hasil apakah `left >= right` setelah konversi ke tipe yang dipilih. |
+| `le` | tipe | kiri, kanan | Mengganti dua operan dengan hasil apakah `left <= right` setelah konversi ke tipe yang dipilih. |
+| `eq` | tipe | kiri, kanan | Mengganti dua operan dengan hasil apakah keduanya sama setelah konversi ke tipe yang dipilih. |
+| `neq` | tipe | kiri, kanan | Mengganti dua operan dengan hasil apakah keduanya berbeda setelah konversi ke tipe yang dipilih. |
+| `and` | - | kiri, kanan | Mengganti dua operan dengan AND Boolean dari truthiness keduanya. |
+| `or` | - | kiri, kanan | Mengganti dua operan dengan OR Boolean dari truthiness keduanya. |
+| `xor` | - | kiri, kanan | Mengganti dua operan dengan OR eksklusif Boolean dari truthiness keduanya. |
+| `not` | - | nilai | Mengganti satu operan dengan negasi Boolean dari truthiness-nya. |

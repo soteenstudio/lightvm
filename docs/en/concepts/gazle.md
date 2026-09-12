@@ -6,7 +6,7 @@ Gazle employs a specialized transformation pipeline and a **Time-Budgeted Optimi
 
   * **Specialized Instructions**: Gazle optimizes memory usage and execution speed by converting generic `push` instructions into type-specific counterparts (e.g., `push_int16`, `push_string`, `push_bool`). This allows the VM to process data with predefined sizes and types, significantly reducing the overhead of runtime type inspection and allocation.
  * **Constant Folding**: Pre-calculates math and logic operations (e.g., `add`, `sub`, `xor`, `concat`) if the values are known at compile-time.
- * **Conversion & Metadata Folding**: Pre-evaluates type casting (e.g., `to_integer`, `to_string`) and metadata checks like TypeOf to eliminate redundant runtime work.
+ * **Conversion & Metadata Folding**: Pre-evaluates type casting (e.g., `to_integer`, `to_string`) and metadata checks like `type_of` to eliminate redundant runtime work.
  * **Strength Reduction**: Replaces "heavy" operations with lighter ones, such as converting multiplication by powers of two into bitwise `shl` (Shift Left).
  * **Dead Store Elimination**: Analyzes variable usage and automatically removes `push`, `set`, or `inc` operations that don't contribute to the final program state.
  * **Dead Loop Elimination**: Identifies and prunes "pure" loops that have no side effects (no I/O, calls, or returns), preventing unnecessary CPU cycles.

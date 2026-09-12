@@ -1,16 +1,17 @@
 # Time Budget
-Execution limits in LightVM are managed through preset time budgets to prevent infinite loops and runaway scripts. Use the following table to understand the available execution limits and duration levels:
 
-| Budget Level | Duration | Description |
+`TimeBudget` sets how much time Gazle can spend optimizing bytecode. It does not limit VM execution time.
+
+| Value | Numeric value | Optimizer budget |
 | :--- | :--- | :--- |
-| `Cheap` **(Default)** | ~200ms | Optimized for fast, lightweight script executions and quick validations. |
-| `Normal` | ~1000ms | Standard limit suitable for general-purpose applications. |
-| `Expensive` | ~5000ms | Extended execution window for heavy computations or complex logic. |
+| `Cheap` (default) | `0` | 200 ms |
+| `Normal` | `1` | 1,000 ms |
+| `Expensive` | `2` | 5,000 ms |
+
+Set the budget before starting optimization. Use `setTimeBudget(TimeBudget.Cheap)` before `tools().optimizeBytecode(...)`, or `set_time_budget(TimeBudget::Cheap)` before `tools().optimize_bytecode(...)` in Rust.
+
+A larger budget allows optimization to continue for longer. It does not guarantee a particular result.
 
 ::: info
-**Time Budget** and **Max Ticks** will not cause any conflicts, as **Time Budget** is not utilized during execution.
-:::
-
-::: warning Performance Notice
-Choose the appropriate budget level carefully. Setting an unnecessarily high budget for untrusted scripts may risk resource exhaustion or hanging execution threads.
+`SecurityConfig.maxTicks` limits VM execution work independently of `TimeBudget`.
 :::
