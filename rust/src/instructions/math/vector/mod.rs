@@ -15,5 +15,6 @@ pub(crate) mod cross_func;
 pub(crate) mod dot;
 pub(crate) mod dot_func;
 pub(crate) mod logarithm;
+pub(crate) mod normalize;
 pub(crate) mod root;
 pub(crate) mod trigonometry;
