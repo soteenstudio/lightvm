@@ -194,6 +194,7 @@ pub fn execute(
         | Instructions::Log10v(_)
         | Instructions::Dot(_)
         | Instructions::Cross(_)
+        | Instructions::Normalize(_)
         | Instructions::IncIdx(_, _)
         | Instructions::DecIdx(_, _) => {
           math_dispatch(instr, &mut stack, &mut vars, ip)?;
