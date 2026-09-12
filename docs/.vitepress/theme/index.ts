@@ -5,8 +5,9 @@ import Forum from './components/Forum.vue';
 import GitBranches from './components/GitBranches.vue';
 import GitTags from './components/GitTags.vue';
 import GitBrowser from './components/GitBrowser.vue';
-import PartnerFooter from './components/PartnerFooter.vue';
+import LayoutBottom from './components/LayoutBottom.vue';
 import './style.css';
+import './ecosystemFooter.css';
 import pkg from '../../../package.json' with { type: 'json' };
 import { h } from 'vue';
 import { library } from '@fortawesome/fontawesome-svg-core';
@@ -46,7 +47,7 @@ export default {
           ]),
         ]),
       // Slot ini sekarang akan berjalan normal
-      'layout-bottom': () => h(PartnerFooter),
+      'layout-bottom': () => h(LayoutBottom),
     });
   },
 };

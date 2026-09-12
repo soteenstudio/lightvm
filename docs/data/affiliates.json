@@ -1,0 +1,11 @@
+[
+    {
+        "name": "RRT Handmade",
+        "description": {
+            "en": "assets",
+            "id": "aset"
+        },
+        "logo": "../public/assets/rrt-icon.jpg",
+        "website": ""
+    }
+]

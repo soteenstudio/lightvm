@@ -42,14 +42,14 @@
 import { computed } from 'vue';
 import { useData } from 'vitepress';
 import { useSidebar } from 'vitepress/theme';
-import partnerData from '../../../data/partner.json';
+import partnerData from '../../../data/affiliates.json';
 
 const { lang } = useData();
 const { hasSidebar } = useSidebar();
 
 const translations = {
-  en: { collabText: 'Official Documentation Partner' },
-  id: { collabText: 'Mitra Dokumentasi Resmi' },
+  en: { collabText: 'Affiliates' },
+  id: { collabText: 'Afiliasi' },
 };
 
 const currentLocale = computed(() => {
