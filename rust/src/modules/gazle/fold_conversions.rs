@@ -40,7 +40,7 @@ use crate::instructions::{
         expv_func::expv_values, lnv_func::lnv_values, log2v_func::log2v_values,
         log10v_func::log10v_values,
       },
-      normalize::normalize_func::normalize_values,
+      normalize_func::normalize_values,
       root::{cbrtv_func::cbrtv_values, sqrtv_func::sqrtv_values},
       trigonometry::{
         hyperbolic::{
