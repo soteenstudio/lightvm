@@ -8,7 +8,6 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-// fix it
 #![cfg(feature = "node")]
 use crate::interfaces::interface::LightVM;
 use crate::modules::vmerror::VMError;
