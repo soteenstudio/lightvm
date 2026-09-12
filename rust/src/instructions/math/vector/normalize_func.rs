@@ -16,7 +16,6 @@ use crate::modules::vmerror::VMError;
 use crate::types::expected_category::ExpectedCategory;
 use crate::types::{primitive_types::PrimitiveTypes, stack::Stack, value::Value};
 use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
-
 #[inline(always)]
 pub fn normalize_values(
   value: Value,
@@ -37,7 +36,6 @@ pub fn normalize_values(
       });
     }
   }
-
   Ok(match num_type {
     PrimitiveTypes::Hlf => normalize_f16in(values),
     PrimitiveTypes::Flt => normalize_f32in(values),
@@ -51,7 +49,6 @@ pub fn normalize_values(
     }
   })
 }
-
 #[inline]
 pub fn normalize_func(
   stack: &mut Stack,
@@ -66,16 +63,13 @@ pub fn normalize_func(
   *stack.last_mut().unwrap() = result;
   Ok(())
 }
-
 #[cfg(test)]
 mod tests {
   use super::*;
   use std::sync::Arc;
-
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
   }
-
   #[test]
   fn normalizes_non_zero_vector() {
     let result = normalize_values(
@@ -88,7 +82,6 @@ mod tests {
     assert!((values[0].as_f32() - 0.6).abs() < f32::EPSILON);
     assert!((values[1].as_f32() - 0.8).abs() < f32::EPSILON);
   }
-
   #[test]
   fn normalizes_zero_vector_to_zero_vector() {
     let result = normalize_values(
@@ -102,7 +95,6 @@ mod tests {
       array(vec![Value::Float64(0.0), Value::Float64(0.0)])
     );
   }
-
   #[test]
   fn rejects_invalid_operands_without_mutating_stack() {
     for value in [Value::Bool(false), array(vec![Value::Bool(false)])] {
@@ -119,7 +111,6 @@ mod tests {
       Err(VMError::TypeMismatch { ip: 18, .. })
     ));
   }
-
   #[test]
   fn rejects_missing_operand() {
     let mut stack = Stack::new();

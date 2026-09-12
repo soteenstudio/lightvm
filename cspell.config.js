@@ -118,7 +118,8 @@ export default {
     'rorv',
     'shlv',
     'shrv',
-    'sqrtv'
+    'sqrtv',
+    'hypot'
   ],
   ignorePaths: [
     'node_modules/**',

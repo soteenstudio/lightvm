@@ -11,7 +11,6 @@
 use crate::types::value::Value;
 use half::f16;
 use std::sync::Arc;
-
 pub fn normalize_f16in(values: &[Value]) -> Value {
   let magnitude = values
     .iter()
@@ -29,11 +28,9 @@ pub fn normalize_f16in(values: &[Value]) -> Value {
       .collect(),
   ))
 }
-
 #[cfg(test)]
 mod tests {
   use super::*;
-
   #[test]
   fn normalizes_vectors_and_preserves_zero_vectors() {
     let result = normalize_f16in(&[
@@ -43,7 +40,6 @@ mod tests {
     let values = result.as_array().unwrap();
     assert_eq!(values[0], Value::Float16(f16::from_f32(0.6)));
     assert_eq!(values[1], Value::Float16(f16::from_f32(0.8)));
-
     assert_eq!(
       normalize_f16in(&[Value::Float16(f16::ZERO)]),
       Value::Array(Arc::new(vec![Value::Float16(f16::ZERO)]))
