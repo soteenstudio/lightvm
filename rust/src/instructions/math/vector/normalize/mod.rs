@@ -8,4 +8,6 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-pub(crate) mod normalize_func;
+pub(crate) mod normalize_f16in;
+pub(crate) mod normalize_f32in;
+pub(crate) mod normalize_f64in;

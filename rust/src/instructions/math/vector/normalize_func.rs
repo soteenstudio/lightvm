@@ -8,12 +8,14 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+use crate::instructions::math::vector::normalize::{
+  normalize_f16in::normalize_f16in, normalize_f32in::normalize_f32in,
+  normalize_f64in::normalize_f64in,
+};
 use crate::modules::vmerror::VMError;
 use crate::types::expected_category::ExpectedCategory;
 use crate::types::{primitive_types::PrimitiveTypes, stack::Stack, value::Value};
 use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
-use half::f16;
-use std::sync::Arc;
 
 #[inline(always)]
 pub fn normalize_values(
@@ -36,58 +38,10 @@ pub fn normalize_values(
     }
   }
 
-  let result = match num_type {
-    PrimitiveTypes::Hlf => {
-      let magnitude = values
-        .iter()
-        .fold(0.0_f32, |magnitude, value| magnitude.hypot(value.as_f32()));
-      Value::Array(Arc::new(
-        values
-          .iter()
-          .map(|value| {
-            Value::Float16(if magnitude == 0.0 {
-              f16::ZERO
-            } else {
-              f16::from_f32(value.as_f32() / magnitude)
-            })
-          })
-          .collect(),
-      ))
-    }
-    PrimitiveTypes::Flt => {
-      let magnitude = values
-        .iter()
-        .fold(0.0_f32, |magnitude, value| magnitude.hypot(value.as_f32()));
-      Value::Array(Arc::new(
-        values
-          .iter()
-          .map(|value| {
-            Value::Float32(if magnitude == 0.0 {
-              0.0
-            } else {
-              value.as_f32() / magnitude
-            })
-          })
-          .collect(),
-      ))
-    }
-    PrimitiveTypes::Dbl => {
-      let magnitude = values
-        .iter()
-        .fold(0.0_f64, |magnitude, value| magnitude.hypot(value.as_f64()));
-      Value::Array(Arc::new(
-        values
-          .iter()
-          .map(|value| {
-            Value::Float64(if magnitude == 0.0 {
-              0.0
-            } else {
-              value.as_f64() / magnitude
-            })
-          })
-          .collect(),
-      ))
-    }
+  Ok(match num_type {
+    PrimitiveTypes::Hlf => normalize_f16in(values),
+    PrimitiveTypes::Flt => normalize_f32in(values),
+    PrimitiveTypes::Dbl => normalize_f64in(values),
     _ => {
       return Err(VMError::TypeMismatch {
         ip,
@@ -95,8 +49,7 @@ pub fn normalize_values(
         found: expected_type(num_type, ExpectedCategory::All),
       });
     }
-  };
-  Ok(result)
+  })
 }
 
 #[inline]
@@ -117,6 +70,7 @@ pub fn normalize_func(
 #[cfg(test)]
 mod tests {
   use super::*;
+  use std::sync::Arc;
 
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
