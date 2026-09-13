@@ -225,6 +225,7 @@ impl LightVM {
       backtrace: error_options.backtrace,
       explain: error_options.explain,
       hint: error_options.hint,
+      diagnostic_links: error_options.diagnostic_links,
     }
   }
   pub fn set_max_io(mut self, value: usize) -> Self {
@@ -281,6 +282,10 @@ impl LightVM {
   }
   pub fn with_hint(mut self, enabled: bool) -> Self {
     self.hint = enabled;
+    self
+  }
+  pub fn with_diagnostic_links(mut self, enabled: bool) -> Self {
+    self.diagnostic_links = enabled;
     self
   }
   #[cfg(not(feature = "wasm"))]
@@ -464,6 +469,7 @@ impl LightVM {
       backtrace: self.backtrace,
       explain: self.explain,
       hint: self.hint,
+      diagnostic_links: self.diagnostic_links,
       time_budget: self.time_budget,
       can_control: self.caps.contains(&Capability::Control),
       can_debug: self.caps.contains(&Capability::Debug),
@@ -475,6 +481,7 @@ pub struct LightVMTools {
   pub backtrace: bool,
   pub explain: bool,
   pub hint: bool,
+  pub diagnostic_links: bool,
   pub time_budget: TimeBudget,
   pub can_control: bool,
   pub can_debug: bool,
@@ -534,6 +541,7 @@ impl LightVMTools {
         backtrace: self.backtrace,
         explain: self.explain,
         hint: self.hint,
+        diagnostic_links: self.diagnostic_links,
       }),
     };
     let opt_str = LightVM::new(config)
@@ -626,6 +634,15 @@ mod tests {
     let vm = LightVM::new(config);
     assert!(vm.bytecode.is_empty());
     assert_eq!(vm.state, VmState::Idle);
+  }
+  #[test]
+  fn diagnostic_links_can_be_disabled() {
+    let mut vm = LightVM::new(VmConfig::default()).with_diagnostic_links(false);
+    let error = vm
+      .load_internal("invalid source".to_string())
+      .expect_err("expected invalid source to fail");
+
+    assert!(!error.to_string().contains("documentation:"));
   }
   #[test]
   fn on_registers_listener() {
@@ -818,6 +835,7 @@ mod tests {
         backtrace: tools.backtrace,
         explain: tools.explain,
         hint: tools.hint,
+        diagnostic_links: tools.diagnostic_links,
       }),
       ..Default::default()
     });
@@ -845,6 +863,7 @@ mod tests {
         backtrace: tools.backtrace,
         explain: tools.explain,
         hint: tools.hint,
+        diagnostic_links: tools.diagnostic_links,
       }),
       ..Default::default()
     });
