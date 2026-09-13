@@ -8,23 +8,24 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-import { Bench } from 'tinybench';
 import { LightVM, Capability } from '../../dist/index.min.mjs';
-async function runBenchmark() {
-  const bench = new Bench();
-  const vm = new LightVM([Capability.Observe, Capability.Control]);
+function runBenchmark() {
+  const vm = new LightVM({
+    caps: [Capability.Control, Capability.Debug, Capability.Observe],
+  });
   const raw = [['push', 'Hello from LightVM!'], ['println']];
   const tools = vm.tools();
   const optimized = tools.optimizeBytecode(raw);
-  vm.load(optimized);
-  bench.add('add_bench', () => {
-    vm.run();
-  });
-  await bench.run();
-  bench.table().forEach((row) => {
-    console.log(
-      `Task: ${row['Task name']} | Avg Latency: ${row['Latency avg (ns)']}`,
-    );
-  });
+
+  tools.bench('io_bench').run(
+    () => {
+      const benchmarkVm = new LightVM({
+        caps: [Capability.Control, Capability.Debug, Capability.Observe],
+      });
+      benchmarkVm.load(optimized);
+      return benchmarkVm;
+    },
+    (benchmarkVm) => benchmarkVm.run(),
+  );
 }
-runBenchmark().catch(console.error);
+runBenchmark();
