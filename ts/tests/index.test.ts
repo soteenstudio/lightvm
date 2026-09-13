@@ -140,7 +140,7 @@ setTimeout(() => {
 
         expect(result.error).toBe(undefined);
         expect(result.status).toBe(0);
-        expect(JSON.parse(result.stdout.trim())).toEqual({
+        expect(JSON.parse(result.stdout.toString().trim())).toEqual({
           event: "Tick",
           payload: { state: "start" },
         });
@@ -172,7 +172,7 @@ setTimeout(() => {
 
         expect(result.error).toBe(undefined);
         expect(result.status).toBe(0);
-        expect(JSON.parse(result.stdout.trim())).toEqual([
+        expect(JSON.parse(result.stdout.toString().trim())).toEqual([
           { event: "Start", payload: { operation: "run" } },
           { event: "Finish", payload: { operation: "run" } },
         ]);
