@@ -8,20 +8,16 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-import { LightVM, Capability } from '../../dist/index.min.mjs';
+import { LightVM, Capability } from '../../../dist/index.min.mjs';
 function runBenchmark() {
   const vm = new LightVM({
     caps: [Capability.Control, Capability.Debug, Capability.Observe],
   });
-  const raw = [
-    ['val', 'x'],
-    ['push', 5],
-    ['set', 'x'],
-  ];
+  const raw = [['push', 'Hello from LightVM!'], ['println']];
   const tools = vm.tools();
   const optimized = tools.optimizeBytecode(raw);
 
-  tools.bench('assign_bench').run(
+  tools.bench('io_bench').run(
     () => {
       const benchmarkVm = new LightVM({
         caps: [Capability.Control, Capability.Debug, Capability.Observe],

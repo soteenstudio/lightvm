@@ -70,6 +70,12 @@ path = "rust/benches/normal/io_bench.rs"
 harness = false
 required-features = ["native"]
 
+[[bench]]
+name = "function_call_bench"
+path = "rust/benches/normal/function_call_bench.rs"
+harness = false
+required-features = ["native"]
+
 # Optimize Benches
 [[bench]]
 name = "add_bench_optimize"
@@ -98,6 +104,12 @@ required-features = ["native"]
 [[bench]]
 name = "io_bench_optimize"
 path = "rust/benches/optimize/io_bench.rs"
+harness = false
+required-features = ["native"]
+
+[[bench]]
+name = "function_call_bench_optimize"
+path = "rust/benches/optimize/function_call_bench.rs"
 harness = false
 required-features = ["native"]
 
