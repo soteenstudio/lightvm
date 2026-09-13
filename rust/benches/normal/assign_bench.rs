@@ -8,7 +8,10 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use lightvm::{LightVM, types::{capability::Capability, vmconfig::VmConfig}};
+use lightvm::{
+  LightVM,
+  types::{capability::Capability, vmconfig::VmConfig},
+};
 
 fn config() -> VmConfig {
   VmConfig {
@@ -20,7 +23,10 @@ fn config() -> VmConfig {
 fn main() {
   let mut vm = LightVM::new(config());
   let raw = r#"[["val", "x"], ["push", 5], ["set", "x"]]"#;
-  let benchmark = vm.tools().bench("assign_bench").expect("benchmark requires debug capability");
+  let benchmark = vm
+    .tools()
+    .bench("assign_bench")
+    .expect("benchmark requires debug capability");
   benchmark.run(
     || {
       let mut vm = LightVM::new(config());

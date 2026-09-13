@@ -8,7 +8,10 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-use lightvm::{LightVM, types::{capability::Capability, vmconfig::VmConfig}};
+use lightvm::{
+  LightVM,
+  types::{capability::Capability, vmconfig::VmConfig},
+};
 
 fn config() -> VmConfig {
   VmConfig {
