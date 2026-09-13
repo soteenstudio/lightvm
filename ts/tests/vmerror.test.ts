@@ -18,13 +18,10 @@ describe("VMError Class", () => {
     const msg = "Something went wrong";
     const details = ["test", "there is testing"];
     const err = new VMError(msg, details);
-
     expect(err.code).toBe("LVM500");
     expect(err.ip).toBe(0);
-
     expect(err).toBeInstanceOf(VMError);
     expect(err.name).toBe("");
-
     expect(err.hintDetails.length).toBe(2);
     expect(err.code).toContain("LVM500");
   });

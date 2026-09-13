@@ -34,9 +34,7 @@ describe("loadNapi Utility", () => {
   if (scenario !== "reject-invalid-sig") {
     test("loadNapi: should load and return native module (cached)", () => {
       const native1 = loadNapi();
-
       const native2 = loadNapi();
-
       expect(native1).toBe(native2);
       expect(native1).toBeDefined();
     });
