@@ -8,7 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-import { test, expect, describe } from "unitry";
+import { describe, expect, test } from "unitry";
 import { importVM } from "./helper/importVM.js";
 
 const { VMError } = await importVM();
@@ -18,19 +18,15 @@ describe("VMError Class", () => {
     const msg = "Something went wrong";
     const details = ["test", "there is testing"];
     const err = new VMError(msg, details);
-    
     expect(err.code).toBe("LVM500");
     expect(err.ip).toBe(0);
-    
     expect(err).toBeInstanceOf(VMError);
     expect(err.name).toBe("");
-    
     expect(err.hintDetails.length).toBe(2);
     expect(err.code).toContain("LVM500");
   });
 
   test("VMError: should be throwable", () => {
-    
     expect(() => {
       throw new VMError("Test error");
     }).toThrow();

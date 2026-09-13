@@ -111,7 +111,6 @@ function verifyBinarySignature(
 export function loadNapi(explain: boolean, hint: boolean) {
   if (cachedNative) return cachedNative;
 
-  // Allow skipping signature verification during local development/testing
   const skipVerification =
     process.env.LIGHTVM_SKIP_SIGNATURE_VERIFICATION === 'true';
 
@@ -155,7 +154,6 @@ export function loadNapi(explain: boolean, hint: boolean) {
     process.exit(65);
   }
 
-  // Validate packageName before attempting resolution
   if (!packageName) {
     const error = new VMSystemError(
       `Platform ${platform} ${arch} is not supported`,
@@ -168,9 +166,6 @@ export function loadNapi(explain: boolean, hint: boolean) {
     process.exit(65);
   }
 
-  // Local testing fallback: only used when the platform package cannot be
-  // resolved at all. Once a package resolves, the fallback is never
-  // consulted again, even if verification or loading of that package fails.
   const fallbackPath = join(__dirname, '../binaries/lightvm.node');
   let usedFallback = false;
 
@@ -195,8 +190,6 @@ export function loadNapi(explain: boolean, hint: boolean) {
       binaryPath = fallbackPath;
     }
 
-    // CRITICAL: Verify signature BEFORE loading the binary
-    // Only verify .node files (native addons), not JavaScript files
     if (!skipVerification && binaryPath.endsWith('.node')) {
       verifyBinarySignature(binaryPath, explain, hint);
     }

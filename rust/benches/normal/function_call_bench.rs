@@ -10,12 +10,13 @@
 
 use lightvm::{
   LightVM,
-  types::{capability::Capability, vmconfig::VmConfig},
+  types::{capability::Capability, runtime_config::RuntimeConfig, vmconfig::VmConfig},
 };
 
 fn config() -> VmConfig {
   VmConfig {
     caps: vec![Capability::Control, Capability::Debug, Capability::Observe],
+    runtime_config: Some(RuntimeConfig { nightly: true }),
     ..Default::default()
   }
 }
@@ -23,22 +24,26 @@ fn config() -> VmConfig {
 fn main() {
   let mut vm = LightVM::new(config());
   let raw = r#"[
-    ["val", "x"],
-    ["push", "Hello from "],
-    ["push", "LightVM!"],
-    ["set", "x"]
+    ["jump", 7],
+    ["func", "add", 2, 2, 6, "a", "b"],
+    ["get", "a"],
+    ["get", "b"],
+    ["add", "int"],
+    ["return"],
+    ["stop"],
+    ["export", "add"]
   ]"#;
-  let tools = vm.tools();
-  let optimized_json = tools.optimize_bytecode(raw);
-  let benchmark = tools
-    .bench("concat_bench")
+  let benchmark = vm
+    .tools()
+    .bench("function_call_bench")
     .expect("benchmark requires debug capability");
   benchmark.run(
     || {
       let mut vm = LightVM::new(config());
-      vm.load(optimized_json.clone());
-      vm
+      vm.load(raw);
+      let function = vm.export("add".to_string());
+      (vm, function)
     },
-    |vm| vm.run(None),
+    |(vm, function)| function.call(vm, vec![5.into(), 6.into()]),
   );
 }
