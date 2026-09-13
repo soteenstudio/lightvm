@@ -8,24 +8,33 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-import { test, expect, describe, suppressConsole } from "unitry";
 import { spawnSync } from "node:child_process";
+import { describe, expect, suppressConsole, test } from "unitry";
 import { importVM } from "./helper/importVM.js";
 
 const { LightVM, Capability, VMEvent } = await importVM();
 
 describe("LightVM Suite", () => {
-  
-  const createVM = () => new LightVM([Capability.Observe, Capability.Control, Capability.Unsafe]);
-  
+  const createVM = () =>
+    new LightVM([
+      Capability.Observe,
+      Capability.Control,
+      Capability.Unsafe,
+    ]);
+
   describe("Tools & Optimization", () => {
     test("optimizeBytecode should map inputs correctly", () => {
       const vm = createVM();
       const tools = vm.tools();
-      const raw = [["push", 15], ["push", 5], ["add", "i16"], ["println"]];
+      const raw = [
+        ["push", 15],
+        ["push", 5],
+        ["add", "i16"],
+        ["println"],
+      ];
       const result = tools.optimizeBytecode(raw);
-      
-      expect(result).toEqual([{ push_int16: 20 }, 'println']);
+
+      expect(result).toEqual([{ push_int16: 20 }, "println"]);
     });
 
     test("bench should run through the public tools wrapper", () => {
@@ -102,7 +111,7 @@ describe("LightVM Suite", () => {
 
     test("provide should accept key-value pairs", () => {
       const vm = createVM();
-      
+
       expect(() => vm.provide({ test: 123 })).not.toThrow();
     });
   });
@@ -189,14 +198,14 @@ vm.on(VMEvent.Tick, () => {});`,
       });
     }
   });
-  
+
   describe("Capability Validation", () => {
     const testCases = [
       { cap: Capability.Observe, expected: true },
       { cap: Capability.Control, expected: true },
       { cap: Capability.Debug, expected: true },
     ];
-  
+
     testCases.forEach(({ cap, expected }) => {
       test(`Should handle capability: ${cap}`, () => {
         const vm = new LightVM([cap]);

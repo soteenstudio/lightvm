@@ -8,10 +8,10 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-import { test, expect, describe } from "unitry";
-import { importVM } from "./helper/importVM.js";
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
+import { describe, expect, test } from "unitry";
+import { importVM } from "./helper/importVM.js";
 
 const { loadNapi } = await importVM();
 
@@ -21,16 +21,18 @@ function runLoadNapiInSubprocess() {
   const distPath = resolve(process.cwd(), "dist/index.min.mjs");
   return spawnSync(
     process.execPath,
-    ["--input-type=module", "-e", `import(${JSON.stringify(`file://${distPath}`)}).then((m) => m.loadNapi());`],
+    [
+      "--input-type=module",
+      "-e",
+      `import(${JSON.stringify(`file://${distPath}`)}).then((m) => m.loadNapi());`,
+    ],
     { env: process.env, stdio: "ignore" },
   );
 }
 
 describe("loadNapi Utility", () => {
-
   if (scenario !== "reject-invalid-sig") {
     test("loadNapi: should load and return native module (cached)", () => {
-
       const native1 = loadNapi();
 
       const native2 = loadNapi();
@@ -41,25 +43,32 @@ describe("loadNapi Utility", () => {
   }
 
   if (scenario === "priority") {
-    test("loadNapi: should prioritize the platform package over the local lightvm-test fallback", () => {
-      
-      const native = loadNapi();
-      expect(native).toBeDefined();
-    });
+    test(
+      "loadNapi: should prioritize the platform package over the local lightvm-test fallback",
+      () => {
+        const native = loadNapi();
+        expect(native).toBeDefined();
+      },
+    );
   }
 
   if (scenario === "fallback") {
-    test("loadNapi: should load the local lightvm-test/binaries/lightvm.node binary when the platform package is absent", () => {
-      const native = loadNapi();
-      expect(native).toBeDefined();
-    });
+    test(
+      "loadNapi: should load the local lightvm-test/binaries/lightvm.node binary when the platform package is absent",
+      () => {
+        const native = loadNapi();
+        expect(native).toBeDefined();
+      },
+    );
   }
 
   if (scenario === "reject-invalid-sig") {
-    test("loadNapi: should reject the local fallback binary when its signature is missing or invalid", () => {
-      
-      const result = runLoadNapiInSubprocess();
-      expect(result.status).toBe(70);
-    });
+    test(
+      "loadNapi: should reject the local fallback binary when its signature is missing or invalid",
+      () => {
+        const result = runLoadNapiInSubprocess();
+        expect(result.status).toBe(70);
+      },
+    );
   }
 });
