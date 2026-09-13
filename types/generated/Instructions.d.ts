@@ -71,6 +71,12 @@ export type Instructions = {
 } | {
     "tan": PrimitiveTypes;
 } | {
+    "sinv": PrimitiveTypes;
+} | {
+    "cosv": PrimitiveTypes;
+} | {
+    "tanv": PrimitiveTypes;
+} | {
     "asin": PrimitiveTypes;
 } | {
     "acos": PrimitiveTypes;
@@ -79,17 +85,37 @@ export type Instructions = {
 } | {
     "atan2": PrimitiveTypes;
 } | {
+    "asinv": PrimitiveTypes;
+} | {
+    "acosv": PrimitiveTypes;
+} | {
+    "atanv": PrimitiveTypes;
+} | {
+    "atan2v": PrimitiveTypes;
+} | {
     "sinh": PrimitiveTypes;
 } | {
     "cosh": PrimitiveTypes;
 } | {
     "tanh": PrimitiveTypes;
 } | {
+    "sinhv": PrimitiveTypes;
+} | {
+    "coshv": PrimitiveTypes;
+} | {
+    "tanhv": PrimitiveTypes;
+} | {
     "asinh": PrimitiveTypes;
 } | {
     "acosh": PrimitiveTypes;
 } | {
     "atanh": PrimitiveTypes;
+} | {
+    "asinhv": PrimitiveTypes;
+} | {
+    "acoshv": PrimitiveTypes;
+} | {
+    "atanhv": PrimitiveTypes;
 } | {
     "sqrt": PrimitiveTypes;
 } | {
@@ -112,6 +138,12 @@ export type Instructions = {
     "powi": PrimitiveTypes;
 } | {
     "powf": PrimitiveTypes;
+} | {
+    "powv": PrimitiveTypes;
+} | {
+    "powiv": PrimitiveTypes;
+} | {
+    "powfv": PrimitiveTypes;
 } | {
     "gt": PrimitiveTypes;
 } | {

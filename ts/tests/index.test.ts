@@ -201,12 +201,12 @@ vm.on(VMEvent.Tick, () => {});`,
 
   describe("Capability Validation", () => {
     const testCases = [
-      { cap: Capability.Observe, expected: true },
-      { cap: Capability.Control, expected: true },
-      { cap: Capability.Debug, expected: true },
+      Capability.Observe,
+      Capability.Control,
+      Capability.Debug,
     ];
 
-    testCases.forEach(({ cap, expected }) => {
+    testCases.forEach((cap) => {
       test(`Should handle capability: ${cap}`, () => {
         const vm = new LightVM([cap]);
         expect(vm).toBeInstanceOf(LightVM);
