@@ -131,7 +131,6 @@ impl fmt::Display for VMError {
       }
       VMError::SystemError(s) => write!(f, "{}", s),
     }?;
-    write!(f, "\n{}", self.diagnostic_link())?;
     if !matches!(self, VMError::SystemError(_)) {
       if is_hint {
         write!(
@@ -144,6 +143,11 @@ impl fmt::Display for VMError {
         write!(f, "\n     {DARK_GRAY}error type: {}", err_type)?;
       }
     }
+    write!(
+      f,
+      "\n {RESET}{CYAN}├── {DARK_GRAY}documentation: {}{RESET}",
+      self.diagnostic_link()
+    )?;
     if is_backtrace {
       let backtrace = get_backtrace();
       write!(
