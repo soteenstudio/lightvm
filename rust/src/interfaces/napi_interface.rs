@@ -103,6 +103,7 @@ impl NodeLightVM {
         backtrace: error_options.backtrace.unwrap_or(false),
         explain: error_options.explain.unwrap_or(false),
         hint: error_options.hint.unwrap_or(true),
+        diagnostic_links: error_options.diagnostic_links.unwrap_or(true),
       },
     })
   }
@@ -185,6 +186,11 @@ impl NodeLightVM {
   #[napi(js_name = "withHint")]
   pub fn with_hint(&mut self, enabled: bool) -> Result<()> {
     self.inner.hint = enabled;
+    Ok(())
+  }
+  #[napi(js_name = "withDiagnosticLinks")]
+  pub fn with_diagnostic_links(&mut self, enabled: bool) -> Result<()> {
+    self.inner.diagnostic_links = enabled;
     Ok(())
   }
   #[napi]
@@ -561,6 +567,7 @@ impl NodeLightVM {
       is_backtrace,
       is_explain,
       is_hint,
+      self.inner.diagnostic_links,
     );
     vm_instance.caps = self
       .inner
@@ -599,6 +606,7 @@ impl NodeLightVM {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::types::js::js_error_options::JSErrorOptions;
   #[test]
   fn unknown_capability_uses_vm_error_display() {
     let config = VmNapiConfig {
@@ -716,5 +724,24 @@ mod tests {
       NodeLightVM::napi_parse_ltc("stop;".to_string()).expect("expected valid LTC"),
       r#"[["stop"]]"#
     );
+  }
+  #[test]
+  fn diagnostic_links_can_be_configured_and_updated() {
+    let mut vm = NodeLightVM::napi_new(VmNapiConfig {
+      error_options: Some(JSErrorOptions {
+        diagnostic_links: Some(false),
+        ..Default::default()
+      }),
+      ..Default::default()
+    })
+    .expect("expected a VM");
+
+    assert!(!vm.inner.diagnostic_links);
+    vm.with_diagnostic_links(true)
+      .expect("expected the setting to update");
+    assert!(vm.inner.diagnostic_links);
+    vm.with_diagnostic_links(false)
+      .expect("expected the setting to update");
+    assert!(!vm.inner.diagnostic_links);
   }
 }

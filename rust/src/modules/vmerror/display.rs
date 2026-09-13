@@ -22,6 +22,7 @@ impl fmt::Display for VMError {
     let is_backtrace = config.backtrace;
     let is_explain = config.explain;
     let is_hint = config.hint;
+    let diagnostic_links = config.diagnostic_links;
     let err_type = match self {
       VMError::StackOverflow { .. } => "StackOverflow",
       VMError::StackUnderflow { .. } => "StackUnderflow",
@@ -143,11 +144,13 @@ impl fmt::Display for VMError {
         write!(f, "\n     {DARK_GRAY}error type: {}", err_type)?;
       }
     }
-    write!(
-      f,
-      "\n {RESET}{CYAN}├── {DARK_GRAY}documentation: {}{RESET}",
-      self.diagnostic_link()
-    )?;
+    if diagnostic_links {
+      write!(
+        f,
+        "\n {RESET}{CYAN}├── {DARK_GRAY}documentation: {}{RESET}",
+        self.diagnostic_link()
+      )?;
+    }
     if is_backtrace {
       let backtrace = get_backtrace();
       write!(

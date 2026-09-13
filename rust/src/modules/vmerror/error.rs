@@ -182,16 +182,14 @@ mod tests {
 
   #[test]
   fn formatted_error_contains_its_diagnostic_link() {
-    set_thread_error_config(false, false, true);
+    set_thread_error_config(false, false, true, true);
     let error = VMError::StackOverflow { ip: 1, limit: 2 };
     let formatted = error.to_string();
     let metadata_position = formatted.find("error type:").unwrap();
     let documentation_position = formatted.find("documentation:").unwrap();
     let hint_position = formatted.find("hint:").unwrap();
 
-    assert!(
-      formatted.contains(&format!("documentation: {}", error.diagnostic_link()))
-    );
+    assert!(formatted.contains(&format!("documentation: {}", error.diagnostic_link())));
     assert!(formatted.contains("\x1b[36m├── \x1b[2;37mdocumentation:"));
     assert!(metadata_position < documentation_position);
     assert!(documentation_position < hint_position);
@@ -199,7 +197,7 @@ mod tests {
 
   #[test]
   fn formatted_system_error_contains_its_diagnostic_link() {
-    set_thread_error_config(false, false, true);
+    set_thread_error_config(false, false, true, true);
     let error = VMError::SystemError(SmolStr::new("system failure"));
     let formatted = error.to_string();
     let error_position = formatted.find("system failure").unwrap();
@@ -213,7 +211,7 @@ mod tests {
 
   #[test]
   fn diagnostic_link_is_rendered_when_hints_are_disabled() {
-    set_thread_error_config(false, false, false);
+    set_thread_error_config(false, false, false, true);
     let error = VMError::StackOverflow { ip: 1, limit: 2 };
     let formatted = error.to_string();
 
@@ -223,12 +221,20 @@ mod tests {
 
   #[test]
   fn diagnostic_link_is_rendered_before_backtrace() {
-    set_thread_error_config(true, false, true);
+    set_thread_error_config(true, false, true, true);
     let error = VMError::StackOverflow { ip: 1, limit: 2 };
     let formatted = error.to_string();
     let documentation_position = formatted.find("documentation:").unwrap();
     let backtrace_position = formatted.find("internal backtrace:").unwrap();
 
     assert!(documentation_position < backtrace_position);
+  }
+
+  #[test]
+  fn diagnostic_link_can_be_disabled() {
+    set_thread_error_config(false, false, true, false);
+    let error = VMError::StackOverflow { ip: 1, limit: 2 };
+
+    assert!(!error.to_string().contains("documentation:"));
   }
 }

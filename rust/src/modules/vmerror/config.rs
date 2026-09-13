@@ -15,6 +15,7 @@ pub struct VMErrorContainer {
   pub backtrace: bool,
   pub explain: bool,
   pub hint: bool,
+  pub diagnostic_links: bool,
 }
 impl Default for VMErrorContainer {
   fn default() -> Self {
@@ -27,6 +28,7 @@ impl VMErrorContainer {
       backtrace: false,
       explain: false,
       hint: true,
+      diagnostic_links: true,
     }
   }
   pub fn get_value(&self) -> VMErrorContainer {
@@ -34,6 +36,7 @@ impl VMErrorContainer {
       backtrace: self.backtrace,
       explain: self.explain,
       hint: self.hint,
+      diagnostic_links: self.diagnostic_links,
     }
   }
 }
@@ -41,12 +44,13 @@ thread_local! {
   static THREAD_ERROR_CONFIG: RefCell<Option<VMErrorContainer>> = const { RefCell::new(None) };
 }
 static EXPLAIN_MODE: OnceLock<Mutex<VMErrorContainer>> = OnceLock::new();
-pub fn set_thread_error_config(backtrace: bool, explain: bool, hint: bool) {
+pub fn set_thread_error_config(backtrace: bool, explain: bool, hint: bool, diagnostic_links: bool) {
   THREAD_ERROR_CONFIG.with(|config| {
     *config.borrow_mut() = Some(VMErrorContainer {
       backtrace,
       explain,
       hint,
+      diagnostic_links,
     });
   });
 }

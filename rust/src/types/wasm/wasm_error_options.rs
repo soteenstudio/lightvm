@@ -12,8 +12,10 @@
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "wasm")]
 #[derive(Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct WASMErrorOptions {
   pub backtrace: Option<bool>,
   pub explain: Option<bool>,
   pub hint: Option<bool>,
+  pub diagnostic_links: Option<bool>,
 }

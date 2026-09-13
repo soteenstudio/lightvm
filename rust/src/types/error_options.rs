@@ -13,6 +13,7 @@ pub struct ErrorOptions {
   pub backtrace: bool,
   pub explain: bool,
   pub hint: bool,
+  pub diagnostic_links: bool,
 }
 impl Default for ErrorOptions {
   fn default() -> Self {
@@ -20,6 +21,17 @@ impl Default for ErrorOptions {
       backtrace: false,
       explain: false,
       hint: true,
+      diagnostic_links: true,
     }
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::ErrorOptions;
+
+  #[test]
+  fn diagnostic_links_are_enabled_by_default() {
+    assert!(ErrorOptions::default().diagnostic_links);
   }
 }
