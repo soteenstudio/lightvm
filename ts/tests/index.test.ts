@@ -31,13 +31,21 @@ describe("LightVM Suite", () => {
     test("bench should run through the public tools wrapper", () => {
       const vm = new LightVM({ caps: [Capability.Debug] });
       const tools = vm.tools();
+      let executions = 0;
 
-      expect(() =>
-        tools.bench("wrapper-bench").samples(1).targetTime(1).run(
-          () => 1,
-          (state) => state + 1,
-        ),
-      ).not.toThrow();
+      suppressConsole(() => {
+        expect(() =>
+          tools.bench("wrapper-bench").samples(1).targetTime(1).run(
+            () => 1,
+            (state) => {
+              executions += 1;
+              return state + 1;
+            },
+          ),
+        ).not.toThrow();
+      });
+
+      expect(executions > 0).toBe(true);
     });
   });
 
