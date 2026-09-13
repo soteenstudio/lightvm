@@ -45,7 +45,7 @@ describe("LightVM Suite", () => {
         expect(() =>
           tools.bench("wrapper-bench").samples(1).targetTime(1).run(
             () => 1,
-            (state) => {
+            (state: number) => {
               executions += 1;
               return state + 1;
             },
