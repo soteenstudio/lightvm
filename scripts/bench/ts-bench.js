@@ -31,7 +31,7 @@ console.log(
 );
 execSync('cargo build --release --features node', {
   stdio: 'inherit',
-  cwd: path.resolve(__dirname, '..'),
+  cwd: path.resolve(__dirname, '../..'),
 });
 console.log(
   `${s.bold}${s.green}✔${s.reset} ${s.bold}Rust build success!${s.reset}\n`,
@@ -67,8 +67,11 @@ console.log(
 console.log(
   `${s.bold}${s.cyan}⚡${s.reset} ${s.bold}Running benchmarks...${s.reset}`,
 );
-const targetDir = path.join(__dirname, '../ts', 'benchmarks');
-const files = fs.readdirSync(targetDir).filter((file) => file.endsWith('.ts'));
+const targetDir = path.join(rootDir, 'ts', 'benchmarks');
+const files = fs
+  .readdirSync(targetDir, { recursive: true })
+  .filter((file) => file.endsWith('.ts'))
+  .sort();
 
 files.forEach((file) => {
   console.log(
