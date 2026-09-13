@@ -8,7 +8,6 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-// TODO: add here
 use smol_str::SmolStr;
 use std::borrow::Cow;
 #[derive(Debug)]
@@ -103,5 +102,103 @@ impl VMError {
       VMError::TickLimitExceeded => "LVM016",
       VMError::SystemError(_) => "LVM500",
     }
+  }
+
+  /// Returns the documentation URL for this error.
+  #[cold]
+  pub fn diagnostic_link(&self) -> String {
+    format!(
+      "https://lightvm.vercel.app/api-reference/error-codes/{}-code",
+      self.error_code().to_ascii_lowercase()
+    )
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::VMError;
+  use crate::modules::vmerror::config::set_thread_error_config;
+  use smol_str::SmolStr;
+
+  fn all_errors() -> Vec<VMError> {
+    vec![
+      VMError::StackOverflow { ip: 1, limit: 2 },
+      VMError::StackUnderflow {
+        ip: 1,
+        opcode: "POP",
+      },
+      VMError::InvalidOpcode {
+        ip: 1,
+        code: SmolStr::new("INVALID"),
+      },
+      VMError::TypeMismatch {
+        ip: 1,
+        expected: "number",
+        found: "string",
+      },
+      VMError::SystemError(SmolStr::new("system failure")),
+      VMError::OutOfBounds {
+        ip: 1,
+        index: 2,
+        len: 1,
+      },
+      VMError::InvalidJumpTarget {
+        ip: 1,
+        target: 2,
+        len: 1,
+      },
+      VMError::FeatureRestricted {
+        ip: 1,
+        feature: "nightly",
+      },
+      VMError::IoFlood { ip: 1 },
+      VMError::ImportLimitReached { ip: 1 },
+      VMError::UnauthorizedModule {
+        ip: 1,
+        module: SmolStr::new("module"),
+      },
+      VMError::MemoryLimitExceeded { ip: 1 },
+      VMError::CallLimitExceeded { ip: 1 },
+      VMError::JumpLimitExceeded { ip: 1 },
+      VMError::ExcessiveNopPadding,
+      VMError::InvalidMaxTicksConfig,
+      VMError::TickLimitExceeded,
+    ]
+  }
+
+  #[test]
+  fn every_error_has_a_diagnostic_link_containing_its_code() {
+    for error in all_errors() {
+      assert!(
+        error
+          .diagnostic_link()
+          .to_ascii_uppercase()
+          .contains(error.error_code()),
+        "diagnostic link missing {}",
+        error.error_code()
+      );
+    }
+  }
+
+  #[test]
+  fn formatted_error_contains_its_diagnostic_link() {
+    let error = VMError::StackOverflow { ip: 1, limit: 2 };
+
+    assert!(error.to_string().contains(&error.diagnostic_link()));
+  }
+
+  #[test]
+  fn formatted_system_error_contains_its_diagnostic_link() {
+    let error = VMError::SystemError(SmolStr::new("system failure"));
+
+    assert!(error.to_string().contains(&error.diagnostic_link()));
+  }
+
+  #[test]
+  fn diagnostic_link_is_rendered_when_hints_are_disabled() {
+    set_thread_error_config(false, false, false);
+    let error = VMError::StackOverflow { ip: 1, limit: 2 };
+
+    assert!(error.to_string().contains(&error.diagnostic_link()));
   }
 }

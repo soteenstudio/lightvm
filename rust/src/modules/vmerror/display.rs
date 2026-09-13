@@ -131,6 +131,7 @@ impl fmt::Display for VMError {
       }
       VMError::SystemError(s) => write!(f, "{}", s),
     }?;
+    write!(f, "\n{}", self.diagnostic_link())?;
     if !matches!(self, VMError::SystemError(_)) {
       if is_hint {
         write!(
