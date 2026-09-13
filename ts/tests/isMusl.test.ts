@@ -18,7 +18,6 @@ describe("isMusl Utility", () => {
     const mockReportProvider = {
       getReport: () => ({ header: {} }),
     };
-
     expect(isMusl(mockReportProvider)).toBe(true);
   });
 
@@ -28,7 +27,6 @@ describe("isMusl Utility", () => {
         throw new Error("Failed");
       },
     };
-
     const result = isMusl(brokenProvider);
     expect(typeof result).toBe("boolean");
   });

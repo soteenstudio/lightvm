@@ -33,7 +33,6 @@ describe("LightVM Suite", () => {
         ["println"],
       ];
       const result = tools.optimizeBytecode(raw);
-
       expect(result).toEqual([{ push_int16: 20 }, "println"]);
     });
 
@@ -111,7 +110,6 @@ describe("LightVM Suite", () => {
 
     test("provide should accept key-value pairs", () => {
       const vm = createVM();
-
       expect(() => vm.provide({ test: 123 })).not.toThrow();
     });
   });
