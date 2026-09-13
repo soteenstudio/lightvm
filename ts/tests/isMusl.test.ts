@@ -8,28 +8,28 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-import { test, expect, describe, fn } from "unitry";
+import { describe, expect, test } from "unitry";
 import { importVM } from "./helper/importVM.js";
 
 const { isMusl } = await importVM();
 
 describe("isMusl Utility", () => {
   test("isMusl: should return true when report has no glibc", () => {
-    
     const mockReportProvider = {
-      getReport: () => ({ header: {} }) 
+      getReport: () => ({ header: {} }),
     };
 
     expect(isMusl(mockReportProvider)).toBe(true);
   });
 
   test("isMusl: should handle error gracefully", () => {
-    
     const brokenProvider = {
-      getReport: () => { throw new Error("Failed"); }
+      getReport: () => {
+        throw new Error("Failed");
+      },
     };
-    
+
     const result = isMusl(brokenProvider);
-    expect(typeof result).toBe('boolean');
+    expect(typeof result).toBe("boolean");
   });
 });
