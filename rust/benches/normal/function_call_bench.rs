@@ -10,9 +10,7 @@
 
 use lightvm::{
   LightVM,
-  types::{
-    capability::Capability, runtime_config::RuntimeConfig, vmconfig::VmConfig,
-  },
+  types::{capability::Capability, runtime_config::RuntimeConfig, vmconfig::VmConfig},
 };
 
 fn config() -> VmConfig {
