@@ -38,6 +38,18 @@ pub fn shr_values(
       found: get_type_name(b),
     });
   }
+  for operand in [&a, &b] {
+    if matches!(
+      operand,
+      Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
+    ) {
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: expected_type(num_type, ExpectedCategory::Integer),
+        found: get_type_name(operand.clone()),
+      });
+    }
+  }
   Ok(match num_type {
     PrimitiveTypes::Sht => Value::Int16(shr_i16in(a.as_i16(), b.as_i16())),
     PrimitiveTypes::Int => Value::Int32(shr_i32in(a.as_i32(), b.as_i32())),
@@ -71,6 +83,27 @@ pub fn shr_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resul
 #[cfg(test)]
 mod tests {
   use super::*;
+  #[test]
+  fn rejects_float_operands_without_mutating_stack() {
+    for (a, b, found) in [
+      (Value::Float32(1.0), Value::Int32(1), "Float"),
+      (Value::Int32(1), Value::Float64(1.0), "Double"),
+    ] {
+      assert!(matches!(
+        shr_values(a.clone(), b.clone(), PrimitiveTypes::Int, 20),
+        Err(VMError::TypeMismatch { ip: 20, expected: "Integer", found: actual })
+          if actual == found
+      ));
+      let mut stack = Stack::from_vec(vec![a, b]);
+      let original = stack.clone();
+      assert!(matches!(
+        shr_func(&mut stack, PrimitiveTypes::Int, 21),
+        Err(VMError::TypeMismatch { ip: 21, expected: "Integer", found: actual })
+          if actual == found
+      ));
+      assert_eq!(stack, original);
+    }
+  }
   #[test]
   fn invalid_operands_report_type_mismatch_and_preserve_stack() {
     let invalid = Value::String("invalid".into());
