@@ -12,6 +12,7 @@ use crate::modules::vmerror::VMError;
 use crate::types::instructions::Instructions;
 use crate::types::value::FuncMetadata;
 use ahash::AHashMap;
+use smol_str::SmolStr;
 #[cold]
 pub fn validate_bytecode(
   bytecode: &[Instructions],
