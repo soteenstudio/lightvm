@@ -169,6 +169,8 @@ export class LightVM {
   withExplain = (en: boolean) =>
     this.updateConfig('errorOptions', 'explain', en);
   withHint = (en: boolean) => this.updateConfig('errorOptions', 'hint', en);
+  withDiagnosticLinks = (en: boolean) =>
+    this.updateConfig('errorOptions', 'diagnosticLinks', en);
 
   info() {
     return formatInfoVM(this.wrap(() => this.instance.info()));
