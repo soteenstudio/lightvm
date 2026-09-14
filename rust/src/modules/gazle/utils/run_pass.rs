@@ -17,7 +17,7 @@ use crate::modules::gazle::{
 };
 use crate::types::instructions::Instructions;
 #[inline(always)]
-pub fn run_pass(pass_id: usize, bytecode: &mut Vec<Instructions>) {
+pub fn run_pass(pass_id: usize, bytecode: &mut Vec<Instructions>) -> bool {
   match pass_id {
     0 => specialized_instructions(bytecode),
     1 => strength_reduction(bytecode),
@@ -27,16 +27,20 @@ pub fn run_pass(pass_id: usize, bytecode: &mut Vec<Instructions>) {
     5 => constant_propagation(bytecode),
     6 => {
       let taken = std::mem::take(bytecode);
-      *bytecode = eliminate_dead_loops(taken);
+      let (optimized, changed) = eliminate_dead_loops(taken);
+      *bytecode = optimized;
+      changed
     }
     7 => {
       let taken = std::mem::take(bytecode);
-      *bytecode = eliminate_redundant_loads(taken);
+      let (optimized, changed) = eliminate_redundant_loads(taken);
+      *bytecode = optimized;
+      changed
     }
     8 => {
       let usage = analyze_usage(bytecode);
-      eliminate_dead_stores(bytecode, &usage);
+      eliminate_dead_stores(bytecode, &usage)
     }
-    _ => {}
+    _ => false,
   }
 }
