@@ -57,7 +57,12 @@ export class LightVM {
   private static readonly DEFAULTS: VMConfig = {
     caps: [Capability.Observe],
     runtimeConfig: { nightly: false },
-    errorOptions: { backtrace: false, explain: false, hint: true },
+    errorOptions: {
+      backtrace: false,
+      explain: false,
+      hint: true,
+      diagnosticLinks: true,
+    },
     securityConfig: {
       maxIo: 100,
       maxImport: 3,
