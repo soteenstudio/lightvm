@@ -735,7 +735,6 @@ mod tests {
       ..Default::default()
     })
     .expect("expected a VM");
-
     assert!(!vm.inner.diagnostic_links);
     vm.with_diagnostic_links(true)
       .expect("expected the setting to update");

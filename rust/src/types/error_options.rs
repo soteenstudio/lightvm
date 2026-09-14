@@ -25,11 +25,9 @@ impl Default for ErrorOptions {
     }
   }
 }
-
 #[cfg(test)]
 mod tests {
   use super::ErrorOptions;
-
   #[test]
   fn diagnostic_links_are_enabled_by_default() {
     assert!(ErrorOptions::default().diagnostic_links);

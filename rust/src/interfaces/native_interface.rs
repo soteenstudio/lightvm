@@ -641,7 +641,6 @@ mod tests {
     let error = vm
       .load_internal("invalid source".to_string())
       .expect_err("expected invalid source to fail");
-
     assert!(!error.to_string().contains("documentation:"));
   }
   #[test]

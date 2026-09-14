@@ -103,7 +103,6 @@ impl VMError {
       VMError::SystemError(_) => "LVM500",
     }
   }
-
   /// Returns the documentation URL for this error.
   #[cold]
   pub fn diagnostic_link(&self) -> String {
@@ -113,13 +112,11 @@ impl VMError {
     )
   }
 }
-
 #[cfg(test)]
 mod tests {
   use super::VMError;
   use crate::modules::vmerror::config::set_thread_error_config;
   use smol_str::SmolStr;
-
   fn all_errors() -> Vec<VMError> {
     vec![
       VMError::StackOverflow { ip: 1, limit: 2 },
@@ -165,7 +162,6 @@ mod tests {
       VMError::TickLimitExceeded,
     ]
   }
-
   #[test]
   fn every_error_has_a_diagnostic_link_containing_its_code() {
     for error in all_errors() {
@@ -179,7 +175,6 @@ mod tests {
       );
     }
   }
-
   #[test]
   fn formatted_error_contains_its_diagnostic_link() {
     set_thread_error_config(false, false, true, true);
@@ -188,13 +183,11 @@ mod tests {
     let metadata_position = formatted.find("error type:").unwrap();
     let documentation_position = formatted.find("documentation:").unwrap();
     let hint_position = formatted.find("hint:").unwrap();
-
     assert!(formatted.contains(&format!("documentation: {}", error.diagnostic_link())));
     assert!(formatted.contains("\x1b[36m├── \x1b[2;37mdocumentation:"));
     assert!(metadata_position < documentation_position);
     assert!(documentation_position < hint_position);
   }
-
   #[test]
   fn formatted_system_error_contains_its_diagnostic_link() {
     set_thread_error_config(false, false, true, true);
@@ -203,22 +196,18 @@ mod tests {
     let error_position = formatted.find("system failure").unwrap();
     let documentation_position = formatted.find("documentation:").unwrap();
     let hint_position = formatted.find("hint:").unwrap();
-
     assert!(formatted.contains(&error.diagnostic_link()));
     assert!(error_position < documentation_position);
     assert!(documentation_position < hint_position);
   }
-
   #[test]
   fn diagnostic_link_is_rendered_when_hints_are_disabled() {
     set_thread_error_config(false, false, false, true);
     let error = VMError::StackOverflow { ip: 1, limit: 2 };
     let formatted = error.to_string();
-
     assert!(formatted.contains(&error.diagnostic_link()));
     assert!(formatted.contains("documentation:"));
   }
-
   #[test]
   fn diagnostic_link_is_rendered_before_backtrace() {
     set_thread_error_config(true, false, true, true);
@@ -226,15 +215,12 @@ mod tests {
     let formatted = error.to_string();
     let documentation_position = formatted.find("documentation:").unwrap();
     let backtrace_position = formatted.find("internal backtrace:").unwrap();
-
     assert!(documentation_position < backtrace_position);
   }
-
   #[test]
   fn diagnostic_link_can_be_disabled() {
     set_thread_error_config(false, false, true, false);
     let error = VMError::StackOverflow { ip: 1, limit: 2 };
-
     assert!(!error.to_string().contains("documentation:"));
   }
 }
