@@ -20,10 +20,8 @@ use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
 #[inline(always)]
 pub fn sin_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value, VMError> {
   if !matches!(
-    (&a, num_type),
-    (Value::Float16(_), PrimitiveTypes::Hlf)
-      | (Value::Float32(_), PrimitiveTypes::Flt)
-      | (Value::Float64(_), PrimitiveTypes::Dbl)
+    &a,
+    Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
   ) {
     return Err(VMError::TypeMismatch {
       ip,
@@ -68,6 +66,14 @@ mod tests {
         found: "String"
       })
     ));
+    assert!(matches!(
+      sin_values(Value::Int32(1), PrimitiveTypes::Flt, 17),
+      Err(VMError::TypeMismatch {
+        ip: 17,
+        expected: "Float",
+        found: "Unknown"
+      })
+    ));
     let mut stack = Stack::from_vec(vec![invalid]);
     let original = stack.clone();
     assert!(matches!(
@@ -81,22 +87,18 @@ mod tests {
     assert_eq!(stack, original);
   }
   #[test]
-  fn rejects_integer_and_mismatched_float_operands_without_mutating_stack() {
-    for (operand, found) in [
-      (Value::Int32(1), "Unknown"),
-      (Value::Float64(1.0), "Double"),
-    ] {
-      assert!(matches!(
-        sin_values(operand.clone(), PrimitiveTypes::Flt, 19),
-        Err(VMError::TypeMismatch { ip: 19, expected: "Float", found: actual }) if actual == found
-      ));
-      let mut stack = Stack::from_vec(vec![operand]);
-      let original = stack.clone();
-      assert!(matches!(
-        sin_func(&mut stack, PrimitiveTypes::Flt, 20),
-        Err(VMError::TypeMismatch { ip: 20, expected: "Float", found: actual }) if actual == found
-      ));
-      assert_eq!(stack, original);
-    }
+  fn accepts_cross_width_float_operands_and_returns_directive_type() {
+    assert!(matches!(
+      sin_values(Value::Float16(half::f16::ZERO), PrimitiveTypes::Flt, 19),
+      Ok(Value::Float32(0.0))
+    ));
+    assert!(matches!(
+      sin_values(Value::Float64(0.0), PrimitiveTypes::Hlf, 20),
+      Ok(Value::Float16(value)) if value == half::f16::ZERO
+    ));
+    assert!(matches!(
+      sin_values(Value::Float64(0.0), PrimitiveTypes::Flt, 21),
+      Ok(Value::Float32(0.0))
+    ));
   }
 }
