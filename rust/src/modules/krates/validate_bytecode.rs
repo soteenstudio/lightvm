@@ -33,13 +33,38 @@ pub fn validate_bytecode(
       _ => {}
     }
   }
-  for (name, meta) in functions {
+  for meta in functions.values() {
     if meta.start >= len {
-      return Err(VMError::SystemError(SmolStr::from(format!(
-        "Function '{}' start address {} is out of bounds (len: {})",
-        name, meta.start, len
-      ))));
+      return Err(VMError::OutOfBounds {
+        ip: meta.start,
+        index: meta.start,
+        len,
+      });
     }
   }
   Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn accepts_valid_bytecode() {
+    let bytecode = vec![Instructions::Jump(0)];
+    assert!(validate_bytecode(&bytecode, &AHashMap::new()).is_ok());
+  }
+
+  #[test]
+  fn rejects_invalid_jump_with_structured_error() {
+    let result = validate_bytecode(&[Instructions::Jump(1)], &AHashMap::new());
+    assert!(matches!(
+      result,
+      Err(VMError::OutOfBounds {
+        ip: 0,
+        index: 1,
+        len: 1
+      })
+    ));
+  }
 }
