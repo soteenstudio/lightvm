@@ -114,7 +114,7 @@ harness = false
 required-features = ["native"]
 
 [dependencies]
-napi = { version = "3.9", features = ["napi4", "serde", "serde-json"], optional = true } 
+napi = { version = "3.9", features = ["napi4", "serde", "serde-json"], optional = true }
 napi-derive = { version = "3.5", optional = true }
 colored = "3"
 regex = "1.12.3"
@@ -138,9 +138,6 @@ hex = "0.4"
 [build-dependencies]
 ed25519-dalek = "3.0"
 hex = "0.4"
-
-[dev-dependencies]
-criterion = "0.8.2"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 ahash = { version = "0.8", features = ["serde"] }
