@@ -102,6 +102,7 @@ impl WasmLightVM {
         backtrace: error_options.backtrace.unwrap_or(false),
         explain: error_options.explain.unwrap_or(false),
         hint: error_options.hint.unwrap_or(true),
+        diagnostic_links: error_options.diagnostic_links.unwrap_or(true),
       },
     })
   }
@@ -172,6 +173,10 @@ impl WasmLightVM {
   #[wasm_bindgen(js_name = "withHint")]
   pub fn with_hint(&mut self, enabled: bool) {
     self.inner.hint = enabled;
+  }
+  #[wasm_bindgen(js_name = "withDiagnosticLinks")]
+  pub fn with_diagnostic_links(&mut self, enabled: bool) {
+    self.inner.diagnostic_links = enabled;
   }
   #[wasm_bindgen]
   pub fn load(&mut self, source: String) -> Result<(), JsValue> {
@@ -384,6 +389,7 @@ impl WasmLightVM {
       backtrace: self.inner.backtrace,
       explain: self.inner.explain,
       hint: self.inner.hint,
+      diagnostic_links: self.inner.diagnostic_links,
       time_budget: self.inner.time_budget,
       can_observe: self.inner.caps.contains(&Capability::Observe),
       can_control: self.inner.caps.contains(&Capability::Control),
@@ -398,6 +404,7 @@ pub struct WasmLightVMTools {
   pub backtrace: bool,
   pub explain: bool,
   pub hint: bool,
+  pub diagnostic_links: bool,
   time_budget: TimeBudget,
   pub can_observe: bool,
   pub can_control: bool,
@@ -417,6 +424,7 @@ impl WasmLightVMTools {
       self.backtrace,
       self.explain,
       self.hint,
+      self.diagnostic_links,
     );
     vm_instance.caps = {
       let mut caps = HashSet::new();
@@ -506,7 +514,7 @@ mod tests {
   use super::*;
   use crate::types::security_config::SecurityConfig;
   fn vm_with_control_capability() -> WasmLightVM {
-    let mut inner = LightVM::new_node(SecurityConfig::default(), false, false, false, true);
+    let mut inner = LightVM::new_node(SecurityConfig::default(), false, false, false, true, true);
     inner.caps.insert(Capability::Control);
     WasmLightVM { inner }
   }
@@ -515,10 +523,14 @@ mod tests {
     let json_data = serde_json::json!({
         "caps": [0, 2],
         "runtimeConfig": { "nightly": true },
-        "errorOptions": { "hint": true }
+        "errorOptions": { "hint": true, "diagnosticLinks": false }
     });
     let config: VmWasmConfig = serde_json::from_value(json_data).unwrap();
     assert_eq!(config.caps, vec![0, 2]);
+    assert_eq!(
+      config.error_options.as_ref().unwrap().diagnostic_links,
+      Some(false)
+    );
     #[cfg(target_arch = "wasm32")]
     {
       let mut vm = WasmLightVM::new(serde_wasm_bindgen::to_value(&config).unwrap()).unwrap();
@@ -528,6 +540,12 @@ mod tests {
       assert_eq!(vm.inner.hint, false);
     }
     assert_eq!(config.runtime_config.unwrap().nightly, Some(true));
+  }
+  #[test]
+  fn diagnostic_links_can_be_updated() {
+    let mut vm = vm_with_control_capability();
+    vm.with_diagnostic_links(false);
+    assert!(!vm.inner.diagnostic_links);
   }
   #[test]
   fn start_and_finish_event_names_are_supported() {

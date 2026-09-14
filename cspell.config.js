@@ -119,7 +119,8 @@ export default {
     'shlv',
     'shrv',
     'sqrtv',
-    'hypot'
+    'hypot',
+    'mdocumentation'
   ],
   ignorePaths: [
     'node_modules/**',

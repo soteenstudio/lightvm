@@ -18,4 +18,6 @@ pub struct JSErrorOptions {
   pub backtrace: Option<bool>,
   pub explain: Option<bool>,
   pub hint: Option<bool>,
+  #[ts(rename = "diagnosticLinks")]
+  pub diagnostic_links: Option<bool>,
 }

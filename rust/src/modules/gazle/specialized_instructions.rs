@@ -9,7 +9,8 @@
  */
 
 use crate::types::{instructions::Instructions, value::Value};
-pub fn specialized_instructions(bytecode: &mut [Instructions]) {
+pub fn specialized_instructions(bytecode: &mut [Instructions]) -> bool {
+  let mut changed = false;
   for instr in bytecode.iter_mut() {
     if let Instructions::Push(val) = instr {
       let replacement = match val {
@@ -31,7 +32,9 @@ pub fn specialized_instructions(bytecode: &mut [Instructions]) {
       };
       if let Some(new_instr) = replacement {
         *instr = new_instr;
+        changed = true;
       }
     }
   }
+  changed
 }

@@ -19,7 +19,8 @@ fn main() {
   .with_nightly(false) // Allow nightly features (default: false)
   .with_backtrace(false) // Display backtrace details in error messages (default: false)
   .with_explain(false) // Display a more detailed hint in the error message (default: false)
-  .with_hint(true); // Display a hint on error messages (default: true)
+  .with_hint(true) // Display a hint on error messages (default: true)
+  .with_diagnostic_links(false); // Hide links to error-code documentation (default: true)
   
   let tools = vm.tools();
 }

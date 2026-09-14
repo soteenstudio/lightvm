@@ -59,11 +59,19 @@ export type Instructions = {
 } | {
     "shl": PrimitiveTypes;
 } | {
+    "shlv": PrimitiveTypes;
+} | {
     "shr": PrimitiveTypes;
+} | {
+    "shrv": PrimitiveTypes;
 } | {
     "ror": PrimitiveTypes;
 } | {
+    "rorv": PrimitiveTypes;
+} | {
     "rol": PrimitiveTypes;
+} | {
+    "rolv": PrimitiveTypes;
 } | {
     "sin": PrimitiveTypes;
 } | {
@@ -119,7 +127,11 @@ export type Instructions = {
 } | {
     "sqrt": PrimitiveTypes;
 } | {
+    "sqrtv": PrimitiveTypes;
+} | {
     "cbrt": PrimitiveTypes;
+} | {
+    "cbrtv": PrimitiveTypes;
 } | {
     "neg": PrimitiveTypes;
 } | {
@@ -127,11 +139,19 @@ export type Instructions = {
 } | {
     "ln": PrimitiveTypes;
 } | {
+    "lnv": PrimitiveTypes;
+} | {
     "exp": PrimitiveTypes;
+} | {
+    "expv": PrimitiveTypes;
 } | {
     "log2": PrimitiveTypes;
 } | {
+    "log2v": PrimitiveTypes;
+} | {
     "log10": PrimitiveTypes;
+} | {
+    "log10v": PrimitiveTypes;
 } | {
     "pow": PrimitiveTypes;
 } | {
@@ -160,6 +180,8 @@ export type Instructions = {
     "dot": PrimitiveTypes;
 } | {
     "cross": PrimitiveTypes;
+} | {
+    "normalize": PrimitiveTypes;
 } | "and" | "or" | "xor" | "not" | "print" | "println" | "stdout" | "stdoutln" | "stdin" | "clear_screen" | {
     "if_false": number;
 } | {

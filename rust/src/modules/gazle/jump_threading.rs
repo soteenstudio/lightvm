@@ -10,8 +10,9 @@
 
 use crate::types::instructions::Instructions;
 #[inline(always)]
-pub fn jump_threading(bytecode: &mut [Instructions]) {
+pub fn jump_threading(bytecode: &mut [Instructions]) -> bool {
   let mut changed = true;
+  let mut pass_changed = false;
   while changed {
     changed = false;
     for i in 0..bytecode.len() {
@@ -21,6 +22,7 @@ pub fn jump_threading(bytecode: &mut [Instructions]) {
         {
           bytecode[i] = Instructions::Jump(final_target);
           changed = true;
+          pass_changed = true;
         }
       } else if let Instructions::IfFalse(target) = bytecode[i]
         && let Some(final_target) = find_final_target(bytecode, target)
@@ -28,9 +30,11 @@ pub fn jump_threading(bytecode: &mut [Instructions]) {
       {
         bytecode[i] = Instructions::IfFalse(final_target);
         changed = true;
+        pass_changed = true;
       }
     }
   }
+  pass_changed
 }
 fn find_final_target(bytecode: &[Instructions], mut target: usize) -> Option<usize> {
   let mut visited = std::collections::HashSet::new();
