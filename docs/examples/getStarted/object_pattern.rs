@@ -17,7 +17,8 @@ fn main() {
     error_options: Some(ErrorOptions {
       backtrace: false, // Display backtrace details in error messages (default: false)
       explain: false, // Display a more detailed hint in the error message (default: false)
-      hint: true // Display a hint on error messages (default: true)
+      hint: true, // Display a hint on error messages (default: true)
+      diagnostic_links: false // Hide links to error-code documentation (default: true)
     }),
     security_config: Some(SecurityConfig {
       max_io: 100, // Maximum number of I/O operations allowed (default: 100)
