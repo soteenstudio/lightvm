@@ -76,8 +76,42 @@ pub fn validate_security(
       _ => {}
     }
   }
-  if total_instr > 10 && (nop_count * 10) > total_instr {
+  if total_instr > 10 && nop_count > total_instr / 10 {
     return Err(VMError::ExcessiveNopPadding);
   }
   Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use smol_str::SmolStr;
+
+  #[test]
+  fn accepts_allowed_import() {
+    let bytecode = vec![Instructions::Import(SmolStr::new("math"), 0)];
+    assert!(validate_security(&bytecode, &SecurityConfig::default()).is_ok());
+  }
+
+  #[test]
+  fn rejects_untrusted_import() {
+    let bytecode = vec![Instructions::Import(SmolStr::new("private"), 0)];
+    assert!(matches!(
+      validate_security(&bytecode, &SecurityConfig::default()),
+      Err(VMError::UnauthorizedModule { ip: 0, .. })
+    ));
+  }
+
+  #[test]
+  fn enforces_io_limit() {
+    let config = SecurityConfig {
+      max_io: 1,
+      ..Default::default()
+    };
+    let bytecode = vec![Instructions::Print, Instructions::Println];
+    assert!(matches!(
+      validate_security(&bytecode, &config),
+      Err(VMError::IoFlood { ip: 1 })
+    ));
+  }
 }

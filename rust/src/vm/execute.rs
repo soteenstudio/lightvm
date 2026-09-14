@@ -86,6 +86,35 @@ pub fn execute(
       }
       tick += 1;
       let instr = &bytecode[ip];
+      if security_config.max_stack_size > 0
+        && stack.len() >= security_config.max_stack_size
+        && matches!(
+          instr,
+          Instructions::PushInt16(_)
+            | Instructions::PushInt32(_)
+            | Instructions::PushInt64(_)
+            | Instructions::PushInt128(_)
+            | Instructions::PushFloat16(_)
+            | Instructions::PushFloat32(_)
+            | Instructions::PushFloat64(_)
+            | Instructions::PushString(_)
+            | Instructions::PushArray(_)
+            | Instructions::PushBool(_)
+            | Instructions::PushObject(_)
+            | Instructions::PushUndefined
+            | Instructions::PushNull
+            | Instructions::PushNaN
+            | Instructions::Push(_)
+            | Instructions::ValIdx(_)
+            | Instructions::GetIdx(_)
+            | Instructions::Dup
+        )
+      {
+        return Err(VMError::StackOverflow {
+          ip,
+          limit: security_config.max_stack_size,
+        });
+      }
       match instr {
         Instructions::PushInt16(_)
         | Instructions::PushInt32(_)
@@ -382,5 +411,22 @@ fn test_out_of_bounds_jump_is_rejected_before_execution() {
       index: 1,
       len: 1
     })
+  ));
+}
+
+#[test]
+fn test_configured_stack_limit_is_enforced() {
+  let bytecode = vec![Instructions::PushInt32(1), Instructions::PushInt32(2)];
+  let options = crate::types::value::RunOptions {
+    security_config: crate::types::security_config::SecurityConfig {
+      max_stack_size: 1,
+      ..Default::default()
+    },
+    ..Default::default()
+  };
+  let result = execute(bytecode, &mut Some(options), None);
+  assert!(matches!(
+    result,
+    Err(VMError::StackOverflow { ip: 1, limit: 1 })
   ));
 }
