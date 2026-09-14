@@ -24,14 +24,22 @@ pub fn powf_values(
   num_type: PrimitiveTypes,
   ip: usize,
 ) -> Result<Value, VMError> {
-  if !a.is_number() {
+  let matches_directive = |value: &Value| {
+    matches!(
+      (value, num_type),
+      (Value::Float16(_), PrimitiveTypes::Hlf)
+        | (Value::Float32(_), PrimitiveTypes::Flt)
+        | (Value::Float64(_), PrimitiveTypes::Dbl)
+    )
+  };
+  if !matches_directive(&a) {
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::Float),
       found: get_type_name(a),
     });
   }
-  if !b.is_number() {
+  if !matches_directive(&b) {
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::Float),
@@ -46,7 +54,7 @@ pub fn powf_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
-        found: a.type_of(),
+        found: get_type_name(a),
       });
     }
   })
@@ -82,14 +90,19 @@ mod tests {
       })
     ));
     assert!(matches!(
-      powf_values(Value::Int32(1), invalid.clone(), PrimitiveTypes::Flt, 18),
+      powf_values(
+        Value::Float32(1.0),
+        invalid.clone(),
+        PrimitiveTypes::Flt,
+        18
+      ),
       Err(VMError::TypeMismatch {
         ip: 18,
         expected: "Float",
         found: "String"
       })
     ));
-    let mut stack = Stack::from_vec(vec![Value::Int32(1), invalid]);
+    let mut stack = Stack::from_vec(vec![Value::Float32(1.0), invalid]);
     let original = stack.clone();
     assert!(matches!(
       powf_func(&mut stack, PrimitiveTypes::Flt, 19),
@@ -100,5 +113,24 @@ mod tests {
       })
     ));
     assert_eq!(stack, original);
+  }
+  #[test]
+  fn rejects_integer_and_mismatched_float_operands_without_mutating_stack() {
+    for (a, b, found) in [
+      (Value::Int32(2), Value::Float32(3.0), "Unknown"),
+      (Value::Float32(2.0), Value::Float64(3.0), "Double"),
+    ] {
+      assert!(matches!(
+        powf_values(a.clone(), b.clone(), PrimitiveTypes::Flt, 20),
+        Err(VMError::TypeMismatch { ip: 20, expected: "Float", found: actual }) if actual == found
+      ));
+      let mut stack = Stack::from_vec(vec![a, b]);
+      let original = stack.clone();
+      assert!(matches!(
+        powf_func(&mut stack, PrimitiveTypes::Flt, 21),
+        Err(VMError::TypeMismatch { ip: 21, expected: "Float", found: actual }) if actual == found
+      ));
+      assert_eq!(stack, original);
+    }
   }
 }
