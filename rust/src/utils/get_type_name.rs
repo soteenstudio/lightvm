@@ -11,6 +11,9 @@
 use crate::types::value::Value;
 pub fn get_type_name(num_type: Value) -> &'static str {
   match num_type {
+    Value::Float16(_) => "Half",
+    Value::Float32(_) => "Float",
+    Value::Float64(_) => "Double",
     Value::String(_) => "String",
     Value::Array(_) => "Array",
     Value::Object(_) => "Object",
@@ -29,5 +32,11 @@ mod tests {
   fn reports_bool_and_marker_types() {
     assert_eq!(get_type_name(Value::Bool(true)), "Boolean");
     assert_eq!(get_type_name(Value::Marker("label".into())), "Marker");
+  }
+  #[test]
+  fn reports_float_types() {
+    assert_eq!(get_type_name(Value::Float16(half::f16::ONE)), "Half");
+    assert_eq!(get_type_name(Value::Float32(1.0)), "Float");
+    assert_eq!(get_type_name(Value::Float64(1.0)), "Double");
   }
 }
