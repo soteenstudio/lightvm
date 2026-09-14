@@ -27,6 +27,19 @@ pub fn neg_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value
       found: get_type_name(a),
     });
   }
+  if matches!(
+    num_type,
+    PrimitiveTypes::Sht | PrimitiveTypes::Int | PrimitiveTypes::Lng | PrimitiveTypes::Oct
+  ) && matches!(
+    &a,
+    &Value::Float16(_) | &Value::Float32(_) | &Value::Float64(_)
+  ) {
+    return Err(VMError::TypeMismatch {
+      ip,
+      expected: expected_type(num_type, ExpectedCategory::Integer),
+      found: get_type_name(a),
+    });
+  }
   Ok(match num_type {
     PrimitiveTypes::Sht => Value::Int16(neg_i16in(a.as_i16())),
     PrimitiveTypes::Int => Value::Int32(neg_i32in(a.as_i32())),
@@ -57,6 +70,29 @@ pub fn neg_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resul
 #[cfg(test)]
 mod tests {
   use super::*;
+  #[test]
+  fn integer_directive_rejects_float_operand_without_mutating_stack() {
+    let operand = Value::Float32(1.0);
+    assert!(matches!(
+      neg_values(operand.clone(), PrimitiveTypes::Int, 8),
+      Err(VMError::TypeMismatch {
+        ip: 8,
+        expected: "Integer",
+        found: "Float"
+      })
+    ));
+    let mut stack = Stack::from_vec(vec![operand]);
+    let original = stack.clone();
+    assert!(matches!(
+      neg_func(&mut stack, PrimitiveTypes::Int, 9),
+      Err(VMError::TypeMismatch {
+        ip: 9,
+        expected: "Integer",
+        found: "Float"
+      })
+    ));
+    assert_eq!(stack, original);
+  }
   #[test]
   fn invalid_operand_reports_type_mismatch_and_preserves_stack() {
     let invalid = Value::String("invalid".into());
