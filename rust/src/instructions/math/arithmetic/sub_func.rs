@@ -94,18 +94,25 @@ mod tests {
   use super::*;
   #[test]
   fn integer_directive_rejects_float_operands_without_mutating_stack() {
-    for (a, b, found) in [
-      (Value::Float32(1.0), Value::Int32(2), "Float"),
-      (Value::Int32(1), Value::Float64(2.0), "Double"),
+    for (a, b, num_type, found) in [
+      (
+        Value::Float16(half::f16::ONE),
+        Value::Int16(2),
+        PrimitiveTypes::Sht,
+        "Half",
+      ),
+      (Value::Int32(1), Value::Float32(2.0), PrimitiveTypes::Int, "Float"),
+      (Value::Float64(1.0), Value::Int64(2), PrimitiveTypes::Lng, "Double"),
+      (Value::Int128(1), Value::Float64(2.0), PrimitiveTypes::Oct, "Double"),
     ] {
       assert!(matches!(
-        sub_values(a.clone(), b.clone(), PrimitiveTypes::Int, 8),
+        sub_values(a.clone(), b.clone(), num_type, 8),
         Err(VMError::TypeMismatch { ip: 8, expected: "Integer", found: actual }) if actual == found
       ));
       let mut stack = Stack::from_vec(vec![a, b]);
       let original = stack.clone();
       assert!(matches!(
-        sub_func(&mut stack, PrimitiveTypes::Int, 9),
+        sub_func(&mut stack, num_type, 9),
         Err(VMError::TypeMismatch { ip: 9, expected: "Integer", found: actual }) if actual == found
       ));
       assert_eq!(stack, original);
