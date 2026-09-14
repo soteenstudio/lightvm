@@ -10,12 +10,13 @@
 
 use crate::types::instructions::Instructions;
 #[inline(always)]
-pub fn eliminate_redundant_loads(bytecode: Vec<Instructions>) -> Vec<Instructions> {
+pub fn eliminate_redundant_loads(bytecode: Vec<Instructions>) -> (Vec<Instructions>, bool) {
   if bytecode.is_empty() {
-    return bytecode;
+    return (bytecode, false);
   }
   let mut optimized = Vec::with_capacity(bytecode.len());
   let mut last_origin: Option<Instructions> = None;
+  let mut changed = false;
   for instr in bytecode {
     let is_redundant = if let Some(last) = optimized.last() {
       let effective_last = if matches!(last, Instructions::Dup) {
@@ -36,10 +37,11 @@ pub fn eliminate_redundant_loads(bytecode: Vec<Instructions>) -> Vec<Instruction
     };
     if is_redundant {
       optimized.push(Instructions::Dup);
+      changed = true;
     } else {
       last_origin = Some(instr.clone());
       optimized.push(instr);
     }
   }
-  optimized
+  (optimized, changed)
 }

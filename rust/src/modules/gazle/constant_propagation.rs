@@ -29,7 +29,7 @@ fn extract_push_value(instr: &Instructions) -> Option<Value> {
     _ => None,
   }
 }
-pub fn constant_propagation(bytecode: &mut [Instructions]) {
+pub fn constant_propagation(bytecode: &mut [Instructions]) -> bool {
   const MAX_INLINE_USES: usize = 8;
   let mut get_counts: AHashMap<SmolStr, usize> = AHashMap::new();
   for instr in bytecode.iter() {
@@ -38,11 +38,13 @@ pub fn constant_propagation(bytecode: &mut [Instructions]) {
     }
   }
   let mut const_map: AHashMap<SmolStr, Option<Value>> = AHashMap::new();
+  let mut changed = false;
   for i in 0..bytecode.len() {
     match &bytecode[i] {
       Instructions::Get(name) => {
         if let Some(Some(val)) = const_map.get(name) {
           bytecode[i] = Instructions::Push(val.clone());
+          changed = true;
         }
       }
       _ => {
@@ -72,4 +74,5 @@ pub fn constant_propagation(bytecode: &mut [Instructions]) {
       }
     }
   }
+  changed
 }

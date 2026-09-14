@@ -32,10 +32,9 @@ pub fn optimize_bytecode(
         break;
       }
       let len_before_pass = bytecode.len();
-      let prev_bytes_debug = bytecode.clone();
-      run_pass(pass_id, &mut bytecode);
+      let pass_changed = run_pass(pass_id, &mut bytecode);
       let len_after_pass = bytecode.len();
-      if bytecode != prev_bytes_debug {
+      if pass_changed {
         let reduction = (len_before_pass as i32) - (len_after_pass as i32);
         let reward = if reduction > 0 { reduction * 2 } else { 1 };
         pass_weights[pass_id] += reward;
@@ -93,8 +92,22 @@ pub fn optimize_bytecode(
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::modules::gazle::utils::run_pass::run_pass;
   use crate::types::{primitive_types::PrimitiveTypes, value::Value};
   use smol_str::SmolStr;
+  #[test]
+  fn terminates_when_no_pass_reports_a_mutation() {
+    let bytecode = vec![Instructions::Stop];
+    for pass_id in 0..9 {
+      let mut pass_bytecode = bytecode.clone();
+      assert!(!run_pass(pass_id, &mut pass_bytecode));
+      assert_eq!(pass_bytecode, bytecode);
+    }
+    assert_eq!(
+      optimize_bytecode(bytecode.clone(), TimeBudgetType::Cheap),
+      bytecode
+    );
+  }
   #[test]
   fn folds_constant_add_and_concat_to_correct_result() {
     let bytecode = vec![
