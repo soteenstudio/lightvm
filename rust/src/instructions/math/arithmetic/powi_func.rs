@@ -31,14 +31,26 @@ pub fn powi_values(
   num_type: PrimitiveTypes,
   ip: usize,
 ) -> Result<Value, VMError> {
-  if !a.is_number() {
+  let valid_base = matches!(
+    (&a, num_type),
+    (Value::Float16(_), PrimitiveTypes::Hlf)
+      | (Value::Float32(_), PrimitiveTypes::Flt)
+      | (Value::Float64(_), PrimitiveTypes::Dbl)
+  );
+  let valid_exponent = matches!(
+    (&b, num_type),
+    (Value::Int16(_), PrimitiveTypes::Hlf)
+      | (Value::Int32(_), PrimitiveTypes::Flt)
+      | (Value::Int64(_), PrimitiveTypes::Dbl)
+  );
+  if !valid_base {
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type),
       found: get_type_name(a),
     });
   }
-  if !b.is_number() {
+  if !valid_exponent {
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type),
@@ -53,7 +65,7 @@ pub fn powi_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type),
-        found: a.type_of(),
+        found: get_type_name(a),
       });
     }
   })
@@ -89,14 +101,19 @@ mod tests {
       })
     ));
     assert!(matches!(
-      powi_values(Value::Int32(1), invalid.clone(), PrimitiveTypes::Flt, 18),
+      powi_values(
+        Value::Float32(1.0),
+        invalid.clone(),
+        PrimitiveTypes::Flt,
+        18
+      ),
       Err(VMError::TypeMismatch {
         ip: 18,
         expected: "Float32/Int32",
         found: "String"
       })
     ));
-    let mut stack = Stack::from_vec(vec![Value::Int32(1), invalid]);
+    let mut stack = Stack::from_vec(vec![Value::Float32(1.0), invalid]);
     let original = stack.clone();
     assert!(matches!(
       powi_func(&mut stack, PrimitiveTypes::Flt, 19),
@@ -107,6 +124,27 @@ mod tests {
       })
     ));
     assert_eq!(stack, original);
+  }
+  #[test]
+  fn rejects_mismatched_base_and_float_exponent_without_mutating_stack() {
+    for (a, b, found) in [
+      (Value::Float64(2.0), Value::Int32(3), "Double"),
+      (Value::Float32(2.0), Value::Float32(3.0), "Float"),
+    ] {
+      assert!(matches!(
+        powi_values(a.clone(), b.clone(), PrimitiveTypes::Flt, 23),
+        Err(VMError::TypeMismatch { ip: 23, expected: "Float32/Int32", found: actual })
+          if actual == found
+      ));
+      let mut stack = Stack::from_vec(vec![a, b]);
+      let original = stack.clone();
+      assert!(matches!(
+        powi_func(&mut stack, PrimitiveTypes::Flt, 24),
+        Err(VMError::TypeMismatch { ip: 24, expected: "Float32/Int32", found: actual })
+          if actual == found
+      ));
+      assert_eq!(stack, original);
+    }
   }
   #[test]
   fn invalid_operands_report_directive_specific_expected_types() {
@@ -140,7 +178,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 22,
         expected: "Float32/Int32",
-        found: "float64"
+        found: "Double"
       })
     ));
   }

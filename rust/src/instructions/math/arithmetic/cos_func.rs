@@ -19,7 +19,12 @@ use crate::types::value::Value;
 use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
 #[inline(always)]
 pub fn cos_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value, VMError> {
-  if !a.is_number() {
+  if !matches!(
+    (&a, num_type),
+    (Value::Float16(_), PrimitiveTypes::Hlf)
+      | (Value::Float32(_), PrimitiveTypes::Flt)
+      | (Value::Float64(_), PrimitiveTypes::Dbl)
+  ) {
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::Float),
@@ -74,5 +79,24 @@ mod tests {
       })
     ));
     assert_eq!(stack, original);
+  }
+  #[test]
+  fn rejects_integer_and_mismatched_float_operands_without_mutating_stack() {
+    for (operand, found) in [
+      (Value::Int32(1), "Unknown"),
+      (Value::Float64(1.0), "Double"),
+    ] {
+      assert!(matches!(
+        cos_values(operand.clone(), PrimitiveTypes::Flt, 19),
+        Err(VMError::TypeMismatch { ip: 19, expected: "Float", found: actual }) if actual == found
+      ));
+      let mut stack = Stack::from_vec(vec![operand]);
+      let original = stack.clone();
+      assert!(matches!(
+        cos_func(&mut stack, PrimitiveTypes::Flt, 20),
+        Err(VMError::TypeMismatch { ip: 20, expected: "Float", found: actual }) if actual == found
+      ));
+      assert_eq!(stack, original);
+    }
   }
 }

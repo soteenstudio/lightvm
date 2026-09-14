@@ -90,19 +90,47 @@ mod tests {
   use super::*;
   #[test]
   fn integer_directive_rejects_float_operands_without_mutating_stack() {
-    for (a, b, found) in [
-      (Value::Float32(1.0), Value::Int32(2), "Float"),
-      (Value::Int32(1), Value::Float64(2.0), "Double"),
+    for (num_type, a, b, expected, found) in [
+      (
+        PrimitiveTypes::Sht,
+        Value::Float16(half::f16::ONE),
+        Value::Int16(2),
+        "Short",
+        "Half",
+      ),
+      (
+        PrimitiveTypes::Int,
+        Value::Float32(1.0),
+        Value::Int32(2),
+        "Integer",
+        "Float",
+      ),
+      (
+        PrimitiveTypes::Lng,
+        Value::Int64(1),
+        Value::Float64(2.0),
+        "Long",
+        "Double",
+      ),
+      (
+        PrimitiveTypes::Oct,
+        Value::Float32(1.0),
+        Value::Int128(2),
+        "Octa",
+        "Float",
+      ),
     ] {
       assert!(matches!(
-        pow_values(a.clone(), b.clone(), PrimitiveTypes::Int, 8),
-        Err(VMError::TypeMismatch { ip: 8, expected: "Integer", found: actual }) if actual == found
+        pow_values(a.clone(), b.clone(), num_type, 8),
+        Err(VMError::TypeMismatch { ip: 8, expected: actual_expected, found: actual_found })
+          if actual_expected == expected && actual_found == found
       ));
       let mut stack = Stack::from_vec(vec![a, b]);
       let original = stack.clone();
       assert!(matches!(
-        pow_func(&mut stack, PrimitiveTypes::Int, 9),
-        Err(VMError::TypeMismatch { ip: 9, expected: "Integer", found: actual }) if actual == found
+        pow_func(&mut stack, num_type, 9),
+        Err(VMError::TypeMismatch { ip: 9, expected: actual_expected, found: actual_found })
+          if actual_expected == expected && actual_found == found
       ));
       assert_eq!(stack, original);
     }
