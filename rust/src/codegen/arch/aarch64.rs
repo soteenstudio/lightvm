@@ -19,7 +19,7 @@ use crate::types::instructions::Instructions;
 use ahash::AHashMap;
 use smol_str::SmolStr;
 pub fn compile_aarch64(mut instructions: Vec<Instructions>) -> Result<String, VMError> {
-  specialized_instructions(&mut instructions);
+  let _ = specialized_instructions(&mut instructions);
   let empty_imports: AHashMap<SmolStr, crate::types::value::Value> = AHashMap::new();
   let (var_count, _symbol_table) = resolve_symbols(&mut instructions, &empty_imports);
   let mut builder = AArch64Builder::new()

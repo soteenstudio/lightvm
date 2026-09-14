@@ -48,8 +48,9 @@ use crate::types::{instructions::Instructions, value::Value};
 use ahash::AHashMap;
 use std::sync::Arc;
 #[inline(always)]
-pub fn fold_constants(bytecode: &mut [Instructions]) {
+pub fn fold_constants(bytecode: &mut [Instructions]) -> bool {
   let mut i = 0;
+  let mut changed = false;
   while i < bytecode.len() {
     if let Some(Instructions::MakeArray(count)) = bytecode.get(i) {
       let count = *count as usize;
@@ -65,6 +66,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
           }
         }
         if all_const {
+          changed = true;
           bytecode[i - count] = Instructions::PushArray(Arc::new(vals));
           for instr in bytecode.iter_mut().take(i + 1).skip(i - count + 1) {
             *instr = Instructions::Nop;
@@ -90,6 +92,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
           .iter()
           .all(|pair| matches!(&pair[0], Value::String(_)));
         if operands.len() == operand_count && valid_keys {
+          changed = true;
           let mut object = AHashMap::with_capacity(*count as usize);
           for pair in operands.as_chunks::<2>().0.iter().rev() {
             let Value::String(key) = &pair[0] else {
@@ -154,6 +157,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         _ => None,
       };
       if let Some(res_val) = result {
+        changed = true;
         bytecode[i] = value_to_instruction(res_val);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
@@ -206,6 +210,7 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
         _ => None,
       };
       if let Some(res_val) = result {
+        changed = true;
         bytecode[i] = value_to_instruction(res_val);
         bytecode[i + 1] = Instructions::Nop;
         bytecode[i + 2] = Instructions::Nop;
@@ -215,8 +220,10 @@ pub fn fold_constants(bytecode: &mut [Instructions]) {
     }
     i += 1;
   }
+  changed
 }
 #[cfg(test)]
+#[allow(unused_must_use)]
 mod tests {
   use super::*;
   use crate::types::{primitive_types::PrimitiveTypes, value::Value};

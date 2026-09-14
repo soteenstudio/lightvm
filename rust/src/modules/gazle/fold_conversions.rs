@@ -20,7 +20,7 @@ use crate::instructions::{
       cos_func::cos_values, neg_func::neg_values, sin_func::sin_values, tan_func::tan_values,
     },
     exp_func::exp_values,
-    logarithm::ln_func::ln_values,
+    logarithm::{ln_func::ln_values, log2_func::log2_values, log10_func::log10_values},
     root::{cbrt_func::cbrt_values, sqrt_func::sqrt_values},
     trigonometry::{
       hyperbolic::{
@@ -62,8 +62,9 @@ use crate::modules::gazle::utils::{
 };
 use crate::types::instructions::Instructions;
 #[inline(always)]
-pub fn fold_conversions(bytecode: &mut [Instructions]) {
+pub fn fold_conversions(bytecode: &mut [Instructions]) -> bool {
   let mut i = 0;
+  let mut changed = false;
   while i < bytecode.len().saturating_sub(1) {
     let instr1 = &bytecode[i];
     let instr2 = &bytecode[i + 1];
@@ -114,11 +115,14 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
         Instructions::Lnv(t) => lnv_values(val, *t, i).ok(),
         Instructions::Exp(t) => exp_values(val, *t, i).ok(),
         Instructions::Expv(t) => expv_values(val, *t, i).ok(),
+        Instructions::Log2(t) => log2_values(val, *t, i).ok(),
+        Instructions::Log10(t) => log10_values(val, *t, i).ok(),
         Instructions::Log2v(t) => log2v_values(val, *t, i).ok(),
         Instructions::Log10v(t) => log10v_values(val, *t, i).ok(),
         _ => None,
       };
       if let Some(res_val) = folded {
+        changed = true;
         bytecode[i] = value_to_instruction(res_val);
         bytecode[i + 1] = Instructions::Nop;
         i += 2;
@@ -127,12 +131,59 @@ pub fn fold_conversions(bytecode: &mut [Instructions]) {
     }
     i += 1;
   }
+  changed
 }
 #[cfg(test)]
+#[allow(unused_must_use)]
 mod tests {
   use super::*;
   use crate::types::{primitive_types::PrimitiveTypes, value::Value};
   use std::sync::Arc;
+  #[test]
+  fn folds_scalar_logarithms() {
+    let mut log2 = vec![
+      Instructions::PushFloat32(8.0),
+      Instructions::Log2(PrimitiveTypes::Flt),
+    ];
+    assert!(fold_conversions(&mut log2));
+    assert_eq!(
+      log2,
+      vec![Instructions::PushFloat32(3.0), Instructions::Nop]
+    );
+    let mut log10 = vec![
+      Instructions::PushFloat32(100.0),
+      Instructions::Log10(PrimitiveTypes::Flt),
+    ];
+    assert!(fold_conversions(&mut log10));
+    assert_eq!(
+      log10,
+      vec![Instructions::PushFloat32(2.0), Instructions::Nop]
+    );
+  }
+  #[test]
+  fn leaves_invalid_scalar_logarithms_for_runtime_error() {
+    for operation in [
+      Instructions::Log2(PrimitiveTypes::Flt),
+      Instructions::Log10(PrimitiveTypes::Flt),
+    ] {
+      let mut bytecode = vec![
+        Instructions::PushString("invalid".into()),
+        operation,
+        Instructions::Stop,
+      ];
+      let expected = bytecode.clone();
+      assert!(!fold_conversions(&mut bytecode));
+      assert_eq!(bytecode, expected);
+      assert!(matches!(
+        crate::vm::execute::execute(bytecode, &mut None, None),
+        Err(crate::modules::vmerror::VMError::TypeMismatch {
+          ip: 1,
+          expected: "Float",
+          found: "String"
+        })
+      ));
+    }
+  }
   #[test]
   fn folds_valid_unary_float_vectors_and_retains_invalid_ones() {
     let operations = [

@@ -10,17 +10,20 @@
 
 use crate::types::{instructions::Instructions, value::Value};
 #[inline(always)]
-pub fn strength_reduction(bytecode: &mut Vec<Instructions>) {
+pub fn strength_reduction(bytecode: &mut Vec<Instructions>) -> bool {
   let mut i = 0;
+  let mut changed = false;
   while i < bytecode.len().saturating_sub(1) {
     let pair = (bytecode[i].clone(), bytecode[i + 1].clone());
     match pair {
       (Instructions::Push(v), Instructions::Mul(_)) if is_zero(&v) => {
+        changed = true;
         bytecode[i] = Instructions::Push(v);
         bytecode[i + 1] = Instructions::Nop;
         i += 2;
       }
       (Instructions::Push(v), Instructions::Mul(_)) if is_one(&v) => {
+        changed = true;
         bytecode[i] = Instructions::Nop;
         bytecode[i + 1] = Instructions::Nop;
         i += 2;
@@ -28,6 +31,7 @@ pub fn strength_reduction(bytecode: &mut Vec<Instructions>) {
       (Instructions::Push(Value::Int32(n)), Instructions::Mul(t))
         if n > 0 && (n & (n - 1)) == 0 =>
       {
+        changed = true;
         bytecode[i] = Instructions::Push(Value::Int32(n.trailing_zeros() as i32));
         bytecode[i + 1] = Instructions::Shl(t);
         i += 2;
@@ -35,16 +39,19 @@ pub fn strength_reduction(bytecode: &mut Vec<Instructions>) {
       (Instructions::Push(Value::Int64(n)), Instructions::Mul(t))
         if n > 0 && (n & (n - 1)) == 0 =>
       {
+        changed = true;
         bytecode[i] = Instructions::Push(Value::Int64(n.trailing_zeros() as i64));
         bytecode[i + 1] = Instructions::Shl(t);
         i += 2;
       }
       (Instructions::Push(v), Instructions::Div(_)) if is_one(&v) => {
+        changed = true;
         bytecode[i] = Instructions::Nop;
         bytecode[i + 1] = Instructions::Nop;
         i += 2;
       }
       (Instructions::Push(v), Instructions::Mod(_)) if is_one(&v) => {
+        changed = true;
         bytecode[i] = Instructions::Push(make_zero_like(&v));
         bytecode[i + 1] = Instructions::Nop;
         i += 2;
@@ -52,6 +59,7 @@ pub fn strength_reduction(bytecode: &mut Vec<Instructions>) {
       (Instructions::Push(Value::Int32(n)), Instructions::Mod(_))
         if n > 0 && (n & (n - 1)) == 0 =>
       {
+        changed = true;
         bytecode[i] = Instructions::Push(Value::Int32(n - 1));
         bytecode[i + 1] = Instructions::And;
         i += 2;
@@ -59,6 +67,7 @@ pub fn strength_reduction(bytecode: &mut Vec<Instructions>) {
       (Instructions::Push(Value::Int64(n)), Instructions::Mod(_))
         if n > 0 && (n & (n - 1)) == 0 =>
       {
+        changed = true;
         bytecode[i] = Instructions::Push(Value::Int64(n - 1));
         bytecode[i + 1] = Instructions::And;
         i += 2;
@@ -67,6 +76,7 @@ pub fn strength_reduction(bytecode: &mut Vec<Instructions>) {
       | (Instructions::Push(v), Instructions::Sub(_))
         if is_zero(&v) =>
       {
+        changed = true;
         bytecode[i] = Instructions::Nop;
         bytecode[i + 1] = Instructions::Nop;
         i += 2;
@@ -75,6 +85,7 @@ pub fn strength_reduction(bytecode: &mut Vec<Instructions>) {
     }
   }
   bytecode.retain(|instr| !matches!(instr, Instructions::Nop));
+  changed
 }
 fn is_zero(v: &Value) -> bool {
   match v {
