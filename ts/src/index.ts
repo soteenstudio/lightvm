@@ -57,7 +57,12 @@ export class LightVM {
   private static readonly DEFAULTS: VMConfig = {
     caps: [Capability.Observe],
     runtimeConfig: { nightly: false },
-    errorOptions: { backtrace: false, explain: false, hint: true },
+    errorOptions: {
+      backtrace: false,
+      explain: false,
+      hint: true,
+      diagnosticLinks: true,
+    },
     securityConfig: {
       maxIo: 100,
       maxImport: 3,
@@ -164,6 +169,8 @@ export class LightVM {
   withExplain = (en: boolean) =>
     this.updateConfig('errorOptions', 'explain', en);
   withHint = (en: boolean) => this.updateConfig('errorOptions', 'hint', en);
+  withDiagnosticLinks = (en: boolean) =>
+    this.updateConfig('errorOptions', 'diagnosticLinks', en);
 
   info() {
     return formatInfoVM(this.wrap(() => this.instance.info()));

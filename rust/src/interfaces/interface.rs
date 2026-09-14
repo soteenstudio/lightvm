@@ -74,6 +74,7 @@ pub struct LightVM {
   pub backtrace: bool,
   pub explain: bool,
   pub hint: bool,
+  pub diagnostic_links: bool,
 }
 impl LightVM {
   pub fn new_node(
@@ -82,6 +83,7 @@ impl LightVM {
     backtrace: bool,
     explain: bool,
     hint: bool,
+    diagnostic_links: bool,
   ) -> Self {
     use crate::types::value::Value;
     use crate::types::vmstate::VmState;
@@ -114,6 +116,7 @@ impl LightVM {
       backtrace,
       explain,
       hint,
+      diagnostic_links,
     }
   }
   #[inline(always)]
@@ -126,8 +129,13 @@ impl LightVM {
     }
     Ok(())
   }
-  pub fn set_mode(&self, backtrace: bool, explain: bool, hint: bool) {
-    crate::modules::vmerror::config::set_thread_error_config(backtrace, explain, hint);
+  pub fn set_mode(&self, backtrace: bool, explain: bool, hint: bool, diagnostic_links: bool) {
+    crate::modules::vmerror::config::set_thread_error_config(
+      backtrace,
+      explain,
+      hint,
+      diagnostic_links,
+    );
   }
   pub fn index_metadata(&mut self) {
     self.functions.clear();
@@ -169,7 +177,12 @@ impl LightVM {
     get_versions()
   }
   pub fn load_internal(&mut self, source: String) -> Result<(), VMError> {
-    self.set_mode(self.backtrace, self.explain, self.hint);
+    self.set_mode(
+      self.backtrace,
+      self.explain,
+      self.hint,
+      self.diagnostic_links,
+    );
     crate::modules::vmerror::get_backtrace::clear_backtrace();
     if self.backtrace {
       crate::modules::vmerror::get_backtrace::capture_backtrace();
@@ -229,7 +242,12 @@ impl LightVM {
     Ok(())
   }
   pub fn run_internal(&mut self, options: Option<RunOptions>) -> Result<String, VMError> {
-    self.set_mode(self.backtrace, self.explain, self.hint);
+    self.set_mode(
+      self.backtrace,
+      self.explain,
+      self.hint,
+      self.diagnostic_links,
+    );
     crate::modules::vmerror::get_backtrace::clear_backtrace();
     if self.backtrace {
       crate::modules::vmerror::get_backtrace::capture_backtrace();
@@ -280,7 +298,12 @@ impl LightVM {
   }
   #[inline]
   pub fn compile_internal(&mut self, config: CompileConfig) -> Result<(), VMError> {
-    self.set_mode(self.backtrace, self.explain, self.hint);
+    self.set_mode(
+      self.backtrace,
+      self.explain,
+      self.hint,
+      self.diagnostic_links,
+    );
     crate::modules::vmerror::get_backtrace::clear_backtrace();
     if self.backtrace {
       crate::modules::vmerror::get_backtrace::capture_backtrace();
@@ -498,7 +521,12 @@ impl LightVM {
     bytecode_raw: serde_json::Value,
   ) -> Result<String, VMError> {
     self.require(Capability::Control)?;
-    self.set_mode(self.backtrace, self.explain, self.hint);
+    self.set_mode(
+      self.backtrace,
+      self.explain,
+      self.hint,
+      self.diagnostic_links,
+    );
     crate::modules::vmerror::get_backtrace::clear_backtrace();
     if self.backtrace {
       crate::modules::vmerror::get_backtrace::capture_backtrace();
@@ -642,6 +670,7 @@ mod tests {
       backtrace: false,
       explain: false,
       hint: true,
+      diagnostic_links: true,
     }
   }
   #[test]
@@ -904,7 +933,7 @@ mod tests {
     vm.backtrace = true;
     vm.explain = true;
     vm.hint = false;
-    set_thread_error_config(false, false, true);
+    set_thread_error_config(false, false, true, true);
     let before = get_thread_or_global_config();
     let result = vm.optimize_bytecode_internal(serde_json::json!([["noop"]]));
     let after = get_thread_or_global_config();

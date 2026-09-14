@@ -14,6 +14,7 @@ const vm = new LightVM({ caps: [Capability.Observe, Capability.Control] })
   .withNightly(false) // Allow nightly features (default: false)
   .withBacktrace(false) // Display backtrace details in error messages (default: false)
   .withExplain(false) // Display a more detailed hint in the error message (default: false)
-  .withHint(true); // Display a hint on error messages (default: true)
+  .withHint(true) // Display a hint on error messages (default: true)
+  .withDiagnosticLinks(false); // Hide links to error-code documentation (default: true)
 
 const tools = vm.tools();
