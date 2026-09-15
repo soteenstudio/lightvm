@@ -19,11 +19,14 @@ use crate::types::value::Value;
 use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
 #[inline(always)]
 pub fn sqrt_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value, VMError> {
-  if !a.is_number() {
+  if !matches!(
+    &a,
+    Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
+  ) {
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::Float),
-      found: get_type_name(a),
+      found: get_type_name(a.clone()),
     });
   }
   Ok(match num_type {
@@ -34,7 +37,7 @@ pub fn sqrt_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Valu
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
-        found: a.type_of(),
+        found: "unknown",
       });
     }
   })
@@ -51,6 +54,30 @@ pub fn sqrt_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resu
 }
 #[cfg(test)]
 mod tests {
+  use super::*;
+  #[test]
+  fn rejects_integer_operands_without_mutating_stack() {
+    let value = Value::Int32(1);
+    assert!(matches!(
+      sqrt_values(value.clone(), PrimitiveTypes::Flt, 21),
+      Err(VMError::TypeMismatch {
+        ip: 21,
+        expected: "Float",
+        found: "Integer"
+      })
+    ));
+    let mut stack = Stack::from_vec(vec![value]);
+    let original = stack.clone();
+    assert!(matches!(
+      sqrt_func(&mut stack, PrimitiveTypes::Flt, 22),
+      Err(VMError::TypeMismatch {
+        ip: 22,
+        expected: "Float",
+        found: "Integer"
+      })
+    ));
+    assert_eq!(stack, original);
+  }
   #[test]
   fn reports_errors_without_mutating_stack() {
     crate::instructions::math::assert_unary_float_errors(super::sqrt_func, "SQRT");
