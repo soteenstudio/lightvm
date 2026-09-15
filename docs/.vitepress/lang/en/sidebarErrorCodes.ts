@@ -67,6 +67,10 @@ export const sidebarErrorCodes = {
       link: '/api-reference/error-codes/lvm016-code.md',
     },
     {
+      text: 'LVM017 (Invalid Value)',
+      link: '/api-reference/error-codes/lvm017-code.md',
+    },
+    {
       text: 'LVM500 (System Error)',
       link: '/api-reference/error-codes/lvm500-code.md',
     },
