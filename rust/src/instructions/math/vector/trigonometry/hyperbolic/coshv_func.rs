@@ -25,7 +25,10 @@ pub fn coshv_values(a_val: Value, num_type: PrimitiveTypes, ip: usize) -> Result
     found: get_type_name(a_val.clone()),
   })?;
   for value in arr_a.iter() {
-    if !value.is_number() {
+    if !matches!(
+      value,
+      Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
+    ) {
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
@@ -41,7 +44,7 @@ pub fn coshv_values(a_val: Value, num_type: PrimitiveTypes, ip: usize) -> Result
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
-        found: expected_type(num_type, ExpectedCategory::All),
+        found: "unknown",
       });
     }
   })
@@ -62,6 +65,13 @@ mod tests {
   use std::sync::Arc;
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
+  }
+  #[test]
+  fn validates_float_family_without_mutating_stack() {
+    crate::instructions::math::vector::trigonometry::assert_unary_float_vector_validation(
+      coshv_values,
+      coshv_func,
+    );
   }
   #[test]
   fn reports_type_mismatch_without_mutating_stack() {
