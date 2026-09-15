@@ -23,8 +23,6 @@ pub fn specialized_instructions(bytecode: &mut [Instructions]) -> bool {
         Value::Float64(v) => Some(Instructions::PushFloat64(*v)),
         Value::String(v) => Some(Instructions::PushString(v.clone())),
         Value::Bool(v) => Some(Instructions::PushBool(*v)),
-        Value::Array(v) => Some(Instructions::PushArray(v.clone())),
-        Value::Object(v) => Some(Instructions::PushObject(v.clone())),
         Value::Undefined => Some(Instructions::PushUndefined),
         Value::Null => Some(Instructions::PushNull),
         Value::NaN => Some(Instructions::PushNaN),

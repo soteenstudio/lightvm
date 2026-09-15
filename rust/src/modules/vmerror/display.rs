@@ -40,6 +40,7 @@ impl fmt::Display for VMError {
       VMError::ExcessiveNopPadding => "ExcessiveNopPadding",
       VMError::InvalidMaxTicksConfig => "InvalidMaxTicksConfig",
       VMError::TickLimitExceeded => "TickLimitExceeded",
+      VMError::InvalidValue { .. } => "InvalidValue",
       VMError::SystemError(_) => "SystemError",
     };
     let ip = match self {
@@ -54,12 +55,13 @@ impl fmt::Display for VMError {
       | VMError::OutOfBounds { ip, .. }
       | VMError::InvalidJumpTarget { ip, .. }
       | VMError::FeatureRestricted { ip, .. }
-      | VMError::IoFlood { ip }
+      | VMError::IoFlood { ip, .. }
       | VMError::ImportLimitReached { ip }
       | VMError::UnauthorizedModule { ip, .. }
       | VMError::MemoryLimitExceeded { ip }
       | VMError::CallLimitExceeded { ip }
-      | VMError::JumpLimitExceeded { ip } => *ip,
+      | VMError::JumpLimitExceeded { ip }
+      | VMError::InvalidValue { ip, .. } => *ip,
     };
     write!(f, "{BOLD}{RED}Error[{}]{RESET}: ", self.error_code())?;
     match self {
@@ -129,6 +131,9 @@ impl fmt::Display for VMError {
       }
       VMError::TickLimitExceeded => {
         write!(f, "Maximum allowed execution ticks reached")
+      }
+      VMError::InvalidValue { value, .. } => {
+        write!(f, "Invalid value '{value}' encountered")
       }
       VMError::SystemError(s) => write!(f, "{}", s),
     }?;

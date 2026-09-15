@@ -11,12 +11,19 @@
 use crate::modules::vmerror::VMError;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
+use crate::utils::get_type_name::get_type_name;
 #[inline]
 pub fn push_func(stack: &mut Stack, val: Value, ip: usize) -> Result<(), VMError> {
   if stack.len() == stack.capacity() {
     return Err(VMError::StackOverflow {
       ip,
       limit: stack.capacity(),
+    });
+  }
+  if val.is_array() || val.is_object() {
+    return Err(VMError::InvalidValue {
+      ip,
+      value: get_type_name(val),
     });
   }
   stack.push(val);

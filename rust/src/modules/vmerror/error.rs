@@ -71,6 +71,10 @@ pub enum VMError {
   JumpLimitExceeded {
     ip: usize,
   },
+  InvalidValue {
+    ip: usize,
+    value: &'static str,
+  },
   ExcessiveNopPadding,
   InvalidMaxTicksConfig,
   TickLimitExceeded,
@@ -100,6 +104,7 @@ impl VMError {
       VMError::ExcessiveNopPadding => "LVM014",
       VMError::InvalidMaxTicksConfig => "LVM015",
       VMError::TickLimitExceeded => "LVM016",
+      VMError::InvalidValue { .. } => "LVM017",
       VMError::SystemError(_) => "LVM500",
     }
   }
