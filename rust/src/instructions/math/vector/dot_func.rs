@@ -43,7 +43,20 @@ pub fn dot_values(
     });
   }
   for value in arr_a.iter().chain(arr_b.iter()) {
-    if !value.is_number() {
+    let is_valid = match num_type {
+      PrimitiveTypes::Sht | PrimitiveTypes::Int | PrimitiveTypes::Lng | PrimitiveTypes::Oct => {
+        matches!(
+          value,
+          Value::Int16(_) | Value::Int32(_) | Value::Int64(_) | Value::Int128(_)
+        )
+      }
+      PrimitiveTypes::Hlf | PrimitiveTypes::Flt | PrimitiveTypes::Dbl => matches!(
+        value,
+        Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
+      ),
+      _ => true,
+    };
+    if !is_valid {
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::All),
@@ -63,7 +76,7 @@ pub fn dot_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::All),
-        found: num_type.directive(),
+        found: "unknown",
       });
     }
   })
@@ -97,6 +110,58 @@ mod tests {
     assert!(matches!(
       dot_func(&mut stack, PrimitiveTypes::Int, 17),
       Err(VMError::TypeMismatch { ip: 17, .. })
+    ));
+    assert_eq!(stack, original);
+  }
+  #[test]
+  fn rejects_mismatched_numeric_families_without_mutating_stack() {
+    for (left, right, num_type, expected, found) in [
+      (
+        array(vec![Value::Int32(1)]),
+        array(vec![Value::Float32(1.0)]),
+        PrimitiveTypes::Int,
+        "Integer",
+        "Float",
+      ),
+      (
+        array(vec![Value::Float64(1.0)]),
+        array(vec![Value::Int64(1)]),
+        PrimitiveTypes::Dbl,
+        "Double",
+        "Long",
+      ),
+      (
+        array(vec![Value::Int32(1)]),
+        array(vec![Value::Bool(false)]),
+        PrimitiveTypes::Int,
+        "Integer",
+        "Boolean",
+      ),
+    ] {
+      let mut stack = Stack::from_vec(vec![left, right]);
+      let original = stack.clone();
+      assert!(matches!(
+        dot_func(&mut stack, num_type, 24),
+        Err(VMError::TypeMismatch { ip: 24, expected: actual_expected, found: actual_found })
+          if actual_expected == expected && actual_found == found
+      ));
+      assert_eq!(stack, original);
+    }
+  }
+  #[test]
+  fn unsupported_directive_reports_unknown_without_mutating_stack() {
+    let mut stack = Stack::from_vec(vec![
+      array(vec![Value::Int32(1)]),
+      array(vec![Value::Int32(1)]),
+    ]);
+    let original = stack.clone();
+    assert!(matches!(
+      dot_func(&mut stack, PrimitiveTypes::Str, 25),
+      Err(VMError::TypeMismatch {
+        ip: 25,
+        found: "unknown",
+        ..
+      })
     ));
     assert_eq!(stack, original);
   }
