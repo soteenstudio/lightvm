@@ -25,7 +25,10 @@ pub fn log10v_values(value: Value, num_type: PrimitiveTypes, ip: usize) -> Resul
     found: get_type_name(value.clone()),
   })?;
   for value in values.iter() {
-    if !value.is_number() {
+    if !matches!(
+      value,
+      Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
+    ) {
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
@@ -41,7 +44,7 @@ pub fn log10v_values(value: Value, num_type: PrimitiveTypes, ip: usize) -> Resul
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
-        found: expected_type(num_type, ExpectedCategory::All),
+        found: "unknown",
       });
     }
   })
@@ -65,23 +68,41 @@ mod tests {
   }
   #[test]
   fn supports_float_directives() {
-    for num_type in [
-      PrimitiveTypes::Hlf,
-      PrimitiveTypes::Flt,
-      PrimitiveTypes::Dbl,
-    ] {
-      assert!(log10v_values(array(vec![Value::Int32(1)]), num_type, 0).is_ok());
-    }
+    assert!(matches!(
+      log10v_values(array(vec![Value::Float64(1.0)]), PrimitiveTypes::Hlf, 0),
+      Ok(Value::Array(values)) if matches!(&values[0], Value::Float16(_))
+    ));
+    assert!(matches!(
+      log10v_values(array(vec![Value::Float16(half::f16::ONE)]), PrimitiveTypes::Dbl, 1),
+      Ok(Value::Array(values)) if matches!(&values[0], Value::Float64(_))
+    ));
   }
   #[test]
   fn validates_operands_and_preserves_stack() {
-    for value in [Value::Bool(false), array(vec![Value::Bool(false)])] {
+    for (value, found) in [
+      (Value::Bool(false), "Boolean"),
+      (array(vec![Value::Int32(1)]), "Integer"),
+      (array(vec![Value::Bool(false)]), "Boolean"),
+    ] {
+      assert!(matches!(
+        log10v_values(value.clone(), PrimitiveTypes::Flt, 16),
+        Err(VMError::TypeMismatch { ip: 16, expected: "Float", found: actual })
+          if actual == found
+      ));
       let mut stack = Stack::from_vec(vec![value]);
       let original = stack.clone();
       assert!(log10v_func(&mut stack, PrimitiveTypes::Flt, 17).is_err());
       assert_eq!(stack, original);
     }
-    assert!(log10v_values(array(vec![Value::Float32(1.0)]), PrimitiveTypes::Int, 18).is_err());
+    let value = array(vec![Value::Float32(1.0)]);
+    assert!(matches!(
+      log10v_values(value.clone(), PrimitiveTypes::Int, 18),
+      Err(VMError::TypeMismatch { ip: 18, expected: "Float", found: "unknown" })
+    ));
+    let mut stack = Stack::from_vec(vec![value]);
+    let original = stack.clone();
+    assert!(log10v_func(&mut stack, PrimitiveTypes::Int, 18).is_err());
+    assert_eq!(stack, original);
   }
   #[test]
   fn preserves_nan_behavior() {
