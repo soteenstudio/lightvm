@@ -16,7 +16,7 @@ use crate::types::expected_category::ExpectedCategory;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::expected_type::expected_type;
+use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
 #[inline(always)]
 pub fn powf_values(
   a: Value,
@@ -34,14 +34,14 @@ pub fn powf_values(
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::Float),
-      found: a.type_of(),
+      found: get_type_name(a.clone()),
     });
   }
   if !is_float(&b) {
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::Float),
-      found: b.type_of(),
+      found: get_type_name(b.clone()),
     });
   }
   Ok(match num_type {
@@ -89,7 +89,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 16,
         expected: "Float",
-        found: "int32"
+        found: "Integer"
       })
     ));
     assert!(matches!(
@@ -97,7 +97,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 17,
         expected: "Float",
-        found: "string"
+        found: "String"
       })
     ));
     assert!(matches!(
@@ -110,7 +110,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 18,
         expected: "Float",
-        found: "string"
+        found: "String"
       })
     ));
     let mut stack = Stack::from_vec(vec![Value::Float32(1.0), invalid]);
@@ -120,7 +120,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 19,
         expected: "Float",
-        found: "string"
+        found: "String"
       })
     ));
     assert_eq!(stack, original);
@@ -131,7 +131,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 20,
         expected: "Float",
-        found: "int32"
+        found: "Integer"
       })
     ));
     assert_eq!(stack, original);
