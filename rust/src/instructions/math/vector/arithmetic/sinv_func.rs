@@ -25,7 +25,10 @@ pub fn sinv_values(a_val: Value, num_type: PrimitiveTypes, ip: usize) -> Result<
     found: get_type_name(a_val.clone()),
   })?;
   for value in arr_a.iter() {
-    if !value.is_number() {
+    if !matches!(
+      value,
+      Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
+    ) {
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
@@ -41,7 +44,7 @@ pub fn sinv_values(a_val: Value, num_type: PrimitiveTypes, ip: usize) -> Result<
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
-        found: expected_type(num_type, ExpectedCategory::All),
+        found: "unknown",
       });
     }
   })
@@ -62,6 +65,22 @@ mod tests {
   use std::sync::Arc;
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
+  }
+  #[test]
+  fn requires_float_elements_and_accepts_cross_width_values() {
+    assert!(sinv_values(array(vec![Value::Float64(0.0)]), PrimitiveTypes::Hlf, 24).is_ok());
+    for invalid in [Value::Int32(1), Value::Bool(false)] {
+      let value = array(vec![invalid.clone()]);
+      assert!(matches!(
+        sinv_values(value.clone(), PrimitiveTypes::Flt, 25),
+        Err(VMError::TypeMismatch { ip: 25, expected: "Float", found: actual })
+          if actual == get_type_name(invalid.clone())
+      ));
+      let mut stack = Stack::from_vec(vec![value]);
+      let original = stack.clone();
+      assert!(sinv_func(&mut stack, PrimitiveTypes::Flt, 26).is_err());
+      assert_eq!(stack, original);
+    }
   }
   #[test]
   fn reports_type_mismatch_without_mutating_stack() {

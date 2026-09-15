@@ -42,7 +42,10 @@ pub fn rorv_values(
     });
   }
   for value in left.iter().chain(right.iter()) {
-    if !value.is_number() {
+    if !matches!(
+      value,
+      Value::Int16(_) | Value::Int32(_) | Value::Int64(_) | Value::Int128(_)
+    ) {
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Integer),
@@ -59,7 +62,7 @@ pub fn rorv_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Integer),
-        found: num_type.directive(),
+        found: "unknown",
       });
     }
   })
@@ -129,6 +132,35 @@ mod tests {
       let mut stack = Stack::from_vec(vec![left, right]);
       let original = stack.clone();
       assert!(rorv_func(&mut stack, num_type, 17).is_err());
+      assert_eq!(stack, original);
+    }
+  }
+  #[test]
+  fn rejects_float_elements_without_mutating_stack() {
+    for (left, right, found) in [
+      (
+        array(vec![Value::Float16(half::f16::ONE)]),
+        array(vec![Value::Int32(1)]),
+        "Half",
+      ),
+      (
+        array(vec![Value::Int32(1)]),
+        array(vec![Value::Float64(1.0)]),
+        "Double",
+      ),
+    ] {
+      assert!(matches!(
+        rorv_values(left.clone(), right.clone(), PrimitiveTypes::Int, 20),
+        Err(VMError::TypeMismatch { ip: 20, expected: "Integer", found: actual })
+          if actual == found
+      ));
+      let mut stack = Stack::from_vec(vec![left, right]);
+      let original = stack.clone();
+      assert!(matches!(
+        rorv_func(&mut stack, PrimitiveTypes::Int, 21),
+        Err(VMError::TypeMismatch { ip: 21, expected: "Integer", found: actual })
+          if actual == found
+      ));
       assert_eq!(stack, original);
     }
   }

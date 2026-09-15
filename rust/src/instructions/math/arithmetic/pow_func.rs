@@ -28,15 +28,32 @@ pub fn pow_values(
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::Integer),
-      found: get_type_name(a),
+      found: get_type_name(a.clone()),
     });
   }
   if !b.is_number() {
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::Integer),
-      found: get_type_name(b),
+      found: get_type_name(b.clone()),
     });
+  }
+  if matches!(
+    num_type,
+    PrimitiveTypes::Sht | PrimitiveTypes::Int | PrimitiveTypes::Lng | PrimitiveTypes::Oct
+  ) {
+    for operand in [&a, &b] {
+      if matches!(
+        operand,
+        &Value::Float16(_) | &Value::Float32(_) | &Value::Float64(_)
+      ) {
+        return Err(VMError::TypeMismatch {
+          ip,
+          expected: expected_type(num_type, ExpectedCategory::Integer),
+          found: get_type_name(operand.clone()),
+        });
+      }
+    }
   }
   Ok(match num_type {
     PrimitiveTypes::Sht => Value::Int16(pow_i16in(a.as_i16(), b.as_i16())),
@@ -47,7 +64,7 @@ pub fn pow_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Integer),
-        found: expected_type(num_type, ExpectedCategory::All),
+        found: "unknown",
       });
     }
   })
@@ -71,6 +88,53 @@ pub fn pow_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resul
 #[cfg(test)]
 mod tests {
   use super::*;
+  #[test]
+  fn integer_directive_rejects_float_operands_without_mutating_stack() {
+    for (num_type, a, b, expected, found) in [
+      (
+        PrimitiveTypes::Sht,
+        Value::Float16(half::f16::ONE),
+        Value::Int16(2),
+        "Short",
+        "Half",
+      ),
+      (
+        PrimitiveTypes::Int,
+        Value::Float32(1.0),
+        Value::Int32(2),
+        "Integer",
+        "Float",
+      ),
+      (
+        PrimitiveTypes::Lng,
+        Value::Int64(1),
+        Value::Float64(2.0),
+        "Long",
+        "Double",
+      ),
+      (
+        PrimitiveTypes::Oct,
+        Value::Float32(1.0),
+        Value::Int128(2),
+        "Octa",
+        "Float",
+      ),
+    ] {
+      assert!(matches!(
+        pow_values(a.clone(), b.clone(), num_type, 8),
+        Err(VMError::TypeMismatch { ip: 8, expected: actual_expected, found: actual_found })
+          if actual_expected == expected && actual_found == found
+      ));
+      let mut stack = Stack::from_vec(vec![a, b]);
+      let original = stack.clone();
+      assert!(matches!(
+        pow_func(&mut stack, num_type, 9),
+        Err(VMError::TypeMismatch { ip: 9, expected: actual_expected, found: actual_found })
+          if actual_expected == expected && actual_found == found
+      ));
+      assert_eq!(stack, original);
+    }
+  }
   #[test]
   fn invalid_operands_report_type_mismatch_and_preserve_stack() {
     let invalid = Value::String("invalid".into());

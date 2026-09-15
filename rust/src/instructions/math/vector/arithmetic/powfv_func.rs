@@ -42,7 +42,10 @@ pub fn powfv_values(
     });
   }
   for value in arr_a.iter().chain(arr_b.iter()) {
-    if !value.is_number() {
+    if !matches!(
+      value,
+      Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
+    ) {
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
@@ -58,7 +61,7 @@ pub fn powfv_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
-        found: expected_type(num_type, ExpectedCategory::All),
+        found: "unknown",
       });
     }
   })
@@ -87,6 +90,31 @@ mod tests {
   use std::sync::Arc;
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
+  }
+  #[test]
+  fn requires_float_elements_and_accepts_cross_width_values() {
+    assert!(
+      powfv_values(
+        array(vec![Value::Float16(half::f16::from_f32(2.0))]),
+        array(vec![Value::Float64(3.0)]),
+        PrimitiveTypes::Flt,
+        24
+      )
+      .is_ok()
+    );
+    for invalid in [Value::Int32(2), Value::Bool(false)] {
+      let left = array(vec![invalid.clone()]);
+      let right = array(vec![Value::Float32(3.0)]);
+      assert!(matches!(
+        powfv_values(left.clone(), right.clone(), PrimitiveTypes::Flt, 25),
+        Err(VMError::TypeMismatch { ip: 25, expected: "Float", found: actual })
+          if actual == get_type_name(invalid.clone())
+      ));
+      let mut stack = Stack::from_vec(vec![left, right]);
+      let original = stack.clone();
+      assert!(powfv_func(&mut stack, PrimitiveTypes::Flt, 26).is_err());
+      assert_eq!(stack, original);
+    }
   }
   #[test]
   fn reports_type_mismatch_without_mutating_stack() {

@@ -50,6 +50,32 @@ pub fn subv_values(
         found: get_type_name(value.clone()),
       });
     }
+    if matches!(
+      num_type,
+      PrimitiveTypes::Sht | PrimitiveTypes::Int | PrimitiveTypes::Lng | PrimitiveTypes::Oct
+    ) && matches!(
+      value,
+      Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
+    ) {
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: expected_type(num_type, ExpectedCategory::Integer),
+        found: get_type_name(value.clone()),
+      });
+    }
+    if matches!(
+      num_type,
+      PrimitiveTypes::Hlf | PrimitiveTypes::Flt | PrimitiveTypes::Dbl
+    ) && matches!(
+      value,
+      Value::Int16(_) | Value::Int32(_) | Value::Int64(_) | Value::Int128(_)
+    ) {
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: expected_type(num_type, ExpectedCategory::Float),
+        found: get_type_name(value.clone()),
+      });
+    }
   }
   Ok(match num_type {
     PrimitiveTypes::Sht => Value::Array(subv_i16in(&arr_a, &arr_b)),
@@ -63,7 +89,7 @@ pub fn subv_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::All),
-        found: num_type.directive(),
+        found: "unknown",
       });
     }
   })
@@ -89,6 +115,40 @@ mod tests {
   use std::sync::Arc;
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
+  }
+  #[test]
+  fn rejects_integer_elements_for_float_directives() {
+    let left = array(vec![Value::Int32(2)]);
+    let right = array(vec![Value::Float32(1.0)]);
+    assert!(matches!(
+      subv_values(left.clone(), right.clone(), PrimitiveTypes::Flt, 26),
+      Err(VMError::TypeMismatch {
+        ip: 26,
+        expected: "Float",
+        found: "Integer"
+      })
+    ));
+    let mut stack = Stack::from_vec(vec![left, right]);
+    let original = stack.clone();
+    assert!(subv_func(&mut stack, PrimitiveTypes::Flt, 27).is_err());
+    assert_eq!(stack, original);
+  }
+  #[test]
+  fn rejects_float_elements_for_integer_directives() {
+    let left = array(vec![Value::Int32(2)]);
+    let right = array(vec![Value::Float64(1.0)]);
+    assert!(matches!(
+      subv_values(left.clone(), right.clone(), PrimitiveTypes::Int, 24),
+      Err(VMError::TypeMismatch {
+        ip: 24,
+        expected: "Integer",
+        found: "Double"
+      })
+    ));
+    let mut stack = Stack::from_vec(vec![left, right]);
+    let original = stack.clone();
+    assert!(subv_func(&mut stack, PrimitiveTypes::Int, 25).is_err());
+    assert_eq!(stack, original);
   }
   #[test]
   fn reports_type_mismatch_without_mutating_stack() {

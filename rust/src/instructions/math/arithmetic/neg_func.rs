@@ -24,7 +24,33 @@ pub fn neg_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::All),
-      found: get_type_name(a),
+      found: get_type_name(a.clone()),
+    });
+  }
+  if matches!(
+    num_type,
+    PrimitiveTypes::Sht | PrimitiveTypes::Int | PrimitiveTypes::Lng | PrimitiveTypes::Oct
+  ) && matches!(
+    &a,
+    &Value::Float16(_) | &Value::Float32(_) | &Value::Float64(_)
+  ) {
+    return Err(VMError::TypeMismatch {
+      ip,
+      expected: expected_type(num_type, ExpectedCategory::Integer),
+      found: get_type_name(a.clone()),
+    });
+  }
+  if matches!(
+    num_type,
+    PrimitiveTypes::Hlf | PrimitiveTypes::Flt | PrimitiveTypes::Dbl
+  ) && matches!(
+    &a,
+    &Value::Int16(_) | &Value::Int32(_) | &Value::Int64(_) | &Value::Int128(_)
+  ) {
+    return Err(VMError::TypeMismatch {
+      ip,
+      expected: expected_type(num_type, ExpectedCategory::Float),
+      found: get_type_name(a.clone()),
     });
   }
   Ok(match num_type {
@@ -39,7 +65,7 @@ pub fn neg_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value
       return Err(VMError::TypeMismatch {
         ip,
         expected: "number",
-        found: expected_type(num_type, ExpectedCategory::All),
+        found: "unknown",
       });
     }
   })
@@ -57,6 +83,52 @@ pub fn neg_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resul
 #[cfg(test)]
 mod tests {
   use super::*;
+  #[test]
+  fn float_directive_rejects_integer_operand_without_mutating_stack() {
+    let operand = Value::Int64(1);
+    assert!(matches!(
+      neg_values(operand.clone(), PrimitiveTypes::Dbl, 10),
+      Err(VMError::TypeMismatch {
+        ip: 10,
+        expected: "Double",
+        found: "Long"
+      })
+    ));
+    let mut stack = Stack::from_vec(vec![operand]);
+    let original = stack.clone();
+    assert!(matches!(
+      neg_func(&mut stack, PrimitiveTypes::Dbl, 11),
+      Err(VMError::TypeMismatch {
+        ip: 11,
+        expected: "Double",
+        found: "Long"
+      })
+    ));
+    assert_eq!(stack, original);
+  }
+  #[test]
+  fn integer_directive_rejects_float_operand_without_mutating_stack() {
+    let operand = Value::Float32(1.0);
+    assert!(matches!(
+      neg_values(operand.clone(), PrimitiveTypes::Int, 8),
+      Err(VMError::TypeMismatch {
+        ip: 8,
+        expected: "Integer",
+        found: "Float"
+      })
+    ));
+    let mut stack = Stack::from_vec(vec![operand]);
+    let original = stack.clone();
+    assert!(matches!(
+      neg_func(&mut stack, PrimitiveTypes::Int, 9),
+      Err(VMError::TypeMismatch {
+        ip: 9,
+        expected: "Integer",
+        found: "Float"
+      })
+    ));
+    assert_eq!(stack, original);
+  }
   #[test]
   fn invalid_operand_reports_type_mismatch_and_preserves_stack() {
     let invalid = Value::String("invalid".into());

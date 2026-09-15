@@ -25,7 +25,10 @@ pub fn cbrtv_values(value: Value, num_type: PrimitiveTypes, ip: usize) -> Result
     found: get_type_name(value.clone()),
   })?;
   for value in values.iter() {
-    if !value.is_number() {
+    if !matches!(
+      value,
+      Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
+    ) {
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
@@ -41,7 +44,7 @@ pub fn cbrtv_values(value: Value, num_type: PrimitiveTypes, ip: usize) -> Result
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
-        found: expected_type(num_type, ExpectedCategory::All),
+        found: "unknown",
       });
     }
   })
@@ -70,7 +73,26 @@ mod tests {
       PrimitiveTypes::Flt,
       PrimitiveTypes::Dbl,
     ] {
-      assert!(cbrtv_values(array(vec![Value::Int32(1)]), num_type, 0).is_ok());
+      assert!(cbrtv_values(array(vec![Value::Float32(1.0)]), num_type, 0).is_ok());
+    }
+  }
+  #[test]
+  fn rejects_integer_elements_without_mutating_stack() {
+    for (value, found) in [(Value::Int32(1), "Integer"), (Value::Int64(1), "Long")] {
+      let operand = array(vec![value]);
+      assert!(matches!(
+        cbrtv_values(operand.clone(), PrimitiveTypes::Flt, 21),
+        Err(VMError::TypeMismatch { ip: 21, expected: "Float", found: actual })
+          if actual == found
+      ));
+      let mut stack = Stack::from_vec(vec![operand]);
+      let original = stack.clone();
+      assert!(matches!(
+        cbrtv_func(&mut stack, PrimitiveTypes::Flt, 22),
+        Err(VMError::TypeMismatch { ip: 22, expected: "Float", found: actual })
+          if actual == found
+      ));
+      assert_eq!(stack, original);
     }
   }
   #[test]

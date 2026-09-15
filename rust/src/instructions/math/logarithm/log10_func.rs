@@ -19,11 +19,14 @@ use crate::types::value::Value;
 use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
 #[inline(always)]
 pub fn log10_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value, VMError> {
-  if !a.is_number() {
+  if !matches!(
+    &a,
+    Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
+  ) {
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::Float),
-      found: get_type_name(a),
+      found: get_type_name(a.clone()),
     });
   }
   Ok(match num_type {
@@ -34,7 +37,7 @@ pub fn log10_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Val
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
-        found: a.type_of(),
+        found: "unknown",
       });
     }
   })
@@ -53,26 +56,50 @@ pub fn log10_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Res
 mod tests {
   use super::*;
   #[test]
-  fn invalid_operand_reports_type_mismatch_and_preserves_stack() {
-    let invalid = Value::String("invalid".into());
+  fn rejects_non_float_operands_without_mutating_stack() {
+    for (value, found) in [
+      (Value::Int32(1), "Integer"),
+      (Value::String("invalid".into()), "String"),
+    ] {
+      assert!(matches!(
+        log10_values(value.clone(), PrimitiveTypes::Flt, 17),
+        Err(VMError::TypeMismatch { ip: 17, expected: "Float", found: actual })
+          if actual == found
+      ));
+      let mut stack = Stack::from_vec(vec![value]);
+      let original = stack.clone();
+      assert!(matches!(
+        log10_func(&mut stack, PrimitiveTypes::Flt, 18),
+        Err(VMError::TypeMismatch { ip: 18, expected: "Float", found: actual })
+          if actual == found
+      ));
+      assert_eq!(stack, original);
+    }
+  }
+  #[test]
+  fn accepts_cross_width_float_operands_and_returns_directive_type() {
     assert!(matches!(
-      log10_values(invalid.clone(), PrimitiveTypes::Flt, 17),
+      log10_values(Value::Float16(half::f16::ONE), PrimitiveTypes::Dbl, 19),
+      Ok(Value::Float64(0.0))
+    ));
+    assert!(matches!(
+      log10_values(Value::Float64(1.0), PrimitiveTypes::Hlf, 20),
+      Ok(Value::Float16(value)) if value == half::f16::ZERO
+    ));
+  }
+  #[test]
+  fn unsupported_directive_reports_unknown_without_mutating_stack() {
+    assert!(matches!(
+      log10_values(Value::Float32(1.0), PrimitiveTypes::Int, 21),
       Err(VMError::TypeMismatch {
-        ip: 17,
+        ip: 21,
         expected: "Float",
-        found: "String"
+        found: "unknown"
       })
     ));
-    let mut stack = Stack::from_vec(vec![invalid]);
+    let mut stack = Stack::from_vec(vec![Value::Float32(1.0)]);
     let original = stack.clone();
-    assert!(matches!(
-      log10_func(&mut stack, PrimitiveTypes::Flt, 18),
-      Err(VMError::TypeMismatch {
-        ip: 18,
-        expected: "Float",
-        found: "String"
-      })
-    ));
+    assert!(log10_func(&mut stack, PrimitiveTypes::Int, 22).is_err());
     assert_eq!(stack, original);
   }
 }

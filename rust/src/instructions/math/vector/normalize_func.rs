@@ -28,7 +28,10 @@ pub fn normalize_values(
     found: get_type_name(value.clone()),
   })?;
   for value in values.iter() {
-    if !value.is_number() {
+    if !matches!(
+      value,
+      Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
+    ) {
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
@@ -44,7 +47,7 @@ pub fn normalize_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
-        found: expected_type(num_type, ExpectedCategory::All),
+        found: "unknown",
       });
     }
   })
@@ -97,19 +100,34 @@ mod tests {
   }
   #[test]
   fn rejects_invalid_operands_without_mutating_stack() {
-    for value in [Value::Bool(false), array(vec![Value::Bool(false)])] {
+    for (value, found) in [
+      (Value::Bool(false), "Boolean"),
+      (array(vec![Value::Bool(false)]), "Boolean"),
+      (array(vec![Value::Int32(1)]), "Integer"),
+    ] {
       let mut stack = Stack::from_vec(vec![value]);
       let original = stack.clone();
       assert!(matches!(
         normalize_func(&mut stack, PrimitiveTypes::Flt, 17),
-        Err(VMError::TypeMismatch { ip: 17, .. })
+        Err(VMError::TypeMismatch { ip: 17, expected: "Float", found: actual })
+          if actual == found
       ));
       assert_eq!(stack, original);
     }
+  }
+  #[test]
+  fn unsupported_directive_reports_unknown_without_mutating_stack() {
+    let mut stack = Stack::from_vec(vec![array(vec![Value::Float32(1.0)])]);
+    let original = stack.clone();
     assert!(matches!(
-      normalize_values(array(vec![Value::Float32(1.0)]), PrimitiveTypes::Int, 18),
-      Err(VMError::TypeMismatch { ip: 18, .. })
+      normalize_func(&mut stack, PrimitiveTypes::Int, 18),
+      Err(VMError::TypeMismatch {
+        ip: 18,
+        found: "unknown",
+        ..
+      })
     ));
+    assert_eq!(stack, original);
   }
   #[test]
   fn rejects_missing_operand() {

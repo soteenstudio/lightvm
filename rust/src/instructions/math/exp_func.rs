@@ -19,11 +19,14 @@ use crate::types::value::Value;
 use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
 #[inline(always)]
 pub fn exp_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value, VMError> {
-  if !a.is_number() {
+  if !matches!(
+    &a,
+    Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
+  ) {
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::Float),
-      found: get_type_name(a),
+      found: get_type_name(a.clone()),
     });
   }
   Ok(match num_type {
@@ -34,7 +37,7 @@ pub fn exp_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
-        found: a.type_of(),
+        found: "unknown",
       });
     }
   })
@@ -51,8 +54,65 @@ pub fn exp_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resul
 }
 #[cfg(test)]
 mod tests {
+  use super::*;
   #[test]
   fn reports_errors_without_mutating_stack() {
     crate::instructions::math::assert_unary_float_errors(super::exp_func, "EXP");
+  }
+  #[test]
+  fn rejects_non_float_operands_without_mutating_stack() {
+    for (value, found) in [
+      (Value::Int16(1), "Short"),
+      (Value::String("invalid".into()), "String"),
+    ] {
+      assert!(matches!(
+        exp_values(value.clone(), PrimitiveTypes::Flt, 20),
+        Err(VMError::TypeMismatch { ip: 20, expected: "Float", found: actual })
+          if actual == found
+      ));
+      let mut stack = Stack::from_vec(vec![value]);
+      let original = stack.clone();
+      assert!(matches!(
+        exp_func(&mut stack, PrimitiveTypes::Flt, 21),
+        Err(VMError::TypeMismatch { ip: 21, expected: "Float", found: actual })
+          if actual == found
+      ));
+      assert_eq!(stack, original);
+    }
+    let value = Value::Float32(1.0);
+    assert!(matches!(
+      exp_values(value.clone(), PrimitiveTypes::Int, 22),
+      Err(VMError::TypeMismatch {
+        ip: 22,
+        found: "unknown",
+        ..
+      })
+    ));
+    let mut stack = Stack::from_vec(vec![value]);
+    let original = stack.clone();
+    assert!(matches!(
+      exp_func(&mut stack, PrimitiveTypes::Int, 23),
+      Err(VMError::TypeMismatch {
+        ip: 23,
+        found: "unknown",
+        ..
+      })
+    ));
+    assert_eq!(stack, original);
+  }
+  #[test]
+  fn accepts_cross_width_float_operands_and_returns_directive_type() {
+    assert!(matches!(
+      exp_values(Value::Float16(half::f16::ZERO), PrimitiveTypes::Flt, 22),
+      Ok(Value::Float32(1.0))
+    ));
+    assert!(matches!(
+      exp_values(Value::Float64(0.0), PrimitiveTypes::Hlf, 23),
+      Ok(Value::Float16(value)) if value == half::f16::ONE
+    ));
+    assert!(matches!(
+      exp_values(Value::Float32(0.0), PrimitiveTypes::Dbl, 24),
+      Ok(Value::Float64(1.0))
+    ));
   }
 }

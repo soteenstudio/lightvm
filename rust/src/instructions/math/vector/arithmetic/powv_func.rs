@@ -49,6 +49,16 @@ pub fn powv_values(
         found: get_type_name(value.clone()),
       });
     }
+    if matches!(
+      value,
+      Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
+    ) {
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: expected_type(num_type, ExpectedCategory::Integer),
+        found: get_type_name(value.clone()),
+      });
+    }
   }
   Ok(match num_type {
     PrimitiveTypes::Sht => Value::Array(powv_i16in(&arr_a, &arr_b)),
@@ -59,7 +69,7 @@ pub fn powv_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Integer),
-        found: expected_type(num_type, ExpectedCategory::All),
+        found: "unknown",
       });
     }
   })
@@ -85,6 +95,23 @@ mod tests {
   use std::sync::Arc;
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
+  }
+  #[test]
+  fn rejects_float_elements() {
+    let left = array(vec![Value::Int32(2)]);
+    let right = array(vec![Value::Float32(3.0)]);
+    assert!(matches!(
+      powv_values(left.clone(), right.clone(), PrimitiveTypes::Int, 24),
+      Err(VMError::TypeMismatch {
+        ip: 24,
+        expected: "Integer",
+        found: "Float"
+      })
+    ));
+    let mut stack = Stack::from_vec(vec![left, right]);
+    let original = stack.clone();
+    assert!(powv_func(&mut stack, PrimitiveTypes::Int, 25).is_err());
+    assert_eq!(stack, original);
   }
   #[test]
   fn reports_type_mismatch_without_mutating_stack() {
