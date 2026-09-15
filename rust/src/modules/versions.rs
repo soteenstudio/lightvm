@@ -79,13 +79,13 @@ pub fn get_versions() -> InfoVM {
     latest_version: github_latest,
     modules: ModuleVersions {
       carzy: String::from("0.1.0"),
-      gazle: String::from("0.1.0"),
+      gazle: String::from("0.1.1"),
       itme: String::from("0.1.0"),
-      krates: String::from("0.1.0"),
+      krates: String::from("0.1.1"),
       torja: String::from("0.1.0"),
       bluel: String::from("0.1.0"),
-      dying: String::from("0.1.0"),
-      vmerror: String::from("0.1.0"),
+      dying: String::from("0.1.1"),
+      vmerror: String::from("0.1.1"),
     },
   }
 }
