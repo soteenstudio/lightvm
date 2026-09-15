@@ -19,11 +19,14 @@ use crate::types::value::Value;
 use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
 #[inline(always)]
 pub fn cosh_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value, VMError> {
-  if !a.is_number() {
+  if !matches!(
+    &a,
+    Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
+  ) {
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::Float),
-      found: get_type_name(a),
+      found: get_type_name(a.clone()),
     });
   }
   Ok(match num_type {
@@ -34,7 +37,7 @@ pub fn cosh_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Valu
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
-        found: get_type_name(a),
+        found: "unknown",
       });
     }
   })
@@ -53,6 +56,10 @@ pub fn cosh_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resu
 mod tests {
   #[test]
   fn reports_errors_without_mutating_stack() {
-    crate::instructions::math::assert_unary_float_errors(super::cosh_func, "COSH");
+    crate::instructions::math::assert_unary_trigonometry_validation(
+      super::cosh_values,
+      super::cosh_func,
+      "COSH",
+    );
   }
 }
