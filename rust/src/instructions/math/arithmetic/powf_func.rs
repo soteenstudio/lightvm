@@ -16,7 +16,7 @@ use crate::types::expected_category::ExpectedCategory;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
+use crate::utils::expected_type::expected_type;
 #[inline(always)]
 pub fn powf_values(
   a: Value,
@@ -34,14 +34,14 @@ pub fn powf_values(
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::Float),
-      found: get_type_name(a),
+      found: a.type_of(),
     });
   }
   if !is_float(&b) {
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::Float),
-      found: get_type_name(b),
+      found: b.type_of(),
     });
   }
   Ok(match num_type {
@@ -52,7 +52,7 @@ pub fn powf_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
-        found: get_type_name(a),
+        found: "unknown",
       });
     }
   })
@@ -89,7 +89,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 16,
         expected: "Float",
-        found: "Unknown"
+        found: "int32"
       })
     ));
     assert!(matches!(
@@ -97,7 +97,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 17,
         expected: "Float",
-        found: "String"
+        found: "string"
       })
     ));
     assert!(matches!(
@@ -110,7 +110,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 18,
         expected: "Float",
-        found: "String"
+        found: "string"
       })
     ));
     let mut stack = Stack::from_vec(vec![Value::Float32(1.0), invalid]);
@@ -120,7 +120,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 19,
         expected: "Float",
-        found: "String"
+        found: "string"
       })
     ));
     assert_eq!(stack, original);
@@ -131,7 +131,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 20,
         expected: "Float",
-        found: "Unknown"
+        found: "int32"
       })
     ));
     assert_eq!(stack, original);

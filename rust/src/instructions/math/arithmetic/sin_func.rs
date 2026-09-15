@@ -16,7 +16,7 @@ use crate::types::expected_category::ExpectedCategory;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
+use crate::utils::expected_type::expected_type;
 #[inline(always)]
 pub fn sin_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value, VMError> {
   if !matches!(
@@ -26,7 +26,7 @@ pub fn sin_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::Float),
-      found: get_type_name(a),
+      found: a.type_of(),
     });
   }
   Ok(match num_type {
@@ -37,7 +37,7 @@ pub fn sin_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
-        found: expected_type(num_type, ExpectedCategory::All),
+        found: "unknown",
       });
     }
   })
@@ -63,7 +63,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 17,
         expected: "Float",
-        found: "String"
+        found: "string"
       })
     ));
     assert!(matches!(
@@ -71,7 +71,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 17,
         expected: "Float",
-        found: "Unknown"
+        found: "int32"
       })
     ));
     let mut stack = Stack::from_vec(vec![invalid]);
@@ -81,7 +81,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 18,
         expected: "Float",
-        found: "String"
+        found: "string"
       })
     ));
     assert_eq!(stack, original);

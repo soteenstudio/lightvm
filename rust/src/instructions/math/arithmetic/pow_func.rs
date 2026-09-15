@@ -16,7 +16,7 @@ use crate::types::expected_category::ExpectedCategory;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
+use crate::utils::expected_type::expected_type;
 #[inline(always)]
 pub fn pow_values(
   a: Value,
@@ -28,14 +28,14 @@ pub fn pow_values(
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::Integer),
-      found: get_type_name(a),
+      found: a.type_of(),
     });
   }
   if !b.is_number() {
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::Integer),
-      found: get_type_name(b),
+      found: b.type_of(),
     });
   }
   if matches!(
@@ -50,7 +50,7 @@ pub fn pow_values(
         return Err(VMError::TypeMismatch {
           ip,
           expected: expected_type(num_type, ExpectedCategory::Integer),
-          found: get_type_name(operand.clone()),
+          found: operand.type_of(),
         });
       }
     }
@@ -64,7 +64,7 @@ pub fn pow_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Integer),
-        found: expected_type(num_type, ExpectedCategory::All),
+        found: "unknown",
       });
     }
   })
@@ -96,28 +96,28 @@ mod tests {
         Value::Float16(half::f16::ONE),
         Value::Int16(2),
         "Short",
-        "Half",
+        "float16",
       ),
       (
         PrimitiveTypes::Int,
         Value::Float32(1.0),
         Value::Int32(2),
         "Integer",
-        "Float",
+        "float32",
       ),
       (
         PrimitiveTypes::Lng,
         Value::Int64(1),
         Value::Float64(2.0),
         "Long",
-        "Double",
+        "float64",
       ),
       (
         PrimitiveTypes::Oct,
         Value::Float32(1.0),
         Value::Int128(2),
         "Octa",
-        "Float",
+        "float32",
       ),
     ] {
       assert!(matches!(
@@ -143,7 +143,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 17,
         expected: "Integer",
-        found: "String"
+        found: "string"
       })
     ));
     assert!(matches!(
@@ -151,7 +151,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 18,
         expected: "Integer",
-        found: "String"
+        found: "string"
       })
     ));
     let mut stack = Stack::from_vec(vec![Value::Int32(1), invalid]);
@@ -161,7 +161,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 19,
         expected: "Integer",
-        found: "String"
+        found: "string"
       })
     ));
     assert_eq!(stack, original);

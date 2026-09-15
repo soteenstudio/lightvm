@@ -16,7 +16,7 @@ use crate::types::expected_category::ExpectedCategory;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
+use crate::utils::expected_type::expected_type;
 #[inline(always)]
 pub fn rolv_values(
   left_value: Value,
@@ -27,18 +27,18 @@ pub fn rolv_values(
   let left = left_value.as_array().ok_or(VMError::TypeMismatch {
     ip,
     expected: expected_type(num_type, ExpectedCategory::Integer),
-    found: get_type_name(left_value.clone()),
+    found: left_value.type_of(),
   })?;
   let right = right_value.as_array().ok_or(VMError::TypeMismatch {
     ip,
     expected: expected_type(num_type, ExpectedCategory::Integer),
-    found: get_type_name(right_value.clone()),
+    found: right_value.type_of(),
   })?;
   if left.len() != right.len() {
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::Integer),
-      found: "Array",
+      found: "array",
     });
   }
   for value in left.iter().chain(right.iter()) {
@@ -49,7 +49,7 @@ pub fn rolv_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Integer),
-        found: get_type_name(value.clone()),
+        found: value.type_of(),
       });
     }
   }
@@ -62,7 +62,7 @@ pub fn rolv_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Integer),
-        found: num_type.directive(),
+        found: "unknown",
       });
     }
   })
@@ -141,12 +141,12 @@ mod tests {
       (
         array(vec![Value::Float16(half::f16::ONE)]),
         array(vec![Value::Int32(1)]),
-        "Half",
+        "float16",
       ),
       (
         array(vec![Value::Int32(1)]),
         array(vec![Value::Float64(1.0)]),
-        "Double",
+        "float64",
       ),
     ] {
       assert!(matches!(

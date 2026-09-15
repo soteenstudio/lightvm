@@ -15,7 +15,6 @@ use crate::modules::vmerror::VMError;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::get_type_name::get_type_name;
 fn expected_type(num_type: PrimitiveTypes) -> &'static str {
   match num_type {
     PrimitiveTypes::Hlf => "Float16/Int16",
@@ -43,14 +42,14 @@ pub fn powi_values(
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type),
-      found: get_type_name(a),
+      found: a.type_of(),
     });
   }
   if !valid_exponent {
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type),
-      found: get_type_name(b),
+      found: b.type_of(),
     });
   }
   Ok(match num_type {
@@ -61,7 +60,7 @@ pub fn powi_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type),
-        found: get_type_name(a),
+        found: "unknown",
       });
     }
   })
@@ -93,7 +92,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 16,
         expected: "Float32/Int32",
-        found: "Unknown"
+        found: "int32"
       })
     ));
     assert!(matches!(
@@ -101,7 +100,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 17,
         expected: "Float32/Int32",
-        found: "String"
+        found: "string"
       })
     ));
     assert!(matches!(
@@ -114,7 +113,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 18,
         expected: "Float32/Int32",
-        found: "String"
+        found: "string"
       })
     ));
     let mut stack = Stack::from_vec(vec![Value::Float32(1.0), invalid]);
@@ -124,7 +123,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 19,
         expected: "Float32/Int32",
-        found: "String"
+        found: "string"
       })
     ));
     assert_eq!(stack, original);
@@ -168,7 +167,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 26,
         expected: "Float32/Int32",
-        found: "Float"
+        found: "float32"
       })
     ));
     assert_eq!(stack, original);
@@ -181,7 +180,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 20,
         expected: "Float16/Int16",
-        found: "String"
+        found: "string"
       })
     ));
     assert!(matches!(
@@ -189,7 +188,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 21,
         expected: "Float64/Int64",
-        found: "String"
+        found: "string"
       })
     ));
   }
@@ -205,7 +204,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 22,
         expected: "Float32/Int32",
-        found: "Double"
+        found: "float64"
       })
     ));
   }
