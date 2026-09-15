@@ -48,6 +48,19 @@ pub fn mulv_values(
         found: get_type_name(value.clone()),
       });
     }
+    if matches!(
+      num_type,
+      PrimitiveTypes::Sht | PrimitiveTypes::Int | PrimitiveTypes::Lng | PrimitiveTypes::Oct
+    ) && matches!(
+      value,
+      Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
+    ) {
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: expected_type(num_type, ExpectedCategory::Integer),
+        found: get_type_name(value.clone()),
+      });
+    }
   }
   Ok(match num_type {
     PrimitiveTypes::Sht => Value::Array(mulv_i16in(&arr_a, &arr_b)),
@@ -61,7 +74,7 @@ pub fn mulv_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::All),
-        found: expected_type(num_type, ExpectedCategory::All),
+        found: "unknown",
       });
     }
   })
@@ -87,6 +100,23 @@ mod tests {
   use std::sync::Arc;
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
+  }
+  #[test]
+  fn rejects_float_elements_for_integer_directives() {
+    let left = array(vec![Value::Float16(half::f16::ONE)]);
+    let right = array(vec![Value::Int16(2)]);
+    assert!(matches!(
+      mulv_values(left.clone(), right.clone(), PrimitiveTypes::Sht, 24),
+      Err(VMError::TypeMismatch {
+        ip: 24,
+        expected: "Short",
+        found: "Half"
+      })
+    ));
+    let mut stack = Stack::from_vec(vec![left, right]);
+    let original = stack.clone();
+    assert!(mulv_func(&mut stack, PrimitiveTypes::Sht, 25).is_err());
+    assert_eq!(stack, original);
   }
   #[test]
   fn reports_type_mismatch_without_mutating_stack() {
