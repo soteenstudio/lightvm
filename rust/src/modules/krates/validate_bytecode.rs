@@ -44,17 +44,14 @@ pub fn validate_bytecode(
   }
   Ok(())
 }
-
 #[cfg(test)]
 mod tests {
   use super::*;
-
   #[test]
   fn accepts_valid_bytecode() {
     let bytecode = vec![Instructions::Jump(0)];
     assert!(validate_bytecode(&bytecode, &AHashMap::new()).is_ok());
   }
-
   #[test]
   fn rejects_invalid_jump_with_structured_error() {
     let result = validate_bytecode(&[Instructions::Jump(1)], &AHashMap::new());

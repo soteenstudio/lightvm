@@ -97,6 +97,14 @@ impl Value {
     )
   }
   #[inline(always)]
+  pub fn is_array(&self) -> bool {
+    matches!(self, Value::Array(_))
+  }
+  #[inline(always)]
+  pub fn is_object(&self) -> bool {
+    matches!(self, Value::Object(_))
+  }
+  #[inline(always)]
   pub fn as_i16(&self) -> i16 {
     match self {
       Value::Int16(v) => *v,

@@ -114,6 +114,12 @@ pub fn get_hint(err: &VMError) -> Option<Hint> {
         "The bytecode exceeded the maximum number of control flow jump instructions (Jump, IfFalse, Break) permitted by the SecurityConfig. This typically indicates overly complex branching or loop structures. Simplify your control flow logic, reduce nested loops, or increase the max_jump limit if the complexity is unavoidable.",
       ),
     }),
+    VMError::InvalidValue { .. } => Some(Hint {
+      short: Cow::Borrowed("Ensure the value is valid and supported by the VM."),
+      long: Cow::Borrowed(
+        "The bytecode attempted to push or operate on a value that is not recognized or supported by the VM. This could be due to an unsupported data type, a corrupted value, or an invalid literal. Review the value being used and ensure it conforms to the expected types and formats defined by the VM's specification.",
+      ),
+    }),
     VMError::ExcessiveNopPadding => Some(Hint {
       short: Cow::Borrowed("Remove unnecessary Nop instructions from the bytecode."),
       long: Cow::Borrowed(

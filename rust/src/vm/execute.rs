@@ -413,7 +413,6 @@ fn test_out_of_bounds_jump_is_rejected_before_execution() {
     })
   ));
 }
-
 #[test]
 fn test_configured_stack_limit_is_enforced() {
   let bytecode = vec![Instructions::PushInt32(1), Instructions::PushInt32(2)];
