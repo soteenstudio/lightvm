@@ -17,7 +17,7 @@ use crate::types::expected_category::ExpectedCategory;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::expected_type::expected_type;
+use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
 #[inline(always)]
 pub fn add_values(
   a: Value,
@@ -29,14 +29,14 @@ pub fn add_values(
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::All),
-      found: a.type_of(),
+      found: get_type_name(a.clone()),
     });
   }
   if !b.is_number() {
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::All),
-      found: b.type_of(),
+      found: get_type_name(b.clone()),
     });
   }
   if matches!(
@@ -51,7 +51,7 @@ pub fn add_values(
         return Err(VMError::TypeMismatch {
           ip,
           expected: expected_type(num_type, ExpectedCategory::Integer),
-          found: operand.type_of(),
+          found: get_type_name(operand.clone()),
         });
       }
     }
@@ -92,8 +92,8 @@ mod tests {
   #[test]
   fn integer_directive_rejects_float_operands_without_mutating_stack() {
     for (a, b, found) in [
-      (Value::Float32(1.0), Value::Int32(2), "float32"),
-      (Value::Int32(1), Value::Float64(2.0), "float64"),
+      (Value::Float32(1.0), Value::Int32(2), "Float"),
+      (Value::Int32(1), Value::Float64(2.0), "Double"),
     ] {
       assert!(matches!(
         add_values(a.clone(), b.clone(), PrimitiveTypes::Int, 8),
@@ -119,7 +119,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 13,
         expected: "Integer",
-        found: "string"
+        found: "String"
       })
     ));
     assert_eq!(stack, original);
@@ -136,7 +136,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 21,
         expected: "Integer",
-        found: "string"
+        found: "String"
       })
     ));
   }
@@ -152,7 +152,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 34,
         expected: "Double",
-        found: "string"
+        found: "String"
       })
     ));
   }

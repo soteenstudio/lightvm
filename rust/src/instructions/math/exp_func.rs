@@ -16,7 +16,7 @@ use crate::types::expected_category::ExpectedCategory;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::expected_type::expected_type;
+use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
 #[inline(always)]
 pub fn exp_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value, VMError> {
   if !matches!(
@@ -26,7 +26,7 @@ pub fn exp_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::Float),
-      found: a.type_of(),
+      found: get_type_name(a.clone()),
     });
   }
   Ok(match num_type {
@@ -62,8 +62,8 @@ mod tests {
   #[test]
   fn rejects_non_float_operands_without_mutating_stack() {
     for (value, found) in [
-      (Value::Int16(1), "int16"),
-      (Value::String("invalid".into()), "string"),
+      (Value::Int16(1), "Short"),
+      (Value::String("invalid".into()), "String"),
     ] {
       assert!(matches!(
         exp_values(value.clone(), PrimitiveTypes::Flt, 20),
