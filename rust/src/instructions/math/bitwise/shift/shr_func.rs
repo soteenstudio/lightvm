@@ -16,7 +16,7 @@ use crate::types::expected_category::ExpectedCategory;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
+use crate::utils::expected_type::expected_type;
 #[inline(always)]
 pub fn shr_values(
   a: Value,
@@ -28,14 +28,14 @@ pub fn shr_values(
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::Integer),
-      found: get_type_name(a),
+      found: a.type_of(),
     });
   }
   if !b.is_number() {
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::Integer),
-      found: get_type_name(b),
+      found: b.type_of(),
     });
   }
   for operand in [&a, &b] {
@@ -46,7 +46,7 @@ pub fn shr_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Integer),
-        found: get_type_name(operand.clone()),
+        found: operand.type_of(),
       });
     }
   }
@@ -59,7 +59,7 @@ pub fn shr_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Integer),
-        found: a.type_of(),
+        found: "unknown",
       });
     }
   })
@@ -86,8 +86,8 @@ mod tests {
   #[test]
   fn rejects_float_operands_without_mutating_stack() {
     for (a, b, found) in [
-      (Value::Float32(1.0), Value::Int32(1), "Float"),
-      (Value::Int32(1), Value::Float64(1.0), "Double"),
+      (Value::Float32(1.0), Value::Int32(1), "float32"),
+      (Value::Int32(1), Value::Float64(1.0), "float64"),
     ] {
       assert!(matches!(
         shr_values(a.clone(), b.clone(), PrimitiveTypes::Int, 20),
@@ -112,7 +112,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 17,
         expected: "Integer",
-        found: "String"
+        found: "string"
       })
     ));
     assert!(matches!(
@@ -120,7 +120,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 18,
         expected: "Integer",
-        found: "String"
+        found: "string"
       })
     ));
     let mut stack = Stack::from_vec(vec![Value::Int32(1), invalid]);
@@ -130,7 +130,7 @@ mod tests {
       Err(VMError::TypeMismatch {
         ip: 19,
         expected: "Integer",
-        found: "String"
+        found: "string"
       })
     ));
     assert_eq!(stack, original);

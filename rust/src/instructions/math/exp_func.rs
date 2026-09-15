@@ -16,7 +16,7 @@ use crate::types::expected_category::ExpectedCategory;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
+use crate::utils::expected_type::expected_type;
 #[inline(always)]
 pub fn exp_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value, VMError> {
   if !matches!(
@@ -26,7 +26,7 @@ pub fn exp_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value
     return Err(VMError::TypeMismatch {
       ip,
       expected: expected_type(num_type, ExpectedCategory::Float),
-      found: get_type_name(a),
+      found: a.type_of(),
     });
   }
   Ok(match num_type {
@@ -37,7 +37,7 @@ pub fn exp_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
-        found: a.type_of(),
+        found: "unknown",
       });
     }
   })
@@ -62,8 +62,8 @@ mod tests {
   #[test]
   fn rejects_non_float_operands_without_mutating_stack() {
     for (value, found) in [
-      (Value::Int32(1), "Unknown"),
-      (Value::String("invalid".into()), "String"),
+      (Value::Int16(1), "int16"),
+      (Value::String("invalid".into()), "string"),
     ] {
       assert!(matches!(
         exp_values(value.clone(), PrimitiveTypes::Flt, 20),
@@ -79,6 +79,26 @@ mod tests {
       ));
       assert_eq!(stack, original);
     }
+    let value = Value::Float32(1.0);
+    assert!(matches!(
+      exp_values(value.clone(), PrimitiveTypes::Int, 22),
+      Err(VMError::TypeMismatch {
+        ip: 22,
+        found: "unknown",
+        ..
+      })
+    ));
+    let mut stack = Stack::from_vec(vec![value]);
+    let original = stack.clone();
+    assert!(matches!(
+      exp_func(&mut stack, PrimitiveTypes::Int, 23),
+      Err(VMError::TypeMismatch {
+        ip: 23,
+        found: "unknown",
+        ..
+      })
+    ));
+    assert_eq!(stack, original);
   }
   #[test]
   fn accepts_cross_width_float_operands_and_returns_directive_type() {
