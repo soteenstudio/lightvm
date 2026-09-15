@@ -33,7 +33,7 @@ jobs:
 
       - name: Sync package-lock.json
         run: npm install --package-lock-only --ignore-scripts
-          
+
       - name: Sync Cargo.lock
         run: cargo generate-lockfile
 
@@ -49,15 +49,3 @@ jobs:
           fi
           git commit -m "chore: sync lock files"
           git push origin main
-
-      - name: Create Pull Request
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          base: main
-          commit-message: "chore: sync lock files"
-          title: "chore: sync lock files"
-          body: "Auto-syncing lock files."
-          branch: "sync-lock-files-pr-${{ github.event.pull_request.number }}"
-          delete-branch: true
