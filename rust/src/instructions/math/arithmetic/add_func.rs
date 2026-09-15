@@ -56,6 +56,23 @@ pub fn add_values(
       }
     }
   }
+  if matches!(
+    num_type,
+    PrimitiveTypes::Hlf | PrimitiveTypes::Flt | PrimitiveTypes::Dbl
+  ) {
+    for operand in [&a, &b] {
+      if matches!(
+        operand,
+        &Value::Int16(_) | &Value::Int32(_) | &Value::Int64(_) | &Value::Int128(_)
+      ) {
+        return Err(VMError::TypeMismatch {
+          ip,
+          expected: expected_type(num_type, ExpectedCategory::Float),
+          found: get_type_name(operand.clone()),
+        });
+      }
+    }
+  }
   Ok(match num_type {
     PrimitiveTypes::Sht => Value::Int16(add_i16in(a.as_i16(), b.as_i16())),
     PrimitiveTypes::Int => Value::Int32(add_i32in(a.as_i32(), b.as_i32())),
@@ -89,6 +106,27 @@ pub fn add_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resul
 #[cfg(test)]
 mod tests {
   use super::*;
+  #[test]
+  fn float_directive_rejects_integer_operands_without_mutating_stack() {
+    for (a, b, found) in [
+      (Value::Int32(1), Value::Float32(2.0), "Integer"),
+      (Value::Float64(1.0), Value::Int64(2), "Long"),
+    ] {
+      assert!(matches!(
+        add_values(a.clone(), b.clone(), PrimitiveTypes::Flt, 10),
+        Err(VMError::TypeMismatch { ip: 10, expected: "Float", found: actual })
+          if actual == found
+      ));
+      let mut stack = Stack::from_vec(vec![a, b]);
+      let original = stack.clone();
+      assert!(matches!(
+        add_func(&mut stack, PrimitiveTypes::Flt, 11),
+        Err(VMError::TypeMismatch { ip: 11, expected: "Float", found: actual })
+          if actual == found
+      ));
+      assert_eq!(stack, original);
+    }
+  }
   #[test]
   fn integer_directive_rejects_float_operands_without_mutating_stack() {
     for (a, b, found) in [

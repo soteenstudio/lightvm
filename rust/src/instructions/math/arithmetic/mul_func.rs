@@ -56,6 +56,23 @@ pub fn mul_values(
       }
     }
   }
+  if matches!(
+    num_type,
+    PrimitiveTypes::Hlf | PrimitiveTypes::Flt | PrimitiveTypes::Dbl
+  ) {
+    for operand in [&a, &b] {
+      if matches!(
+        operand,
+        &Value::Int16(_) | &Value::Int32(_) | &Value::Int64(_) | &Value::Int128(_)
+      ) {
+        return Err(VMError::TypeMismatch {
+          ip,
+          expected: expected_type(num_type, ExpectedCategory::Float),
+          found: get_type_name(operand.clone()),
+        });
+      }
+    }
+  }
   Ok(match num_type {
     PrimitiveTypes::Sht => Value::Int16(mul_i16in(a.as_i16(), b.as_i16())),
     PrimitiveTypes::Int => Value::Int32(mul_i32in(a.as_i32(), b.as_i32())),
@@ -92,6 +109,30 @@ pub fn mul_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Resul
 #[cfg(test)]
 mod tests {
   use super::*;
+  #[test]
+  fn float_directive_rejects_integer_operands_without_mutating_stack() {
+    let a = Value::Float64(4.0);
+    let b = Value::Int64(2);
+    assert!(matches!(
+      mul_values(a.clone(), b.clone(), PrimitiveTypes::Dbl, 10),
+      Err(VMError::TypeMismatch {
+        ip: 10,
+        expected: "Double",
+        found: "Long"
+      })
+    ));
+    let mut stack = Stack::from_vec(vec![a, b]);
+    let original = stack.clone();
+    assert!(matches!(
+      mul_func(&mut stack, PrimitiveTypes::Dbl, 11),
+      Err(VMError::TypeMismatch {
+        ip: 11,
+        expected: "Double",
+        found: "Long"
+      })
+    ));
+    assert_eq!(stack, original);
+  }
   #[test]
   fn integer_directive_rejects_float_operands_without_mutating_stack() {
     for (a, b, found) in [
