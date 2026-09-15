@@ -97,7 +97,11 @@ mod tests {
     let value = array(vec![Value::Float32(1.0)]);
     assert!(matches!(
       log2v_values(value.clone(), PrimitiveTypes::Int, 18),
-      Err(VMError::TypeMismatch { ip: 18, expected: "Float", found: "unknown" })
+      Err(VMError::TypeMismatch {
+        ip: 18,
+        expected: "Float",
+        found: "unknown"
+      })
     ));
     let mut stack = Stack::from_vec(vec![value]);
     let original = stack.clone();

@@ -91,7 +91,11 @@ mod tests {
   fn unsupported_directive_reports_unknown_without_mutating_stack() {
     assert!(matches!(
       log10_values(Value::Float32(1.0), PrimitiveTypes::Int, 21),
-      Err(VMError::TypeMismatch { ip: 21, expected: "Float", found: "unknown" })
+      Err(VMError::TypeMismatch {
+        ip: 21,
+        expected: "Float",
+        found: "unknown"
+      })
     ));
     let mut stack = Stack::from_vec(vec![Value::Float32(1.0)]);
     let original = stack.clone();
