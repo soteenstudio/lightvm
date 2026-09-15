@@ -67,6 +67,10 @@ export const sidebarErrorCodes = {
       link: '/id/api-reference/error-codes/lvm016-code',
     },
     {
+      text: 'LVM017 (Nilai Tidak Valid)',
+      link: '/id/api-reference/error-codes/lvm017-code',
+    },
+    {
       text: 'LVM500 (Error Sistem)',
       link: '/id/api-reference/error-codes/lvm500-code',
     },
