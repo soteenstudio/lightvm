@@ -12,11 +12,10 @@ use crate::instructions::math::vector::arithmetic::powiv::{
   powiv_f16in::powiv_f16in, powiv_f32in::powiv_f32in, powiv_f64in::powiv_f64in,
 };
 use crate::modules::vmerror::VMError;
-use crate::types::expected_category::ExpectedCategory;
 use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
-use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
+use crate::utils::get_type_name::get_type_name;
 fn expected_powiv_type(num_type: PrimitiveTypes) -> &'static str {
   match num_type {
     PrimitiveTypes::Hlf => "Float16/Int16",
@@ -49,8 +48,23 @@ pub fn powiv_values(
       found: "Array",
     });
   }
-  for value in arr_a.iter().chain(arr_b.iter()) {
-    if !value.is_number() {
+  for value in arr_a.iter() {
+    if !matches!(
+      value,
+      Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
+    ) {
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: expected_powiv_type(num_type),
+        found: get_type_name(value.clone()),
+      });
+    }
+  }
+  for value in arr_b.iter() {
+    if !matches!(
+      value,
+      Value::Int16(_) | Value::Int32(_) | Value::Int64(_) | Value::Int128(_)
+    ) {
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_powiv_type(num_type),
@@ -66,7 +80,7 @@ pub fn powiv_values(
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_powiv_type(num_type),
-        found: expected_type(num_type, ExpectedCategory::All),
+        found: "unknown",
       });
     }
   })
@@ -97,6 +111,35 @@ mod tests {
     Value::Array(Arc::new(values))
   }
   #[test]
+  fn validates_operand_families_and_accepts_cross_width_values() {
+    assert!(
+      powiv_values(
+        array(vec![Value::Float16(half::f16::from_f32(2.0))]),
+        array(vec![Value::Int64(3)]),
+        PrimitiveTypes::Flt,
+        24
+      )
+      .is_ok()
+    );
+    for (base, exponent, found) in [
+      (Value::Int32(2), Value::Int32(3), "Integer"),
+      (Value::Float32(2.0), Value::Float64(3.0), "Double"),
+      (Value::Float32(2.0), Value::Bool(false), "Boolean"),
+    ] {
+      let left = array(vec![base]);
+      let right = array(vec![exponent]);
+      assert!(matches!(
+        powiv_values(left.clone(), right.clone(), PrimitiveTypes::Flt, 25),
+        Err(VMError::TypeMismatch { ip: 25, expected: "Float32/Int32", found: actual })
+          if actual == found
+      ));
+      let mut stack = Stack::from_vec(vec![left, right]);
+      let original = stack.clone();
+      assert!(powiv_func(&mut stack, PrimitiveTypes::Flt, 26).is_err());
+      assert_eq!(stack, original);
+    }
+  }
+  #[test]
   fn reports_type_mismatch_without_mutating_stack() {
     let mut stack = Stack::from_vec(vec![Value::Bool(false), array(vec![Value::Int32(1)])]);
     let original = stack.clone();
@@ -110,7 +153,7 @@ mod tests {
   fn validates_elements_and_directives() {
     assert!(
       powiv_values(
-        array(vec![Value::Int32(1)]),
+        array(vec![Value::Float32(1.0)]),
         array(vec![Value::Int32(1)]),
         PrimitiveTypes::Flt,
         11

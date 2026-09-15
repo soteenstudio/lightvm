@@ -31,6 +31,19 @@ pub fn negv_values(a_val: Value, num_type: PrimitiveTypes, ip: usize) -> Result<
         found: get_type_name(value.clone()),
       });
     }
+    if matches!(
+      num_type,
+      PrimitiveTypes::Sht | PrimitiveTypes::Int | PrimitiveTypes::Lng | PrimitiveTypes::Oct
+    ) && matches!(
+      value,
+      Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
+    ) {
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: expected_type(num_type, ExpectedCategory::Integer),
+        found: get_type_name(value.clone()),
+      });
+    }
   }
   Ok(match num_type {
     PrimitiveTypes::Sht => Value::Array(negv_i16in(&arr_a)),
@@ -44,7 +57,7 @@ pub fn negv_values(a_val: Value, num_type: PrimitiveTypes, ip: usize) -> Result<
       return Err(VMError::TypeMismatch {
         ip,
         expected: expected_type(num_type, ExpectedCategory::All),
-        found: num_type.directive(),
+        found: "unknown",
       });
     }
   })
@@ -65,6 +78,22 @@ mod tests {
   use std::sync::Arc;
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
+  }
+  #[test]
+  fn rejects_float_elements_for_integer_directives() {
+    let value = array(vec![Value::Float32(1.0)]);
+    assert!(matches!(
+      negv_values(value.clone(), PrimitiveTypes::Int, 24),
+      Err(VMError::TypeMismatch {
+        ip: 24,
+        expected: "Integer",
+        found: "Float"
+      })
+    ));
+    let mut stack = Stack::from_vec(vec![value]);
+    let original = stack.clone();
+    assert!(negv_func(&mut stack, PrimitiveTypes::Int, 25).is_err());
+    assert_eq!(stack, original);
   }
   #[test]
   fn reports_type_mismatch_without_mutating_stack() {
