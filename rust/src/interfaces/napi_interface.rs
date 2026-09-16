@@ -294,6 +294,42 @@ impl NodeLightVM {
       )))
     })
   }
+  /// Returns persisted paniclog records.
+  ///
+  /// # Examples
+  /// ```javascript
+  /// const vm = new LightVM({ caps: [2] }); // Capability.Debug
+  /// const records = vm.paniclog();
+  /// ```
+  #[cfg(not(target_arch = "wasm32"))]
+  #[napi]
+  pub fn paniclog(&self) -> Result<serde_json::Value> {
+    let records = self
+      .inner
+      .list_paniclog_internal()
+      .map_err(into_napi_error)?;
+    serde_json::from_str(&records).map_err(|error| {
+      into_napi_error(system_error(format!(
+        "Failed to parse paniclog: {}",
+        error
+      )))
+    })
+  }
+  /// Clears all persisted paniclog records.
+  ///
+  /// # Examples
+  /// ```javascript
+  /// const vm = new LightVM({ caps: [2] }); // Capability.Debug
+  /// vm.clearPaniclog();
+  /// ```
+  #[cfg(not(target_arch = "wasm32"))]
+  #[napi(js_name = "clearPaniclog")]
+  pub fn clear_paniclog(&self) -> Result<()> {
+    self
+      .inner
+      .clear_paniclog_internal()
+      .map_err(into_napi_error)
+  }
   #[napi]
   pub fn halt(&mut self) -> Result<()> {
     self.inner.halt_internal().map_err(into_napi_error)
@@ -606,6 +642,8 @@ impl NodeLightVM {
 #[cfg(test)]
 mod tests {
   use super::*;
+  #[cfg(not(target_arch = "wasm32"))]
+  use crate::modules::krates::paniclog::{self, SafeState};
   use crate::types::js::js_error_options::JSErrorOptions;
   #[test]
   fn unknown_capability_uses_vm_error_display() {
@@ -724,6 +762,38 @@ mod tests {
       NodeLightVM::napi_parse_ltc("stop;".to_string()).expect("expected valid LTC"),
       r#"[["stop"]]"#
     );
+  }
+  #[cfg(not(target_arch = "wasm32"))]
+  #[test]
+  fn paniclog_requires_debug_capability() {
+    let vm = NodeLightVM::napi_new(VmNapiConfig::default()).expect("expected a VM");
+    let error = vm.paniclog().expect_err("expected a capability error");
+    assert!(error.reason.contains("Debug"));
+    let error = vm
+      .clear_paniclog()
+      .expect_err("expected a capability error");
+    assert!(error.reason.contains("Debug"));
+  }
+  #[cfg(not(target_arch = "wasm32"))]
+  #[test]
+  fn paniclog_returns_records_and_clears_them() {
+    let vm = NodeLightVM::napi_new(VmNapiConfig {
+      caps_raw: vec![2],
+      ..Default::default()
+    })
+    .expect("expected a VM");
+    vm.clear_paniclog().unwrap();
+    paniclog::capture(
+      "interface_test",
+      "node",
+      SafeState::new("Idle".into(), 0, 0, 0, 0),
+    );
+    let records = vm.paniclog().unwrap();
+    assert!(records.is_array());
+    assert_eq!(records.as_array().unwrap().len(), 1);
+    assert_eq!(records[0]["context"], "node");
+    vm.clear_paniclog().unwrap();
+    assert_eq!(vm.paniclog().unwrap(), serde_json::json!([]));
   }
   #[test]
   fn diagnostic_links_can_be_configured_and_updated() {
