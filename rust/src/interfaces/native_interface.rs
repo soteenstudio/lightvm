@@ -423,6 +423,45 @@ impl LightVM {
       Err(_) => serde_json::Value::Null,
     }
   }
+  /// Returns the persisted paniclog records.
+  ///
+  /// # Examples
+  /// ```rust,ignore
+  /// let vm = LightVM::new(VmConfig {
+  ///   caps: vec![Capability::Debug],
+  ///   ..Default::default()
+  /// });
+  /// let records = vm.paniclog();
+  /// ```
+  #[cfg(not(target_arch = "wasm32"))]
+  pub fn paniclog(&self) -> serde_json::Value {
+    let error_response = |message: String| {
+      serde_json::json!({
+        "status": "error",
+        "message": message
+      })
+    };
+    match self.list_paniclog_internal() {
+      Ok(records) => {
+        serde_json::from_str(&records).unwrap_or_else(|error| error_response(error.to_string()))
+      }
+      Err(error) => error_response(error.to_string()),
+    }
+  }
+  /// Clears all persisted paniclog records.
+  ///
+  /// # Examples
+  /// ```rust,ignore
+  /// let vm = LightVM::new(VmConfig {
+  ///   caps: vec![Capability::Debug],
+  ///   ..Default::default()
+  /// });
+  /// vm.clear_paniclog()?;
+  /// ```
+  #[cfg(not(target_arch = "wasm32"))]
+  pub fn clear_paniclog(&self) -> Result<(), VMError> {
+    self.clear_paniclog_internal()
+  }
   pub fn embedded(&mut self) -> serde_json::Value {
     let error_response = |error: VMError| {
       serde_json::json!({
@@ -619,6 +658,8 @@ impl LightVMTools {
 #[cfg(test)]
 mod tests {
   use super::*;
+  #[cfg(not(target_arch = "wasm32"))]
+  use crate::modules::krates::paniclog::{self, SafeState};
   use crate::types::{instructions::Instructions, vmconfig::VmConfig};
   use serde_json::json;
   use std::sync::{
@@ -740,6 +781,35 @@ mod tests {
     let info = vm.inspect();
     assert!(info.is_object());
     assert!(info.get("state").is_some());
+  }
+  #[cfg(not(target_arch = "wasm32"))]
+  #[test]
+  fn paniclog_requires_debug_capability() {
+    let vm = LightVM::new(VmConfig::default());
+    let result = vm.paniclog();
+    assert_eq!(result["status"], "error");
+    assert!(result["message"].as_str().unwrap().contains("Debug"));
+    assert!(vm.clear_paniclog().is_err());
+  }
+  #[cfg(not(target_arch = "wasm32"))]
+  #[test]
+  fn paniclog_returns_records_and_clears_them() {
+    let vm = LightVM::new(VmConfig {
+      caps: vec![Capability::Debug],
+      ..Default::default()
+    });
+    vm.clear_paniclog().unwrap();
+    paniclog::capture(
+      "interface_test",
+      "native",
+      SafeState::new("Idle".into(), 0, 0, 0, 0),
+    );
+    let records = vm.paniclog();
+    assert!(records.is_array());
+    assert_eq!(records.as_array().unwrap().len(), 1);
+    assert_eq!(records[0]["category"], "interface_test");
+    vm.clear_paniclog().unwrap();
+    assert_eq!(vm.paniclog(), serde_json::json!([]));
   }
   #[test]
   fn tools_exists() {
