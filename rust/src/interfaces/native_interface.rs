@@ -43,6 +43,14 @@ fn parse_paniclog(records: &str) -> Result<serde_json::Value, VMError> {
   })
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+fn report_paniclog_error<T>(result: Result<T, VMError>) -> Result<T, VMError> {
+  result.map_err(|error| {
+    eprintln!("{}", error);
+    error
+  })
+}
+
 pub struct ExportedHandle {
   name: String,
   is_function: bool,
@@ -443,8 +451,11 @@ impl LightVM {
   /// ```
   #[cfg(not(target_arch = "wasm32"))]
   pub fn paniclog(&self) -> Result<serde_json::Value, VMError> {
-    let records = self.list_paniclog_internal()?;
-    parse_paniclog(&records)
+    report_paniclog_error(
+      self
+        .list_paniclog_internal()
+        .and_then(|records| parse_paniclog(&records)),
+    )
   }
   /// Clears all persisted paniclog records.
   ///
@@ -458,7 +469,7 @@ impl LightVM {
   /// ```
   #[cfg(not(target_arch = "wasm32"))]
   pub fn clear_paniclog(&self) -> Result<(), VMError> {
-    self.clear_paniclog_internal()
+    report_paniclog_error(self.clear_paniclog_internal())
   }
   pub fn embedded(&mut self) -> serde_json::Value {
     let error_response = |error: VMError| {
@@ -787,15 +798,30 @@ mod tests {
     let error = vm.paniclog().expect_err("expected a capability error");
     assert!(error.to_string().contains("Debug"));
     assert!(!error.to_string().contains(r#"{"status":"error""#));
-    assert!(vm.clear_paniclog().is_err());
+    let error = vm
+      .clear_paniclog()
+      .expect_err("expected a capability error");
+    assert!(error.to_string().contains("Debug"));
+    assert!(!error.to_string().contains(r#"{"status":"error""#));
   }
   #[cfg(not(target_arch = "wasm32"))]
   #[test]
   fn invalid_paniclog_json_is_a_readable_error() {
-    let message = parse_paniclog("invalid")
+    let message = report_paniclog_error(parse_paniclog("invalid"))
       .expect_err("expected a decoding error")
       .to_string();
     assert!(message.contains("Failed to parse paniclog"));
+    assert!(!message.contains(r#"{"status":"error""#));
+  }
+  #[cfg(not(target_arch = "wasm32"))]
+  #[test]
+  fn paniclog_storage_failure_is_a_readable_error() {
+    let message = report_paniclog_error::<serde_json::Value>(Err(VMError::SystemError(
+      "Paniclog unavailable".into(),
+    )))
+    .expect_err("expected a storage error")
+    .to_string();
+    assert!(message.contains("Paniclog unavailable"));
     assert!(!message.contains(r#"{"status":"error""#));
   }
   #[cfg(not(target_arch = "wasm32"))]
