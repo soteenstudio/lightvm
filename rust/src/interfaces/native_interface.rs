@@ -35,6 +35,14 @@ use std::collections::HashSet;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use unescape::unescape;
+
+#[cfg(not(target_arch = "wasm32"))]
+fn parse_paniclog(records: &str) -> Result<serde_json::Value, VMError> {
+  serde_json::from_str(records).map_err(|error| {
+    VMError::SystemError(format!("Failed to parse paniclog: {}", error).into())
+  })
+}
+
 pub struct ExportedHandle {
   name: String,
   is_function: bool,
@@ -434,19 +442,9 @@ impl LightVM {
   /// let records = vm.paniclog();
   /// ```
   #[cfg(not(target_arch = "wasm32"))]
-  pub fn paniclog(&self) -> serde_json::Value {
-    let error_response = |message: String| {
-      serde_json::json!({
-        "status": "error",
-        "message": message
-      })
-    };
-    match self.list_paniclog_internal() {
-      Ok(records) => {
-        serde_json::from_str(&records).unwrap_or_else(|error| error_response(error.to_string()))
-      }
-      Err(error) => error_response(error.to_string()),
-    }
+  pub fn paniclog(&self) -> Result<serde_json::Value, VMError> {
+    let records = self.list_paniclog_internal()?;
+    parse_paniclog(&records)
   }
   /// Clears all persisted paniclog records.
   ///
@@ -786,10 +784,19 @@ mod tests {
   #[test]
   fn paniclog_requires_debug_capability() {
     let vm = LightVM::new(VmConfig::default());
-    let result = vm.paniclog();
-    assert_eq!(result["status"], "error");
-    assert!(result["message"].as_str().unwrap().contains("Debug"));
+    let error = vm.paniclog().expect_err("expected a capability error");
+    assert!(error.to_string().contains("Debug"));
+    assert!(!error.to_string().contains(r#"{"status":"error""#));
     assert!(vm.clear_paniclog().is_err());
+  }
+  #[cfg(not(target_arch = "wasm32"))]
+  #[test]
+  fn invalid_paniclog_json_is_a_readable_error() {
+    let message = parse_paniclog("invalid")
+      .expect_err("expected a decoding error")
+      .to_string();
+    assert!(message.contains("Failed to parse paniclog"));
+    assert!(!message.contains(r#"{"status":"error""#));
   }
   #[cfg(not(target_arch = "wasm32"))]
   #[test]
@@ -804,12 +811,12 @@ mod tests {
       "native",
       SafeState::new("Idle".into(), 0, 0, 0, 0),
     );
-    let records = vm.paniclog();
+    let records = vm.paniclog().unwrap();
     assert!(records.is_array());
     assert_eq!(records.as_array().unwrap().len(), 1);
     assert_eq!(records[0]["category"], "interface_test");
     vm.clear_paniclog().unwrap();
-    assert_eq!(vm.paniclog(), serde_json::json!([]));
+    assert_eq!(vm.paniclog().unwrap(), serde_json::json!([]));
   }
   #[test]
   fn tools_exists() {

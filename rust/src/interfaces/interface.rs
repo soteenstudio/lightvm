@@ -540,8 +540,15 @@ impl LightVM {
   }
   #[cfg(not(target_arch = "wasm32"))]
   pub fn list_paniclog_internal(&self) -> Result<String, VMError> {
+    self.list_paniclog_with(paniclog::export)
+  }
+  #[cfg(not(target_arch = "wasm32"))]
+  fn list_paniclog_with(
+    &self,
+    export: impl FnOnce() -> std::io::Result<String>,
+  ) -> Result<String, VMError> {
     self.require(Capability::Debug)?;
-    paniclog::export().map_err(|_| VMError::SystemError("Paniclog unavailable".into()))
+    export().map_err(|_| VMError::SystemError("Paniclog unavailable".into()))
   }
   #[cfg(not(target_arch = "wasm32"))]
   pub fn clear_paniclog_internal(&self) -> Result<(), VMError> {
@@ -959,6 +966,17 @@ mod tests {
     let vm = make_vm(vec![Capability::Debug]);
     vm.clear_paniclog_internal().unwrap();
     assert_eq!(vm.list_paniclog_internal().unwrap(), "[]");
+  }
+  #[cfg(not(target_arch = "wasm32"))]
+  #[test]
+  fn paniclog_storage_failure_is_readable() {
+    let vm = make_vm(vec![Capability::Debug]);
+    let error = vm
+      .list_paniclog_with(|| Err(std::io::Error::other("storage unavailable")))
+      .expect_err("expected a storage error");
+    let message = error.to_string();
+    assert!(message.contains("Paniclog unavailable"));
+    assert!(!message.contains(r#"{"status":"error""#));
   }
   #[test]
   fn optimize_bytecode_internal_succeeds_with_control_capability() {
