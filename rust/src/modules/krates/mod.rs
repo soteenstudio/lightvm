@@ -8,9 +8,10 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-// TODO: Panic log
 pub(crate) mod gas_monitor;
 pub(crate) mod has_nightly_opcodes;
+#[cfg(not(target_arch = "wasm32"))]
+pub(crate) mod paniclog;
 pub(crate) mod validate_bytecode;
 pub(crate) mod validate_security;
 pub(crate) mod validate_vars;
