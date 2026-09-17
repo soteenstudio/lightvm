@@ -32,6 +32,15 @@ fn into_napi_error(vm_error: VMError) -> Error {
 fn system_error(message: impl Into<smol_str::SmolStr>) -> VMError {
   VMError::SystemError(message.into())
 }
+#[cfg(not(target_arch = "wasm32"))]
+fn parse_paniclog(records: &str) -> Result<serde_json::Value> {
+  serde_json::from_str(records).map_err(|error| {
+    into_napi_error(system_error(format!(
+      "Failed to parse paniclog: {}",
+      error
+    )))
+  })
+}
 #[napi(js_name = "LightVM")]
 pub struct NodeLightVM {
   inner: LightVM,
@@ -308,12 +317,7 @@ impl NodeLightVM {
       .inner
       .list_paniclog_internal()
       .map_err(into_napi_error)?;
-    serde_json::from_str(&records).map_err(|error| {
-      into_napi_error(system_error(format!(
-        "Failed to parse paniclog: {}",
-        error
-      )))
-    })
+    parse_paniclog(&records)
   }
   /// Clears all persisted paniclog records.
   ///
@@ -773,6 +777,12 @@ mod tests {
       .clear_paniclog()
       .expect_err("expected a capability error");
     assert!(error.reason.contains("Debug"));
+  }
+  #[cfg(not(target_arch = "wasm32"))]
+  #[test]
+  fn malformed_paniclog_json_returns_napi_error() {
+    let error = parse_paniclog("invalid").expect_err("expected a decoding error");
+    assert!(error.reason.contains("Failed to parse paniclog"));
   }
   #[cfg(not(target_arch = "wasm32"))]
   #[test]
