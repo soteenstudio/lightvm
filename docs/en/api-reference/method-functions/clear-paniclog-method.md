@@ -1,10 +1,8 @@
 # Clear Paniclog Method
-
-The `LightVM.clearPaniclog()` method removes all persisted paniclog records. This API requires `Capability.Debug` and is unavailable in WebAssembly builds.
+The `clearPaniclog` method removes all persisted panic records.
 
 ## Using TypeScript
-
-The TypeScript wrapper calls the Node N-API `clearPaniclog()` method. It returns normally after the records are removed and follows the N-API behavior by throwing an error on failure.
+For **TypeScript**, call `.clearPaniclog()` on a VM configured with the `Debug` capability. The method returns after the records are removed and throws an error if the operation fails.
 
 ::: code-group
 
@@ -13,8 +11,7 @@ The TypeScript wrapper calls the Node N-API `clearPaniclog()` method. It returns
 :::
 
 ## Using Rust
-
-The equivalent native Rust method is `LightVM::clear_paniclog()`, which returns `Result<(), VMError>`. On failure, the native interface prints the formatted `VMError` and returns the same error.
+In **Rust**, call `.clear_paniclog()` on a VM configured with the `Debug` capability. The method returns `Result<(), VMError>`.
 
 ::: code-group
 
@@ -22,10 +19,10 @@ The equivalent native Rust method is `LightVM::clear_paniclog()`, which returns 
 
 :::
 
-## Using Node N-API
-
-The Node N-API `clearPaniclog()` method removes the persisted records on success and throws an N-API error on authorization or storage failure.
-
 ::: info
-**Capability Required**: `Capability.Debug`
+**Capability Required**: `Debug`
+:::
+
+::: warning
+The `.clearPaniclog()` and `.clear_paniclog()` methods are unavailable in WebAssembly builds.
 :::
