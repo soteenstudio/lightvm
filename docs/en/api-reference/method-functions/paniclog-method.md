@@ -1,12 +1,8 @@
 # Paniclog Method
-
-The `LightVM.paniclog()` method returns the persisted paniclog records as a structured array. Each record contains bounded diagnostic context and VM state; avoid placing sensitive values in diagnostic context.
-
-This API requires `Capability.Debug` and is unavailable in WebAssembly builds.
+The `paniclog` method returns persisted panic records as a structured array. Each record contains bounded diagnostic context and VM state. Avoid placing sensitive values in the diagnostic context.
 
 ## Using TypeScript
-
-The TypeScript wrapper calls the Node N-API `paniclog()` method. It returns the records array on success and follows the N-API behavior by throwing an error on failure.
+For **TypeScript**, call `.paniclog()` on a VM configured with the `Debug` capability. The method returns the records array and throws an error if the records cannot be retrieved or parsed.
 
 ::: code-group
 
@@ -15,8 +11,7 @@ The TypeScript wrapper calls the Node N-API `paniclog()` method. It returns the 
 :::
 
 ## Using Rust
-
-The native Rust `LightVM::paniclog()` method returns `Result<serde_json::Value, VMError>`. The JSON value is an array on success. On failure, the native interface prints the formatted `VMError` and returns the same error.
+In **Rust**, call `.paniclog()` on a VM configured with the `Debug` capability. The method returns `Result<serde_json::Value, VMError>`, where the JSON value is an array of panic records.
 
 ::: code-group
 
@@ -24,10 +19,10 @@ The native Rust `LightVM::paniclog()` method returns `Result<serde_json::Value, 
 
 :::
 
-## Using Node N-API
-
-The Node N-API `paniclog()` method returns the structured records array on success and throws an N-API error on authorization, storage, validation, or parsing failure.
-
 ::: info
-**Capability Required**: `Capability.Debug`
+**Capability Required**: `Debug`
+:::
+
+::: warning
+The `.paniclog()` method is unavailable in WebAssembly builds.
 :::

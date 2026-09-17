@@ -1,12 +1,8 @@
 # Metode Paniclog
-
-Metode `LightVM.paniclog()` mengembalikan catatan paniclog yang tersimpan sebagai array terstruktur. Setiap catatan berisi konteks diagnostik dan status VM yang dibatasi; hindari memasukkan nilai sensitif ke dalam konteks diagnostik.
-
-API ini membutuhkan `Capability.Debug` dan tidak tersedia dalam build WebAssembly.
+Metode `paniclog` mengembalikan catatan panic yang tersimpan sebagai array terstruktur. Setiap catatan berisi konteks diagnostik dan status VM yang dibatasi. Hindari memasukkan nilai sensitif ke dalam konteks diagnostik.
 
 ## Menggunakan TypeScript
-
-Wrapper TypeScript memanggil metode `paniclog()` Node N-API. Metode ini mengembalikan array catatan saat berhasil dan mengikuti perilaku N-API dengan melempar error saat gagal.
+Untuk **TypeScript**, panggil `.paniclog()` pada VM yang dikonfigurasi dengan kapabilitas `Debug`. Metode ini mengembalikan array catatan dan melempar error jika catatan tidak dapat diambil atau diuraikan.
 
 ::: code-group
 
@@ -15,8 +11,7 @@ Wrapper TypeScript memanggil metode `paniclog()` Node N-API. Metode ini mengemba
 :::
 
 ## Menggunakan Rust
-
-Metode native Rust `LightVM::paniclog()` mengembalikan `Result<serde_json::Value, VMError>`. Nilai JSON tersebut berupa array saat berhasil. Saat gagal, antarmuka native mencetak `VMError` yang telah diformat dan mengembalikan error yang sama.
+Dalam **Rust**, panggil `.paniclog()` pada VM yang dikonfigurasi dengan kapabilitas `Debug`. Metode ini mengembalikan `Result<serde_json::Value, VMError>`, dengan nilai JSON berupa array catatan panic.
 
 ::: code-group
 
@@ -24,10 +19,10 @@ Metode native Rust `LightVM::paniclog()` mengembalikan `Result<serde_json::Value
 
 :::
 
-## Menggunakan Node N-API
-
-Metode `paniclog()` Node N-API mengembalikan array catatan terstruktur saat berhasil dan melempar error N-API saat otorisasi, penyimpanan, validasi, atau penguraian gagal.
-
 ::: info
-**Kapabilitas yang Dibutuhkan**: `Capability.Debug`
+**Kapabilitas yang Dibutuhkan**: `Debug`
+:::
+
+::: warning
+Metode `.paniclog()` tidak tersedia dalam build WebAssembly.
 :::

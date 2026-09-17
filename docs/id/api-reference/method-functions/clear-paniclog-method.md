@@ -1,10 +1,8 @@
 # Metode Clear Paniclog
-
-Metode `LightVM.clearPaniclog()` menghapus semua catatan paniclog yang tersimpan. API ini membutuhkan `Capability.Debug` dan tidak tersedia dalam build WebAssembly.
+Metode `clearPaniclog` menghapus semua catatan panic yang tersimpan.
 
 ## Menggunakan TypeScript
-
-Wrapper TypeScript memanggil metode `clearPaniclog()` Node N-API. Metode ini kembali secara normal setelah catatan dihapus dan mengikuti perilaku N-API dengan melempar error saat gagal.
+Untuk **TypeScript**, panggil `.clearPaniclog()` pada VM yang dikonfigurasi dengan kapabilitas `Debug`. Metode ini selesai setelah catatan dihapus dan melempar error jika operasi gagal.
 
 ::: code-group
 
@@ -13,8 +11,7 @@ Wrapper TypeScript memanggil metode `clearPaniclog()` Node N-API. Metode ini kem
 :::
 
 ## Menggunakan Rust
-
-Metode native Rust yang setara adalah `LightVM::clear_paniclog()`, yang mengembalikan `Result<(), VMError>`. Saat gagal, antarmuka native mencetak `VMError` yang telah diformat dan mengembalikan error yang sama.
+Dalam **Rust**, panggil `.clear_paniclog()` pada VM yang dikonfigurasi dengan kapabilitas `Debug`. Metode ini mengembalikan `Result<(), VMError>`.
 
 ::: code-group
 
@@ -22,10 +19,10 @@ Metode native Rust yang setara adalah `LightVM::clear_paniclog()`, yang mengemba
 
 :::
 
-## Menggunakan Node N-API
-
-Metode `clearPaniclog()` Node N-API menghapus catatan yang tersimpan saat berhasil dan melempar error N-API saat otorisasi atau penyimpanan gagal.
-
 ::: info
-**Kapabilitas yang Dibutuhkan**: `Capability.Debug`
+**Kapabilitas yang Dibutuhkan**: `Debug`
+:::
+
+::: warning
+Metode `.clearPaniclog()` dan `.clear_paniclog()` tidak tersedia dalam build WebAssembly.
 :::
