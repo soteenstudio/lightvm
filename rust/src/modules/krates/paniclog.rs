@@ -23,6 +23,10 @@ const MAX_STATE_LEN: usize = 16;
 static SEQUENCE: AtomicU64 = AtomicU64::new(1);
 static STORE_LOCK: Mutex<()> = Mutex::new(());
 static STORE_PATH: OnceLock<PathBuf> = OnceLock::new();
+/// Serializes tests that exercise the shared, process-wide paniclog store so
+/// concurrent test threads don't observe each other's records or clears.
+#[cfg(test)]
+pub(crate) static TEST_SERIAL_LOCK: Mutex<()> = Mutex::new(());
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct PanicRecord {

@@ -962,6 +962,9 @@ mod tests {
   #[cfg(not(target_arch = "wasm32"))]
   #[test]
   fn paniclog_can_be_exported_and_cleared_with_debug_capability() {
+    let _guard = paniclog::TEST_SERIAL_LOCK
+      .lock()
+      .unwrap_or_else(|poisoned| poisoned.into_inner());
     let vm = make_vm(vec![Capability::Debug]);
     vm.clear_paniclog_internal().unwrap();
     assert_eq!(vm.list_paniclog_internal().unwrap(), "[]");
@@ -1011,6 +1014,10 @@ mod tests {
     use crate::types::{
       compile_config::CompileConfig, file_type::FileType, target_arch::TargetArch,
     };
+    #[cfg(not(target_arch = "wasm32"))]
+    let _guard = paniclog::TEST_SERIAL_LOCK
+      .lock()
+      .unwrap_or_else(|poisoned| poisoned.into_inner());
     let mut vm = make_vm(vec![Capability::Control]);
     vm.bytecode = vec![Instructions::Push(crate::types::value::Value::Float64(
       42.0,
@@ -1041,6 +1048,9 @@ mod tests {
     use crate::types::{
       compile_config::CompileConfig, file_type::FileType, target_arch::TargetArch,
     };
+    let _guard = paniclog::TEST_SERIAL_LOCK
+      .lock()
+      .unwrap_or_else(|poisoned| poisoned.into_inner());
     let mut vm = make_vm(vec![Capability::Control, Capability::Debug]);
     vm.clear_paniclog_internal().unwrap();
     vm.bytecode = vec![Instructions::Push(Value::Float64(42.0))];
