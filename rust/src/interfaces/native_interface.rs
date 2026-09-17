@@ -32,16 +32,14 @@ use ahash::AHashMap;
 use half::f16;
 use smol_str::SmolStr;
 use std::collections::HashSet;
-use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
 use unescape::unescape;
-
 #[cfg(not(target_arch = "wasm32"))]
 fn parse_paniclog(records: &str) -> Result<serde_json::Value, VMError> {
   serde_json::from_str(records)
     .map_err(|error| VMError::SystemError(format!("Failed to parse paniclog: {}", error).into()))
 }
-
 #[cfg(not(target_arch = "wasm32"))]
 fn report_paniclog_error<T>(result: Result<T, VMError>) -> Result<T, VMError> {
   result.map_err(|error| {
@@ -49,7 +47,6 @@ fn report_paniclog_error<T>(result: Result<T, VMError>) -> Result<T, VMError> {
     error
   })
 }
-
 pub struct ExportedHandle {
   name: String,
   is_function: bool,
@@ -671,8 +668,8 @@ mod tests {
   use crate::types::{instructions::Instructions, vmconfig::VmConfig};
   use serde_json::json;
   use std::sync::{
-    atomic::{AtomicBool, Ordering},
     Arc, Mutex,
+    atomic::{AtomicBool, Ordering},
   };
   #[test]
   fn new_creates_vm() {
@@ -806,17 +803,17 @@ mod tests {
   #[cfg(not(target_arch = "wasm32"))]
   #[test]
   fn invalid_paniclog_json_returns_a_readable_error() {
-    let error = report_paniclog_error(parse_paniclog("invalid"))
-      .expect_err("expected a decoding error");
+    let error =
+      report_paniclog_error(parse_paniclog("invalid")).expect_err("expected a decoding error");
     assert!(error.to_string().contains("Failed to parse paniclog"));
     assert!(!error.to_string().contains(r#"{"status":"error""#));
   }
   #[cfg(not(target_arch = "wasm32"))]
   #[test]
   fn paniclog_storage_failure_returns_a_readable_error() {
-    let error = report_paniclog_error::<serde_json::Value>(Err(
-      VMError::SystemError("Paniclog unavailable".into()),
-    ))
+    let error = report_paniclog_error::<serde_json::Value>(Err(VMError::SystemError(
+      "Paniclog unavailable".into(),
+    )))
     .expect_err("expected a storage error");
     assert!(error.to_string().contains("Paniclog unavailable"));
     assert!(!error.to_string().contains(r#"{"status":"error""#));

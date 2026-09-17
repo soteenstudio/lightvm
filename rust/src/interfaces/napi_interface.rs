@@ -34,12 +34,8 @@ fn system_error(message: impl Into<smol_str::SmolStr>) -> VMError {
 }
 #[cfg(not(target_arch = "wasm32"))]
 fn parse_paniclog(records: &str) -> Result<serde_json::Value> {
-  serde_json::from_str(records).map_err(|error| {
-    into_napi_error(system_error(format!(
-      "Failed to parse paniclog: {}",
-      error
-    )))
-  })
+  serde_json::from_str(records)
+    .map_err(|error| into_napi_error(system_error(format!("Failed to parse paniclog: {}", error))))
 }
 #[napi(js_name = "LightVM")]
 pub struct NodeLightVM {

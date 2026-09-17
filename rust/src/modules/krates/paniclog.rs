@@ -14,18 +14,15 @@ use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Mutex, OnceLock};
-
 const FORMAT_VERSION: u8 = 1;
 const MAX_RECORDS: usize = 8;
 const MAX_FILE_SIZE: u64 = 32 * 1024;
 const MAX_CATEGORY_LEN: usize = 48;
 const MAX_CONTEXT_LEN: usize = 256;
 const MAX_STATE_LEN: usize = 16;
-
 static SEQUENCE: AtomicU64 = AtomicU64::new(1);
 static STORE_LOCK: Mutex<()> = Mutex::new(());
 static STORE_PATH: OnceLock<PathBuf> = OnceLock::new();
-
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct PanicRecord {
@@ -37,14 +34,12 @@ pub(crate) struct PanicRecord {
   state: SafeState,
   integrity: String,
 }
-
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 struct SourceLocation {
   file: String,
   line: u32,
 }
-
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct SafeState {
@@ -54,14 +49,12 @@ pub(crate) struct SafeState {
   export_count: usize,
   listener_count: usize,
 }
-
 #[derive(Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 struct PanicFile {
   format_version: u8,
   records: Vec<PanicRecord>,
 }
-
 impl SafeState {
   pub(crate) fn new(
     state: String,
@@ -79,7 +72,6 @@ impl SafeState {
     }
   }
 }
-
 pub(crate) fn capture(category: &str, context: &str, state: SafeState) {
   let _ = std::panic::catch_unwind(|| {
     let mut record = PanicRecord {
@@ -95,16 +87,13 @@ pub(crate) fn capture(category: &str, context: &str, state: SafeState) {
     let _ = append_at(store_path(), record);
   });
 }
-
 pub(crate) fn list() -> io::Result<Vec<PanicRecord>> {
   read_at(store_path())
 }
-
 pub(crate) fn export() -> io::Result<String> {
   let records = list()?;
   serde_json::to_string(&records).map_err(invalid_data)
 }
-
 pub(crate) fn clear() -> io::Result<()> {
   let _guard = STORE_LOCK
     .lock()
@@ -115,7 +104,6 @@ pub(crate) fn clear() -> io::Result<()> {
     Err(error) => Err(error),
   }
 }
-
 fn store_path() -> &'static Path {
   STORE_PATH
     .get_or_init(|| {
@@ -123,7 +111,6 @@ fn store_path() -> &'static Path {
     })
     .as_path()
 }
-
 fn append_at(path: &Path, record: PanicRecord) -> io::Result<()> {
   let _guard = STORE_LOCK
     .lock()
@@ -141,14 +128,12 @@ fn append_at(path: &Path, record: PanicRecord) -> io::Result<()> {
     },
   )
 }
-
 fn read_at(path: &Path) -> io::Result<Vec<PanicRecord>> {
   let _guard = STORE_LOCK
     .lock()
     .map_err(|_| io::Error::other("paniclog lock poisoned"))?;
   read_unlocked(path)
 }
-
 fn read_unlocked(path: &Path) -> io::Result<Vec<PanicRecord>> {
   let metadata = match fs::metadata(path) {
     Ok(metadata) => metadata,
@@ -174,7 +159,6 @@ fn read_unlocked(path: &Path) -> io::Result<Vec<PanicRecord>> {
   }
   Ok(file.records)
 }
-
 fn validate(record: &PanicRecord) -> io::Result<()> {
   let valid_lengths = record.category.len() <= MAX_CATEGORY_LEN
     && record.context.len() <= MAX_CONTEXT_LEN
@@ -194,7 +178,6 @@ fn validate(record: &PanicRecord) -> io::Result<()> {
   }
   Ok(())
 }
-
 fn write_atomic(path: &Path, file: &PanicFile) -> io::Result<()> {
   let bytes = serde_json::to_vec(file).map_err(invalid_data)?;
   if bytes.len() as u64 > MAX_FILE_SIZE {
@@ -216,7 +199,6 @@ fn write_atomic(path: &Path, file: &PanicFile) -> io::Result<()> {
   output.sync_all()?;
   fs::rename(&temporary, path)
 }
-
 fn checksum(record: &PanicRecord) -> String {
   let mut copy = record.clone();
   copy.integrity.clear();
@@ -226,20 +208,16 @@ fn checksum(record: &PanicRecord) -> String {
   });
   format!("{hash:016x}")
 }
-
 fn bounded(value: &str, max: usize) -> String {
   value.chars().take(max).collect()
 }
-
 fn invalid_data(error: impl std::fmt::Display) -> io::Error {
   io::Error::new(io::ErrorKind::InvalidData, error.to_string())
 }
-
 #[cfg(test)]
 mod tests {
   use super::*;
   use std::time::{SystemTime, UNIX_EPOCH};
-
   fn test_path(name: &str) -> PathBuf {
     let unique = SystemTime::now()
       .duration_since(UNIX_EPOCH)
@@ -247,7 +225,6 @@ mod tests {
       .as_nanos();
     std::env::temp_dir().join(format!("lightvm-{name}-{unique}.json"))
   }
-
   fn record(category: &str, context: &str, sequence: u64) -> PanicRecord {
     let mut record = PanicRecord {
       format_version: FORMAT_VERSION,
@@ -261,7 +238,6 @@ mod tests {
     record.integrity = checksum(&record);
     record
   }
-
   #[test]
   fn record_is_bounded_and_contains_no_panic_payload() {
     let secret = "token=very-secret-value";
@@ -271,7 +247,6 @@ mod tests {
     assert_eq!(record.context.len(), MAX_CONTEXT_LEN);
     assert!(!serialized.contains(secret));
   }
-
   #[test]
   fn retention_keeps_only_newest_records() {
     let path = test_path("retention");
@@ -283,7 +258,6 @@ mod tests {
     assert_eq!(records[0].sequence, 2);
     let _ = fs::remove_file(path);
   }
-
   #[test]
   fn rejects_corruption_and_incompatible_versions() {
     let corrupt = test_path("corrupt");
@@ -301,7 +275,6 @@ mod tests {
     let _ = fs::remove_file(corrupt);
     let _ = fs::remove_file(incompatible);
   }
-
   #[test]
   fn rejects_modified_record() {
     let path = test_path("integrity");

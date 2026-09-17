@@ -94,7 +94,6 @@ impl LightVM {
       ),
     );
   }
-
   pub fn new_node(
     security_config: SecurityConfig,
     nightly: bool,

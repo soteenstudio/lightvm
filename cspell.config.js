@@ -120,7 +120,9 @@ export default {
     'shrv',
     'sqrtv',
     'hypot',
-    'mdocumentation'
+    'mdocumentation',
+    'paniclog',
+    'xcbf'
   ],
   ignorePaths: [
     'node_modules/**',
