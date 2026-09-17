@@ -238,6 +238,14 @@ export class LightVM {
     return this.wrap(() => this.instance.inspect());
   }
 
+  paniclog() {
+    return this.wrap(() => this.instance.paniclog());
+  }
+
+  clearPaniclog(): void {
+    return this.wrap(() => this.instance.clearPaniclog());
+  }
+
   embedded(): VMResult {
     return this.wrap(() => this.instance.embedded());
   }

@@ -82,6 +82,8 @@ export declare class LightVM {
     halt(): void;
     on(event: VMEvent, fn: Listener): this;
     inspect(): any;
+    paniclog(): any;
+    clearPaniclog(): void;
     embedded(): VMResult;
     tools(): {
         blackBox: (value: any) => any;

@@ -39,6 +39,14 @@ export const sidebarMethodFunctions = {
       link: '/id/api-reference/method-functions/info-method',
     },
     {
+      text: 'Metode Paniclog',
+      link: '/id/api-reference/method-functions/paniclog-method',
+    },
+    {
+      text: 'Metode Clear Paniclog',
+      link: '/id/api-reference/method-functions/clear-paniclog-method',
+    },
+    {
       text: 'Metode Tools',
       collapsed: true,
       items: [
