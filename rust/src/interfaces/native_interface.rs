@@ -43,21 +43,6 @@ fn parse_paniclog(records: &str) -> Result<serde_json::Value, VMError> {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-fn paniclog_response(result: Result<serde_json::Value, VMError>) -> String {
-  match result {
-    Ok(records) => records.to_string(),
-    Err(err) => {
-      println!("{}", err);
-      serde_json::json!({
-        "status": "error",
-        "message": err.to_string()
-      })
-      .to_string()
-    }
-  }
-}
-
-#[cfg(not(target_arch = "wasm32"))]
 fn report_paniclog_error<T>(result: Result<T, VMError>) -> Result<T, VMError> {
   result.map_err(|error| {
     eprintln!("{}", error);
@@ -461,11 +446,11 @@ impl LightVM {
   ///   caps: vec![Capability::Debug],
   ///   ..Default::default()
   /// });
-  /// let records = vm.paniclog();
+  /// let records = vm.paniclog()?;
   /// ```
   #[cfg(not(target_arch = "wasm32"))]
-  pub fn paniclog(&self) -> String {
-    paniclog_response(
+  pub fn paniclog(&self) -> Result<serde_json::Value, VMError> {
+    report_paniclog_error(
       self
         .list_paniclog_internal()
         .and_then(|records| parse_paniclog(&records)),
@@ -809,9 +794,9 @@ mod tests {
   #[test]
   fn paniclog_requires_debug_capability() {
     let vm = LightVM::new(VmConfig::default());
-    let response: serde_json::Value = serde_json::from_str(&vm.paniclog()).unwrap();
-    assert_eq!(response["status"], "error");
-    assert!(response["message"].as_str().unwrap().contains("Debug"));
+    let error = vm.paniclog().expect_err("expected a capability error");
+    assert!(error.to_string().contains("Debug"));
+    assert!(!error.to_string().contains(r#"{"status":"error""#));
     let error = vm
       .clear_paniclog()
       .expect_err("expected a capability error");
@@ -820,27 +805,21 @@ mod tests {
   }
   #[cfg(not(target_arch = "wasm32"))]
   #[test]
-  fn invalid_paniclog_json_returns_an_error_envelope() {
-    let response: serde_json::Value =
-      serde_json::from_str(&paniclog_response(parse_paniclog("invalid"))).unwrap();
-    assert_eq!(response["status"], "error");
-    assert!(response["message"]
-      .as_str()
-      .unwrap()
-      .contains("Failed to parse paniclog"));
+  fn invalid_paniclog_json_returns_a_readable_error() {
+    let error = report_paniclog_error(parse_paniclog("invalid"))
+      .expect_err("expected a decoding error");
+    assert!(error.to_string().contains("Failed to parse paniclog"));
+    assert!(!error.to_string().contains(r#"{"status":"error""#));
   }
   #[cfg(not(target_arch = "wasm32"))]
   #[test]
-  fn paniclog_storage_failure_returns_an_error_envelope() {
-    let response: serde_json::Value = serde_json::from_str(&paniclog_response(Err(
+  fn paniclog_storage_failure_returns_a_readable_error() {
+    let error = report_paniclog_error::<serde_json::Value>(Err(
       VMError::SystemError("Paniclog unavailable".into()),
-    )))
-    .unwrap();
-    assert_eq!(response["status"], "error");
-    assert!(response["message"]
-      .as_str()
-      .unwrap()
-      .contains("Paniclog unavailable"));
+    ))
+    .expect_err("expected a storage error");
+    assert!(error.to_string().contains("Paniclog unavailable"));
+    assert!(!error.to_string().contains(r#"{"status":"error""#));
   }
   #[cfg(not(target_arch = "wasm32"))]
   #[test]
@@ -855,12 +834,12 @@ mod tests {
       "native",
       SafeState::new("Idle".into(), 0, 0, 0, 0),
     );
-    let records: serde_json::Value = serde_json::from_str(&vm.paniclog()).unwrap();
+    let records = vm.paniclog().unwrap();
     assert!(records.is_array());
     assert_eq!(records.as_array().unwrap().len(), 1);
     assert_eq!(records[0]["category"], "interface_test");
     vm.clear_paniclog().unwrap();
-    assert_eq!(vm.paniclog(), "[]");
+    assert_eq!(vm.paniclog().unwrap(), serde_json::json!([]));
   }
   #[test]
   fn tools_exists() {
