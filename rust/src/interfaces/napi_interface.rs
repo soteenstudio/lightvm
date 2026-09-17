@@ -783,6 +783,7 @@ mod tests {
   #[cfg(not(target_arch = "wasm32"))]
   #[test]
   fn paniclog_returns_records_and_clears_them() {
+    let _paniclog_guard = paniclog::lock_store_for_test();
     let vm = NodeLightVM::napi_new(VmNapiConfig {
       caps_raw: vec![2],
       ..Default::default()

@@ -23,6 +23,8 @@ const MAX_STATE_LEN: usize = 16;
 static SEQUENCE: AtomicU64 = AtomicU64::new(1);
 static STORE_LOCK: Mutex<()> = Mutex::new(());
 static STORE_PATH: OnceLock<PathBuf> = OnceLock::new();
+#[cfg(test)]
+static TEST_STORE_LOCK: Mutex<()> = Mutex::new(());
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct PanicRecord {
@@ -103,6 +105,12 @@ pub(crate) fn clear() -> io::Result<()> {
     Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(()),
     Err(error) => Err(error),
   }
+}
+#[cfg(test)]
+pub(crate) fn lock_store_for_test() -> std::sync::MutexGuard<'static, ()> {
+  TEST_STORE_LOCK
+    .lock()
+    .unwrap_or_else(|poisoned| poisoned.into_inner())
 }
 fn store_path() -> &'static Path {
   STORE_PATH
