@@ -3,7 +3,7 @@ use lightvm::types::{capability::Capability, vmconfig::VmConfig, vmevent::VmEven
 
 fn main() {
   let mut vm = LightVM::new(VmConfig {
-    caps: vec![Capability::Debug],
+    caps: vec![Capability::Debug, Capability::Control],
     ..Default::default()
   });
 
@@ -11,5 +11,6 @@ fn main() {
     println!("Event: {:?}", data.event);
     println!("Payload: {:?}", data.payload);
   });
-  vm.run(None);
+  vm.load(r#"[["stop"]]"#)
+    .run(None);
 }

@@ -3,7 +3,7 @@ use lightvm::types::{capability::Capability, vmconfig::VmConfig, vmevent::VmEven
 
 fn main() {
   let mut vm = LightVM::new(VmConfig {
-    caps: vec![Capability::Debug],
+    caps: vec![Capability::Debug, Capability::Unsafe],
     ..Default::default()
   });
 
@@ -12,5 +12,4 @@ fn main() {
     println!("Payload: {:?}", data.payload);
   });
   vm.halt();
-  vm.run(None); // will not be executed
 }

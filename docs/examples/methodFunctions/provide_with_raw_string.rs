@@ -3,7 +3,7 @@ use lightvm::types::{capability::Capability, vmconfig::VmConfig};
 
 fn main() {
   let mut vm = LightVM::new(VmConfig {
-    caps: vec![Capability::Debug],
+    caps: vec![Capability::Debug, Capability::Control],
     ..Default::default()
   });
 
@@ -18,4 +18,8 @@ fn main() {
     ["get", "force"],
     ["println"]
   ]"#;
+
+  let optimized = vm.tools().optimize_bytecode(raw);
+  vm.load(optimized)
+    .run(None);
 }

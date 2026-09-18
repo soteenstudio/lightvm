@@ -1,7 +1,8 @@
-use lightvm::{vmconfig::VmConfig, capability::Capability};
+use lightvm::LightVM;
+use lightvm::types::{capability::Capability, vmconfig::VmConfig};
 
 fn main() {
-  let vm = LightVM::new(VmConfig {
+  let mut vm = LightVM::new(VmConfig {
     caps: vec![Capability::Debug],
     ..Default::default()
   });
@@ -17,7 +18,7 @@ fn main() {
   let optimized = tools.optimize_bytecode(raw);
   vm.load(optimized);
 
-  let mut score_variable = vm.export("score".to_string());
+  let score_variable = vm.export("score".to_string());
   
   println!("{:?}", score_variable.call(&mut vm, vec![]));
 }
