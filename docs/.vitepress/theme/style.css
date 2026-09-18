@@ -134,3 +134,13 @@ div[class*="language-"] > pre {
 .fade-leave-to {
   opacity: 0;
 }
+/* Light mode (default) */
+.VPImage {
+  filter: none;
+}
+
+/* Dark mode */
+.dark .VPImage {
+  /* Atur filter sesuai kebutuhan, misal di-invert atau diubah brightness-nya */
+  filter: invert(1) hue-rotate(180deg); 
+}
