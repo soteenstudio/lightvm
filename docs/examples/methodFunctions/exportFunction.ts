@@ -1,3 +1,8 @@
+import { Capability, LightVM } from 'lightvm';
+
+const vm = new LightVM({ caps: [Capability.Debug] });
+const tools = vm.tools();
+
 const raw = [
   ['jump', 7],
   ['func', 'add', 2, 2, 6, 'a', 'b'],
