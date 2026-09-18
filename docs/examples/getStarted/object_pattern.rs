@@ -16,6 +16,4 @@ fn main() {
     }),
     ..Defualt::defualt(),
   });
-  
-  let tools = vm.tools();
 }

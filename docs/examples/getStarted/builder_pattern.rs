@@ -8,6 +8,4 @@ fn main() {
   })
   .set_max_ticks(1_000_000)
   .set_time_budget(TimeBudget::Cheap);
-  
-  let tools = vm.tools();
 }

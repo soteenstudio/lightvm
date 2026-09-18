@@ -7,5 +7,3 @@ const vm = new LightVM({
     timeBudget: TimeBudget.Cheap,
   },
 });
-
-const tools = vm.tools();

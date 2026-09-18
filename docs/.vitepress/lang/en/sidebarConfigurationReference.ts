@@ -7,8 +7,8 @@ export const sidebarConfigurationReference = {
       link: '/api-reference/configuration-reference/typescript-configuration',
     },
     {
-      text: 'Embedded Method',
-      link: '/api-reference/method-functions/embedded-method',
+      text: 'Rust Configuration',
+      link: '/api-reference/configuration-reference/rust-configuration',
     }
   ],
 };
