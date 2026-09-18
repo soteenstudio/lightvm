@@ -1,3 +1,4 @@
+use lightvm::LightVM;
 use lightvm::{vmconfig::VmConfig, capability::Capability};
 
 fn main() {

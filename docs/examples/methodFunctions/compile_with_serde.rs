@@ -1,3 +1,4 @@
+use lightvm::LightVM;
 use lightvm::types::{
   vmconfig::VmConfig,
   capability::Capability,
