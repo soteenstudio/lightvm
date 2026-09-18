@@ -1,4 +1,7 @@
-import { TargetArch, FileType } from 'lightvm';
+import { Capability, FileType, LightVM, TargetArch } from 'lightvm';
+
+const vm = new LightVM({ caps: [Capability.Debug] });
+const tools = vm.tools();
 
 const raw = [
   ['push', 5],
