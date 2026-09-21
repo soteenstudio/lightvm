@@ -19,7 +19,7 @@ export const idId = defineConfig({
       { text: 'Memulai', link: '/id/get-started/installation' },
       {
         text: 'Referensi API',
-        link: '/id/api-reference/method-functions/run-method',
+        link: '/id/api-reference/configuration-reference/typescript-configuration',
       },
       { text: 'Konsep', link: '/id/concepts/what-is' },
       navAbout,

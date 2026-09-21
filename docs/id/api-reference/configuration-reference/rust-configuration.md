@@ -15,7 +15,7 @@ Contoh berikut mendemonstrasikan cara mengonfigurasi semua batas, bendera keaman
 | `set_max_import` / `max_import` | `number` | `3` | Jumlah maksimum impor modul yang diizinkan. |
 | `set_max_alloc` / `max_alloc` | `number` | `50` | Jumlah maksimum alokasi memori yang diizinkan. |
 | `set_max_call` / `max_call` | `number` | `200` | Jumlah maksimum pemanggilan fungsi bersarang yang diizinkan. |
-| `set_maxJump` / `max_jump` | `number` | `100` | Jumlah maksimum lompatan control flow yang diizinkan. |
+| `set_max_jump` / `max_jump` | `number` | `100` | Jumlah maksimum lompatan control flow yang diizinkan. |
 | `set_max_ticks` / `max_ticks` | `number` | `1_000_000` | Jumlah maksimum tick eksekusi sebelum berhenti untuk mencegah infinite loop. |
 | `set_max_stack_size` / `max_stack_size` | `number` | `128` | Jumlah maksimum item yang dapat ditampung oleh evaluation stack. |
 | `set_allowed_imports` / `allowed_imports` | `string[]` | `[]` | Daftar putih nama modul yang diizinkan untuk diimpor. |

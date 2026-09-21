@@ -23,3 +23,7 @@ Untuk proyek Rust, konfigurasikan `VmConfig` sebelum membuat VM.
 <<< @/examples/getStarted/object_pattern.rs{rust:line-numbers}[Object Pattern]
 
 :::
+
+::: tip Detail Referensi Konfigurasi
+Untuk rincian komprehensif mengenai setiap opsi konfigurasi, parameter, dan detail tipe dalam TypeScript, cek [Referensi Konfigurasi TypeScript](/id/api-reference/configuration-reference/typescript-configuration) atau [Referensi Konfigurasi Rust](/id/api-reference/configuration-reference/rust-configuration).
+:::

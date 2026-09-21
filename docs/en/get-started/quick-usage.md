@@ -23,3 +23,7 @@ For Rust projects, configure `VmConfig` before creating the VM.
 <<< @/examples/getStarted/object_pattern.rs{rust:line-numbers}[Object Pattern]
 
 :::
+
+::: tip Detailed Configuration Reference
+For a comprehensive breakdown of each configuration option, parameters, and type details in TypeScript, check out the [TypeScript Configuration Reference](/api-reference/configuration-reference/typescript-configuration) or [Rust Configuration Reference](/api-reference/configuration-reference/rust-configuration).
+:::

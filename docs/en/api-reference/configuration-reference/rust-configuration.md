@@ -27,7 +27,7 @@ The following example demonstrates how to configure all available limits, safety
 | `with_nightly` / `nightly` | `boolean` | `false` | Allows the usage of experimental nightly features. |
 | `with_backtrace` / `backtrace` | `boolean` | `false` | Displays internal backtrace details in error messages. |
 | `with_explain` / `explain` | `boolean` | `false` | Displays a more detailed explanatory hint in error messages. |
-| `withHint` / `hint` | `boolean` | `true` | Displays general usage hints on error messages. |
+| `with_hint` / `hint` | `boolean` | `true` | Displays general usage hints on error messages. |
 | `with_diagnostic_links` / `diagnostic_links` | `boolean` | `true` | Includes metadata links pointing to error-code documentation. |
 
 ::: info Related Documentation
