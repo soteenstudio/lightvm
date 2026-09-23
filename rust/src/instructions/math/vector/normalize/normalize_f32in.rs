@@ -10,10 +10,7 @@
 
 use crate::types::value::Value;
 use std::sync::Arc;
-pub fn normalize_f32in(values: &[Value]) -> Value {
-  let magnitude = values
-    .iter()
-    .fold(0.0_f32, |magnitude, value| magnitude.hypot(value.as_f32()));
+pub fn normalize_f32in(values: &[Value], magnitude: f32) -> Value {
   Value::Array(Arc::new(
     values
       .iter()
@@ -32,12 +29,12 @@ mod tests {
   use super::*;
   #[test]
   fn normalizes_vectors_and_preserves_zero_vectors() {
-    let result = normalize_f32in(&[Value::Float32(3.0), Value::Float32(4.0)]);
+    let result = normalize_f32in(&[Value::Float32(3.0), Value::Float32(4.0)], 5.0);
     let values = result.as_array().unwrap();
     assert!((values[0].as_f32() - 0.6).abs() < f32::EPSILON);
     assert!((values[1].as_f32() - 0.8).abs() < f32::EPSILON);
     assert_eq!(
-      normalize_f32in(&[Value::Float32(0.0)]),
+      normalize_f32in(&[Value::Float32(0.0)], 0.0),
       Value::Array(Arc::new(vec![Value::Float32(0.0)]))
     );
   }

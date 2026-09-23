@@ -27,22 +27,42 @@ pub fn normalize_values(
     expected: expected_type(num_type, ExpectedCategory::Float),
     found: get_type_name(value.clone()),
   })?;
-  for value in values.iter() {
-    if !matches!(
-      value,
-      Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
-    ) {
-      return Err(VMError::TypeMismatch {
-        ip,
-        expected: expected_type(num_type, ExpectedCategory::Float),
-        found: get_type_name(value.clone()),
-      });
-    }
-  }
+  let invalid = |value: &Value| VMError::TypeMismatch {
+    ip,
+    expected: expected_type(num_type, ExpectedCategory::Float),
+    found: get_type_name(value.clone()),
+  };
   Ok(match num_type {
-    PrimitiveTypes::Hlf => normalize_f16in(&values),
-    PrimitiveTypes::Flt => normalize_f32in(&values),
-    PrimitiveTypes::Dbl => normalize_f64in(&values),
+    PrimitiveTypes::Hlf | PrimitiveTypes::Flt => {
+      let mut magnitude = 0.0_f32;
+      for value in values.iter() {
+        if !matches!(
+          value,
+          Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
+        ) {
+          return Err(invalid(value));
+        }
+        magnitude = magnitude.hypot(value.as_f32());
+      }
+      if num_type == PrimitiveTypes::Hlf {
+        normalize_f16in(&values, magnitude)
+      } else {
+        normalize_f32in(&values, magnitude)
+      }
+    }
+    PrimitiveTypes::Dbl => {
+      let mut magnitude = 0.0_f64;
+      for value in values.iter() {
+        if !matches!(
+          value,
+          Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
+        ) {
+          return Err(invalid(value));
+        }
+        magnitude = magnitude.hypot(value.as_f64());
+      }
+      normalize_f64in(&values, magnitude)
+    }
     _ => {
       return Err(VMError::TypeMismatch {
         ip,
@@ -139,5 +159,23 @@ mod tests {
         opcode: "NORMALIZE"
       })
     ));
+  }
+  #[test]
+  fn produces_results_for_every_float_directive() {
+    for num_type in [
+      PrimitiveTypes::Hlf,
+      PrimitiveTypes::Flt,
+      PrimitiveTypes::Dbl,
+    ] {
+      let result = normalize_values(
+        array(vec![Value::Float32(3.0), Value::Float64(4.0)]),
+        num_type,
+        0,
+      )
+      .unwrap();
+      let values = result.as_array().unwrap();
+      assert!((values[0].as_f64() - 0.6).abs() < 0.001);
+      assert!((values[1].as_f64() - 0.8).abs() < 0.001);
+    }
   }
 }

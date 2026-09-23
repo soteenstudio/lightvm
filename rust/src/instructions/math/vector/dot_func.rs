@@ -42,36 +42,14 @@ pub fn dot_values(
       found: "Array",
     });
   }
-  for value in arr_a.iter().chain(arr_b.iter()) {
-    let is_valid = match num_type {
-      PrimitiveTypes::Sht | PrimitiveTypes::Int | PrimitiveTypes::Lng | PrimitiveTypes::Oct => {
-        matches!(
-          value,
-          Value::Int16(_) | Value::Int32(_) | Value::Int64(_) | Value::Int128(_)
-        )
-      }
-      PrimitiveTypes::Hlf | PrimitiveTypes::Flt | PrimitiveTypes::Dbl => matches!(
-        value,
-        Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
-      ),
-      _ => true,
-    };
-    if !is_valid {
-      return Err(VMError::TypeMismatch {
-        ip,
-        expected: expected_type(num_type, ExpectedCategory::All),
-        found: get_type_name(value.clone()),
-      });
-    }
-  }
-  Ok(match num_type {
-    PrimitiveTypes::Sht => Value::Int16(dot_i16in(&arr_a, &arr_b)),
-    PrimitiveTypes::Int => Value::Int32(dot_i32in(&arr_a, &arr_b)),
-    PrimitiveTypes::Lng => Value::Int64(dot_i64in(&arr_a, &arr_b)),
+  let result = match num_type {
+    PrimitiveTypes::Sht => dot_i16in(&arr_a, &arr_b).map(Value::Int16),
+    PrimitiveTypes::Int => dot_i32in(&arr_a, &arr_b).map(Value::Int32),
+    PrimitiveTypes::Lng => dot_i64in(&arr_a, &arr_b).map(Value::Int64),
     PrimitiveTypes::Oct => dot_i128in(&arr_a, &arr_b),
-    PrimitiveTypes::Hlf => Value::Float16(dot_f16in(&arr_a, &arr_b)),
+    PrimitiveTypes::Hlf => dot_f16in(&arr_a, &arr_b).map(Value::Float16),
     PrimitiveTypes::Flt => dot_f32in(&arr_a, &arr_b),
-    PrimitiveTypes::Dbl => Value::Float64(dot_f64in(&arr_a, &arr_b)),
+    PrimitiveTypes::Dbl => dot_f64in(&arr_a, &arr_b).map(Value::Float64),
     _ => {
       return Err(VMError::TypeMismatch {
         ip,
@@ -79,6 +57,11 @@ pub fn dot_values(
         found: "unknown",
       });
     }
+  };
+  result.map_err(|value| VMError::TypeMismatch {
+    ip,
+    expected: expected_type(num_type, ExpectedCategory::All),
+    found: get_type_name(value),
   })
 }
 #[inline]
@@ -216,6 +199,22 @@ mod tests {
     ));
   }
   #[test]
+  fn preserves_left_vector_error_precedence() {
+    assert!(matches!(
+      dot_values(
+        array(vec![Value::Int32(1), Value::Bool(false)]),
+        array(vec![Value::String("first".into()), Value::Int32(2)]),
+        PrimitiveTypes::Int,
+        22,
+      ),
+      Err(VMError::TypeMismatch {
+        ip: 22,
+        found: "Boolean",
+        ..
+      })
+    ));
+  }
+  #[test]
   fn underflow_preserves_stack() {
     let mut stack = Stack::from_vec(vec![array(vec![])]);
     let original = stack.clone();
@@ -227,5 +226,47 @@ mod tests {
       })
     ));
     assert_eq!(stack, original);
+  }
+  #[test]
+  fn produces_results_for_every_numeric_directive() {
+    for (num_type, expected) in [
+      (PrimitiveTypes::Sht, Value::Int16(11)),
+      (PrimitiveTypes::Int, Value::Int32(11)),
+      (PrimitiveTypes::Lng, Value::Int64(11)),
+      (PrimitiveTypes::Oct, Value::Int128(11)),
+    ] {
+      assert_eq!(
+        dot_values(
+          array(vec![Value::Int16(1), Value::Int32(2)]),
+          array(vec![Value::Int64(3), Value::Int128(4)]),
+          num_type,
+          0,
+        )
+        .unwrap(),
+        expected
+      );
+    }
+    for (num_type, expected) in [
+      (
+        PrimitiveTypes::Hlf,
+        Value::Float16(half::f16::from_f32(11.0)),
+      ),
+      (PrimitiveTypes::Flt, Value::Float32(11.0)),
+      (PrimitiveTypes::Dbl, Value::Float64(11.0)),
+    ] {
+      assert_eq!(
+        dot_values(
+          array(vec![
+            Value::Float16(half::f16::from_f32(1.0)),
+            Value::Float32(2.0)
+          ]),
+          array(vec![Value::Float64(3.0), Value::Float32(4.0)]),
+          num_type,
+          0,
+        )
+        .unwrap(),
+        expected
+      );
+    }
   }
 }

@@ -29,7 +29,6 @@ use crate::types::{
   vmevent::VmEvent,
   vmstate::VmState,
 };
-use crate::vm::run::run;
 use ahash::AHashMap;
 use regex::Regex;
 use serde::Serialize;
@@ -79,6 +78,37 @@ pub struct LightVM {
   pub diagnostic_links: bool,
 }
 impl LightVM {
+  fn execute_typed(
+    &self,
+    entry: Option<usize>,
+    args: Vec<Value>,
+    capture_return: bool,
+  ) -> Result<(String, Option<RunOptions>), VMError> {
+    let options = RunOptions {
+      entry,
+      args,
+      capture_return,
+      imports: self._imports.clone(),
+      halt_flag: self.should_halt.clone(),
+      security_config: SecurityConfig {
+        max_io: self.max_io,
+        max_import: self.max_import,
+        max_alloc: self.max_alloc,
+        max_call: self.max_call,
+        max_jump: self.max_jump,
+        max_ticks: self.max_ticks,
+        max_stack_size: self.max_stack_size,
+        allowed_imports: self.allowed_imports.clone(),
+        unsafe_mode: self.unsafe_mode,
+        time_budget: self.time_budget,
+      },
+      symbol_table: None,
+      vars: None,
+    };
+    let mut options = Some(options);
+    let result = crate::vm::run::execute_and_log(self.bytecode.clone(), &mut options)?;
+    Ok((result, options))
+  }
   #[cfg(not(target_arch = "wasm32"))]
   fn capture_panic(&self, category: &str, context: &str) {
     let listener_count = self.listeners.values().map(Vec::len).sum();
@@ -279,36 +309,12 @@ impl LightVM {
     self.state = VmState::Running;
     self.emit(VmEvent::Start, serde_json::json!({ "operation": "run" }));
     self.emit(VmEvent::Tick, serde_json::json!({ "state": "start" }));
-    let bytecode_json = serde_json::to_string(&self.bytecode).map_err(|e| {
-      VMError::SystemError(smol_str::SmolStr::new(format!(
-        "Failed to serialize bytecode: {}",
-        e
-      )))
-    })?;
-    let options = RunOptions {
-      entry: None,
-      args: Vec::new(),
-      capture_return: options.is_some_and(|options| options.capture_return),
-      imports: self._imports.clone(),
-      halt_flag: self.should_halt.clone(),
-      security_config: SecurityConfig {
-        max_io: self.max_io,
-        max_import: self.max_import,
-        max_alloc: self.max_alloc,
-        max_call: self.max_call,
-        max_jump: self.max_jump,
-        max_ticks: self.max_ticks,
-        max_stack_size: self.max_stack_size,
-        allowed_imports: self.allowed_imports.clone(),
-        unsafe_mode: self.unsafe_mode,
-        time_budget: self.time_budget,
-      },
-      symbol_table: None,
-      vars: None,
-    };
-    let mut opt_wrapper = Some(options.clone());
-    let result = crate::vm::run::run(&bytecode_json, &mut opt_wrapper)?;
-    self.last_run_options = opt_wrapper;
+    let (result, options) = self.execute_typed(
+      None,
+      Vec::new(),
+      options.is_some_and(|options| options.capture_return),
+    )?;
+    self.last_run_options = options;
     self.state = VmState::Idle;
     self.emit(VmEvent::Finish, serde_json::json!({ "operation": "run" }));
     Ok(result)
@@ -443,31 +449,9 @@ impl LightVM {
     let args: Vec<Value> = serde_json::from_str(&json_args)
       .map_err(|e| VMError::SystemError(SmolStr::new(format!("Invalid args: {}", e))))?;
     self.state = VmState::Running;
-    let bytecode_str = serde_json::to_string(&self.bytecode).map_err(|e| {
-      VMError::SystemError(SmolStr::new(format!("Failed to stringify bytecode: {}", e)))
-    })?;
-    let options = RunOptions {
-      entry: Some(fn_meta.start),
-      args,
-      capture_return: true,
-      imports: self._imports.clone(),
-      halt_flag: self.should_halt.clone(),
-      security_config: SecurityConfig {
-        max_io: self.max_io,
-        max_import: self.max_import,
-        max_alloc: self.max_alloc,
-        max_call: self.max_call,
-        max_jump: self.max_jump,
-        max_ticks: self.max_ticks,
-        max_stack_size: self.max_stack_size,
-        allowed_imports: self.allowed_imports.clone(),
-        unsafe_mode: self.unsafe_mode,
-        time_budget: self.time_budget,
-      },
-      symbol_table: None,
-      vars: None,
-    };
-    let result_run = run(&bytecode_str.clone(), &mut Some(options));
+    let result_run = self
+      .execute_typed(Some(fn_meta.start), args, true)
+      .map(|(result, _)| result);
     self.state = VmState::Idle;
     result_run
   }
@@ -862,6 +846,55 @@ mod tests {
         .security_config
         .max_ticks,
       100
+    );
+  }
+  #[test]
+  fn typed_execution_matches_json_execution_and_retained_state() {
+    let mut vm = make_vm(vec![Capability::Control]);
+    vm.bytecode = vec![Instructions::Push(Value::Int32(42)), Instructions::Stop];
+    vm.provide_internal(SmolStr::new("answer"), serde_json::json!(42))
+      .unwrap();
+    let bytecode_json = serde_json::to_string(&vm.bytecode).unwrap();
+    let typed_result = vm
+      .run_internal(Some(RunOptions {
+        capture_return: true,
+        ..Default::default()
+      }))
+      .unwrap();
+    let typed_options = vm.last_run_options.clone().unwrap();
+    let mut json_options = Some(RunOptions {
+      entry: None,
+      args: Vec::new(),
+      capture_return: true,
+      imports: vm._imports.clone(),
+      halt_flag: vm.should_halt.clone(),
+      security_config: SecurityConfig {
+        max_io: vm.max_io,
+        max_import: vm.max_import,
+        max_alloc: vm.max_alloc,
+        max_call: vm.max_call,
+        max_jump: vm.max_jump,
+        max_ticks: vm.max_ticks,
+        max_stack_size: vm.max_stack_size,
+        allowed_imports: vm.allowed_imports.clone(),
+        unsafe_mode: vm.unsafe_mode,
+        time_budget: vm.time_budget,
+      },
+      symbol_table: None,
+      vars: None,
+    });
+    let json_result = crate::vm::run::run(&bytecode_json, &mut json_options).unwrap();
+    assert_eq!(typed_result, json_result);
+    let json_options = json_options.unwrap();
+    assert_eq!(typed_options.entry, json_options.entry);
+    assert_eq!(typed_options.args, json_options.args);
+    assert_eq!(typed_options.capture_return, json_options.capture_return);
+    assert_eq!(typed_options.imports, json_options.imports);
+    assert_eq!(typed_options.symbol_table, json_options.symbol_table);
+    assert_eq!(typed_options.vars, json_options.vars);
+    assert_eq!(
+      typed_options.security_config.max_ticks,
+      json_options.security_config.max_ticks
     );
   }
   #[test]
