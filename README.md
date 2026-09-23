@@ -24,3 +24,32 @@ Use a template to make it easier when developing a new project.
  - See [credits](./CREDITS.md) for information regarding the project's origin and originality.
  - See [releases](https://github.com/soteenstudio/lightvm/releases) for the latest updates and release history.
  - See [contributing](./.github/CONTRIBUTING.md) to learn how to contribute.
+
+## Rust benchmarks
+
+The six existing benchmark targets per mode each run three named workloads, for 18 normal
+and 18 optimized cases (36 total). Both modes use the same raw bytecode for each case:
+
+| Target pair | Workloads (each runs in `normal` and `optimize` mode) |
+| --- | --- |
+| `add_bench` | Integer order totals; floating-point price and tax; numeric conversion and arithmetic pipeline |
+| `assign_bench` | Shopping-cart quantity updates; account-balance updates; multi-variable application-state updates |
+| `concat_bench` | User-facing message; structured status text; multi-step string assembly |
+| `dead_code_bench` | Conditional with unreachable work; jump-heavy workflow with removable instructions; redundant intermediate calculations |
+| `function_call_bench` | Exported two-argument calculation; exported multi-argument business calculation; sequential exported-function workflow |
+| `io_bench` | Array construction and indexed access; object construction and property access; collection inspection and length processing |
+
+Each case's benchmark name appends `_normal` or `_optimize`. VM construction and
+`vm.load(...)` take place in the setup closure, outside `time per op`. Optimized cases
+run `tools.optimize_bytecode(...)` before setup and timing; optimization is not measured.
+The timed operation is only `vm.run(None)` or an exported-function call. Timed cases
+perform no terminal I/O (`println`, `stdout`, `stdin`, or `clear_screen`). The
+`io_bench` target name is retained for compatibility, but its workloads use collections.
+
+Run individual target pairs or all registered benchmarks from the repository root:
+
+```bash
+cargo bench --bench add_bench
+cargo bench --bench add_bench_optimize
+cargo bench
+```
