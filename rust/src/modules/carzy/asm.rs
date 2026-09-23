@@ -23,11 +23,11 @@ impl AsmBuilder {
     }
   }
   pub fn global(&mut self, name: &str) -> &mut Self {
-    write!(self.buffer, ".global {}\n", name).unwrap();
+    writeln!(self.buffer, ".global {}", name).unwrap();
     self
   }
   pub fn symbol_type(&mut self, name: &str, ty: &str) -> &mut Self {
-    write!(self.buffer, ".type {}, %{}\n", name, ty).unwrap();
+    writeln!(self.buffer, ".type {}, %{}", name, ty).unwrap();
     self
   }
   pub fn text(&mut self) -> &mut Self {
@@ -53,18 +53,18 @@ impl AsmBuilder {
     self
   }
   pub fn label(&mut self, name: &str) -> &mut Self {
-    write!(self.buffer, "{}:\n", name).unwrap();
+    writeln!(self.buffer, "{}:", name).unwrap();
     self
   }
   pub fn comment(&mut self, text: &str) -> &mut Self {
-    write!(self.buffer, "    // {}\n", text).unwrap();
+    writeln!(self.buffer, "    // {}", text).unwrap();
     self
   }
   pub fn inst(&mut self, mnemonic: &str, operands: &str) -> &mut Self {
     if operands.is_empty() {
-      write!(self.buffer, "    {}\n", mnemonic).unwrap();
+      writeln!(self.buffer, "    {}", mnemonic).unwrap();
     } else {
-      write!(self.buffer, "    {} {}\n", mnemonic, operands).unwrap();
+      writeln!(self.buffer, "    {} {}", mnemonic, operands).unwrap();
     }
     self
   }
