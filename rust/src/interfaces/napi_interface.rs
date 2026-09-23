@@ -560,18 +560,6 @@ impl NodeLightVM {
     explain: Option<bool>,
     hint: Option<bool>,
   ) -> Result<serde_json::Value> {
-    let input_string = match serde_json::to_string(&bytecode)
-      .map_err(|e| into_napi_error(system_error(format!("Failed to serialize input: {}", e))))
-    {
-      Ok(value) => value,
-      Err(e) => return Err(e),
-    };
-    let input_json: serde_json::Value = match serde_json::from_str(&input_string)
-      .map_err(|e| into_napi_error(system_error(format!("Invalid input structure: {}", e))))
-    {
-      Ok(value) => value,
-      Err(e) => return Err(e),
-    };
     let is_max_io = max_io.unwrap_or(100) as usize;
     let is_max_import = max_import.unwrap_or(3) as usize;
     let is_max_alloc = max_alloc.unwrap_or(50) as usize;
@@ -616,15 +604,9 @@ impl NodeLightVM {
         Capability::Unsafe => Some(Capability::Unsafe),
       })
       .collect();
-    let opt_str = match vm_instance
-      .optimize_bytecode_internal(input_json)
+    vm_instance
+      .optimize_bytecode_typed(bytecode)
       .map_err(into_napi_error)
-    {
-      Ok(value) => value,
-      Err(e) => return Err(e),
-    };
-    serde_json::from_str::<serde_json::Value>(&opt_str)
-      .map_err(|e| into_napi_error(system_error(format!("Internal JSON Parsing Failed: {}", e))))
   }
   #[napi(js_name = "stringifyLtc")]
   pub fn napi_stringify_ltc(json: serde_json::Value) -> Result<String> {
@@ -723,6 +705,46 @@ mod tests {
     assert!(
       normal_len <= cheap_len,
       "expected normal optimization to remove at least as many instructions (normal: {normal_len}, cheap: {cheap_len})"
+    );
+  }
+  #[test]
+  fn optimizer_binding_returns_typed_json_value() {
+    let bytecode = serde_json::json!([["stop"]]);
+    let vm = NodeLightVM::napi_new(VmNapiConfig {
+      caps_raw: vec![0],
+      ..Default::default()
+    })
+    .expect("expected a VM");
+    let optimized = vm
+      .napi_optimize_bytecode(
+        bytecode.clone(),
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+      )
+      .expect("expected optimized bytecode");
+    let mut expected_vm = NodeLightVM::napi_new(VmNapiConfig {
+      caps_raw: vec![0],
+      ..Default::default()
+    })
+    .expect("expected a VM");
+    let expected = expected_vm
+      .inner
+      .optimize_bytecode_internal(bytecode)
+      .expect("expected optimized bytecode");
+    assert_eq!(
+      optimized,
+      serde_json::from_str::<serde_json::Value>(&expected).unwrap()
     );
   }
   #[test]

@@ -250,24 +250,20 @@ impl LightVM {
         });
       }
     }
-    if !self.nightly {
+    if !self.nightly && has_nightly_opcodes(&raw_code) {
       let mut nightly_ip = 0;
-      let raw_list_check: Result<Vec<serde_json::Value>, _> = serde_json::from_str(&raw_code);
-      if let Ok(list) = raw_list_check {
+      if let Ok(list) = serde_json::from_str::<Vec<serde_json::Value>>(&raw_code) {
         for (ip, item) in list.iter().enumerate() {
-          let item_str = item.to_string();
-          if has_nightly_opcodes(&item_str) {
+          if has_nightly_opcodes(&item.to_string()) {
             nightly_ip = ip;
             break;
           }
         }
       }
-      if has_nightly_opcodes(&raw_code) {
-        return Err(VMError::FeatureRestricted {
-          ip: nightly_ip,
-          feature: "Nightly Opcodes (Experimental)",
-        });
-      }
+      return Err(VMError::FeatureRestricted {
+        ip: nightly_ip,
+        feature: "Nightly Opcodes (Experimental)",
+      });
     }
     if raw_code.starts_with('[') {
       let raw_list: Vec<serde_json::Value> = serde_json::from_str(&raw_code).map_err(|e| {
@@ -542,6 +538,14 @@ impl LightVM {
     &mut self,
     bytecode_raw: serde_json::Value,
   ) -> Result<String, VMError> {
+    let optimized = self.optimize_bytecode_typed(bytecode_raw)?;
+    serde_json::to_string(&optimized)
+      .map_err(|e| VMError::SystemError(format!("Failed to stringify: {}", e).into()))
+  }
+  pub(crate) fn optimize_bytecode_typed(
+    &mut self,
+    bytecode_raw: serde_json::Value,
+  ) -> Result<serde_json::Value, VMError> {
     self.require(Capability::Control)?;
     self.set_mode(
       self.backtrace,
@@ -569,16 +573,18 @@ impl LightVM {
         feature: "Nightly Opcodes (Experimental)",
       });
     }
-    let json_str = bytecode_raw.to_string();
-    let raw_list: Vec<serde_json::Value> = serde_json::from_str(&json_str)
-      .map_err(|e| VMError::SystemError(format!("Invalid JSON format: {}", e).into()))?;
+    let raw_list = match bytecode_raw {
+      serde_json::Value::Array(raw_list) => raw_list,
+      value => serde_json::from_str::<Vec<serde_json::Value>>(&value.to_string())
+        .map_err(|e| VMError::SystemError(format!("Invalid JSON format: {}", e).into()))?,
+    };
     let bytecode: Result<Vec<Instructions>, VMError> = raw_list
       .iter()
       .enumerate()
       .map(|(ip, item)| Instructions::from_json_array(item, ip))
       .collect();
     let optimized = optimize_bytecode(bytecode?, self.time_budget);
-    serde_json::to_string(&optimized)
+    serde_json::to_value(optimized)
       .map_err(|e| VMError::SystemError(format!("Failed to stringify: {}", e).into()))
   }
   // TODO: Is there a bug in the following code?
@@ -976,6 +982,44 @@ mod tests {
     assert_eq!(payload["value"], 9);
   }
   #[test]
+  fn load_internal_preserves_json_bytecode_metadata_and_resets_runtime_state() {
+    let mut vm = make_vm(vec![Capability::Control]);
+    vm.nightly = true;
+    vm.last_run_options = Some(RunOptions::default());
+    vm.load_internal(
+      r#"[["jump",4],["func","sum",0,2,3],["return"],["stop"],["export","sum"]]"#.to_string(),
+    )
+    .unwrap();
+    assert_eq!(vm.bytecode.len(), 5);
+    assert!(vm.functions.contains_key("sum"));
+    assert!(vm.exported.contains("sum"));
+    assert!(vm.last_run_options.is_none());
+  }
+  #[test]
+  fn load_internal_preserves_malformed_json_error_prefix() {
+    let mut vm = make_vm(vec![Capability::Control]);
+    let error = vm
+      .load_internal(r#"[["push", 1]"#.to_string())
+      .expect_err("expected malformed JSON to fail");
+    assert!(error.to_string().contains("Failed to parse JSON:"));
+  }
+  #[test]
+  fn load_internal_rejects_malformed_nightly_source_before_json_parsing() {
+    let mut vm = make_vm(vec![Capability::Control]);
+    let error = vm
+      .load_internal(r#"[["push", 1], ["import""#.to_string())
+      .expect_err("expected nightly opcode rejection");
+    assert!(matches!(error, VMError::FeatureRestricted { ip: 0, .. }));
+  }
+  #[test]
+  fn load_internal_preserves_nightly_instruction_index() {
+    let mut vm = make_vm(vec![Capability::Control]);
+    let error = vm
+      .load_internal(r#"[["push", 1], ["import", "math"]]"#.to_string())
+      .expect_err("expected nightly opcode rejection");
+    assert!(matches!(error, VMError::FeatureRestricted { ip: 1, .. }));
+  }
+  #[test]
   fn bench_succeeds_with_debug_capability() {
     let vm = make_vm(vec![Capability::Debug]);
     assert!(vm.bench("debug-bench").is_ok());
@@ -1018,6 +1062,15 @@ mod tests {
     let mut vm = make_vm(vec![Capability::Control]);
     let bytecode = serde_json::json!([["stop"]]);
     assert!(vm.optimize_bytecode_internal(bytecode).is_ok());
+  }
+  #[test]
+  fn typed_optimizer_serializes_identically_to_string_boundary() {
+    let bytecode = serde_json::json!([["push", 1], ["push", 2], ["add", "int"], ["stop"]]);
+    let mut typed_vm = make_vm(vec![Capability::Control]);
+    let typed = typed_vm.optimize_bytecode_typed(bytecode.clone()).unwrap();
+    let mut string_vm = make_vm(vec![Capability::Control]);
+    let string = string_vm.optimize_bytecode_internal(bytecode).unwrap();
+    assert_eq!(serde_json::to_string(&typed).unwrap(), string);
   }
   #[test]
   fn optimize_bytecode_internal_fails_without_control_capability() {

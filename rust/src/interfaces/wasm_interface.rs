@@ -449,7 +449,6 @@ impl WasmLightVMTools {
 impl WasmLightVMTools {
   #[wasm_bindgen(js_name = "optimizeBytecode")]
   pub fn optimize_bytecode(&self, bytecode: JsValue) -> Result<JsValue, JsValue> {
-    use crate::modules::vmerror::VMError;
     let input_json: serde_json::Value = serde_wasm_bindgen::from_value(bytecode).map_err(|e| {
       wasm_bindgen::JsValue::from(js_sys::Error::new(&format!(
         "Invalid input structure: {}",
@@ -457,16 +456,9 @@ impl WasmLightVMTools {
       )))
     })?;
     let mut vm_instance = self.optimizer_vm();
-    let opt_str = vm_instance
-      .optimize_bytecode_internal(input_json)
+    let res_json = vm_instance
+      .optimize_bytecode_typed(input_json)
       .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))?;
-    let res_json: serde_json::Value = serde_json::from_str(&opt_str).map_err(|e| {
-      let vm_err = VMError::SystemError(smol_str::SmolStr::from(format!(
-        "Internal JSON Parsing Failed: {}",
-        e
-      )));
-      wasm_bindgen::JsValue::from(js_sys::Error::new(&vm_err.to_string()))
-    })?;
     serde_wasm_bindgen::to_value(&res_json).map_err(|e| {
       wasm_bindgen::JsValue::from(js_sys::Error::new(&format!(
         "Wasm serialization failed: {}",
@@ -551,6 +543,25 @@ mod tests {
   fn start_and_finish_event_names_are_supported() {
     assert_eq!(parse_event("start"), Some(VmEvent::Start));
     assert_eq!(parse_event("finish"), Some(VmEvent::Finish));
+  }
+  #[test]
+  fn tools_optimizer_typed_output_matches_string_boundary() {
+    let bytecode = serde_json::json!([["stop"]]);
+    let vm = vm_with_control_capability();
+    let typed = vm
+      .tools()
+      .optimizer_vm()
+      .optimize_bytecode_typed(bytecode.clone())
+      .expect("expected optimized bytecode");
+    let string = vm
+      .tools()
+      .optimizer_vm()
+      .optimize_bytecode_internal(bytecode)
+      .expect("expected optimized bytecode");
+    assert_eq!(
+      typed,
+      serde_json::from_str::<serde_json::Value>(&string).unwrap()
+    );
   }
   #[test]
   fn tools_optimizer_normal_budget_optimizes_at_least_as_much_as_cheap() {
