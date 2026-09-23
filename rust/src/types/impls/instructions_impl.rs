@@ -13,6 +13,7 @@ use crate::types::instructions::Instructions;
 use crate::types::{primitive_types::PrimitiveTypes, value::Value};
 use crate::utils::map_primitive::map_primitive;
 use ahash::AHashMap;
+use serde::Deserialize;
 use serde_json::Value as JsonValue;
 use smol_str::SmolStr;
 use std::sync::Arc;
@@ -148,7 +149,7 @@ impl Instructions {
       };
     }
     if item.is_object() {
-      return serde_json::from_value(item.clone()).map_err(|_| VMError::InvalidOpcode {
+      return Instructions::deserialize(item).map_err(|_| VMError::InvalidOpcode {
         ip,
         code: "DESERIALIZE_FAILED".into(),
       });
@@ -491,6 +492,57 @@ impl Instructions {
 mod tests {
   use super::*;
   use serde_json::json;
+  #[test]
+  fn object_form_nested_values_match_owned_deserialization() {
+    for input in [
+      json!({"push": {"Object": {"nested": {"Array": [{"Int32": 7}, {"String": "hi"}]}}}}),
+      json!({"push_object": {"nested": {"Array": [{"Int32": 7}, {"Bool": true}]}}}),
+      json!({"push_array": [{"Int32": 3}, {"Array": [{"Bool": false}]}]}),
+    ] {
+      let expected: Instructions = serde_json::from_value(input.clone()).unwrap();
+      assert_eq!(Instructions::from_json_array(&input, 12).unwrap(), expected);
+    }
+  }
+  #[test]
+  fn object_form_nested_invalid_values_keep_error_and_index() {
+    for input in [
+      json!({"push_array": {"nested": [{"value": 7}]}}),
+      json!({"push_object": [{"nested": 7}]}),
+      json!({"unknown": {"nested": [1, 2]}}),
+    ] {
+      assert!(
+        serde_json::from_value::<Instructions>(input.clone()).is_err(),
+        "{input}"
+      );
+      assert!(matches!(
+        Instructions::from_json_array(&input, 12),
+        Err(VMError::InvalidOpcode { ip: 12, code }) if code == "DESERIALIZE_FAILED"
+      ));
+    }
+  }
+  #[test]
+  #[ignore]
+  fn bench_object_form_borrowed_against_owned() {
+    use std::hint::black_box;
+    use std::time::Instant;
+    let input =
+      json!({"push": {"Object": {"nested": {"Array": [{"Int32": 7}, {"String": "hello"}]}}}});
+    let iterations = 100_000;
+    let start = Instant::now();
+    for _ in 0..iterations {
+      black_box(serde_json::from_value::<Instructions>(black_box(input.clone())).unwrap());
+    }
+    let before = start.elapsed();
+    let start = Instant::now();
+    for _ in 0..iterations {
+      black_box(Instructions::from_json_array(black_box(&input), 0).unwrap());
+    }
+    eprintln!(
+      "object form clone: {before:?}, borrowed: {:?} ({iterations} runs, debug_assertions={})",
+      start.elapsed(),
+      cfg!(debug_assertions)
+    );
+  }
   #[test]
   fn test_instruction_round_trip() {
     let json_input = json!(["push", 123]);
