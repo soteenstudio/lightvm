@@ -37,15 +37,15 @@ hero:
 
 features:
   - icon:
-      src: /public/assets/light/wand-magic.svg
+      src: /assets/light/wand-magic.svg
     title: Zero Magic
     details: Instruction execution is linear and completely predictable. The VM operates explicitly, executing instructions exactly as they are defined.
   - icon:
-      src: /public/assets/light/box.svg
+      src: /assets/light/box.svg
     title: Resource Conscious
     details: Designed with a minimal memory footprint through the use of optimized data structures such as SmolStr and ahash for fast metadata management.
   - icon:
-      src: /public/assets/light/lock.svg
+      src: /assets/light/lock.svg
     title: Explicit Security
     details: Security is managed through a strict Capability system. Every VM access and operation must have permissions explicitly defined by the host from the outset.
 ---

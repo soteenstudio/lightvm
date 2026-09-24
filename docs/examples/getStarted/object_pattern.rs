@@ -12,8 +12,8 @@ fn main() {
     security_config: Some(SecurityConfig {
       max_ticks: 1_000_000,
       time_budget: TimeBudget::Cheap,
-      ..Defualt::default(),
+      ..Default::default()
     }),
-    ..Defualt::defualt(),
+    ..Default::default()
   });
 }

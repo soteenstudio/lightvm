@@ -1,6 +1,9 @@
 import { Capability, LightVM } from 'lightvm';
 
-const vm = new LightVM({ caps: [Capability.Control] });
+const vm = new LightVM({
+  caps: [Capability.Control, Capability.Observe],
+  runtimeConfig: { nightly: true },
+});
 const tools = vm.tools();
 
 const raw = [

@@ -8,7 +8,7 @@ export const sidebarConfigurationReference = {
     },
     {
       text: 'Konfigurasi Rust',
-      link: '/id/api-reference/configuration-reference/typescript-configuration',
-    }
+      link: '/id/api-reference/configuration-reference/rust-configuration',
+    },
   ],
 };

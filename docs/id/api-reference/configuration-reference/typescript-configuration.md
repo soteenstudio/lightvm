@@ -10,7 +10,7 @@ Contoh berikut mendemonstrasikan cara mengonfigurasi semua batas, bendera keaman
 
 | Method / Properti | Tipe | Default | Deskripsi |
 | :--- | :--- | :--- | :--- |
-| `caps` | `Capability[]` | `[]` | Menentukan kapabilitas aktif yang diberikan ke virtual machine. |
+| `caps` | `Capability[]` | `[Capability.Observe]` | Menentukan kapabilitas aktif yang diberikan ke virtual machine. |
 | `setMaxIo` / `maxIo` | `number` | `100` | Jumlah maksimum operasi I/O yang diizinkan selama eksekusi. |
 | `setMaxImport` / `maxImport` | `number` | `3` | Jumlah maksimum impor modul yang diizinkan. |
 | `setMaxAlloc` / `maxAlloc` | `number` | `50` | Jumlah maksimum alokasi memori yang diizinkan. |

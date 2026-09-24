@@ -1,6 +1,6 @@
 import { Capability, LightVM } from 'lightvm';
 
-const vm = new LightVM({ caps: [Capability.Control] });
+const vm = new LightVM({ caps: [Capability.Observe] });
 
 const report = vm.inspect();
 

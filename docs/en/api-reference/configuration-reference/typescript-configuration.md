@@ -13,7 +13,7 @@ The following example demonstrates how to configure all available limits, safety
 
 | Method / Property | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `caps` | `Capability[]` | `[]` | Specifies the active capabilities granted to the virtual machine. |
+| `caps` | `Capability[]` | `[Capability.Observe]` | Specifies the active capabilities granted to the virtual machine. |
 | `setMaxIo` / `maxIo` | `number` | `100` | Maximum number of I/O operations allowed during execution. |
 | `setMaxImport` / `maxImport` | `number` | `3` | Maximum number of allowed module imports. |
 | `setMaxAlloc` / `maxAlloc` | `number` | `50` | Maximum number of memory allocations allowed. |
