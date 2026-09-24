@@ -13,7 +13,7 @@ export const sidebarGetStarted = [
   },
   {
     text: 'Referensi API',
-    link: '/id/api-reference/method-functions/run-method',
+    link: '/id/api-reference/configuration-reference/typescript-configuration',
   },
   {
     text: 'Konsep',
