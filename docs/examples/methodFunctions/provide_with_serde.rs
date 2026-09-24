@@ -6,6 +6,7 @@ fn main() {
     caps: vec![Capability::Control],
     ..Default::default()
   });
+  let tools = vm.tools();
 
   vm.provide(serde_json::json!({
     "name": "John Doe",
@@ -19,7 +20,7 @@ fn main() {
     ["println"]
   ]);
 
-  let optimized = vm.tools().optimize_bytecode(raw);
+  let optimized = tools.optimize_bytecode(raw);
   vm.load(optimized)
     .run(None);
 }

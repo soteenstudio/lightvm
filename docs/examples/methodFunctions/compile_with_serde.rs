@@ -17,7 +17,9 @@ fn main() {
   let raw = serde_json::json!([
     ["push", 5],
     ["val", "x"],
-    ["set", "x"]
+    ["set", "x"],
+    ["get", "x"],
+    ["println"]
   ]);
 
   let optimized = tools.optimize_bytecode(raw);

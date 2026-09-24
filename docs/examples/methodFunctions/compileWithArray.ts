@@ -7,6 +7,8 @@ const raw = [
   ['push', 5],
   ['val', 'x'],
   ['set', 'x'],
+  ['get', 'x'],
+  ['println']
 ];
 const optimized = tools.optimizeBytecode(raw);
 vm.load(optimized).compile({
