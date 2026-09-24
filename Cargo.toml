@@ -147,6 +147,9 @@ ureq = "2"
 ahash = { version = "0.8", default-features = false, features = ["serde", "no-rng", "std"] }
 getrandom = { version = "0.2.17", features = ["js"] }
 
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+wasm-bindgen-test = "0.3"
+
 [profile.dev]
 incremental = false
 
