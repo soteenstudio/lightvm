@@ -8,5 +8,7 @@ const raw = [
   ['val', 'x'],
   ['set', 'x'],
 ];
+
 const optimized = tools.optimizeBytecode(raw);
+
 console.log(optimized);

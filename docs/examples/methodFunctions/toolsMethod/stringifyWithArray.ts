@@ -8,5 +8,7 @@ const raw = [
   ['val', 'x'],
   ['set', 'x'],
 ];
+
 const stringify = tools.stringifyLTC(raw);
+
 console.log(stringify);

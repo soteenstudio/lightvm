@@ -10,8 +10,11 @@ const raw = [
   ['get', 'x'],
   ['println']
 ];
+
 const optimized = tools.optimizeBytecode(raw);
-vm.load(optimized).compile({
+vm.load(optimized);
+
+vm.compile({
   targetArch: TargetArch.AArch64,
   fileType: FileType.Binary,
   path: './bin/output',

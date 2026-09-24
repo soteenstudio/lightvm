@@ -8,5 +8,7 @@ const strVal = `
   val x; ;; IP=1
   set x; ;; IP=2
 `;
+
 const parsed = tools.parseLTCArray(strVal);
+
 console.log(parsed);

@@ -13,7 +13,10 @@ const raw = [
   ['stop'],
   ['export', 'add'],
 ];
+
 const optimized = tools.optimizeBytecode(raw);
 vm.load(optimized);
+
 const addFunc = vm.export('add');
+
 console.log(addFunc.call(5, 6));
