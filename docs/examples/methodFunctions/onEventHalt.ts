@@ -1,5 +1,6 @@
-import { VMEvent } from 'lightvm';
+import { Capability, LightVM, VMEvent } from 'lightvm';
 
+const vm = new LightVM({ caps: [Capability.Debug] });
 vm.on(VMEvent.Halt, (data) => {
   console.log('Event: ', data.event);
   console.log('Payload: ', data.payload);

@@ -9,6 +9,8 @@
  */
 
 use crate::codegen::compile::compile;
+#[cfg(not(target_arch = "wasm32"))]
+use crate::modules::krates::paniclog::{self, SafeState};
 #[cfg(not(feature = "wasm"))]
 use crate::modules::versions::get_versions;
 use crate::modules::vmerror::VMError;
@@ -77,6 +79,21 @@ pub struct LightVM {
   pub diagnostic_links: bool,
 }
 impl LightVM {
+  #[cfg(not(target_arch = "wasm32"))]
+  fn capture_panic(&self, category: &str, context: &str) {
+    let listener_count = self.listeners.values().map(Vec::len).sum();
+    paniclog::capture(
+      category,
+      context,
+      SafeState::new(
+        format!("{:?}", self.state),
+        self.bytecode.len(),
+        self.functions.len(),
+        self.exported.len(),
+        listener_count,
+      ),
+    );
+  }
   pub fn new_node(
     security_config: SecurityConfig,
     nightly: bool,
@@ -327,6 +344,8 @@ impl LightVM {
       );
     }));
     if emit_result.is_err() {
+      #[cfg(not(target_arch = "wasm32"))]
+      self.capture_panic("listener_panic", "compile_start");
       self.state = VmState::Idle;
       return Err(VMError::SystemError(
         "Compile lifecycle listener panicked during compile_start".into(),
@@ -351,6 +370,8 @@ impl LightVM {
       );
     }));
     if emit_result.is_err() {
+      #[cfg(not(target_arch = "wasm32"))]
+      self.capture_panic("listener_panic", "compile_success");
       return Err(VMError::SystemError(
         "Compile lifecycle listener panicked during compile_success".into(),
       ));
@@ -515,6 +536,23 @@ impl LightVM {
   pub fn bench(&self, name: &str) -> Result<Benchmark, VMError> {
     self.require(Capability::Debug)?;
     Ok(Benchmark::new(name))
+  }
+  #[cfg(not(target_arch = "wasm32"))]
+  pub fn list_paniclog_internal(&self) -> Result<String, VMError> {
+    self.list_paniclog_with(paniclog::export)
+  }
+  #[cfg(not(target_arch = "wasm32"))]
+  fn list_paniclog_with(
+    &self,
+    export: impl FnOnce() -> std::io::Result<String>,
+  ) -> Result<String, VMError> {
+    self.require(Capability::Debug)?;
+    export().map_err(|_| VMError::SystemError("Paniclog unavailable".into()))
+  }
+  #[cfg(not(target_arch = "wasm32"))]
+  pub fn clear_paniclog_internal(&self) -> Result<(), VMError> {
+    self.require(Capability::Debug)?;
+    paniclog::clear().map_err(|_| VMError::SystemError("Paniclog unavailable".into()))
   }
   pub fn optimize_bytecode_internal(
     &mut self,
@@ -914,6 +952,34 @@ mod tests {
     let vm = make_vm(vec![Capability::Observe]);
     assert!(vm.bench("no-debug-bench").is_err());
   }
+  #[cfg(not(target_arch = "wasm32"))]
+  #[test]
+  fn paniclog_access_requires_debug_capability() {
+    let vm = make_vm(vec![Capability::Observe]);
+    assert!(vm.list_paniclog_internal().is_err());
+    assert!(vm.clear_paniclog_internal().is_err());
+  }
+  #[cfg(not(target_arch = "wasm32"))]
+  #[test]
+  fn paniclog_can_be_exported_and_cleared_with_debug_capability() {
+    let _guard = paniclog::TEST_SERIAL_LOCK
+      .lock()
+      .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let vm = make_vm(vec![Capability::Debug]);
+    vm.clear_paniclog_internal().unwrap();
+    assert_eq!(vm.list_paniclog_internal().unwrap(), "[]");
+  }
+  #[cfg(not(target_arch = "wasm32"))]
+  #[test]
+  fn paniclog_storage_failure_is_readable() {
+    let vm = make_vm(vec![Capability::Debug]);
+    let error = vm
+      .list_paniclog_with(|| Err(std::io::Error::other("storage unavailable")))
+      .expect_err("expected a storage error");
+    let message = error.to_string();
+    assert!(message.contains("Paniclog unavailable"));
+    assert!(!message.contains(r#"{"status":"error""#));
+  }
   #[test]
   fn optimize_bytecode_internal_succeeds_with_control_capability() {
     let mut vm = make_vm(vec![Capability::Control]);
@@ -948,6 +1014,10 @@ mod tests {
     use crate::types::{
       compile_config::CompileConfig, file_type::FileType, target_arch::TargetArch,
     };
+    #[cfg(not(target_arch = "wasm32"))]
+    let _guard = paniclog::TEST_SERIAL_LOCK
+      .lock()
+      .unwrap_or_else(|poisoned| poisoned.into_inner());
     let mut vm = make_vm(vec![Capability::Control]);
     vm.bytecode = vec![Instructions::Push(crate::types::value::Value::Float64(
       42.0,
@@ -971,5 +1041,35 @@ mod tests {
     } else {
       panic!("Expected SystemError with panic message");
     }
+  }
+  #[cfg(not(target_arch = "wasm32"))]
+  #[test]
+  fn compile_listener_panic_is_recorded_without_its_payload() {
+    use crate::types::{
+      compile_config::CompileConfig, file_type::FileType, target_arch::TargetArch,
+    };
+    let _guard = paniclog::TEST_SERIAL_LOCK
+      .lock()
+      .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let mut vm = make_vm(vec![Capability::Control, Capability::Debug]);
+    vm.clear_paniclog_internal().unwrap();
+    vm.bytecode = vec![Instructions::Push(Value::Float64(42.0))];
+    vm.on_internal(VmEvent::Tick, |data| {
+      if data.payload.to_string().contains("compile_start") {
+        panic!("token=very-secret-value");
+      }
+    })
+    .unwrap();
+    let result = vm.compile_internal(CompileConfig {
+      target_arch: TargetArch::AArch64,
+      path: "/tmp/test_output",
+      file_type: FileType::Assembly,
+    });
+    assert!(result.is_err());
+    let records = vm.list_paniclog_internal().unwrap();
+    assert!(records.contains("listener_panic"));
+    assert!(records.contains("compile_start"));
+    assert!(!records.contains("very-secret-value"));
+    vm.clear_paniclog_internal().unwrap();
   }
 }

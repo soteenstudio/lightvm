@@ -35,6 +35,18 @@ use std::collections::HashSet;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use unescape::unescape;
+#[cfg(not(target_arch = "wasm32"))]
+fn parse_paniclog(records: &str) -> Result<serde_json::Value, VMError> {
+  serde_json::from_str(records)
+    .map_err(|error| VMError::SystemError(format!("Failed to parse paniclog: {}", error).into()))
+}
+#[cfg(not(target_arch = "wasm32"))]
+fn report_paniclog_error<T>(result: Result<T, VMError>) -> Result<T, VMError> {
+  result.map_err(|error| {
+    eprintln!("{}", error);
+    error
+  })
+}
 pub struct ExportedHandle {
   name: String,
   is_function: bool,
@@ -423,6 +435,38 @@ impl LightVM {
       Err(_) => serde_json::Value::Null,
     }
   }
+  /// Returns the persisted paniclog records.
+  ///
+  /// # Examples
+  /// ```rust,ignore
+  /// let vm = LightVM::new(VmConfig {
+  ///   caps: vec![Capability::Debug],
+  ///   ..Default::default()
+  /// });
+  /// let records = vm.paniclog()?;
+  /// ```
+  #[cfg(not(target_arch = "wasm32"))]
+  pub fn paniclog(&self) -> Result<serde_json::Value, VMError> {
+    report_paniclog_error(
+      self
+        .list_paniclog_internal()
+        .and_then(|records| parse_paniclog(&records)),
+    )
+  }
+  /// Clears all persisted paniclog records.
+  ///
+  /// # Examples
+  /// ```rust,ignore
+  /// let vm = LightVM::new(VmConfig {
+  ///   caps: vec![Capability::Debug],
+  ///   ..Default::default()
+  /// });
+  /// vm.clear_paniclog()?;
+  /// ```
+  #[cfg(not(target_arch = "wasm32"))]
+  pub fn clear_paniclog(&self) -> Result<(), VMError> {
+    report_paniclog_error(self.clear_paniclog_internal())
+  }
   pub fn embedded(&mut self) -> serde_json::Value {
     let error_response = |error: VMError| {
       serde_json::json!({
@@ -619,6 +663,8 @@ impl LightVMTools {
 #[cfg(test)]
 mod tests {
   use super::*;
+  #[cfg(not(target_arch = "wasm32"))]
+  use crate::modules::krates::paniclog::{self, SafeState};
   use crate::types::{instructions::Instructions, vmconfig::VmConfig};
   use serde_json::json;
   use std::sync::{
@@ -740,6 +786,60 @@ mod tests {
     let info = vm.inspect();
     assert!(info.is_object());
     assert!(info.get("state").is_some());
+  }
+  #[cfg(not(target_arch = "wasm32"))]
+  #[test]
+  fn paniclog_requires_debug_capability() {
+    let vm = LightVM::new(VmConfig::default());
+    let error = vm.paniclog().expect_err("expected a capability error");
+    assert!(error.to_string().contains("Debug"));
+    assert!(!error.to_string().contains(r#"{"status":"error""#));
+    let error = vm
+      .clear_paniclog()
+      .expect_err("expected a capability error");
+    assert!(error.to_string().contains("Debug"));
+    assert!(!error.to_string().contains(r#"{"status":"error""#));
+  }
+  #[cfg(not(target_arch = "wasm32"))]
+  #[test]
+  fn invalid_paniclog_json_returns_a_readable_error() {
+    let error =
+      report_paniclog_error(parse_paniclog("invalid")).expect_err("expected a decoding error");
+    assert!(error.to_string().contains("Failed to parse paniclog"));
+    assert!(!error.to_string().contains(r#"{"status":"error""#));
+  }
+  #[cfg(not(target_arch = "wasm32"))]
+  #[test]
+  fn paniclog_storage_failure_returns_a_readable_error() {
+    let error = report_paniclog_error::<serde_json::Value>(Err(VMError::SystemError(
+      "Paniclog unavailable".into(),
+    )))
+    .expect_err("expected a storage error");
+    assert!(error.to_string().contains("Paniclog unavailable"));
+    assert!(!error.to_string().contains(r#"{"status":"error""#));
+  }
+  #[cfg(not(target_arch = "wasm32"))]
+  #[test]
+  fn paniclog_returns_records_and_clears_them() {
+    let _guard = paniclog::TEST_SERIAL_LOCK
+      .lock()
+      .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let vm = LightVM::new(VmConfig {
+      caps: vec![Capability::Debug],
+      ..Default::default()
+    });
+    vm.clear_paniclog().unwrap();
+    paniclog::capture(
+      "interface_test",
+      "native",
+      SafeState::new("Idle".into(), 0, 0, 0, 0),
+    );
+    let records = vm.paniclog().unwrap();
+    assert!(records.is_array());
+    assert_eq!(records.as_array().unwrap().len(), 1);
+    assert_eq!(records[0]["category"], "interface_test");
+    vm.clear_paniclog().unwrap();
+    assert_eq!(vm.paniclog().unwrap(), serde_json::json!([]));
   }
   #[test]
   fn tools_exists() {

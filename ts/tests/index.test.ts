@@ -211,4 +211,56 @@ vm.on(VMEvent.Tick, () => {});`,
       });
     });
   });
+
+  describe("Paniclog", () => {
+    test("Debug capability can read and clear paniclog records", () => {
+      const vm = new LightVM({ caps: [Capability.Debug] });
+
+      try {
+        vm.clearPaniclog();
+        expect(Array.isArray(vm.paniclog())).toBe(true);
+        expect(vm.paniclog()).toEqual([]);
+      } finally {
+        vm.clearPaniclog();
+      }
+    });
+
+    test("wrapper calls the N-API paniclog methods by their JavaScript names", () => {
+      const vm = new LightVM({ caps: [Capability.Debug] });
+      const calls: string[] = [];
+      const instance = (vm as any).instance;
+      let records = [{ category: "wrapper_test" }];
+      instance.paniclog = () => {
+        calls.push("paniclog");
+        return records;
+      };
+      instance.clearPaniclog = () => {
+        calls.push("clearPaniclog");
+        records = [];
+      };
+
+      expect(vm.paniclog()).toEqual([{ category: "wrapper_test" }]);
+      vm.clearPaniclog();
+      expect(vm.paniclog()).toEqual([]);
+      expect(calls).toEqual(["paniclog", "clearPaniclog", "paniclog"]);
+    });
+
+    test("missing Debug capability follows the wrapper failure path", () => {
+      const result = spawnSync(
+        process.execPath,
+        [
+          "--input-type=module",
+          "--eval",
+          `import { LightVM } from './dist/index.min.mjs';
+const vm = new LightVM();
+vm.paniclog();`,
+        ],
+        { cwd: process.cwd(), encoding: "utf8", timeout: 1_000 },
+      );
+
+      expect(result.error).toBe(undefined);
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain("Debug");
+    });
+  });
 });
