@@ -479,8 +479,8 @@ impl NodeLightVM {
   pub fn napi_bench(
     &self,
     name: String,
-    setup: Function<(), serde_json::Value>,
-    f: Function<serde_json::Value, serde_json::Value>,
+    setup: Function<(), Unknown<'_>>,
+    f: Function<Unknown<'_>, Unknown<'_>>,
     bytes: Option<u32>,
     samples: Option<u32>,
     target_time: Option<u32>,
@@ -516,21 +516,21 @@ impl NodeLightVM {
     let mut f_error: Option<napi::Error> = None;
     bench_obj.run(
       || match setup.call(()) {
-        Ok(val) => val,
+        Ok(val) => Some(val),
         Err(e) => {
           if setup_error.is_none() {
             setup_error = Some(e);
           }
-          serde_json::Value::Null
+          None
         }
       },
-      |state| match f.call(state.clone()) {
-        Ok(val) => val,
-        Err(e) => {
-          if f_error.is_none() {
-            f_error = Some(e);
+      |state| {
+        if let Some(value) = state {
+          if let Err(e) = f.call(*value) {
+            if f_error.is_none() {
+              f_error = Some(e);
+            }
           }
-          serde_json::Value::Null
         }
       },
     );
