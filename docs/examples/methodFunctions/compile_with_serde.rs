@@ -9,7 +9,7 @@ use lightvm::types::{
 
 fn main() {
   let vm = LightVM::new(VmConfig {
-    caps: vec![Capability::Debug],
+    caps: vec![Capability::Control],
     ..Default::default()
   });
   let tools = vm.tools();

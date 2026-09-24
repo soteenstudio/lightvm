@@ -1,6 +1,6 @@
 import { Capability, LightVM } from 'lightvm';
 
-const vm = new LightVM({ caps: [Capability.Debug] });
+const vm = new LightVM({ caps: [Capability.Control] });
 vm.provide({
   name: 'John Doe',
   force: 2021,
