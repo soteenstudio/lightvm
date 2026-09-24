@@ -309,15 +309,14 @@ impl WasmLightVM {
   }
   #[wasm_bindgen(js_name = "callExport")]
   pub fn call_export(&mut self, name: String, args: JsValue) -> Result<JsValue, JsValue> {
-    let target_name = name.clone();
-    let is_function = self.inner.functions.contains_key(target_name.as_str());
+    let is_function = self.inner.functions.contains_key(name.as_str());
     let serde_args: serde_json::Value = serde_wasm_bindgen::from_value(args).map_err(|e| {
       wasm_bindgen::JsValue::from(js_sys::Error::new(&format!("Invalid export args: {}", e)))
     })?;
     if is_function {
       let raw_result = self
         .inner
-        .call_exported_internal(target_name, serde_args)
+        .call_exported_internal(name, serde_args)
         .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))?;
       let parsed: serde_json::Value = serde_json::from_str(&raw_result).map_err(|e| {
         let vm_err = VMError::SystemError(smol_str::SmolStr::from(format!(
@@ -355,7 +354,7 @@ impl WasmLightVM {
     } else {
       let raw_result = self
         .inner
-        .var_exported_internal(target_name)
+        .var_exported_internal(name)
         .map_err(|e| wasm_bindgen::JsValue::from(js_sys::Error::new(&e.to_string())))?;
       let parsed: serde_json::Value = serde_json::from_str(&raw_result).map_err(|e| {
         let vm_err = VMError::SystemError(smol_str::SmolStr::from(format!(
@@ -543,6 +542,52 @@ mod tests {
   fn start_and_finish_event_names_are_supported() {
     assert_eq!(parse_event("start"), Some(VmEvent::Start));
     assert_eq!(parse_event("finish"), Some(VmEvent::Finish));
+  }
+  #[cfg(target_arch = "wasm32")]
+  #[wasm_bindgen_test::wasm_bindgen_test]
+  fn call_export_returns_function_and_variable_values() {
+    let mut vm = vm_with_control_capability();
+    vm.inner.caps.insert(Capability::Observe);
+    vm.inner.nightly = true;
+    vm.inner
+      .load_internal(
+        serde_json::json!([
+          ["jump", 7],
+          ["func", "add", 2, 2, 6, "a", "b"],
+          ["get", "a"],
+          ["get", "b"],
+          ["add", "int"],
+          ["return"],
+          ["stop"],
+          ["export", "add"],
+          ["val", "x"],
+          ["push", 5],
+          ["set", "x"],
+          ["export", "x"]
+        ])
+        .to_string(),
+      )
+      .unwrap();
+    let function_result = vm
+      .call_export(
+        "add".to_string(),
+        serde_wasm_bindgen::to_value(&serde_json::json!([5, 6])).unwrap(),
+      )
+      .unwrap();
+    assert_eq!(
+      serde_wasm_bindgen::from_value::<serde_json::Value>(function_result).unwrap(),
+      11
+    );
+    let variable_result = vm
+      .call_export(
+        "x".to_string(),
+        serde_wasm_bindgen::to_value(&serde_json::json!([])).unwrap(),
+      )
+      .unwrap();
+    assert_eq!(
+      serde_wasm_bindgen::from_value::<serde_json::Value>(variable_result).unwrap(),
+      5
+    );
   }
   #[test]
   fn tools_optimizer_typed_output_matches_string_boundary() {
