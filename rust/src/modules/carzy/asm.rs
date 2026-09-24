@@ -9,6 +9,7 @@
  */
 
 use crate::types::primitive_types::PrimitiveTypes;
+use std::fmt::Write;
 use std::fs;
 use std::io::Result;
 pub struct AsmBuilder {
@@ -22,11 +23,11 @@ impl AsmBuilder {
     }
   }
   pub fn global(&mut self, name: &str) -> &mut Self {
-    self.buffer.push_str(&format!(".global {}\n", name));
+    writeln!(self.buffer, ".global {}", name).unwrap();
     self
   }
   pub fn symbol_type(&mut self, name: &str, ty: &str) -> &mut Self {
-    self.buffer.push_str(&format!(".type {}, %{}\n", name, ty));
+    writeln!(self.buffer, ".type {}, %{}", name, ty).unwrap();
     self
   }
   pub fn text(&mut self) -> &mut Self {
@@ -52,20 +53,18 @@ impl AsmBuilder {
     self
   }
   pub fn label(&mut self, name: &str) -> &mut Self {
-    self.buffer.push_str(&format!("{}:\n", name));
+    writeln!(self.buffer, "{}:", name).unwrap();
     self
   }
   pub fn comment(&mut self, text: &str) -> &mut Self {
-    self.buffer.push_str(&format!("    // {}\n", text));
+    writeln!(self.buffer, "    // {}", text).unwrap();
     self
   }
   pub fn inst(&mut self, mnemonic: &str, operands: &str) -> &mut Self {
     if operands.is_empty() {
-      self.buffer.push_str(&format!("    {}\n", mnemonic));
+      writeln!(self.buffer, "    {}", mnemonic).unwrap();
     } else {
-      self
-        .buffer
-        .push_str(&format!("    {} {}\n", mnemonic, operands));
+      writeln!(self.buffer, "    {} {}", mnemonic, operands).unwrap();
     }
     self
   }
@@ -88,20 +87,24 @@ impl AsmBuilder {
           .replace("\n", "\\n")
           .replace("\r", "\\r")
           .replace("\t", "\\t");
-        self.buffer.push_str(&format!(
+        write!(
+          self.buffer,
           "{}:\n    {} \"{}\"\n",
           sanitized_name,
           ty.directive(),
           escaped_value
-        ));
+        )
+        .unwrap();
       }
       _ => {
-        self.buffer.push_str(&format!(
+        write!(
+          self.buffer,
           "{}:\n    {} {}\n",
           sanitized_name,
           ty.directive(),
           value
-        ));
+        )
+        .unwrap();
       }
     }
     self
@@ -111,5 +114,99 @@ impl AsmBuilder {
   }
   pub fn write_to_file(&self, path: &str) -> Result<()> {
     fs::write(path, &self.buffer)
+  }
+}
+#[cfg(test)]
+mod tests {
+  use super::*;
+  #[test]
+  fn assembly_preserves_spacing_escapes_and_trailing_newlines() {
+    let mut builder = AsmBuilder::new();
+    builder
+      .global("entry name")
+      .symbol_type("entry", "function")
+      .label("entry")
+      .comment("a\tb")
+      .inst("ret", "")
+      .inst("mov", "x0, x1")
+      .alloc("a-b", PrimitiveTypes::Str, "a\\b\"c\nd\re\tf")
+      .alloc("num!", PrimitiveTypes::Int, "-12");
+    assert_eq!(
+      builder.build().as_bytes(),
+      b".global entry name\n.type entry, %function\nentry:\n    // a\tb\n    ret\n    mov x0, x1\na_b:\n    .asciz \"a\\\\b\\\"c\\nd\\re\\tf\"\nnum_:\n    .word -12\n"
+    );
+  }
+  #[test]
+  #[ignore]
+  fn bench_assembly_direct_buffer_against_formatted_temporary() {
+    use std::hint::black_box;
+    use std::time::Instant;
+    let iterations = 100_000;
+    let old_alloc = |buffer: &mut String, name: &str, ty: PrimitiveTypes, value: &str| {
+      let sanitized_name = name
+        .chars()
+        .map(|character| {
+          if character.is_alphanumeric() || character == '_' {
+            character
+          } else {
+            '_'
+          }
+        })
+        .collect::<String>();
+      if ty == PrimitiveTypes::Str {
+        let escaped_value = value
+          .replace("\\", "\\\\")
+          .replace("\"", "\\\"")
+          .replace("\n", "\\n")
+          .replace("\r", "\\r")
+          .replace("\t", "\\t");
+        buffer.push_str(&format!(
+          "{}:\n    {} \"{}\"\n",
+          sanitized_name,
+          ty.directive(),
+          escaped_value
+        ));
+      } else {
+        buffer.push_str(&format!(
+          "{}:\n    {} {}\n",
+          sanitized_name,
+          ty.directive(),
+          value
+        ));
+      }
+    };
+    let start = Instant::now();
+    for _ in 0..iterations {
+      let mut buffer = String::new();
+      buffer.push_str(&format!(".global {}\n", black_box("entry")));
+      buffer.push_str(&format!(".type {}, %{}\n", "entry", "function"));
+      buffer.push_str(&format!("{}:\n", "entry"));
+      buffer.push_str(&format!("    // {}\n", "comment"));
+      buffer.push_str(&format!("    {}\n", "ret"));
+      buffer.push_str(&format!("    {} {}\n", "mov", "x0, x1"));
+      old_alloc(&mut buffer, "name", PrimitiveTypes::Str, "value");
+      old_alloc(&mut buffer, "num", PrimitiveTypes::Int, "1");
+      black_box(buffer);
+    }
+    let before = start.elapsed();
+    let start = Instant::now();
+    for _ in 0..iterations {
+      let mut builder = AsmBuilder::new();
+      builder
+        .global(black_box("entry"))
+        .symbol_type("entry", "function")
+        .label("entry")
+        .comment("comment")
+        .inst("ret", "")
+        .inst("mov", "x0, x1")
+        .alloc("name", PrimitiveTypes::Str, "value")
+        .alloc("num", PrimitiveTypes::Int, "1");
+      black_box(builder.build());
+    }
+    eprintln!(
+      "assembly format: {before:?}, direct: {:?} ({iterations} runs, debug_assertions={})",
+      start.elapsed(),
+      cfg!(debug_assertions)
+    );
   }
 }

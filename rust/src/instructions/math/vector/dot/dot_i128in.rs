@@ -10,15 +10,31 @@
 
 use crate::types::value::Value;
 use std::sync::Arc;
-pub fn dot_i128in(arr_a: &Arc<Vec<Value>>, arr_b: &Arc<Vec<Value>>) -> Value {
+pub fn dot_i128in(arr_a: &Arc<Vec<Value>>, arr_b: &Arc<Vec<Value>>) -> Result<Value, Value> {
   let mut sum: i128 = 0;
+  let mut invalid_a = None;
+  let mut invalid_b = None;
   for (x, y) in arr_a.iter().zip(arr_b.iter()) {
-    if !x.is_number() || !y.is_number() {
-      return Value::NaN;
+    let x_valid = matches!(
+      x,
+      Value::Int16(_) | Value::Int32(_) | Value::Int64(_) | Value::Int128(_)
+    );
+    let y_valid = matches!(
+      y,
+      Value::Int16(_) | Value::Int32(_) | Value::Int64(_) | Value::Int128(_)
+    );
+    if !x_valid {
+      invalid_a.get_or_insert_with(|| x.clone());
+    }
+    if !y_valid {
+      invalid_b.get_or_insert_with(|| y.clone());
+    }
+    if !x_valid || !y_valid {
+      continue;
     }
     let vx: i128 = x.as_i128();
     let vy: i128 = y.as_i128();
     sum = sum.wrapping_add(vx.wrapping_mul(vy));
   }
-  Value::Int128(sum)
+  invalid_a.or(invalid_b).map_or(Ok(Value::Int128(sum)), Err)
 }

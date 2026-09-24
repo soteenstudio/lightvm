@@ -19,7 +19,10 @@ use crate::types::value::Value;
 use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
 #[inline(always)]
 pub fn atanhv_values(a_val: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value, VMError> {
-  let arr_a = a_val.as_array().ok_or(VMError::TypeMismatch {
+  atanhv_borrowed(&a_val, num_type, ip)
+}
+fn atanhv_borrowed(a_val: &Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value, VMError> {
+  let arr_a = a_val.as_array().ok_or_else(|| VMError::TypeMismatch {
     ip,
     expected: expected_type(num_type, ExpectedCategory::Float),
     found: get_type_name(a_val.clone()),
@@ -51,11 +54,11 @@ pub fn atanhv_values(a_val: Value, num_type: PrimitiveTypes, ip: usize) -> Resul
 }
 #[inline]
 pub fn atanhv_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Result<(), VMError> {
-  let value = stack.last().cloned().ok_or(VMError::StackUnderflow {
+  let value = stack.last().ok_or(VMError::StackUnderflow {
     ip,
     opcode: "ATANHV",
   })?;
-  let result = atanhv_values(value, num_type, ip)?;
+  let result = atanhv_borrowed(value, num_type, ip)?;
   *stack.last_mut().unwrap() = result;
   Ok(())
 }
@@ -80,6 +83,38 @@ mod tests {
     assert!(matches!(
       atanhv_func(&mut stack, PrimitiveTypes::Flt, 17),
       Err(VMError::TypeMismatch { ip: 17, .. })
+    ));
+    assert_eq!(stack, original);
+  }
+  #[test]
+  fn replaces_only_top_value_after_success() {
+    let mut stack = Stack::from_vec(vec![Value::Int32(7), array(vec![Value::Float32(0.5)])]);
+    atanhv_func(&mut stack, PrimitiveTypes::Flt, 16).unwrap();
+    assert_eq!(stack[0], Value::Int32(7));
+    assert!((stack[1].as_array().unwrap()[0].as_f32() - 0.5_f32.atanh()).abs() < f32::EPSILON);
+  }
+  #[test]
+  fn invalid_element_and_directive_preserve_stack() {
+    let mut stack = Stack::from_vec(vec![Value::Int32(7), array(vec![Value::Bool(false)])]);
+    let original = stack.clone();
+    assert!(matches!(
+      atanhv_func(&mut stack, PrimitiveTypes::Flt, 19),
+      Err(VMError::TypeMismatch {
+        ip: 19,
+        found: "Boolean",
+        ..
+      })
+    ));
+    assert_eq!(stack, original);
+    let mut stack = Stack::from_vec(vec![array(vec![Value::Float32(0.0)])]);
+    let original = stack.clone();
+    assert!(matches!(
+      atanhv_func(&mut stack, PrimitiveTypes::Str, 20),
+      Err(VMError::TypeMismatch {
+        ip: 20,
+        found: "unknown",
+        ..
+      })
     ));
     assert_eq!(stack, original);
   }

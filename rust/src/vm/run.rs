@@ -12,6 +12,7 @@ use crate::modules::vmerror::VMError;
 use crate::types::instructions::Instructions;
 use crate::types::value::{RunOptions, Value};
 use serde::Serialize;
+#[cfg(test)]
 use serde_json::Value as JsonValue;
 #[derive(Serialize)]
 struct ValuePayload {
@@ -40,6 +41,7 @@ pub fn execute_and_log(
 }
 #[inline]
 #[cold]
+#[cfg(test)]
 pub fn run(bytecode_json: &str, options: &mut Option<RunOptions>) -> Result<String, VMError> {
   let raw: Vec<JsonValue> = serde_json::from_str(bytecode_json).map_err(|e| {
     VMError::SystemError(smol_str::SmolStr::new(format!(
