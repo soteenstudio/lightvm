@@ -1,45 +1,25 @@
-/*
- * Copyright 2026 SoTeen Studio
- *
- * Licensed under the Apache License, Version 2.0 (the "License")
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- */
-
-use lightvm::{
-  LightVM,
-  types::{capability::Capability, vmconfig::VmConfig},
-};
-
-fn config() -> VmConfig {
-  VmConfig {
-    caps: vec![Capability::Control, Capability::Debug, Capability::Observe],
-    ..Default::default()
-  }
+macro_rules! cases {
+  ($optimize:expr) => {
+    #[test]
+    fn active_branch() {
+      crate::runner::run_case("active_branch", r#"[["push",true],["if_false",4],["push","active"],["jump",5],["push","inactive"],["stop"]]"#, None, $optimize);
+    }
+    #[test]
+    fn inactive_branch() {
+      crate::runner::run_case("inactive_branch", r#"[["push",false],["if_false",4],["push","active"],["jump",5],["push","inactive"],["stop"]]"#, None, $optimize);
+    }
+    #[test]
+    fn skip_diagnostics() {
+      crate::runner::run_case("skip_diagnostics", r#"[["jump",3],["push","unreachable"],["push",999],["push","ready"],["stop"]]"#, None, $optimize);
+    }
+    #[test]
+    fn stock_threshold() {
+      crate::runner::run_case("stock_threshold", r#"[["push",9],["push",5],["gt","int"],["if_false",6],["push","reorder"],["jump",7],["push","available"],["stop"]]"#, None, $optimize);
+    }
+    #[test]
+    fn matching_route() {
+      crate::runner::run_case("matching_route", r#"[["push",4],["push",4],["eq","int"],["if_false",6],["push","matched"],["jump",7],["push","other"],["stop"]]"#, None, $optimize);
+    }
+  };
 }
-
-fn main() {
-  let mut vm = LightVM::new(config());
-  let raw = r#"[
-    ["push", 5],
-    ["push", 8],
-    ["add", "i16"],
-    ["val", "x"],
-    ["push", 9],
-    ["set", "x"]
-  ]"#;
-  let benchmark = vm
-    .tools()
-    .bench("dead_code_bench")
-    .expect("benchmark requires debug capability");
-  benchmark.run(
-    || {
-      let mut vm = LightVM::new(config());
-      vm.load(raw);
-      vm
-    },
-    |vm| vm.run(None),
-  );
-}
+pub(crate) use cases;

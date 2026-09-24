@@ -1,43 +1,50 @@
-/*
- * Copyright 2026 SoTeen Studio
- *
- * Licensed under the Apache License, Version 2.0 (the "License")
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- */
-
-use lightvm::{
-  LightVM,
-  types::{capability::Capability, vmconfig::VmConfig},
-};
-
-fn config() -> VmConfig {
-  VmConfig {
-    caps: vec![Capability::Control, Capability::Debug, Capability::Observe],
-    ..Default::default()
-  }
+macro_rules! cases {
+  ($optimize:expr) => {
+    #[test]
+    fn full_name() {
+      crate::runner::run_case(
+        "full_name",
+        r#"[["push","Ada"],["push"," Lovelace"],["concat"],["stop"]]"#,
+        None,
+        $optimize,
+      );
+    }
+    #[test]
+    fn log_prefix() {
+      crate::runner::run_case(
+        "log_prefix",
+        r#"[["push","INFO: "],["push","connected"],["concat"],["stop"]]"#,
+        None,
+        $optimize,
+      );
+    }
+    #[test]
+    fn url_path() {
+      crate::runner::run_case(
+        "url_path",
+        r#"[["push","/api/"],["push","users"],["concat"],["push","/active"],["concat"],["stop"]]"#,
+        None,
+        $optimize,
+      );
+    }
+    #[test]
+    fn formatted_count() {
+      crate::runner::run_case(
+        "formatted_count",
+        r#"[["push","items: "],["push",7],["to_string"],["concat"],["stop"]]"#,
+        None,
+        $optimize,
+      );
+    }
+    #[test]
+    fn string_length() {
+      crate::runner::run_case(
+        "string_length",
+        r#"[["push","cached"],["push"," result"],["concat"],["length"],["stop"]]"#,
+        None,
+        $optimize,
+      );
+    }
+  };
 }
-
-fn main() {
-  let mut vm = LightVM::new(config());
-  let raw = r#"[
-    ["val", "x"],
-    ["push", "Hello from "],
-    ["push", "LightVM!"],
-    ["set", "x"]
-  ]"#;
-  let benchmark = vm
-    .tools()
-    .bench("concat_bench")
-    .expect("benchmark requires debug capability");
-  benchmark.run(
-    || {
-      let mut vm = LightVM::new(config());
-      vm.load(raw);
-      vm
-    },
-    |vm| vm.run(None),
-  );
-}
+pub(crate) use cases;

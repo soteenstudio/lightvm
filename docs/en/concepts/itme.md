@@ -1,6 +1,24 @@
 # Itme (Benchmarking Tool)
 **Itme** is a high-precision benchmarking utility designed for LightVM, providing developers with actionable insights into code performance. By leveraging statistical analysis and adaptive iteration cycles, **Itme** ensures reliable and reproducible measurements for your functions.
 
+## Rust workload suites
+
+The two Cargo auto-discovered drivers each register 36 paired Itme cases. Cargo discovers them as:
+
+```bash
+cargo bench --bench normal
+cargo bench --bench optimize
+```
+
+To actually run the Itme cases with the default stable-Rust test harness, use:
+
+```bash
+cargo bench --bench normal -- --test
+cargo bench --bench optimize -- --test
+```
+
+Auto-discovered benchmarks use Cargo's default test harness, so the extra `-- --test` is necessary; without it, the targets compile but the harness reports zero benchmarks. Both modes use the same raw workloads. Optimization happens once before Itme setup; VM creation and loading are excluded from the measured `time per op`. Each execution starts with fresh VM runtime state.
+
 ## How Itme Works
 Itme utilizes an adaptive execution strategy to balance benchmarking duration with precision. It automatically calibrates the number of iterations required to reach a target execution window, followed by a rigorous statistical analysis of the samples to filter out noise and report accurate performance metrics.
 

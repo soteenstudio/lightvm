@@ -1,44 +1,50 @@
-/*
- * Copyright 2026 SoTeen Studio
- *
- * Licensed under the Apache License, Version 2.0 (the "License")
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- */
-
-use lightvm::{
-  LightVM,
-  types::{capability::Capability, vmconfig::VmConfig},
-};
-
-fn config() -> VmConfig {
-  VmConfig {
-    caps: vec![Capability::Control, Capability::Debug, Capability::Observe],
-    ..Default::default()
-  }
+macro_rules! cases {
+  ($optimize:expr) => {
+    #[test]
+    fn invoice_total() {
+      crate::runner::run_case(
+        "invoice_total",
+        r#"[["push",12],["push",8],["add","int"],["push",3],["mul","int"],["stop"]]"#,
+        None,
+        $optimize,
+      );
+    }
+    #[test]
+    fn discount_amount() {
+      crate::runner::run_case(
+        "discount_amount",
+        r#"[["push",100],["push",15],["sub","int"],["stop"]]"#,
+        None,
+        $optimize,
+      );
+    }
+    #[test]
+    fn unit_conversion() {
+      crate::runner::run_case(
+        "unit_conversion",
+        r#"[["push",24],["to_float"],["push",2.5],["mul","flt"],["stop"]]"#,
+        None,
+        $optimize,
+      );
+    }
+    #[test]
+    fn average_score() {
+      crate::runner::run_case(
+        "average_score",
+        r#"[["push",40],["push",60],["add","int"],["push",2],["div","int"],["stop"]]"#,
+        None,
+        $optimize,
+      );
+    }
+    #[test]
+    fn bucket_remainder() {
+      crate::runner::run_case(
+        "bucket_remainder",
+        r#"[["push",53],["push",7],["mod","int"],["stop"]]"#,
+        None,
+        $optimize,
+      );
+    }
+  };
 }
-
-fn main() {
-  let mut vm = LightVM::new(config());
-  let raw = r#"[
-    ["val", "x"],
-    ["push", 5],
-    ["push", 8],
-    ["add", "i16"],
-    ["set", "x"]
-  ]"#;
-  let benchmark = vm
-    .tools()
-    .bench("add_bench")
-    .expect("benchmark requires debug capability");
-  benchmark.run(
-    || {
-      let mut vm = LightVM::new(config());
-      vm.load(raw);
-      vm
-    },
-    |vm| vm.run(None),
-  );
-}
+pub(crate) use cases;

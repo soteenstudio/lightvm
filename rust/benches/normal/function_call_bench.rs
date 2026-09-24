@@ -1,49 +1,25 @@
-/*
- * Copyright 2026 SoTeen Studio
- *
- * Licensed under the Apache License, Version 2.0 (the "License")
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- */
-
-use lightvm::{
-  LightVM,
-  types::{capability::Capability, runtime_config::RuntimeConfig, vmconfig::VmConfig},
-};
-
-fn config() -> VmConfig {
-  VmConfig {
-    caps: vec![Capability::Control, Capability::Debug, Capability::Observe],
-    runtime_config: Some(RuntimeConfig { nightly: true }),
-    ..Default::default()
-  }
+macro_rules! cases {
+  ($optimize:expr) => {
+    #[test]
+    fn exported_add() {
+      crate::runner::run_case("exported_add", r#"[["jump",7],["func","calculate",2,2,6,"a","b"],["get","a"],["get","b"],["add","int"],["return"],["stop"],["export","calculate"]]"#, Some("calculate"), $optimize);
+    }
+    #[test]
+    fn exported_subtract() {
+      crate::runner::run_case("exported_subtract", r#"[["jump",7],["func","calculate",2,2,6,"a","b"],["get","a"],["get","b"],["sub","int"],["return"],["stop"],["export","calculate"]]"#, Some("calculate"), $optimize);
+    }
+    #[test]
+    fn exported_product() {
+      crate::runner::run_case("exported_product", r#"[["jump",7],["func","calculate",2,2,6,"a","b"],["get","a"],["get","b"],["mul","int"],["return"],["stop"],["export","calculate"]]"#, Some("calculate"), $optimize);
+    }
+    #[test]
+    fn exported_label() {
+      crate::runner::run_case("exported_label", r#"[["jump",7],["func","calculate",2,2,6,"a","b"],["get","a"],["get","b"],["concat"],["return"],["stop"],["export","calculate"]]"#, Some("calculate"), $optimize);
+    }
+    #[test]
+    fn exported_compare() {
+      crate::runner::run_case("exported_compare", r#"[["jump",7],["func","calculate",2,2,6,"a","b"],["get","a"],["get","b"],["lt","int"],["return"],["stop"],["export","calculate"]]"#, Some("calculate"), $optimize);
+    }
+  };
 }
-
-fn main() {
-  let mut vm = LightVM::new(config());
-  let raw = r#"[
-    ["jump", 7],
-    ["func", "add", 2, 2, 6, "a", "b"],
-    ["get", "a"],
-    ["get", "b"],
-    ["add", "int"],
-    ["return"],
-    ["stop"],
-    ["export", "add"]
-  ]"#;
-  let benchmark = vm
-    .tools()
-    .bench("function_call_bench")
-    .expect("benchmark requires debug capability");
-  benchmark.run(
-    || {
-      let mut vm = LightVM::new(config());
-      vm.load(raw);
-      let function = vm.export("add".to_string());
-      (vm, function)
-    },
-    |(vm, function)| function.call(vm, vec![5.into(), 6.into()]),
-  );
-}
+pub(crate) use cases;
