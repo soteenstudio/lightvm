@@ -9,18 +9,6 @@
 | `Debug` | `2` | Benchmark |
 | `Unsafe` | `3` | `halt` |
 
-## Konfigurasi
-
-::: code-group
-
-<<< @/examples/capsConfig.ts{ts:line-numbers}[TypeScript]
-
-<<< @/examples/caps_config.rs{rs:line-numbers}[Rust]
-
-:::
-
-Kapabilitas yang tidak diberikan menyebabkan operasi terlindungi gagal. Kapabilitas tidak menggantikan batas sumber daya dalam `SecurityConfig`; konfigurasikan keduanya untuk bytecode yang tidak tepercaya.
-
 ::: warning
-Berikan hanya kapabilitas yang diperlukan aplikasi host. `Unsafe` mengizinkan penghentian eksternal, tetapi tidak mengaktifkan `SecurityConfig.unsafeMode`.
+Kegagalan memberikan kapabilitas yang sesuai akan menyebabkan operasi host yang dilindungi gagal dijalankan atau memicu error saat runtime. Pastikan untuk selalu memberikan izin kapabilitas minimum yang dibutuhkan oleh aplikasi Anda.
 :::
