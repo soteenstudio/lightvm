@@ -9,6 +9,8 @@ A `Capability` grants a host operation permission to access a protected `LightVM
 | `Debug` | `2` | Benchmarks, reading panic records, and clearing panic records |
 | `Unsafe` | `3` | `halt`, which stops the VM |
 
+`unsafeMode` disables security checks such as import restrictions and resource quotas for I/O, imports, allocations, calls, and jumps, but does not grant capability permissions. Bounds verification remains enabled. Calling `halt` still requires the `Unsafe` capability in `VMConfig.caps`, even when `unsafeMode` is enabled.
+
 ::: warning
 Failing to provide the required capabilities will cause protected host operations to fail execution or trigger runtime errors. Always ensure you grant the minimum necessary capability permissions required by your application.
 :::
