@@ -3,7 +3,7 @@ use lightvm::types::{capability::Capability, vmconfig::VmConfig, vmevent::VmEven
 
 fn main() {
   let mut vm = LightVM::new(VmConfig {
-    caps: vec![Capability::Debug, Capability::Unsafe],
+    caps: vec![Capability::Unsafe],
     ..Default::default()
   });
 

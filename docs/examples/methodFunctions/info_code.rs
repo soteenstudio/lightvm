@@ -1,9 +1,9 @@
 use lightvm::LightVM;
-use lightvm::types::{capability::Capability, vmconfig::VmConfig};
+use lightvm::types::{vmconfig::VmConfig};
 
 fn main() {
   let mut vm = LightVM::new(VmConfig {
-    caps: vec![Capability::Debug],
+    caps: vec![],
     ..Default::default()
   });
 

@@ -1,9 +1,12 @@
 use lightvm::LightVM;
-use lightvm::types::{capability::Capability, vmconfig::VmConfig};
+use lightvm::types::{
+  capability::Capability, runtime_config::RuntimeConfig, vmconfig::VmConfig,
+};
 
 fn main() {
   let mut vm = LightVM::new(VmConfig {
-    caps: vec![Capability::Debug],
+    caps: vec![Capability::Control, Capability::Observe],
+    runtime_config: Some(RuntimeConfig { nightly: true }),
     ..Default::default()
   });
   let tools = vm.tools();
@@ -19,6 +22,6 @@ fn main() {
   vm.load(optimized);
 
   let score_variable = vm.export("score".to_string());
-  
+
   println!("{:?}", score_variable.call(&mut vm, vec![]));
 }

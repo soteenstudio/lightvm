@@ -38,7 +38,3 @@ If you're using **Rust**, use **Cargo** to integrate **LightVM** natively.
 <<< @/examples/installation/cargo-specific.sh{sh:line-numbers}[Specific Version]
 
 :::
-
-## Expected result
-
-The package is added to your project manifest and is available to import. Continue with [Quick Usage](/get-started/quick-usage) to create a `LightVM` instance.

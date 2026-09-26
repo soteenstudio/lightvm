@@ -1,6 +1,6 @@
-import { Capability, LightVM } from 'lightvm';
+import { LightVM } from 'lightvm';
 
-const vm = new LightVM({ caps: [Capability.Debug] });
+const vm = new LightVM({ caps: [] });
 const tools = vm.tools();
 
 const strVal = `
@@ -8,5 +8,7 @@ const strVal = `
   val x; ;; IP=1
   set x; ;; IP=2
 `;
+
 const parsed = tools.parseLTCArray(strVal);
+
 console.log(parsed);

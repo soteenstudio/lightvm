@@ -18,3 +18,7 @@ Dalam **Rust**, Anda dapat menquery instance VM yang telah diinisialisasi untuk 
 <<< @/examples/methodFunctions/info_code.rs{rust:line-numbers}[Kode]
 
 :::
+
+::: info
+**Kapabilitas yang Dibutuhkan**: tidak ada kapabilitas khusus
+:::

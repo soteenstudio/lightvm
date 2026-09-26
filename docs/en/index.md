@@ -33,14 +33,20 @@ hero:
       link: /get-started/installation
     - theme: alt
       text: API Reference
-      link: /api-reference/method-functions/run-method
+      link: /api-reference/configuration-reference/typescript-configuration
 
 features:
-  - title: Zero Magic (Deterministic)
+  - icon:
+      src: /assets/light/wand-magic.svg
+    title: Zero Magic
     details: Instruction execution is linear and completely predictable. The VM operates explicitly, executing instructions exactly as they are defined.
-  - title: Resource Conscious
+  - icon:
+      src: /assets/light/box.svg
+    title: Resource Conscious
     details: Designed with a minimal memory footprint through the use of optimized data structures such as SmolStr and ahash for fast metadata management.
-  - title: Explicit Security
+  - icon:
+      src: /assets/light/lock.svg
+    title: Explicit Security
     details: Security is managed through a strict Capability system. Every VM access and operation must have permissions explicitly defined by the host from the outset.
 ---
 
