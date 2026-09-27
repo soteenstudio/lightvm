@@ -9,7 +9,7 @@ use lightvm::types::{
 
 fn main() {
   let vm = LightVM::new(VmConfig {
-    caps: vec![Capability::Debug],
+    caps: vec![Capability::Control],
     ..Default::default()
   });
   let tools = vm.tools();
@@ -17,7 +17,9 @@ fn main() {
   let raw = serde_json::json!([
     ["push", 5],
     ["val", "x"],
-    ["set", "x"]
+    ["set", "x"],
+    ["get", "x"],
+    ["println"]
   ]);
 
   let optimized = tools.optimize_bytecode(raw);

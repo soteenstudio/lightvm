@@ -18,3 +18,7 @@ In **Rust**, you can query the initialized VM instance to inspect current runtim
 <<< @/examples/methodFunctions/info_code.rs{rust:line-numbers}[Code]
 
 :::
+
+::: info
+**Capability Required**: no specific capability
+:::

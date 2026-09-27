@@ -19,7 +19,7 @@ export const enUs = defineConfig({
       { text: 'Get Started', link: '/get-started/installation' },
       {
         text: 'API Reference',
-        link: '/api-reference/method-functions/run-method',
+        link: '/api-reference/configuration-reference/typescript-configuration',
       },
       { text: 'Concepts', link: '/concepts/what-is' },
       navAbout,

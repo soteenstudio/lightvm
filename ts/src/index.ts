@@ -103,6 +103,7 @@ export class LightVM {
           capsRaw: this.config.caps,
           runtimeConfig: this.config.runtimeConfig,
           errorOptions: this.config.errorOptions,
+          securityConfig: this.config.securityConfig,
         }),
     );
   }

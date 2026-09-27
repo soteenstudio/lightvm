@@ -3,7 +3,7 @@ use lightvm::{vmconfig::VmConfig, capability::Capability};
 
 fn main() {
   let vm = LightVM::new(VmConfig {
-    caps: vec![Capability::Debug],
+    caps: vec![Capability::Control, Capability::Observe],
     ..Default::default()
   });
   let tools = vm.tools();
