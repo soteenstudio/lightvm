@@ -14,18 +14,19 @@ use serde_json::Value;
 use std::fmt::Write;
 use std::sync::OnceLock;
 static RE_IP: OnceLock<Regex> = OnceLock::new();
+static RE_TOKEN: OnceLock<Regex> = OnceLock::new();
 fn get_re() -> &'static Regex {
   RE_IP.get_or_init(|| Regex::new(r"\s;; IP=(\d+)").unwrap())
 }
 pub fn parse_ltc(code: &str) -> Vec<Instructions> {
   let cleaned_code = get_re().replace_all(code, "");
+  let token_re = RE_TOKEN.get_or_init(|| Regex::new(r#""([^"\\]|\\.)*"|\S+"#).unwrap());
   cleaned_code
     .as_ref()
     .split(';')
     .map(|s: &str| s.trim())
     .filter(|s: &&str| !s.is_empty())
     .map(|line: &str| {
-      let token_re = Regex::new(r#""([^"\\]|\\.)*"|\S+"#).unwrap();
       let mut tokens = token_re.find_iter(line).map(|m| m.as_str());
       let op = tokens.next().unwrap_or("").to_string();
       let mut args: Vec<Value> = tokens
@@ -87,4 +88,50 @@ pub fn stringify_ltc(instructions: Vec<Instructions>) -> String {
     let _ = write!(result, "; ;; IP={}", i);
   }
   result
+}
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn parse_ltc_preserves_quoted_escaped_numeric_and_padded_arguments() {
+    let parsed = parse_ltc(r#"push "hello world"; push "escaped \"quote\""; push 12.5; stop;"#);
+    assert_eq!(parsed.len(), 4);
+    assert_eq!(
+      parsed[0],
+      Instructions::from_parts(
+        "push".to_string(),
+        vec![
+          Value::from("hello world"),
+          Value::from(""),
+          Value::from(""),
+          Value::from(""),
+        ],
+      )
+    );
+    assert_eq!(
+      parsed[1],
+      Instructions::from_parts(
+        "push".to_string(),
+        vec![
+          Value::from(r#"escaped \"quote\""#),
+          Value::from(""),
+          Value::from(""),
+          Value::from(""),
+        ],
+      )
+    );
+    assert_eq!(
+      parsed[2],
+      Instructions::from_parts(
+        "push".to_string(),
+        vec![
+          Value::from(12.5),
+          Value::from(""),
+          Value::from(""),
+          Value::from(""),
+        ],
+      )
+    );
+  }
 }

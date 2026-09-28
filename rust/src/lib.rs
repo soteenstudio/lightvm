@@ -8,6 +8,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+// TODO: add perf
 #[doc(hidden)]
 pub(crate) mod codegen;
 #[doc(hidden)]

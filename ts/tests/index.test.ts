@@ -40,12 +40,14 @@ describe("LightVM Suite", () => {
       const vm = new LightVM({ caps: [Capability.Debug] });
       const tools = vm.tools();
       let executions = 0;
+      let correctState = true;
 
       suppressConsole(() => {
         expect(() =>
           tools.bench("wrapper-bench").samples(1).targetTime(1).run(
             () => 1,
             (state: number) => {
+              correctState = correctState && state === 1;
               executions += 1;
               return state + 1;
             },
@@ -54,6 +56,101 @@ describe("LightVM Suite", () => {
       });
 
       expect(executions > 0).toBe(true);
+      expect(correctState).toBe(true);
+    });
+
+    test("bench accepts a VM as setup state", () => {
+      const vm = new LightVM({ caps: [Capability.Debug] });
+      const raw = [
+        ["val", "x"],
+        ["push", 5],
+        ["push", 8],
+        ["add", "i16"],
+        ["set", "x"],
+      ];
+      let executions = 0;
+      let sameState = true;
+      let currentState: LightVM;
+
+      suppressConsole(() => {
+        vm.tools().bench("add-bench").samples(1).targetTime(1).run(
+          () => (currentState = createVM().load(raw)),
+          (state: LightVM) => {
+            sameState = sameState && state === currentState;
+            state.run();
+            executions += 1;
+          },
+        );
+      });
+
+      expect(executions > 0).toBe(true);
+      expect(sameState).toBe(true);
+    });
+
+    test("bench accepts an exported-function handle in setup state", () => {
+      const vm = new LightVM({ caps: [Capability.Debug] });
+      const raw = [
+        ["jump", 7],
+        ["func", "add", 2, 2, 6, "a", "b"],
+        ["get", "a"],
+        ["get", "b"],
+        ["add", "int"],
+        ["return"],
+        ["stop"],
+        ["export", "add"],
+      ];
+      let executions = 0;
+      let sameState = true;
+      let correctResult = true;
+      let currentState: {
+        vm: LightVM;
+        function: { call: (...args: number[]) => number };
+      };
+
+      suppressConsole(() => {
+        vm.tools().bench("function-call-bench").samples(1).targetTime(1).run(
+          () => {
+            const benchmarkVm = new LightVM({
+              caps: [Capability.Control, Capability.Observe],
+              runtimeConfig: { nightly: true },
+            }).load(raw);
+            return (currentState = {
+              vm: benchmarkVm,
+              function: benchmarkVm.export("add"),
+            });
+          },
+          (state: typeof currentState) => {
+            sameState = sameState && state === currentState;
+            correctResult = correctResult && state.function.call(5, 6) === 11;
+            executions += 1;
+          },
+        );
+      });
+
+      expect(executions > 0).toBe(true);
+      expect(sameState).toBe(true);
+      expect(correctResult).toBe(true);
+    });
+
+    test("bench reports callback errors to the caller", () => {
+      const result = spawnSync(
+        process.execPath,
+        [
+          "--input-type=module",
+          "--eval",
+          `import { Capability, LightVM } from './dist/index.min.mjs';
+const vm = new LightVM({ caps: [Capability.Debug] });
+vm.tools().bench('callback-error').samples(1).targetTime(1).run(
+  () => 1,
+  () => { throw new Error('benchmark callback failed'); },
+);`,
+        ],
+        { cwd: process.cwd(), encoding: "utf8", timeout: 5_000 },
+      );
+
+      expect(result.error).toBe(undefined);
+      expect(result.status).toBe(1);
+      expect(result.stderr.includes("benchmark callback failed")).toBe(true);
     });
   });
 

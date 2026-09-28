@@ -29,7 +29,6 @@ use crate::types::{
   vmevent::VmEvent,
   vmstate::VmState,
 };
-use crate::vm::run::run;
 use ahash::AHashMap;
 use regex::Regex;
 use serde::Serialize;
@@ -79,6 +78,37 @@ pub struct LightVM {
   pub diagnostic_links: bool,
 }
 impl LightVM {
+  fn execute_typed(
+    &self,
+    entry: Option<usize>,
+    args: Vec<Value>,
+    capture_return: bool,
+  ) -> Result<(String, Option<RunOptions>), VMError> {
+    let options = RunOptions {
+      entry,
+      args,
+      capture_return,
+      imports: self._imports.clone(),
+      halt_flag: self.should_halt.clone(),
+      security_config: SecurityConfig {
+        max_io: self.max_io,
+        max_import: self.max_import,
+        max_alloc: self.max_alloc,
+        max_call: self.max_call,
+        max_jump: self.max_jump,
+        max_ticks: self.max_ticks,
+        max_stack_size: self.max_stack_size,
+        allowed_imports: self.allowed_imports.clone(),
+        unsafe_mode: self.unsafe_mode,
+        time_budget: self.time_budget,
+      },
+      symbol_table: None,
+      vars: None,
+    };
+    let mut options = Some(options);
+    let result = crate::vm::run::execute_and_log(self.bytecode.clone(), &mut options)?;
+    Ok((result, options))
+  }
   #[cfg(not(target_arch = "wasm32"))]
   fn capture_panic(&self, category: &str, context: &str) {
     let listener_count = self.listeners.values().map(Vec::len).sum();
@@ -220,24 +250,20 @@ impl LightVM {
         });
       }
     }
-    if !self.nightly {
+    if !self.nightly && has_nightly_opcodes(&raw_code) {
       let mut nightly_ip = 0;
-      let raw_list_check: Result<Vec<serde_json::Value>, _> = serde_json::from_str(&raw_code);
-      if let Ok(list) = raw_list_check {
+      if let Ok(list) = serde_json::from_str::<Vec<serde_json::Value>>(&raw_code) {
         for (ip, item) in list.iter().enumerate() {
-          let item_str = item.to_string();
-          if has_nightly_opcodes(&item_str) {
+          if has_nightly_opcodes(&item.to_string()) {
             nightly_ip = ip;
             break;
           }
         }
       }
-      if has_nightly_opcodes(&raw_code) {
-        return Err(VMError::FeatureRestricted {
-          ip: nightly_ip,
-          feature: "Nightly Opcodes (Experimental)",
-        });
-      }
+      return Err(VMError::FeatureRestricted {
+        ip: nightly_ip,
+        feature: "Nightly Opcodes (Experimental)",
+      });
     }
     if raw_code.starts_with('[') {
       let raw_list: Vec<serde_json::Value> = serde_json::from_str(&raw_code).map_err(|e| {
@@ -279,36 +305,12 @@ impl LightVM {
     self.state = VmState::Running;
     self.emit(VmEvent::Start, serde_json::json!({ "operation": "run" }));
     self.emit(VmEvent::Tick, serde_json::json!({ "state": "start" }));
-    let bytecode_json = serde_json::to_string(&self.bytecode).map_err(|e| {
-      VMError::SystemError(smol_str::SmolStr::new(format!(
-        "Failed to serialize bytecode: {}",
-        e
-      )))
-    })?;
-    let options = RunOptions {
-      entry: None,
-      args: Vec::new(),
-      capture_return: options.is_some_and(|options| options.capture_return),
-      imports: self._imports.clone(),
-      halt_flag: self.should_halt.clone(),
-      security_config: SecurityConfig {
-        max_io: self.max_io,
-        max_import: self.max_import,
-        max_alloc: self.max_alloc,
-        max_call: self.max_call,
-        max_jump: self.max_jump,
-        max_ticks: self.max_ticks,
-        max_stack_size: self.max_stack_size,
-        allowed_imports: self.allowed_imports.clone(),
-        unsafe_mode: self.unsafe_mode,
-        time_budget: self.time_budget,
-      },
-      symbol_table: None,
-      vars: None,
-    };
-    let mut opt_wrapper = Some(options.clone());
-    let result = crate::vm::run::run(&bytecode_json, &mut opt_wrapper)?;
-    self.last_run_options = opt_wrapper;
+    let (result, options) = self.execute_typed(
+      None,
+      Vec::new(),
+      options.is_some_and(|options| options.capture_return),
+    )?;
+    self.last_run_options = options;
     self.state = VmState::Idle;
     self.emit(VmEvent::Finish, serde_json::json!({ "operation": "run" }));
     Ok(result)
@@ -443,31 +445,9 @@ impl LightVM {
     let args: Vec<Value> = serde_json::from_str(&json_args)
       .map_err(|e| VMError::SystemError(SmolStr::new(format!("Invalid args: {}", e))))?;
     self.state = VmState::Running;
-    let bytecode_str = serde_json::to_string(&self.bytecode).map_err(|e| {
-      VMError::SystemError(SmolStr::new(format!("Failed to stringify bytecode: {}", e)))
-    })?;
-    let options = RunOptions {
-      entry: Some(fn_meta.start),
-      args,
-      capture_return: true,
-      imports: self._imports.clone(),
-      halt_flag: self.should_halt.clone(),
-      security_config: SecurityConfig {
-        max_io: self.max_io,
-        max_import: self.max_import,
-        max_alloc: self.max_alloc,
-        max_call: self.max_call,
-        max_jump: self.max_jump,
-        max_ticks: self.max_ticks,
-        max_stack_size: self.max_stack_size,
-        allowed_imports: self.allowed_imports.clone(),
-        unsafe_mode: self.unsafe_mode,
-        time_budget: self.time_budget,
-      },
-      symbol_table: None,
-      vars: None,
-    };
-    let result_run = run(&bytecode_str.clone(), &mut Some(options));
+    let result_run = self
+      .execute_typed(Some(fn_meta.start), args, true)
+      .map(|(result, _)| result);
     self.state = VmState::Idle;
     result_run
   }
@@ -558,6 +538,14 @@ impl LightVM {
     &mut self,
     bytecode_raw: serde_json::Value,
   ) -> Result<String, VMError> {
+    let optimized = self.optimize_bytecode_typed(bytecode_raw)?;
+    serde_json::to_string(&optimized)
+      .map_err(|e| VMError::SystemError(format!("Failed to stringify: {}", e).into()))
+  }
+  pub(crate) fn optimize_bytecode_typed(
+    &mut self,
+    bytecode_raw: serde_json::Value,
+  ) -> Result<serde_json::Value, VMError> {
     self.require(Capability::Control)?;
     self.set_mode(
       self.backtrace,
@@ -585,16 +573,18 @@ impl LightVM {
         feature: "Nightly Opcodes (Experimental)",
       });
     }
-    let json_str = bytecode_raw.to_string();
-    let raw_list: Vec<serde_json::Value> = serde_json::from_str(&json_str)
-      .map_err(|e| VMError::SystemError(format!("Invalid JSON format: {}", e).into()))?;
+    let raw_list = match bytecode_raw {
+      serde_json::Value::Array(raw_list) => raw_list,
+      value => serde_json::from_str::<Vec<serde_json::Value>>(&value.to_string())
+        .map_err(|e| VMError::SystemError(format!("Invalid JSON format: {}", e).into()))?,
+    };
     let bytecode: Result<Vec<Instructions>, VMError> = raw_list
       .iter()
       .enumerate()
       .map(|(ip, item)| Instructions::from_json_array(item, ip))
       .collect();
     let optimized = optimize_bytecode(bytecode?, self.time_budget);
-    serde_json::to_string(&optimized)
+    serde_json::to_value(optimized)
       .map_err(|e| VMError::SystemError(format!("Failed to stringify: {}", e).into()))
   }
   // TODO: Is there a bug in the following code?
@@ -865,6 +855,55 @@ mod tests {
     );
   }
   #[test]
+  fn typed_execution_matches_json_execution_and_retained_state() {
+    let mut vm = make_vm(vec![Capability::Control]);
+    vm.bytecode = vec![Instructions::Push(Value::Int32(42)), Instructions::Stop];
+    vm.provide_internal(SmolStr::new("answer"), serde_json::json!(42))
+      .unwrap();
+    let bytecode_json = serde_json::to_string(&vm.bytecode).unwrap();
+    let typed_result = vm
+      .run_internal(Some(RunOptions {
+        capture_return: true,
+        ..Default::default()
+      }))
+      .unwrap();
+    let typed_options = vm.last_run_options.clone().unwrap();
+    let mut json_options = Some(RunOptions {
+      entry: None,
+      args: Vec::new(),
+      capture_return: true,
+      imports: vm._imports.clone(),
+      halt_flag: vm.should_halt.clone(),
+      security_config: SecurityConfig {
+        max_io: vm.max_io,
+        max_import: vm.max_import,
+        max_alloc: vm.max_alloc,
+        max_call: vm.max_call,
+        max_jump: vm.max_jump,
+        max_ticks: vm.max_ticks,
+        max_stack_size: vm.max_stack_size,
+        allowed_imports: vm.allowed_imports.clone(),
+        unsafe_mode: vm.unsafe_mode,
+        time_budget: vm.time_budget,
+      },
+      symbol_table: None,
+      vars: None,
+    });
+    let json_result = crate::vm::run::run(&bytecode_json, &mut json_options).unwrap();
+    assert_eq!(typed_result, json_result);
+    let json_options = json_options.unwrap();
+    assert_eq!(typed_options.entry, json_options.entry);
+    assert_eq!(typed_options.args, json_options.args);
+    assert_eq!(typed_options.capture_return, json_options.capture_return);
+    assert_eq!(typed_options.imports, json_options.imports);
+    assert_eq!(typed_options.symbol_table, json_options.symbol_table);
+    assert_eq!(typed_options.vars, json_options.vars);
+    assert_eq!(
+      typed_options.security_config.max_ticks,
+      json_options.security_config.max_ticks
+    );
+  }
+  #[test]
   fn run_internal_emits_start_and_finish_with_event_data() {
     let mut vm = make_vm(vec![Capability::Control]);
     vm.bytecode = vec![Instructions::Push(crate::types::value::Value::Float64(
@@ -943,6 +982,44 @@ mod tests {
     assert_eq!(payload["value"], 9);
   }
   #[test]
+  fn load_internal_preserves_json_bytecode_metadata_and_resets_runtime_state() {
+    let mut vm = make_vm(vec![Capability::Control]);
+    vm.nightly = true;
+    vm.last_run_options = Some(RunOptions::default());
+    vm.load_internal(
+      r#"[["jump",4],["func","sum",0,2,3],["return"],["stop"],["export","sum"]]"#.to_string(),
+    )
+    .unwrap();
+    assert_eq!(vm.bytecode.len(), 5);
+    assert!(vm.functions.contains_key("sum"));
+    assert!(vm.exported.contains("sum"));
+    assert!(vm.last_run_options.is_none());
+  }
+  #[test]
+  fn load_internal_preserves_malformed_json_error_prefix() {
+    let mut vm = make_vm(vec![Capability::Control]);
+    let error = vm
+      .load_internal(r#"[["push", 1]"#.to_string())
+      .expect_err("expected malformed JSON to fail");
+    assert!(error.to_string().contains("Failed to parse JSON:"));
+  }
+  #[test]
+  fn load_internal_rejects_malformed_nightly_source_before_json_parsing() {
+    let mut vm = make_vm(vec![Capability::Control]);
+    let error = vm
+      .load_internal(r#"[["push", 1], ["import""#.to_string())
+      .expect_err("expected nightly opcode rejection");
+    assert!(matches!(error, VMError::FeatureRestricted { ip: 0, .. }));
+  }
+  #[test]
+  fn load_internal_preserves_nightly_instruction_index() {
+    let mut vm = make_vm(vec![Capability::Control]);
+    let error = vm
+      .load_internal(r#"[["push", 1], ["import", "math"]]"#.to_string())
+      .expect_err("expected nightly opcode rejection");
+    assert!(matches!(error, VMError::FeatureRestricted { ip: 1, .. }));
+  }
+  #[test]
   fn bench_succeeds_with_debug_capability() {
     let vm = make_vm(vec![Capability::Debug]);
     assert!(vm.bench("debug-bench").is_ok());
@@ -985,6 +1062,15 @@ mod tests {
     let mut vm = make_vm(vec![Capability::Control]);
     let bytecode = serde_json::json!([["stop"]]);
     assert!(vm.optimize_bytecode_internal(bytecode).is_ok());
+  }
+  #[test]
+  fn typed_optimizer_serializes_identically_to_string_boundary() {
+    let bytecode = serde_json::json!([["push", 1], ["push", 2], ["add", "int"], ["stop"]]);
+    let mut typed_vm = make_vm(vec![Capability::Control]);
+    let typed = typed_vm.optimize_bytecode_typed(bytecode.clone()).unwrap();
+    let mut string_vm = make_vm(vec![Capability::Control]);
+    let string = string_vm.optimize_bytecode_internal(bytecode).unwrap();
+    assert_eq!(serde_json::to_string(&typed).unwrap(), string);
   }
   #[test]
   fn optimize_bytecode_internal_fails_without_control_capability() {
