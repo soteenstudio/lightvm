@@ -18,6 +18,7 @@ pub(crate) mod logarithm;
 pub(crate) mod root;
 pub(crate) mod trigonometry;
 pub(crate) mod vector;
+// TODO: pub(crate) mod matrix;
 #[cfg(test)]
 fn assert_unary_trigonometry_validation(
   values: fn(
