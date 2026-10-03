@@ -1,0 +1,12 @@
+# Dying
+**Dying** adalah sistem penanganan kepanikan dan penghentian bawaan yang disertakan bersama **LightVM** untuk mengelola error fatal, crash sistem, danexception runtime kritis dengan stack trace serta diagnostik berpemetaan warna yang bersih guna memastikan efisiensi debugging yang maksimal, overhead minimal, dan pelaporan error yang andal. Setiap laporan error diformat dengan kode warna ANSI yang presisi untuk menyoroti titik kegagalan kritis dan mencegah ambiguitas exception yang tidak tertangani.
+
+## Cara Kerja Dying
+Dying menggunakan pipa pemformatan error khusus dan mekanisme **Diagnostik Berbasis Warna** untuk melaporkan kendala runtime dengan aman. Sistem ini memproses aliran diagnostik melalui beberapa tahapan visual yang diurutkan secara dinamis berdasarkan bobot tingkat keparahan (`color_weights`), guna mengidentifikasi, menyoroti konteks kegagalan secara efektif, dan memformat pesan diagnostik sebelum runtime VM dimatikan.
+
+  * **Konstanta Warna Khusus**: Dying mengoptimalkan keterbacaan terminal dan perbedaan log dengan mendefinisikan konstanta warna ANSI yang jelas (misalnya: `RED`, `CYAN`, `GREEN`, `YELLOW`, `BLUE`, `MAGENTA`, `BRIGHT_GREEN`, `DARK_GRAY`). Hal ini memungkinkan VM mengeluarkan diagnostik dengan hierarki visual yang telah ditentukan sebelumnya, sehingga secara signifikan mengurangi beban pemuraian log manual dan duplikasi kode ANSI.
+ * **Penyensoran & Sorotan Error Kritis**: Memformat pesan crash fatal menggunakan indikator merah tebal (`RED` dan `BOLD`) jika status kegagalan terdeteksi pada saat runtime.
+ * **Pewarnaan Metadata & Status**: Mengevaluasi indikator status dan label metadata terlebih dahulu menggunakan gaya sian dan hijau (`CYAN`, `GREEN`, `BRIGHT_GREEN`) untuk membedakan antara batas eksekusi normal dan status error.
+ * **Gaya Peringatan & Pemberitahuan**: Mengganti log peringatan generik dengan warna kuning dan magenta bervisibilitas tinggi (`YELLOW`, `MAGENTA`) guna menarik perhatian langsung terhadap anomali runtime yang tidak fatal.
+ * **Peredupan Jejak (Trace Dimming)**: Menganalisis kedalaman stack trace dan secara otomatis menerapkan gaya redup (`DARK_GRAY`) pada bingkai panggilan sekunder yang tidak berkontribusi langsung terhadap akar penyebab utama kegagalan.
+ * **Penegakan Reset Lingkup**: Mengidentifikasi dan menambahkan urutan reset standar (`RESET`) ke setiap blok log yang diformat, guna mencegah kebocoran warna ke sesi terminal host luar.
