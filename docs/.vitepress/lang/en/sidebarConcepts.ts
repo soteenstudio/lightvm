@@ -8,6 +8,8 @@ export const sidebarConcepts = [
       { text: 'Gazle (Optimizer)', link: '/concepts/gazle' },
       { text: 'Krates (Validate & Security)', link: '/concepts/krates' },
       { text: 'Itme (Benchmarking Tool)', link: '/concepts/itme' },
+      { text: 'Carzy (Assembly Builder)', link: '/concepts/carzy' },
+      { text: 'Dying (Coloring)', link: '/concepts/dying' },
       { text: 'VMError (Error Reporting)', link: '/concepts/vmerror' },
     ],
   },

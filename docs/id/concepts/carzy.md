@@ -1,4 +1,4 @@
-# Carzy
+# Carzy (Pembuat Assembly)
 **Carzy** adalah modul assembly dan pembuatan kode tingkat rendah bawaan **LightVM**. Modul ini menyediakan pembantu untuk teks assembly, simbol, bagian memori (*text*, *data*, *rodata*), konstanta I/O, dan instruksi khusus arsitektur.
 
 ## Cara Kerja Carzy

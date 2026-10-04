@@ -1,4 +1,4 @@
-# VMError
+# VMError (Pelaporan Error)
 **VMError** adalah modul pelaporan error terstruktur bawaan yang disertakan bersama **LightVM** untuk menjelaskan kegagalan runtime, error validasi, dan masalah sistem host melalui kode error serta diagnostik kontekstual. Enum `VMError` pada Rust menyimpan detail setiap kegagalan, sementara pemformatnya menghasilkan pesan berpemetaan warna dengan informasi debugging yang dapat dikonfigurasi.
 
 ## Cara Kerja VMError

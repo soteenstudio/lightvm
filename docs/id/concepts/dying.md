@@ -1,4 +1,4 @@
-# Dying
+# Dying (Pewarnaan)
 **Dying** adalah modul bawaan yang menyediakan konstanta warna dan gaya ANSI bersama untuk diagnostik **LightVM**.
 
 ## Cara Kerja Dying

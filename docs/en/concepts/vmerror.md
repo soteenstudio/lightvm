@@ -1,4 +1,4 @@
-# VMError
+# VMError (Error Reporting)
 **VMError** is a built-in structured error-reporting module that comes with **LightVM** to describe runtime failures, validation errors, and host-system problems with error codes and contextual diagnostics. The Rust `VMError` enum preserves details about each failure, while its formatter produces color-coded messages with configurable debugging information.
 
 ## How VMError Works

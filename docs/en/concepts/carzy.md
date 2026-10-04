@@ -1,4 +1,4 @@
-# Carzy
+# Carzy (Assembly Builder)
 **Carzy** is a built-in low-level assembly and code generation module that comes with **LightVM**. It provides helpers for assembly text, symbols, memory sections (*text*, *data*, *rodata*), I/O constants, and architecture-specific instructions.
 
 ## How Carzy Works

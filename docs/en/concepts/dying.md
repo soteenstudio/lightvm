@@ -1,4 +1,4 @@
-# Dying
+# Dying (Coloring)
 **Dying** is a built-in module that provides shared ANSI color and style constants for **LightVM** diagnostics.
 
 ## How Dying Works
