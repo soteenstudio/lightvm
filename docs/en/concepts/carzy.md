@@ -1,16 +1,16 @@
 # Carzy
-**Carzy** is a built-in low-level assembly and code generation module that comes with **LightVM** to produce clean, structured, and secure assembly instructions. This module provides a flexible and modular architectural foundation to handle symbol generation, memory sections (*text*, *data*, *rodata*), I/O constant injection, and architecture-specific instruction manipulation without requiring drastic documentation overhauls when new architectures are added.
+**Carzy** is a built-in low-level assembly and code generation module that comes with **LightVM**. It provides helpers for assembly text, symbols, memory sections (*text*, *data*, *rodata*), I/O constants, and architecture-specific instructions.
 
 ## How Carzy Works
-Carzy employs a two-tier architecture mechanism: the **Core Assembly Engine (`AsmBuilder`)** as a general foundation handling text formatting, string encoding, and buffer writing, alongside an **Architecture-Specific Builder (e.g., `AArch64Builder`)** as a wrapper layer to translate hardware-specific commands. This separation ensures that core assembly-writing logic remains centralized, while expansion to other architectures can be achieved simply by extending wrapper layers without altering the main documentation structure.
+Carzy uses a two-tier architecture: the **Core Assembly Engine (`AsmBuilder`)** manages text formatting and a string buffer, while the **Architecture-Specific Builder (`AArch64Builder`)** wraps it with instruction helpers. These builders emit assembly text without validating instructions or operands.
 
-  * **Core Assembly Buffer (`AsmBuilder`)**: Optimizes assembly text generation performance using direct `String` memory buffer management and the `writeln!` trait, significantly reducing memory reallocation overhead compared to temporary string formatting methods.
-  * **Automatic Symbol Name Sanitization**: Automatically cleans and maps non-alphanumeric characters in label or variable names to underscores (`_`) to prevent syntax errors in low-level assemblers.
-  * **Global I/O Constant Injection**: Provides a centralized function to instantly inject standard system constants (such as newline characters, object/array type markers, and ANSI screen-clearing codes).
-  * **Architecture Instruction Abstraction (`AArch64Builder`, etc.)**: Wraps hardware-specific instructions (such as `mov`, `add`, `sub`, `ldr`, `str`, and `ret`) into clean helper methods, making assembly code writing resemble safe, high-level function calls.
-  * **Modular Memory Section Management**: Declaratively defines memory segment separation through `.text` (instruction code), `.data` (modifiable variables), and `.section .rodata` (read-only/constant data).
-  * **Secure String Escaping**: Automatically handles special characters like backslashes, quotes, tabs, and newlines on primitive string data types to ensure safe compilation by external assemblers.
+  * **Core Assembly Buffer (`AsmBuilder`)**: Writes directly to a `String` buffer using the `write!` and `writeln!` macros and the `std::fmt::Write` trait. `build()` returns the text, and `write_to_file()` writes it to a file.
+  * **Allocation Name Sanitization**: `AsmBuilder::alloc()` replaces characters that are neither alphanumeric nor underscores with `_` in allocation names. `label()`, `global()`, and `symbol_type()` write names as supplied.
+  * **Global I/O Constant Injection**: Emits constants for a newline, the text `16`, object/array markers, and ANSI screen-clearing sequences.
+  * **Architecture Instruction Helpers**: `AArch64Builder` provides methods such as `mov`, `add`, `sub`, `ldr`, `str`, and `ret` to format instruction text.
+  * **Memory Section Management**: Emits `.text`, `.data`, and `.section .rodata` directives.
+  * **String Escaping**: `alloc()` escapes backslashes, quotes, newlines, carriage returns, and tabs for `PrimitiveTypes::Str` values.
 
 ::: info
-You can find how to extend and use Carzy on the [Compile Method](../api-reference/method-functions/compile-method) page.
+You can find how to use Carzy on the [Compile Method](../api-reference/method-functions/compile-method) page.
 :::
