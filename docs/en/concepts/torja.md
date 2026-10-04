@@ -1,10 +1,10 @@
 # Torja (Symbol Resolver)
-Torja is the core Symbol Resolver of LightVM. It acts as a bridge between high-level bytecode—which uses human-readable names for variables and functions—and the high-performance execution engine that relies on memory-efficient numerical indices.
+**Torja** is the Symbol Resolver of **LightVM**. It maps variable names to numerical indices used by the execution engine.
 
 ## How Torja Works
-Before your bytecode reaches the execution phase, Torja performs a crucial pass to resolve all symbolic references into fixed-position indices.
+Each `resolve_symbols()` call creates one symbol table, loads import names, and rewrites supported symbolic instructions. Indices belong to that resolution call; they are not guaranteed to remain the same across calls.
 
-  * **Symbol Mapping & Imports**: Torja pre-loads the symbol table with all provided imports. As it traverses the bytecode, it maps every unique variable name found in symbolic instructions to a stable integer index.
-  * **Dynamic Resolution**: It utilizes a `get_or_insert_idx` logic; if a variable name is encountered for the first time, Torja dynamically assigns a new index using an incrementing counter (`next_idx`), ensuring a unique ID for every symbol throughout the program lifecycle.
-  * **Instruction Specialization**: It transforms generic, name-based instructions into their specialized index-based counterparts. This includes converting `get` to `get_idx`, `set` to `set_idx`, `inc` to `inc_idx`, and `dec` to `dec_idx`. This minimizes runtime lookups and significantly reduces CPU overhead during execution.
-  * **Functional Scope Tracking**: Torja identifies function parameter names within `Func` instructions. It registers these names into the symbol table, ensuring all local-scoped identifiers are correctly tracked and prepared for the VM's stack-based architecture.
+  * **Symbol Mapping & Imports**: Preloads import names into the symbol table and assigns indices to additional names encountered in bytecode.
+  * **Dynamic Resolution**: `get_or_insert_idx` reuses an existing index or assigns a new one using `next_idx`.
+  * **Index-Based Instructions**: Converts `val`, `get`, `set`, `inc`, and `dec` into their index-based counterparts. Type-specific `push` specialization belongs to Gazle.
+  * **Function Parameter Names**: Registers parameter names from `Func` instructions in the same symbol table as other names. It does not create separate lexical scope tables; identical names share an index within the call.

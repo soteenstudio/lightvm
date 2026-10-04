@@ -1,16 +1,16 @@
 # Krates (Validasi & Keamanan)
-**Krates** adalah lapisan validasi dan keamanan khusus dari **LightVM**. Ia bertindak sebagai penjaga gerbang terakhir yang memeriksa bytecode sebelum eksekusi, memastikan lingkungan runtime tetap terlindungi dari instruksi yang cacat, fitur yang tidak sah, dan pelanggaran akses memori.
+**Krates** adalah lapisan validasi dan keamanan **LightVM**. Krates memeriksa struktur bytecode tertentu dan pembatasan sumber daya yang dikonfigurasi sebelum dan selama eksekusi.
 
 ## Cara Kerja Krates
-Krates menerapkan protokol keamanan yang ketat melalui alur verifikasi yang komprehensif. Dengan memvalidasi integritas dan kepatuhan setiap instruksi, Krates menjamin bahwa hanya bytecode yang aman dan deterministik yang dapat mencapai mesin eksekusi.
+Krates menggabungkan validasi struktural, pemeriksaan keamanan, dan pemantauan tick eksekusi. Pemeriksaan ini tidak membuktikan keamanan bytecode secara menyeluruh, determinisme, atau keterjangkauan fungsi.
 
-  * **Verifikasi Batas**: Memindai semua instruksi lompatan (jump), percabangan (branch), dan pengulangan (loop) untuk memastikan alamat tujuan berada dalam ruang memori yang valid, guna mencegah akses di luar batas.
-  * **Keamanan Variabel**: Memvalidasi bahwa semua instruksi akses berbasis indeks (`get_idx`, `set_idx`, dll.) merujuk pada variabel dalam rentang `var_count` yang dialokasikan, guna menghentikan potensi kerusakan memori.
-  * **Integritas Fungsi**: Mencocokkan semua metadata fungsi (alamat awal) terhadap total panjang bytecode untuk memastikan setiap titik pemanggilan dapat dijangkau dan aman.
-  * **Pembatasan Fitur (Feature Gating)**: Bertindak sebagai pagar pengaman dengan memantau fitur-fitur yang dibatasi, seperti opcode nightly, dan mencegah eksekusi jika lingkungan VM tidak dikonfigurasi untuk mendukung kapabilitas eksperimental.
-  * **Penegakan Kuota Sumber Daya**: Melakukan pemeriksaan jumlah instruksi bytecode secara statis sebelum eksekusi melalui `validate_security` untuk mencegah kehabisan sumber daya, termasuk pembatasan pada operasi I/O, impor, alokasi memori, dan lompatan alur kontrol.
-  * **Daftar Putih Modul**: Memastikan bahwa hanya modul yang telah disetujui sebelumnya yang ditetapkan dalam `SecurityConfig` yang dapat diimpor, guna memitigasi risiko dari kode eksternal yang tidak sah.
-  * **Analisis Pola Instruksi**: Mendeteksi pola bytecode berbahaya, seperti pengisian `Nop` yang berlebihan, yang dapat digunakan untuk melewati analisis atau memperlambat waktu eksekusi.
-  * **Kemampuan Bypass**: Mendukung konfigurasi `unsafe_mode` yang memungkinkan penonaktifan pemeriksaan keamanan secara eksplisit, ditujukan untuk lingkungan tepercaya dengan performa tinggi di mana overhead harus diminimalkan.
-  * **Pemantauan Gas (Kontrol Tick)**: Menggunakan sistem `GasMonitor` untuk melacak waktu eksekusi atau kompleksitas melalui "tick". Ini menerapkan batas atas yang ketat pada siklus pemrosesan untuk mencegah loop tak terbatas atau eksekusi yang tidak terkendali, memastikan VM tetap responsif dan deterministik.
-  * **Validasi Tick**: Memvalidasi `SecurityConfig` selama inisialisasi untuk memastikan batas tick bukan nol, guna mencegah status konfigurasi yang tidak valid atau tidak aman sebelum runtime dimulai.
+  * **Verifikasi Batas**: `validate_bytecode` memeriksa bahwa target `Jump`, `IfFalse`, dan `Break` berada di bawah panjang bytecode.
+  * **Validasi Variabel**: `validate_vars` memeriksa indeks pada `ValIdx`, `GetIdx`, `SetIdx`, `IncIdx`, dan `DecIdx` terhadap `var_count`.
+  * **Batas Alamat Awal Fungsi**: Memeriksa bahwa alamat awal setiap fungsi berada di bawah panjang bytecode.
+  * **Pembatasan Fitur**: `has_nightly_opcodes` mendeteksi `instantiate`, `import`, dan `export` dalam sumber terserialisasi; antarmuka pemuatan menolaknya saat dukungan nightly dinonaktifkan.
+  * **Kuota Sumber Daya**: `validate_security` menghitung I/O, impor, pembuatan objek/array, panggilan, dan lompatan dalam bytecode terhadap batas yang dikonfigurasi. Loop eksekusi juga menghitung operasi tersebut saat runtime.
+  * **Daftar Putih Modul**: Memeriksa nama modul impor terhadap `SecurityConfig.allowed_imports` saat validasi keamanan.
+  * **Pengisian Nop**: Menolak bytecode yang lebih panjang dari sepuluh instruksi ketika jumlah `Nop` melebihi jumlah total instruksi dibagi sepuluh menggunakan pembagian integer.
+  * **Kemampuan Bypass**: `unsafe_mode` melewati `validate_security` (kuota statis, daftar putih impor, dan pemeriksaan pengisian `Nop`) serta kuota runtime untuk I/O, impor, alokasi, panggilan, dan lompatan. Validasi struktural, pembatasan fitur, batas stack, dan pemeriksaan gas tetap aktif.
+  * **Pemantauan Gas (Kontrol Tick)**: `GasMonitor` memeriksa batas tick pada setiap iterasi loop eksekusi. Tick menghitung iterasi loop, bukan waktu yang berlalu atau siklus pemrosesan perangkat keras.
+  * **Validasi Tick**: Menolak `max_ticks` bernilai nol saat inisialisasi dan melaporkan error ketika jumlah tick mencapai batas.
