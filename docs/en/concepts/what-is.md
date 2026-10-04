@@ -4,25 +4,25 @@
 ## The Philosophy
 At its core, LightVM is built on three fundamental pillars that define how it handles your code:
 
- * __Zero Magic (Deterministic)__: Execution is linear and fully predictable. The VM operates explicitly, meaning every instruction is executed exactly as defined, without hidden state transitions or unpredictable runtime behavior.
- * **Resource Conscious**: LightVM is engineered for a minimal memory footprint. By leveraging optimized data structures like `SmolStr` and `Ahash` for metadata management, it maintains high performance even under tight resource constraints.
- * **Explicit Security**: Security is enforced through a strict Capability system. The VM does not assume permissions; instead, every access and operation must have its rights explicitly defined by the host environment, preventing unauthorized side effects.
+  * **Zero Magic (Explicit Execution)**: The execution loop dispatches bytecode instructions directly. Host imports and I/O can affect results, so determinism depends on the program and its environment.
+  * **Resource Conscious**: LightVM is engineered for a minimal memory footprint. By leveraging optimized data structures like `SmolStr` and `Ahash` for metadata management, it maintains high performance even under tight resource constraints.
+  * **Explicit Security**: The host configures resource quotas, allowed imports, and tick limits through `SecurityConfig`.
 
 ## Architecture: The Execution Pipeline
-LightVM achieves its speed through a sophisticated pre-execution pipeline. Before a single instruction is processed by the main loop, your bytecode passes through three specialized stages designed to maximize efficiency:
+LightVM separates symbol resolution and validation from explicit optimization and benchmarking. Normal execution resolves symbols and validates bytecode; Gazle optimization is an optional operation before loading or execution.
 
 ### 1. Torja: The Symbol Resolver
-**Torja** acts as the gateway of the VM. It transforms high-level, human-readable bytecode into a high-performance format. By mapping variable names and function identifiers to fixed-position integer indices, Torja eliminates costly runtime hash-map lookups. It also performs "Value Promotion," converting generic instructions into specialized opcodes (e.g., `push_int16` vs `push_string`), which gives the execution engine advance knowledge of data types and sizes.
+**Torja** maps variable and function parameter names to numerical indices in one symbol table per resolution call. It converts supported name-based instructions into index-based forms without creating separate lexical scope tables.
 
 ### 2. Gazle: The Bytecode Optimizer
-**Gazle** acts as the optimization engine once symbols are resolved to refine the bytecode. It runs a multi-pass optimization pipeline—including constant folding, dead store elimination, and jump threading—to prune unnecessary operations and simplify control flow. By the time the bytecode reaches the execution phase, it has been stripped of redundant steps, ensuring that the VM only performs work that contributes directly to the final program state.
+**Gazle** is invoked explicitly to apply passes such as constant folding, dead store elimination, and jump threading. It also specializes supported generic `push` values into type-specific instructions such as `push_int16` and `push_string`. Optimization uses a configurable time budget checked between passes, rather than a hard deadline for running passes.
 
 ### 3. Krates: The Validation & Security Layer
-**Krates** acts as the final gatekeeper that inspects bytecode before execution, ensuring the runtime remains protected against malformed instructions, unauthorized features, and memory access violations. By enforcing strict safety protocols through a comprehensive verification pipeline, Krates guarantees that only safe and deterministic bytecode reaches the execution engine. It handles critical security tasks, including bounds verification to prevent memory overflow, variable safety checks, and function integrity validation. Furthermore, Krates monitors for restricted features, enforces resource quotas via gas monitoring (ticks) to prevent infinite loops, and maintains a strict module whitelist. It also performs instruction pattern analysis to detect potentially malicious bytecode, all while offering an `unsafe_mode` configuration to bypass these checks for trusted, high-performance environments.
+**Krates** checks variable indices, `Jump`/`IfFalse`/`Break` targets, and function start bounds. Security validation checks configured instruction quotas, import whitelists, and excessive `Nop` padding. Runtime quotas and gas monitoring count executed operations and execution-loop iterations. `unsafe_mode` bypasses security validation and runtime operation quotas; structural validation, feature gating, stack limits, and gas checks remain active. These checks do not guarantee complete bytecode safety or function reachability.
 
 ### 4. Itme: The Benchmarking Utility
-**Itme** is a high-precision benchmarking utility designed to measure and analyze code performance. By leveraging adaptive iteration cycles, warm-up phases, and rigorous statistical analysis using the Interquartile Range (IQR) method, Itme filters out noise and evaluates execution consistency. It automatically calculates precise operation timings, standard deviations, throughput in MiB/s, and stability percentages, ensuring reliable and reproducible performance metrics for your functions.
+**Itme** is a separate utility that calibrates iterations per sample, performs warm-up runs, and analyzes timing samples using IQR filtering. It reports time per operation, throughput when byte sizes are provided, and a stability metric of standard deviation / mean × 100. Lower stability values indicate less variation; results depend on the measurement environment.
 
 ::: tip
-LightVM is designed to be lean, transparent, and fast. By separating **Resolution** (Torja), **Optimization** (Gazle), and **Security** (Krates) into distinct pre-execution pipeline stages, and providing **Benchmarking** (Itme) as a separate performance measurement utility, LightVM ensures that the core VM execution loop remains as streamlined as possible.
+Use **Resolution** (Torja) and **Validation** (Krates) during normal execution, invoke **Optimization** (Gazle) explicitly when needed, and use **Benchmarking** (Itme) to measure performance separately.
 :::
