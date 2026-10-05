@@ -29,9 +29,9 @@ fn main() {
   .with_diagnostic_links(true);
 
   let raw = r#"[
-    ["push", 8],
-    ["push", 0],
-    ["div", "int"],
+    ["push", 0.0],
+    ["dup"],
+    ["atan2", "hlf"],
     ["println"]
   ]"#;
   let tools = vm.tools();

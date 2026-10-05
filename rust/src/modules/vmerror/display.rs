@@ -43,6 +43,7 @@ impl fmt::Display for VMError {
       VMError::InvalidValue { .. } => "InvalidValue",
       VMError::DivisionByZero { .. } => "DivisionByZero",
       VMError::ModuloByZero { .. } => "ModuloByZero",
+      VMError::ValueOutOfRange { .. } => "ValueOutOfRange",
       VMError::SystemError(_) => "SystemError",
     };
     let ip = match self {
@@ -65,7 +66,8 @@ impl fmt::Display for VMError {
       | VMError::JumpLimitExceeded { ip }
       | VMError::InvalidValue { ip, .. }
       | VMError::DivisionByZero { ip }
-      | VMError::ModuloByZero { ip } => *ip,
+      | VMError::ModuloByZero { ip }
+      | VMError::ValueOutOfRange { ip, .. } => *ip,
     };
     write!(f, "{BOLD}{RED}Error[{}]{RESET}: ", self.error_code())?;
     match self {
@@ -144,6 +146,15 @@ impl fmt::Display for VMError {
       }
       VMError::ModuloByZero { .. } => {
         write!(f, "Modulo by zero is not allowed.")
+      }
+      VMError::ValueOutOfRange {
+        value, min, max, ..
+      } => {
+        write!(
+          f,
+          "Value '{}' is out of range. Expected a value between {} and {}.",
+          value, min, max
+        )
       }
       VMError::SystemError(s) => write!(f, "{}", s),
     }?;

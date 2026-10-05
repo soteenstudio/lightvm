@@ -150,6 +150,12 @@ pub fn get_hint(err: &VMError) -> Option<Hint> {
         "The bytecode attempted to perform a modulo operation with a zero divisor, which is mathematically undefined and forces the runtime to halt. Ensure your code validates that the divisor is non-zero before executing a modulo instruction.",
       ),
     }),
+    VMError::ValueOutOfRange { .. } => Some(Hint {
+      short: Cow::Borrowed("Ensure the input value falls within the permitted domain range."),
+      long: Cow::Borrowed(
+        "The operation received a numeric value that violates the strict mathematical or domain boundaries required for this instruction. Exiting these valid bounds leads to undefined behavior or invalid numeric states (such as NaN), forcing the runtime to halt.",
+      ),
+    }),
     VMError::SystemError(_) => Some(Hint {
       short: Cow::Borrowed("System-level operation failed."),
       long: Cow::Borrowed(

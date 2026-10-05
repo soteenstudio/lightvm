@@ -81,6 +81,12 @@ pub enum VMError {
   ModuloByZero {
     ip: usize,
   },
+  ValueOutOfRange {
+    ip: usize,
+    value: SmolStr,
+    min: SmolStr,
+    max: SmolStr,
+  },
   ExcessiveNopPadding,
   InvalidMaxTicksConfig,
   TickLimitExceeded,
@@ -113,6 +119,7 @@ impl VMError {
       VMError::InvalidValue { .. } => "LVM017",
       VMError::DivisionByZero { .. } => "LVM018",
       VMError::ModuloByZero { .. } => "LVM019",
+      VMError::ValueOutOfRange { .. } => "LVM020",
       VMError::SystemError(_) => "LVM500",
     }
   }
@@ -171,6 +178,13 @@ mod tests {
       VMError::CallLimitExceeded { ip: 1 },
       VMError::JumpLimitExceeded { ip: 1 },
       VMError::DivisionByZero { ip: 1 },
+      VMError::ModuloByZero { ip: 1 },
+      VMError::ValueOutOfRange {
+        ip: 1,
+        value: SmolStr::new("2.0"),
+        min: SmolStr::new("-1.0"),
+        max: SmolStr::new("1.0"),
+      },
       VMError::ExcessiveNopPadding,
       VMError::InvalidMaxTicksConfig,
       VMError::TickLimitExceeded,
