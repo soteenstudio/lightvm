@@ -138,6 +138,18 @@ pub fn get_hint(err: &VMError) -> Option<Hint> {
         "The execution exceeded the maximum number of ticks (complexity/time units) allowed by the SecurityConfig. This limit prevents infinite loops and ensures the VM remains responsive. To fix this, optimize your code to reduce computational complexity, or increase the max_ticks threshold if the workload legitimately requires more processing cycles.",
       ),
     }),
+    VMError::DivisionByZero { .. } => Some(Hint {
+      short: Cow::Borrowed("Verify the divisor; integer division by zero is not allowed."),
+      long: Cow::Borrowed(
+        "The bytecode attempted to divide an integer by zero, which is a mathematically undefined operation that forces the runtime to halt to prevent undefined behavior. Ensure your conditional logic or input validation checks that the divisor is non-zero before executing a division instruction.",
+      ),
+    }),
+    VMError::ModuloByZero { .. } => Some(Hint {
+      short: Cow::Borrowed("Verify the divisor; integer modulo by zero is not allowed."),
+      long: Cow::Borrowed(
+        "The bytecode attempted to perform a modulo operation with a zero divisor, which is mathematically undefined and forces the runtime to halt. Ensure your code validates that the divisor is non-zero before executing a modulo instruction.",
+      ),
+    }),
     VMError::SystemError(_) => Some(Hint {
       short: Cow::Borrowed("System-level operation failed."),
       long: Cow::Borrowed(

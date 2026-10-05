@@ -75,6 +75,12 @@ pub enum VMError {
     ip: usize,
     value: &'static str,
   },
+  DivisionByZero {
+    ip: usize,
+  },
+  ModuloByZero {
+    ip: usize,
+  },
   ExcessiveNopPadding,
   InvalidMaxTicksConfig,
   TickLimitExceeded,
@@ -105,6 +111,8 @@ impl VMError {
       VMError::InvalidMaxTicksConfig => "LVM015",
       VMError::TickLimitExceeded => "LVM016",
       VMError::InvalidValue { .. } => "LVM017",
+      VMError::DivisionByZero { .. } => "LVM018",
+      VMError::ModuloByZero { .. } => "LVM019",
       VMError::SystemError(_) => "LVM500",
     }
   }
@@ -162,6 +170,7 @@ mod tests {
       VMError::MemoryLimitExceeded { ip: 1 },
       VMError::CallLimitExceeded { ip: 1 },
       VMError::JumpLimitExceeded { ip: 1 },
+      VMError::DivisionByZero { ip: 1 },
       VMError::ExcessiveNopPadding,
       VMError::InvalidMaxTicksConfig,
       VMError::TickLimitExceeded,

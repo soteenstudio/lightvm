@@ -41,6 +41,8 @@ impl fmt::Display for VMError {
       VMError::InvalidMaxTicksConfig => "InvalidMaxTicksConfig",
       VMError::TickLimitExceeded => "TickLimitExceeded",
       VMError::InvalidValue { .. } => "InvalidValue",
+      VMError::DivisionByZero { .. } => "DivisionByZero",
+      VMError::ModuloByZero { .. } => "ModuloByZero",
       VMError::SystemError(_) => "SystemError",
     };
     let ip = match self {
@@ -61,7 +63,9 @@ impl fmt::Display for VMError {
       | VMError::MemoryLimitExceeded { ip }
       | VMError::CallLimitExceeded { ip }
       | VMError::JumpLimitExceeded { ip }
-      | VMError::InvalidValue { ip, .. } => *ip,
+      | VMError::InvalidValue { ip, .. }
+      | VMError::DivisionByZero { ip }
+      | VMError::ModuloByZero { ip } => *ip,
     };
     write!(f, "{BOLD}{RED}Error[{}]{RESET}: ", self.error_code())?;
     match self {
@@ -134,6 +138,12 @@ impl fmt::Display for VMError {
       }
       VMError::InvalidValue { value, .. } => {
         write!(f, "Invalid value '{value}' encountered")
+      }
+      VMError::DivisionByZero { .. } => {
+        write!(f, "Division by zero is not allowed.")
+      }
+      VMError::ModuloByZero { .. } => {
+        write!(f, "Modulo by zero is not allowed.")
       }
       VMError::SystemError(s) => write!(f, "{}", s),
     }?;
