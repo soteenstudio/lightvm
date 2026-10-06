@@ -102,9 +102,27 @@ pub fn div_values(
       }
       Value::Int128(div_i128in(a.as_i128(), divisor))
     }
-    PrimitiveTypes::Hlf => Value::Float16(div_f16in(a.as_f16(), b.as_f16())),
-    PrimitiveTypes::Flt => Value::Float32(div_f32in(a.as_f32(), b.as_f32())),
-    PrimitiveTypes::Dbl => Value::Float64(div_f64in(a.as_f64(), b.as_f64())),
+    PrimitiveTypes::Hlf => {
+      let divisor = b.as_f16();
+      if divisor == half::f16::ZERO {
+        return Err(VMError::DivisionByZero { ip });
+      }
+      Value::Float16(div_f16in(a.as_f16(), divisor))
+    }
+    PrimitiveTypes::Flt => {
+      let divisor = b.as_f32();
+      if divisor == 0.0 {
+        return Err(VMError::DivisionByZero { ip });
+      }
+      Value::Float32(div_f32in(a.as_f32(), divisor))
+    }
+    PrimitiveTypes::Dbl => {
+      let divisor = b.as_f64();
+      if divisor == 0.0 {
+        return Err(VMError::DivisionByZero { ip });
+      }
+      Value::Float64(div_f64in(a.as_f64(), divisor))
+    }
     PrimitiveTypes::Str => {
       return Err(VMError::TypeMismatch {
         ip,

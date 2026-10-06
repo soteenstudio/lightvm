@@ -147,6 +147,12 @@ impl fmt::Display for VMError {
       VMError::ModuloByZero { .. } => {
         write!(f, "Modulo by zero is not allowed.")
       }
+      VMError::ValueOutOfRange { value, min, .. } if min == "(y, x) != (0, 0)" => {
+        write!(
+          f,
+          "Value '{value}' is outside the atan2 domain. Operands must not both be zero, including signed zero."
+        )
+      }
       VMError::ValueOutOfRange {
         value, min, max, ..
       } => {

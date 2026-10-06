@@ -36,6 +36,13 @@ pub fn acoshv_values(a_val: Value, num_type: PrimitiveTypes, ip: usize) -> Resul
       });
     }
   }
+  for value in arr_a.iter() {
+    crate::instructions::math::trigonometry::hyperbolic::inverse::acosh_func::acosh_values(
+      value.clone(),
+      num_type,
+      ip,
+    )?;
+  }
   Ok(match num_type {
     PrimitiveTypes::Hlf => Value::Array(acoshv_f16in(&arr_a)),
     PrimitiveTypes::Flt => Value::Array(acoshv_f32in(&arr_a)),
@@ -70,6 +77,7 @@ mod tests {
   fn validates_float_family_without_mutating_stack() {
     crate::instructions::math::vector::trigonometry::assert_unary_float_vector_validation(
       acoshv_values,
+      1.0,
       acoshv_func,
     );
   }

@@ -84,9 +84,11 @@ pub fn atan2v_values(
       _ => false,
     };
     if is_zero {
-      return Err(VMError::InvalidValue {
+      return Err(VMError::ValueOutOfRange {
         ip,
-        value: "atan2(0, 0)",
+        value: "atan2(0, 0)".into(),
+        min: "(y, x) != (0, 0)".into(),
+        max: "all other operand pairs".into(),
       });
     }
   }

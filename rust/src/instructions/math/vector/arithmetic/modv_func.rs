@@ -75,6 +75,14 @@ pub fn modv_values(
       });
     }
   }
+  for (a, b) in arr_a.iter().zip(arr_b.iter()) {
+    crate::instructions::math::arithmetic::mod_func::mod_values(
+      a.clone(),
+      b.clone(),
+      num_type,
+      ip,
+    )?;
+  }
   Ok(match num_type {
     PrimitiveTypes::Sht => Value::Array(modv_i16in(&arr_a, &arr_b)),
     PrimitiveTypes::Int => Value::Array(modv_i32in(&arr_a, &arr_b)),

@@ -139,13 +139,13 @@ pub fn get_hint(err: &VMError) -> Option<Hint> {
       ),
     }),
     VMError::DivisionByZero { .. } => Some(Hint {
-      short: Cow::Borrowed("Verify the divisor; integer division by zero is not allowed."),
+      short: Cow::Borrowed("Verify the divisor; division by zero is not allowed."),
       long: Cow::Borrowed(
-        "The bytecode attempted to divide an integer by zero, which is a mathematically undefined operation that forces the runtime to halt to prevent undefined behavior. Ensure your conditional logic or input validation checks that the divisor is non-zero before executing a division instruction.",
+        "The bytecode attempted to divide a number by zero, which is a mathematically undefined operation that forces the runtime to halt to prevent undefined behavior. Ensure your conditional logic or input validation checks that the divisor is non-zero before executing a division instruction.",
       ),
     }),
     VMError::ModuloByZero { .. } => Some(Hint {
-      short: Cow::Borrowed("Verify the divisor; integer modulo by zero is not allowed."),
+      short: Cow::Borrowed("Verify the divisor; modulo by zero is not allowed."),
       long: Cow::Borrowed(
         "The bytecode attempted to perform a modulo operation with a zero divisor, which is mathematically undefined and forces the runtime to halt. Ensure your code validates that the divisor is non-zero before executing a modulo instruction.",
       ),

@@ -50,7 +50,12 @@ pub fn atan2_values(
       let val_y = y.as_f16();
       let val_x = x.as_f16();
       if val_y == f16::from_f32(0.0) && val_x == f16::from_f32(0.0) {
-        return Err(VMError::InvalidValue { ip, value: "0.0" });
+        return Err(VMError::ValueOutOfRange {
+          ip,
+          value: "atan2(0, 0)".into(),
+          min: "(y, x) != (0, 0)".into(),
+          max: "all other operand pairs".into(),
+        });
       }
       Value::Float16(atan2_f16in(val_y, val_x))
     }
@@ -58,7 +63,12 @@ pub fn atan2_values(
       let val_y = y.as_f32();
       let val_x = x.as_f32();
       if val_y == 0.0 && val_x == 0.0 {
-        return Err(VMError::InvalidValue { ip, value: "0.0" });
+        return Err(VMError::ValueOutOfRange {
+          ip,
+          value: "atan2(0, 0)".into(),
+          min: "(y, x) != (0, 0)".into(),
+          max: "all other operand pairs".into(),
+        });
       }
       Value::Float32(atan2_f32in(val_y, val_x))
     }
@@ -66,7 +76,12 @@ pub fn atan2_values(
       let val_y = y.as_f64();
       let val_x = x.as_f64();
       if val_y == 0.0 && val_x == 0.0 {
-        return Err(VMError::InvalidValue { ip, value: "0.0" });
+        return Err(VMError::ValueOutOfRange {
+          ip,
+          value: "atan2(0, 0)".into(),
+          min: "(y, x) != (0, 0)".into(),
+          max: "all other operand pairs".into(),
+        });
       }
       Value::Float64(atan2_f64in(val_y, val_x))
     }
