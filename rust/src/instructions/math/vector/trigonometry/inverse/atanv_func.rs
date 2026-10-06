@@ -17,8 +17,6 @@ use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
-use half::f16;
-use smol_str::SmolStr;
 #[inline(always)]
 pub fn atanv_values(a_val: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value, VMError> {
   let arr_a = a_val.as_array().ok_or(VMError::TypeMismatch {
@@ -36,54 +34,6 @@ pub fn atanv_values(a_val: Value, num_type: PrimitiveTypes, ip: usize) -> Result
         expected: expected_type(num_type, ExpectedCategory::Float),
         found: get_type_name(value.clone()),
       });
-    }
-  }
-  for value in arr_a.iter() {
-    if !matches!(
-      value,
-      Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
-    ) {
-      return Err(VMError::TypeMismatch {
-        ip,
-        expected: expected_type(num_type, ExpectedCategory::Float),
-        found: get_type_name(value.clone()),
-      });
-    }
-    match num_type {
-      PrimitiveTypes::Hlf => {
-        let val = value.as_f16();
-        if val < f16::from_f32(-1.0) || val > f16::from_f32(1.0) {
-          return Err(VMError::ValueOutOfRange {
-            ip,
-            value: SmolStr::new(value.as_string()),
-            min: SmolStr::new("-1.0"),
-            max: SmolStr::new("1.0"),
-          });
-        }
-      }
-      PrimitiveTypes::Flt => {
-        let val = value.as_f32();
-        if val < -1.0 || val > 1.0 {
-          return Err(VMError::ValueOutOfRange {
-            ip,
-            value: SmolStr::new(value.as_string()),
-            min: SmolStr::new("-1.0"),
-            max: SmolStr::new("1.0"),
-          });
-        }
-      }
-      PrimitiveTypes::Dbl => {
-        let val = value.as_f64();
-        if val < -1.0 || val > 1.0 {
-          return Err(VMError::ValueOutOfRange {
-            ip,
-            value: SmolStr::new(value.as_string()),
-            min: SmolStr::new("-1.0"),
-            max: SmolStr::new("1.0"),
-          });
-        }
-      }
-      _ => {}
     }
   }
   Ok(match num_type {
@@ -115,6 +65,32 @@ mod tests {
   use std::sync::Arc;
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
+  }
+  #[test]
+  fn accepts_atanv_inputs_outside_unit_interval() {
+    for num_type in [
+      PrimitiveTypes::Hlf,
+      PrimitiveTypes::Flt,
+      PrimitiveTypes::Dbl,
+    ] {
+      let inputs = [-10.0_f64, -2.0, -1.0, 0.0, 1.0, 2.0, 10.0];
+      let operand = array(inputs.iter().map(|&v| Value::Float64(v)).collect());
+      let mut stack = Stack::from_vec(vec![operand]);
+      atanv_func(&mut stack, num_type, 31).unwrap();
+      let result = stack.last().unwrap().as_array().unwrap();
+      assert_eq!(result.len(), inputs.len());
+      for (actual, input) in result.iter().zip(inputs) {
+        assert!((actual.as_f64() - input.atan()).abs() < 0.001);
+      }
+      assert!(matches!(
+        atanv_values(
+          array(vec![Value::Float64(2.0), Value::Int32(2)]),
+          num_type,
+          32
+        ),
+        Err(VMError::TypeMismatch { ip: 32, .. })
+      ));
+    }
   }
   #[test]
   fn validates_float_family_without_mutating_stack() {

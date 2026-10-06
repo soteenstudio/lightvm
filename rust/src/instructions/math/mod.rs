@@ -63,14 +63,19 @@ fn assert_unary_trigonometry_validation(
       assert_eq!(stack, original);
     }
   }
+  let valid_input = if opcode == "ACOSH" { 1.0 } else { 0.0 };
   for (value, num_type, result_matches) in [
     (
-      Value::Float16(half::f16::ZERO),
+      Value::Float16(half::f16::from_f32(valid_input)),
       PrimitiveTypes::Flt,
       "Float",
     ),
-    (Value::Float32(0.0), PrimitiveTypes::Dbl, "Double"),
-    (Value::Float64(0.0), PrimitiveTypes::Hlf, "Half"),
+    (Value::Float32(valid_input), PrimitiveTypes::Dbl, "Double"),
+    (
+      Value::Float64(valid_input as f64),
+      PrimitiveTypes::Hlf,
+      "Half",
+    ),
   ] {
     let result = values(value, num_type, 19).unwrap();
     assert_eq!(

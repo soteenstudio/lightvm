@@ -34,7 +34,7 @@ pub fn atanh_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Val
   Ok(match num_type {
     PrimitiveTypes::Hlf => {
       let val = a.as_f16();
-      if val < f16::from_f32(-1.0) || val > f16::from_f32(1.0) {
+      if val <= f16::from_f32(-1.0) || val >= f16::from_f32(1.0) {
         return Err(VMError::ValueOutOfRange {
           ip,
           value: SmolStr::new(a.as_string()),
@@ -46,7 +46,7 @@ pub fn atanh_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Val
     }
     PrimitiveTypes::Flt => {
       let val = a.as_f32();
-      if val < -1.0 || val > 1.0 {
+      if val <= -1.0 || val >= 1.0 {
         return Err(VMError::ValueOutOfRange {
           ip,
           value: SmolStr::new(a.as_string()),
@@ -58,7 +58,7 @@ pub fn atanh_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Val
     }
     PrimitiveTypes::Dbl => {
       let val = a.as_f64();
-      if val < -1.0 || val > 1.0 {
+      if val <= -1.0 || val >= 1.0 {
         return Err(VMError::ValueOutOfRange {
           ip,
           value: SmolStr::new(a.as_string()),
@@ -89,6 +89,29 @@ pub fn atanh_func(stack: &mut Stack, num_type: PrimitiveTypes, ip: usize) -> Res
 }
 #[cfg(test)]
 mod tests {
+  use super::*;
+  #[test]
+  fn rejects_atanh_endpoints_in_all_precisions() {
+    for num_type in [
+      PrimitiveTypes::Hlf,
+      PrimitiveTypes::Flt,
+      PrimitiveTypes::Dbl,
+    ] {
+      for input in [f64::NEG_INFINITY, -2.0, -1.0, 1.0, 2.0, f64::INFINITY] {
+        let mut stack = Stack::from_vec(vec![Value::Bool(true), Value::Float64(input)]);
+        let original = stack.clone();
+        assert!(matches!(
+          atanh_func(&mut stack, num_type, 31),
+          Err(VMError::ValueOutOfRange { ip: 31, .. })
+        ));
+        assert_eq!(stack, original);
+      }
+      for input in [-0.5_f64, 0.0, 0.5] {
+        let result = atanh_values(Value::Float64(input), num_type, 32).unwrap();
+        assert!((result.as_f64() - input.atanh()).abs() < 0.001);
+      }
+    }
+  }
   #[test]
   fn reports_errors_without_mutating_stack() {
     crate::instructions::math::assert_unary_trigonometry_validation(

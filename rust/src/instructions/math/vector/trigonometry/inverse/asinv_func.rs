@@ -52,7 +52,7 @@ pub fn asinv_values(a_val: Value, num_type: PrimitiveTypes, ip: usize) -> Result
     match num_type {
       PrimitiveTypes::Hlf => {
         let val = value.as_f16();
-        if val < f16::from_f32(-1.0) || val > f16::from_f32(1.0) {
+        if val.is_nan() || val < f16::from_f32(-1.0) || val > f16::from_f32(1.0) {
           return Err(VMError::ValueOutOfRange {
             ip,
             value: SmolStr::new(value.as_string()),
@@ -63,7 +63,7 @@ pub fn asinv_values(a_val: Value, num_type: PrimitiveTypes, ip: usize) -> Result
       }
       PrimitiveTypes::Flt => {
         let val = value.as_f32();
-        if val < -1.0 || val > 1.0 {
+        if val.is_nan() || val < -1.0 || val > 1.0 {
           return Err(VMError::ValueOutOfRange {
             ip,
             value: SmolStr::new(value.as_string()),
@@ -74,7 +74,7 @@ pub fn asinv_values(a_val: Value, num_type: PrimitiveTypes, ip: usize) -> Result
       }
       PrimitiveTypes::Dbl => {
         let val = value.as_f64();
-        if val < -1.0 || val > 1.0 {
+        if val.is_nan() || val < -1.0 || val > 1.0 {
           return Err(VMError::ValueOutOfRange {
             ip,
             value: SmolStr::new(value.as_string()),
@@ -115,6 +115,39 @@ mod tests {
   use std::sync::Arc;
   fn array(values: Vec<Value>) -> Value {
     Value::Array(Arc::new(values))
+  }
+  #[test]
+  fn rejects_nan_and_out_of_range_elements_in_all_precisions() {
+    for num_type in [
+      PrimitiveTypes::Hlf,
+      PrimitiveTypes::Flt,
+      PrimitiveTypes::Dbl,
+    ] {
+      for input in [f64::NAN, f64::NEG_INFINITY, -2.0, 2.0, f64::INFINITY] {
+        let operand = array(vec![Value::Float64(0.0), Value::Float64(input)]);
+        let original = operand.as_array().unwrap();
+        let mut stack = Stack::from_vec(vec![Value::Bool(true), operand]);
+        assert!(matches!(
+          asinv_func(&mut stack, num_type, 31),
+          Err(VMError::ValueOutOfRange { ip: 31, min, max, .. })
+            if min == "-1.0" && max == "1.0"
+        ));
+        assert_eq!(stack.len(), 2);
+        assert!(Arc::ptr_eq(
+          &stack.last().unwrap().as_array().unwrap(),
+          &original
+        ));
+      }
+      let inputs = [-1.0_f64, 0.0, 1.0];
+      let operand = array(inputs.iter().map(|&v| Value::Float64(v)).collect());
+      let result = asinv_values(operand, num_type, 32)
+        .unwrap()
+        .as_array()
+        .unwrap();
+      for (actual, input) in result.iter().zip(inputs) {
+        assert!((actual.as_f64() - input.asin()).abs() < 0.002);
+      }
+    }
   }
   #[test]
   fn validates_float_family_without_mutating_stack() {
