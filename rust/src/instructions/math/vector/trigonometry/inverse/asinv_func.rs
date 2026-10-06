@@ -17,6 +17,8 @@ use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
+use half::f16;
+use smol_str::SmolStr;
 #[inline(always)]
 pub fn asinv_values(a_val: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Value, VMError> {
   let arr_a = a_val.as_array().ok_or(VMError::TypeMismatch {
@@ -34,6 +36,54 @@ pub fn asinv_values(a_val: Value, num_type: PrimitiveTypes, ip: usize) -> Result
         expected: expected_type(num_type, ExpectedCategory::Float),
         found: get_type_name(value.clone()),
       });
+    }
+  }
+  for value in arr_a.iter() {
+    if !matches!(
+      value,
+      Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
+    ) {
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: expected_type(num_type, ExpectedCategory::Float),
+        found: get_type_name(value.clone()),
+      });
+    }
+    match num_type {
+      PrimitiveTypes::Hlf => {
+        let val = value.as_f16();
+        if val < f16::from_f32(-1.0) || val > f16::from_f32(1.0) {
+          return Err(VMError::ValueOutOfRange {
+            ip,
+            value: SmolStr::new(value.as_string()),
+            min: SmolStr::new("-1.0"),
+            max: SmolStr::new("1.0"),
+          });
+        }
+      }
+      PrimitiveTypes::Flt => {
+        let val = value.as_f32();
+        if val < -1.0 || val > 1.0 {
+          return Err(VMError::ValueOutOfRange {
+            ip,
+            value: SmolStr::new(value.as_string()),
+            min: SmolStr::new("-1.0"),
+            max: SmolStr::new("1.0"),
+          });
+        }
+      }
+      PrimitiveTypes::Dbl => {
+        let val = value.as_f64();
+        if val < -1.0 || val > 1.0 {
+          return Err(VMError::ValueOutOfRange {
+            ip,
+            value: SmolStr::new(value.as_string()),
+            min: SmolStr::new("-1.0"),
+            max: SmolStr::new("1.0"),
+          });
+        }
+      }
+      _ => {}
     }
   }
   Ok(match num_type {
