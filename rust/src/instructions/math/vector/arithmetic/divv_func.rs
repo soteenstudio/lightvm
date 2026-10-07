@@ -75,6 +75,14 @@ pub fn divv_values(
       });
     }
   }
+  for (a, b) in arr_a.iter().zip(arr_b.iter()) {
+    crate::instructions::math::arithmetic::div_func::div_values(
+      a.clone(),
+      b.clone(),
+      num_type,
+      ip,
+    )?;
+  }
   Ok(match num_type {
     PrimitiveTypes::Sht => Value::Array(divv_i16in(&arr_a, &arr_b)),
     PrimitiveTypes::Int => Value::Array(divv_i32in(&arr_a, &arr_b)),

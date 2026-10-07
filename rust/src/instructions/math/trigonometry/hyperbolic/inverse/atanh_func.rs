@@ -34,36 +34,36 @@ pub fn atanh_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Val
   Ok(match num_type {
     PrimitiveTypes::Hlf => {
       let val = a.as_f16();
-      if val <= f16::from_f32(-1.0) || val >= f16::from_f32(1.0) {
+      if val.is_nan() || val <= f16::from_f32(-1.0) || val >= f16::from_f32(1.0) {
         return Err(VMError::ValueOutOfRange {
           ip,
           value: SmolStr::new(a.as_string()),
-          min: SmolStr::new("-1.0"),
-          max: SmolStr::new("1.0"),
+          min: SmolStr::new("-1.0 (exclusive)"),
+          max: SmolStr::new("1.0 (exclusive)"),
         });
       }
       Value::Float16(atanh_f16in(val))
     }
     PrimitiveTypes::Flt => {
       let val = a.as_f32();
-      if val <= -1.0 || val >= 1.0 {
+      if val.is_nan() || val <= -1.0 || val >= 1.0 {
         return Err(VMError::ValueOutOfRange {
           ip,
           value: SmolStr::new(a.as_string()),
-          min: SmolStr::new("-1.0"),
-          max: SmolStr::new("1.0"),
+          min: SmolStr::new("-1.0 (exclusive)"),
+          max: SmolStr::new("1.0 (exclusive)"),
         });
       }
       Value::Float32(atanh_f32in(val))
     }
     PrimitiveTypes::Dbl => {
       let val = a.as_f64();
-      if val <= -1.0 || val >= 1.0 {
+      if val.is_nan() || val <= -1.0 || val >= 1.0 {
         return Err(VMError::ValueOutOfRange {
           ip,
           value: SmolStr::new(a.as_string()),
-          min: SmolStr::new("-1.0"),
-          max: SmolStr::new("1.0"),
+          min: SmolStr::new("-1.0 (exclusive)"),
+          max: SmolStr::new("1.0 (exclusive)"),
         });
       }
       Value::Float64(atanh_f64in(val))

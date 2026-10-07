@@ -36,6 +36,9 @@ pub fn sqrtv_values(value: Value, num_type: PrimitiveTypes, ip: usize) -> Result
       });
     }
   }
+  for value in values.iter() {
+    crate::instructions::math::root::sqrt_func::sqrt_values(value.clone(), num_type, ip)?;
+  }
   Ok(match num_type {
     PrimitiveTypes::Hlf => Value::Array(sqrtv_f16in(&values)),
     PrimitiveTypes::Flt => Value::Array(sqrtv_f32in(&values)),
@@ -106,7 +109,7 @@ mod tests {
     assert!(sqrtv_values(array(vec![Value::Float32(1.0)]), PrimitiveTypes::Int, 18).is_err());
   }
   #[test]
-  fn preserves_nan_behavior() {
+  fn rejects_nan_domain() {
     let result = sqrtv_values(
       array(vec![Value::Float32(f32::NAN)]),
       PrimitiveTypes::Flt,
@@ -114,7 +117,7 @@ mod tests {
     );
     assert!(matches!(
       result,
-      Ok(Value::Array(values)) if values[0].as_f32().is_nan()
+      Err(VMError::ValueOutOfRange { ip: 19, .. })
     ));
   }
   #[test]

@@ -153,6 +153,7 @@ mod tests {
   fn validates_float_family_without_mutating_stack() {
     crate::instructions::math::vector::trigonometry::assert_unary_float_vector_validation(
       acosv_values,
+      0.0,
       acosv_func,
     );
   }

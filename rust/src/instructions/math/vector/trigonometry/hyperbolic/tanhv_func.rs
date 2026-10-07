@@ -70,6 +70,7 @@ mod tests {
   fn validates_float_family_without_mutating_stack() {
     crate::instructions::math::vector::trigonometry::assert_unary_float_vector_validation(
       tanhv_values,
+      0.0,
       tanhv_func,
     );
   }
