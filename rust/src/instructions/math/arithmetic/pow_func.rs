@@ -56,10 +56,62 @@ pub fn pow_values(
     }
   }
   Ok(match num_type {
-    PrimitiveTypes::Sht => Value::Int16(pow_i16in(a.as_i16(), b.as_i16())),
-    PrimitiveTypes::Int => Value::Int32(pow_i32in(a.as_i32(), b.as_i32())),
-    PrimitiveTypes::Lng => Value::Int64(pow_i64in(a.as_i64(), b.as_i64())),
-    PrimitiveTypes::Oct => Value::Int128(pow_i128in(a.as_i128(), b.as_i128())),
+    PrimitiveTypes::Sht => {
+      let base = a.as_i16();
+      let exponent = b.as_i16();
+      if base == 0 && exponent < 0 {
+        return Err(VMError::ValueOutOfRange {
+          ip,
+          value: format!("({}, {})", base, exponent).into(),
+          min: "valid power operand pair".into(),
+          max: "nonzero base for negative exponents; integral exponent for finite negative bases"
+            .into(),
+        });
+      }
+      Value::Int16(pow_i16in(base, exponent))
+    }
+    PrimitiveTypes::Int => {
+      let base = a.as_i32();
+      let exponent = b.as_i32();
+      if base == 0 && exponent < 0 {
+        return Err(VMError::ValueOutOfRange {
+          ip,
+          value: format!("({}, {})", base, exponent).into(),
+          min: "valid power operand pair".into(),
+          max: "nonzero base for negative exponents; integral exponent for finite negative bases"
+            .into(),
+        });
+      }
+      Value::Int32(pow_i32in(base, exponent))
+    }
+    PrimitiveTypes::Lng => {
+      let base = a.as_i64();
+      let exponent = b.as_i64();
+      if base == 0 && exponent < 0 {
+        return Err(VMError::ValueOutOfRange {
+          ip,
+          value: format!("({}, {})", base, exponent).into(),
+          min: "valid power operand pair".into(),
+          max: "nonzero base for negative exponents; integral exponent for finite negative bases"
+            .into(),
+        });
+      }
+      Value::Int64(pow_i64in(base, exponent))
+    }
+    PrimitiveTypes::Oct => {
+      let base = a.as_i128();
+      let exponent = b.as_i128();
+      if base == 0 && exponent < 0 {
+        return Err(VMError::ValueOutOfRange {
+          ip,
+          value: format!("({}, {})", base, exponent).into(),
+          min: "valid power operand pair".into(),
+          max: "nonzero base for negative exponents; integral exponent for finite negative bases"
+            .into(),
+        });
+      }
+      Value::Int128(pow_i128in(base, exponent))
+    }
     _ => {
       return Err(VMError::TypeMismatch {
         ip,

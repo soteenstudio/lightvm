@@ -53,6 +53,14 @@ pub fn powfv_values(
       });
     }
   }
+  for (base, exponent) in arr_a.iter().zip(arr_b.iter()) {
+    crate::instructions::math::arithmetic::powf_func::powf_values(
+      base.clone(),
+      exponent.clone(),
+      num_type,
+      ip,
+    )?;
+  }
   Ok(match num_type {
     PrimitiveTypes::Hlf => Value::Array(powfv_f16in(&arr_a, &arr_b)),
     PrimitiveTypes::Flt => Value::Array(powfv_f32in(&arr_a, &arr_b)),

@@ -36,6 +36,9 @@ pub fn log2v_values(value: Value, num_type: PrimitiveTypes, ip: usize) -> Result
       });
     }
   }
+  for value in values.iter() {
+    crate::instructions::math::logarithm::log2_func::log2_values(value.clone(), num_type, ip)?;
+  }
   Ok(match num_type {
     PrimitiveTypes::Hlf => Value::Array(log2v_f16in(&values)),
     PrimitiveTypes::Flt => Value::Array(log2v_f32in(&values)),
@@ -109,7 +112,7 @@ mod tests {
     assert_eq!(stack, original);
   }
   #[test]
-  fn preserves_nan_behavior() {
+  fn rejects_nan_domain() {
     let result = log2v_values(
       array(vec![Value::Float32(f32::NAN)]),
       PrimitiveTypes::Flt,
@@ -117,7 +120,7 @@ mod tests {
     );
     assert!(matches!(
       result,
-      Ok(Value::Array(values)) if values[0].as_f32().is_nan()
+      Err(VMError::ValueOutOfRange { ip: 19, .. })
     ));
   }
   #[test]

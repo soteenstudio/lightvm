@@ -72,6 +72,14 @@ pub fn powiv_values(
       });
     }
   }
+  for (base, exponent) in arr_a.iter().zip(arr_b.iter()) {
+    crate::instructions::math::arithmetic::powi_func::powi_values(
+      base.clone(),
+      exponent.clone(),
+      num_type,
+      ip,
+    )?;
+  }
   Ok(match num_type {
     PrimitiveTypes::Hlf => Value::Array(powiv_f16in(&arr_a, &arr_b)),
     PrimitiveTypes::Flt => Value::Array(powiv_f32in(&arr_a, &arr_b)),

@@ -155,6 +155,14 @@ impl fmt::Display for VMError {
       }
       VMError::ValueOutOfRange {
         value, min, max, ..
+      } if min == "valid power operand pair" => {
+        write!(
+          f,
+          "Power operands '{value}' are outside the mathematical domain. Expected {max}."
+        )
+      }
+      VMError::ValueOutOfRange {
+        value, min, max, ..
       } => {
         write!(
           f,
