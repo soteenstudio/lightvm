@@ -54,9 +54,48 @@ pub fn powi_values(
     });
   }
   Ok(match num_type {
-    PrimitiveTypes::Hlf => Value::Float16(powi_f16in(a.as_f16(), b.as_i16())),
-    PrimitiveTypes::Flt => Value::Float32(powi_f32in(a.as_f32(), b.as_i32())),
-    PrimitiveTypes::Dbl => Value::Float64(powi_f64in(a.as_f64(), b.as_i64())),
+    PrimitiveTypes::Hlf => {
+      let base = a.as_f16();
+      let exponent = b.as_i16();
+      if base == half::f16::ZERO && exponent < 0 {
+        return Err(VMError::ValueOutOfRange {
+          ip,
+          value: format!("({}, {})", base, exponent).into(),
+          min: "valid power operand pair".into(),
+          max: "nonzero base for negative exponents; integral exponent for finite negative bases"
+            .into(),
+        });
+      }
+      Value::Float16(powi_f16in(base, exponent))
+    }
+    PrimitiveTypes::Flt => {
+      let base = a.as_f32();
+      let exponent = b.as_i32();
+      if base == 0.0 && exponent < 0 {
+        return Err(VMError::ValueOutOfRange {
+          ip,
+          value: format!("({}, {})", base, exponent).into(),
+          min: "valid power operand pair".into(),
+          max: "nonzero base for negative exponents; integral exponent for finite negative bases"
+            .into(),
+        });
+      }
+      Value::Float32(powi_f32in(base, exponent))
+    }
+    PrimitiveTypes::Dbl => {
+      let base = a.as_f64();
+      let exponent = b.as_i64();
+      if base == 0.0 && exponent < 0 {
+        return Err(VMError::ValueOutOfRange {
+          ip,
+          value: format!("({}, {})", base, exponent).into(),
+          min: "valid power operand pair".into(),
+          max: "nonzero base for negative exponents; integral exponent for finite negative bases"
+            .into(),
+        });
+      }
+      Value::Float64(powi_f64in(base, exponent))
+    }
     _ => {
       return Err(VMError::TypeMismatch {
         ip,
