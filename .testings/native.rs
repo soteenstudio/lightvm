@@ -29,10 +29,11 @@ fn main() {
   .with_diagnostic_links(true);
 
   let raw = r#"[
-    ["push", 1],
-    ["push", 2],
-    ["push", 3],
+    ["push", 0.5],
+    ["push", 0.9],
+    ["push", 0.9],
     ["make_array", 3],
+    ["acosv", "flt"],
     ["println"]
   ]"#;
   let tools = vm.tools();

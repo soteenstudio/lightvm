@@ -67,9 +67,36 @@ mod tests {
     Value::Array(Arc::new(values))
   }
   #[test]
+  fn accepts_atanv_inputs_outside_unit_interval() {
+    for num_type in [
+      PrimitiveTypes::Hlf,
+      PrimitiveTypes::Flt,
+      PrimitiveTypes::Dbl,
+    ] {
+      let inputs = [-10.0_f64, -2.0, -1.0, 0.0, 1.0, 2.0, 10.0];
+      let operand = array(inputs.iter().map(|&v| Value::Float64(v)).collect());
+      let mut stack = Stack::from_vec(vec![operand]);
+      atanv_func(&mut stack, num_type, 31).unwrap();
+      let result = stack.last().unwrap().as_array().unwrap();
+      assert_eq!(result.len(), inputs.len());
+      for (actual, input) in result.iter().zip(inputs) {
+        assert!((actual.as_f64() - input.atan()).abs() < 0.001);
+      }
+      assert!(matches!(
+        atanv_values(
+          array(vec![Value::Float64(2.0), Value::Int32(2)]),
+          num_type,
+          32
+        ),
+        Err(VMError::TypeMismatch { ip: 32, .. })
+      ));
+    }
+  }
+  #[test]
   fn validates_float_family_without_mutating_stack() {
     crate::instructions::math::vector::trigonometry::assert_unary_float_vector_validation(
       atanv_values,
+      0.0,
       atanv_func,
     );
   }

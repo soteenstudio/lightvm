@@ -17,6 +17,7 @@ use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
+use half::f16;
 #[inline(always)]
 pub fn atan2v_values(
   a_val: Value,
@@ -50,6 +51,44 @@ pub fn atan2v_values(
         ip,
         expected: expected_type(num_type, ExpectedCategory::Float),
         found: get_type_name(value.clone()),
+      });
+    }
+  }
+  for (val_a, val_b) in arr_a.iter().zip(arr_b.iter()) {
+    if !matches!(
+      val_a,
+      Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
+    ) {
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: expected_type(num_type, ExpectedCategory::Float),
+        found: get_type_name(val_a.clone()),
+      });
+    }
+    if !matches!(
+      val_b,
+      Value::Float16(_) | Value::Float32(_) | Value::Float64(_)
+    ) {
+      return Err(VMError::TypeMismatch {
+        ip,
+        expected: expected_type(num_type, ExpectedCategory::Float),
+        found: get_type_name(val_b.clone()),
+      });
+    }
+    let is_zero = match num_type {
+      PrimitiveTypes::Hlf => {
+        val_a.as_f16() == f16::from_f32(0.0) && val_b.as_f16() == f16::from_f32(0.0)
+      }
+      PrimitiveTypes::Flt => val_a.as_f32() == 0.0 && val_b.as_f32() == 0.0,
+      PrimitiveTypes::Dbl => val_a.as_f64() == 0.0 && val_b.as_f64() == 0.0,
+      _ => false,
+    };
+    if is_zero {
+      return Err(VMError::ValueOutOfRange {
+        ip,
+        value: "atan2(0, 0)".into(),
+        min: "(y, x) != (0, 0)".into(),
+        max: "all other operand pairs".into(),
       });
     }
   }

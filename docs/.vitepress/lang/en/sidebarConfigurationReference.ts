@@ -9,6 +9,6 @@ export const sidebarConfigurationReference = {
     {
       text: 'Rust Configuration',
       link: '/api-reference/configuration-reference/rust-configuration',
-    }
+    },
   ],
 };

@@ -30,9 +30,42 @@ pub fn sqrt_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Valu
     });
   }
   Ok(match num_type {
-    PrimitiveTypes::Hlf => Value::Float16(sqrt_f16in(a.as_f16())),
-    PrimitiveTypes::Flt => Value::Float32(sqrt_f32in(a.as_f32())),
-    PrimitiveTypes::Dbl => Value::Float64(sqrt_f64in(a.as_f64())),
+    PrimitiveTypes::Hlf => {
+      let value = a.as_f16();
+      if value.is_nan() || value < half::f16::ZERO {
+        return Err(VMError::ValueOutOfRange {
+          ip,
+          value: a.as_string(),
+          min: "0.0".into(),
+          max: "infinity".into(),
+        });
+      }
+      Value::Float16(sqrt_f16in(value))
+    }
+    PrimitiveTypes::Flt => {
+      let value = a.as_f32();
+      if value.is_nan() || value < 0.0 {
+        return Err(VMError::ValueOutOfRange {
+          ip,
+          value: a.as_string(),
+          min: "0.0".into(),
+          max: "infinity".into(),
+        });
+      }
+      Value::Float32(sqrt_f32in(value))
+    }
+    PrimitiveTypes::Dbl => {
+      let value = a.as_f64();
+      if value.is_nan() || value < 0.0 {
+        return Err(VMError::ValueOutOfRange {
+          ip,
+          value: a.as_string(),
+          min: "0.0".into(),
+          max: "infinity".into(),
+        });
+      }
+      Value::Float64(sqrt_f64in(value))
+    }
     _ => {
       return Err(VMError::TypeMismatch {
         ip,

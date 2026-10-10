@@ -36,6 +36,13 @@ pub fn atanhv_values(a_val: Value, num_type: PrimitiveTypes, ip: usize) -> Resul
       });
     }
   }
+  for value in arr_a.iter() {
+    crate::instructions::math::trigonometry::hyperbolic::inverse::atanh_func::atanh_values(
+      value.clone(),
+      num_type,
+      ip,
+    )?;
+  }
   Ok(match num_type {
     PrimitiveTypes::Hlf => Value::Array(atanhv_f16in(&arr_a)),
     PrimitiveTypes::Flt => Value::Array(atanhv_f32in(&arr_a)),
@@ -70,6 +77,7 @@ mod tests {
   fn validates_float_family_without_mutating_stack() {
     crate::instructions::math::vector::trigonometry::assert_unary_float_vector_validation(
       atanhv_values,
+      0.0,
       atanhv_func,
     );
   }
@@ -85,7 +93,7 @@ mod tests {
   }
   #[test]
   fn validates_elements_and_directives() {
-    assert!(atanhv_values(array(vec![Value::Float32(1.0)]), PrimitiveTypes::Flt, 11).is_ok());
+    assert!(atanhv_values(array(vec![Value::Float32(0.5)]), PrimitiveTypes::Flt, 11).is_ok());
     assert!(matches!(
       atanhv_values(array(vec![Value::Bool(false)]), PrimitiveTypes::Flt, 19),
       Err(VMError::TypeMismatch {

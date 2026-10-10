@@ -8,7 +8,7 @@ const raw = [
   ['val', 'x'],
   ['set', 'x'],
   ['get', 'x'],
-  ['println']
+  ['println'],
 ];
 
 const optimized = tools.optimizeBytecode(raw);

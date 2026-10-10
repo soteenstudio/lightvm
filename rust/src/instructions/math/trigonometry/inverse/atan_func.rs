@@ -30,9 +30,18 @@ pub fn atan_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Valu
     });
   }
   Ok(match num_type {
-    PrimitiveTypes::Hlf => Value::Float16(atan_f16in(a.as_f16())),
-    PrimitiveTypes::Flt => Value::Float32(atan_f32in(a.as_f32())),
-    PrimitiveTypes::Dbl => Value::Float64(atan_f64in(a.as_f64())),
+    PrimitiveTypes::Hlf => {
+      let val = a.as_f16();
+      Value::Float16(atan_f16in(val))
+    }
+    PrimitiveTypes::Flt => {
+      let val = a.as_f32();
+      Value::Float32(atan_f32in(val))
+    }
+    PrimitiveTypes::Dbl => {
+      let val = a.as_f64();
+      Value::Float64(atan_f64in(val))
+    }
     _ => {
       return Err(VMError::TypeMismatch {
         ip,

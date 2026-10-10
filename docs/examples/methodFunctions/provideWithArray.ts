@@ -8,13 +8,7 @@ vm.provide({
   force: 2021,
 });
 
-const raw = [
-  ['get', 'name'],
-  ['println'],
-  ['get', 'force'],
-  ['println']
-];
+const raw = [['get', 'name'], ['println'], ['get', 'force'], ['println']];
 
 const optimized = tools.optimizeBytecode(raw);
-vm.load(optimized)
-  .run();
+vm.load(optimized).run();

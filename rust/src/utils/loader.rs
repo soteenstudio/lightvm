@@ -92,7 +92,6 @@ pub fn stringify_ltc(instructions: Vec<Instructions>) -> String {
 #[cfg(test)]
 mod tests {
   use super::*;
-
   #[test]
   fn parse_ltc_preserves_quoted_escaped_numeric_and_padded_arguments() {
     let parsed = parse_ltc(r#"push "hello world"; push "escaped \"quote\""; push 12.5; stop;"#);

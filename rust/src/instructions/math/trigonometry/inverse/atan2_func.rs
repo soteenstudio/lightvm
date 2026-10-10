@@ -17,6 +17,7 @@ use crate::types::primitive_types::PrimitiveTypes;
 use crate::types::stack::Stack;
 use crate::types::value::Value;
 use crate::utils::{expected_type::expected_type, get_type_name::get_type_name};
+use half::f16;
 #[inline(always)]
 pub fn atan2_values(
   y: Value,
@@ -45,9 +46,45 @@ pub fn atan2_values(
     });
   }
   Ok(match num_type {
-    PrimitiveTypes::Hlf => Value::Float16(atan2_f16in(y.as_f16(), x.as_f16())),
-    PrimitiveTypes::Flt => Value::Float32(atan2_f32in(y.as_f32(), x.as_f32())),
-    PrimitiveTypes::Dbl => Value::Float64(atan2_f64in(y.as_f64(), x.as_f64())),
+    PrimitiveTypes::Hlf => {
+      let val_y = y.as_f16();
+      let val_x = x.as_f16();
+      if val_y == f16::from_f32(0.0) && val_x == f16::from_f32(0.0) {
+        return Err(VMError::ValueOutOfRange {
+          ip,
+          value: "atan2(0, 0)".into(),
+          min: "(y, x) != (0, 0)".into(),
+          max: "all other operand pairs".into(),
+        });
+      }
+      Value::Float16(atan2_f16in(val_y, val_x))
+    }
+    PrimitiveTypes::Flt => {
+      let val_y = y.as_f32();
+      let val_x = x.as_f32();
+      if val_y == 0.0 && val_x == 0.0 {
+        return Err(VMError::ValueOutOfRange {
+          ip,
+          value: "atan2(0, 0)".into(),
+          min: "(y, x) != (0, 0)".into(),
+          max: "all other operand pairs".into(),
+        });
+      }
+      Value::Float32(atan2_f32in(val_y, val_x))
+    }
+    PrimitiveTypes::Dbl => {
+      let val_y = y.as_f64();
+      let val_x = x.as_f64();
+      if val_y == 0.0 && val_x == 0.0 {
+        return Err(VMError::ValueOutOfRange {
+          ip,
+          value: "atan2(0, 0)".into(),
+          min: "(y, x) != (0, 0)".into(),
+          max: "all other operand pairs".into(),
+        });
+      }
+      Value::Float64(atan2_f64in(val_y, val_x))
+    }
     _ => {
       return Err(VMError::TypeMismatch {
         ip,

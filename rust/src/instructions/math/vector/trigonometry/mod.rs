@@ -17,6 +17,7 @@ fn assert_unary_float_vector_validation(
     crate::types::primitive_types::PrimitiveTypes,
     usize,
   ) -> Result<crate::types::value::Value, crate::modules::vmerror::VMError>,
+  valid_input: f32,
   func: fn(
     &mut crate::types::stack::Stack,
     crate::types::primitive_types::PrimitiveTypes,
@@ -53,12 +54,16 @@ fn assert_unary_float_vector_validation(
   }
   for (value, num_type, expected) in [
     (
-      Value::Float16(half::f16::ZERO),
+      Value::Float16(half::f16::from_f32(valid_input)),
       PrimitiveTypes::Flt,
       "Float",
     ),
-    (Value::Float32(0.0), PrimitiveTypes::Dbl, "Double"),
-    (Value::Float64(0.0), PrimitiveTypes::Hlf, "Half"),
+    (Value::Float32(valid_input), PrimitiveTypes::Dbl, "Double"),
+    (
+      Value::Float64(valid_input as f64),
+      PrimitiveTypes::Hlf,
+      "Half",
+    ),
   ] {
     let result = values(array(value), num_type, 32).unwrap();
     let elements = result.as_array().unwrap();
