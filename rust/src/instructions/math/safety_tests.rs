@@ -12,7 +12,6 @@ use super::{arithmetic, logarithm, root, trigonometry, vector};
 use crate::modules::vmerror::VMError;
 use crate::types::{primitive_types::PrimitiveTypes, stack::Stack, value::Value};
 use std::sync::Arc;
-
 type Unary = fn(Value, PrimitiveTypes, usize) -> Result<Value, VMError>;
 type Binary = fn(Value, Value, PrimitiveTypes, usize) -> Result<Value, VMError>;
 type Instruction = fn(&mut Stack, PrimitiveTypes, usize) -> Result<(), VMError>;
@@ -28,7 +27,6 @@ fn domain_error(error: VMError) {
   assert_eq!(error.error_code(), "LVM020");
   assert!(matches!(error, VMError::ValueOutOfRange { ip: 42, .. }));
 }
-
 #[test]
 fn zero_divisors_after_conversion_preserve_scalar_and_vector_stacks() {
   for (scalar, scalar_func, vector, vector_func, division) in [
@@ -138,7 +136,6 @@ fn zero_divisors_after_conversion_preserve_scalar_and_vector_stacks() {
     }
   }
 }
-
 #[test]
 fn bounded_domains_match_and_late_invalid_elements_preserve_stack() {
   for (scalar, vector, instruction, valid, invalid) in [
@@ -202,7 +199,6 @@ fn bounded_domains_match_and_late_invalid_elements_preserve_stack() {
     }
   }
 }
-
 #[test]
 fn unrestricted_trigonometry_preserves_scalar_vector_behavior() {
   for (scalar, vector) in [
@@ -263,7 +259,6 @@ fn unrestricted_trigonometry_preserves_scalar_vector_behavior() {
     }
   }
 }
-
 #[test]
 fn atan2_zero_pairs_use_domain_errors_after_conversion() {
   use trigonometry::inverse::atan2_func::{atan2_func, atan2_values};
@@ -327,7 +322,6 @@ fn atan2_zero_pairs_use_domain_errors_after_conversion() {
     );
   }
 }
-
 #[test]
 fn domain_boundaries_are_checked_at_requested_precision() {
   for num_type in FLOATS {
@@ -370,7 +364,6 @@ fn domain_boundaries_are_checked_at_requested_precision() {
     }
   }
 }
-
 #[test]
 fn diagnostics_describe_exclusive_and_pair_domains() {
   let error = trigonometry::hyperbolic::inverse::atanh_func::atanh_values(
@@ -395,7 +388,6 @@ fn diagnostics_describe_exclusive_and_pair_domains() {
   );
   domain_error(error);
 }
-
 #[test]
 fn scalar_domain_failure_preserves_stack_in_every_precision() {
   for instruction in [
@@ -415,7 +407,6 @@ fn scalar_domain_failure_preserves_stack_in_every_precision() {
     }
   }
 }
-
 fn restricted_unary_operations() -> [(Unary, Instruction, Unary, Instruction, bool); 4] {
   [
     (
@@ -448,7 +439,6 @@ fn restricted_unary_operations() -> [(Unary, Instruction, Unary, Instruction, bo
     ),
   ]
 }
-
 #[test]
 fn logarithm_and_sqrt_domains_preserve_operands() {
   for (scalar, instruction, vector, vector_instruction, sqrt) in restricted_unary_operations() {
@@ -538,7 +528,6 @@ fn logarithm_and_sqrt_domains_preserve_operands() {
     ));
   }
 }
-
 #[test]
 fn power_domains_validate_converted_pairs_and_preserve_stacks() {
   for (scalar, instruction, vector, vector_instruction, integer_exponent, precisions) in [
@@ -640,7 +629,6 @@ fn power_domains_validate_converted_pairs_and_preserve_stacks() {
     }
   }
 }
-
 #[test]
 fn floating_power_preserves_ieee_results_and_precision_boundaries() {
   for num_type in FLOATS {
@@ -733,7 +721,6 @@ fn floating_power_preserves_ieee_results_and_precision_boundaries() {
   assert!(error.to_string().contains("integral exponent"));
   domain_error(error);
 }
-
 #[test]
 fn converted_zero_power_bases_and_unsupported_directives_preserve_errors() {
   for num_type in FLOATS {

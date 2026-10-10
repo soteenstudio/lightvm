@@ -145,6 +145,5 @@ fn assert_unary_float_errors(
     }) if found_opcode == opcode
   ));
 }
-
 #[cfg(test)]
 mod safety_tests;
