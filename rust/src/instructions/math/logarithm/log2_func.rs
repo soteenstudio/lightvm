@@ -35,7 +35,7 @@ pub fn log2_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Valu
       if value.is_nan() || value <= half::f16::ZERO {
         return Err(VMError::ValueOutOfRange {
           ip,
-          value: a.as_string().into(),
+          value: a.as_string(),
           min: "0.0 (exclusive)".into(),
           max: "infinity".into(),
         });
@@ -47,7 +47,7 @@ pub fn log2_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Valu
       if value.is_nan() || value <= 0.0 {
         return Err(VMError::ValueOutOfRange {
           ip,
-          value: a.as_string().into(),
+          value: a.as_string(),
           min: "0.0 (exclusive)".into(),
           max: "infinity".into(),
         });
@@ -59,7 +59,7 @@ pub fn log2_values(a: Value, num_type: PrimitiveTypes, ip: usize) -> Result<Valu
       if value.is_nan() || value <= 0.0 {
         return Err(VMError::ValueOutOfRange {
           ip,
-          value: a.as_string().into(),
+          value: a.as_string(),
           min: "0.0 (exclusive)".into(),
           max: "infinity".into(),
         });
