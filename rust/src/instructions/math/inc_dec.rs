@@ -29,8 +29,9 @@ pub fn inc_func(
   num_type: PrimitiveTypes,
   ip: usize,
 ) -> Result<(), VMError> {
-  while vars.len() <= index {
-    vars.push(Value::Undefined);
+  let len = vars.len();
+  if len <= index {
+    return Err(VMError::OutOfBounds { ip, index, len });
   }
   let var_ref = unsafe { vars.get_unchecked_mut(index) };
   if !var_ref.is_number() {
@@ -61,6 +62,10 @@ pub fn dec_func(
   num_type: PrimitiveTypes,
   ip: usize,
 ) -> Result<(), VMError> {
+  let len = vars.len();
+  if len <= index {
+    return Err(VMError::OutOfBounds { ip, index, len });
+  }
   let var_ref = unsafe { vars.get_unchecked_mut(index) };
   if !var_ref.is_number() {
     return Err(VMError::TypeMismatch {
