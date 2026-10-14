@@ -123,7 +123,8 @@ export default {
     'mdocumentation',
     'paniclog',
     'xcbf',
-    'yymm'
+    'yymm',
+    'softprops'
   ],
   ignorePaths: [
     'node_modules/**',
