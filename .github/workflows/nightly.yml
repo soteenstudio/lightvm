@@ -75,14 +75,6 @@ jobs:
           VERSION_VAL: ${{ steps.versioning.outputs.version_tag }}
         run: bash .github/scripts/nightly/commit_push.sh
 
-      - name: Create Release
-        if: steps.filter_changes.outputs.significant == 'true'
-        run: bash .github/scripts/nightly/create_release.sh
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION_VAL: ${{ steps.versioning.outputs.version_tag }}
-          REPOSITORY: ${{ github.repository }}
-
       - name: Trigger Main Release Workflow
         if: steps.filter_changes.outputs.significant == 'true'
         uses: benc-uk/workflow-dispatch@v1

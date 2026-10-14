@@ -122,7 +122,8 @@ export default {
     'hypot',
     'mdocumentation',
     'paniclog',
-    'xcbf'
+    'xcbf',
+    'yymm'
   ],
   ignorePaths: [
     'node_modules/**',

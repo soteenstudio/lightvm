@@ -4,12 +4,14 @@ RAW_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
 
 CLEAN_VERSION=${RAW_TAG#v}
 
-BASE_VERSION=${CLEAN_VERSION%-nightly.*}
+BASE_VERSION=${CLEAN_VERSION%-*}
 
-COMMIT_HASH=$(git rev-parse --short HEAD)
-DATE=$(date +'%Y%m%d') # Format: 20260625
+YYMM=$(date +'%yM%m')
 
-VERSION_CLEAN="${BASE_VERSION}-nightly.${DATE}.${COMMIT_HASH}"
+N_COUNT=$(git tag -l "*-${YYMM}N*" 2>/dev/null | wc -l)
+N_ITERATION=$((N_COUNT + 1))
+
+VERSION_CLEAN="${BASE_VERSION}-${YYMM}N${N_ITERATION}"
 VERSION_TAG="v${VERSION_CLEAN}"
 
 echo "version_clean=$VERSION_CLEAN" >> $GITHUB_OUTPUT
