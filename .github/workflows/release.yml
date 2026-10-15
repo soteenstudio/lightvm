@@ -40,7 +40,7 @@ jobs:
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          token: ${{ secrets.GH_PAT }}
+          token: ${{ secrets.LIGHTVM_PAT }}
           tag_name: ${{ github.ref_name }}
           name: "LightVM ${{ steps.rel_type.outputs.title_prefix }} ${{ github.ref_name }}"
           prerelease: ${{ steps.rel_type.outputs.is_prerelease == 'true' }}
