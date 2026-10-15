@@ -42,10 +42,46 @@ jobs:
         with:
           token: ${{ secrets.LIGHTVM_PAT }}
           tag_name: ${{ github.ref_name }}
-          name: "LightVM ${{ steps.rel_type.outputs.title_prefix }} ${{ github.ref_name }}"
+          name: "LightVM ${{ steps.rel_type.outputs.title_prefix }}${{ github.ref_name }}"
           prerelease: ${{ steps.rel_type.outputs.is_prerelease == 'true' }}
           generate_release_notes: ${{ steps.rel_type.outputs.is_prerelease == 'false' }}
           body: |
-            ${{ steps.rel_type.outputs.is_prerelease == 'true' && '⚠️ **This is a Release Candidate build for testing.**' || '🚀 **Official Stable Release!**' }}
+            ${{ steps.rel_type.outputs.is_prerelease == 'true' && 'NOTICE: This distribution is a Release Candidate build intended strictly for pre-production testing, validation, and evaluation. It may contain unresolved defects, experimental features, or breaking changes.' || 'NOTICE: This distribution is an official stable release, fully verified and recommended for production environments.' }}
+
+            ### Overview
+            LightVM is a capability-based virtual machine written in Rust with Node.js and WebAssembly support, featuring Gazle optimization passes, security controls, and custom bytecode compilation. This release includes the compiled binaries, standard runtime updates, and full packaging synchronization.
+
+            ### Risk Assessment and Stability Analysis
+            - **Release Candidate Builds:** Pre-release versions carry inherent risks regarding stability and backward compatibility. They are not recommended for mission-critical production workloads until a stable tag is officially issued. Bug reports and feedback regarding unexpected behaviors are highly encouraged via the issue tracker.
+            - **Stable Releases:** Thoroughly validated through test suites, continuous integration workflows, and pre-release cycles. Upgrading from previous stable versions is safe, provided you review any documented breaking changes in the changelog.
+
+            ### Installation Instructions
+
+            #### 1. Installing via npm (Node.js Package)
+            To install LightVM as a dependency within your Node.js or TypeScript project, execute the following command in your terminal:
+
+            ```bash
+            npm install lightvm
+            ```
+
+            If you prefer to install it globally for command-line utilities or local development tasks:
+
+            ```bash
+            npm install -g lightvm
+            ```
+
+            #### 2. Installing via Cargo (Rust Crate)
+            To integrate LightVM as a dependency into your Rust project, add the following line to your `Cargo.toml` under dependencies:
+
+            ```toml
+            [dependencies]
+            lightvm = "${{ github.ref_name }}"
+            ```
+
+            Alternatively, if you want to install the binary executable directly from the crates.io registry using Cargo:
+
+            ```bash
+            cargo install lightvm
+            ```
           files: |
             target/release/lightvm
