@@ -1,32 +1,51 @@
-name: Domloo Release Trigger
-
-concurrency:
-  group: domloo-release-${{ github.ref }}
-  cancel-in-progress: true
+name: Release (RC & Stable)
 
 on:
-  workflow_dispatch:
-  issue_comment:
-    types: [created]
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+-rc*'
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
-  release:
+  publish-release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
     steps:
-      - name: Checkout Source Code
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false
 
-      - name: Run Domloo Release
-        uses: domlooorgs/release-action@main
+      - name: Determine Release Type
+        id: rel_type
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          if [[ "$TAG" == *"-rc"* ]]; then
+            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+            echo "title_prefix=Release Candidate" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+            echo "title_prefix=Stable Release" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Rust / Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Binary
+        run: cargo build --release
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_PAT }}
+          tag_name: ${{ github.ref_name }}
+          name: "LightVM ${{ steps.rel_type.outputs.title_prefix }} ${{ github.ref_name }}"
+          prerelease: ${{ steps.rel_type.outputs.is_prerelease == 'true' }}
+          generate_release_notes: ${{ steps.rel_type.outputs.is_prerelease == 'false' }}
+          body: |
+            ${{ steps.rel_type.outputs.is_prerelease == 'true' && '⚠️ **This is a Release Candidate build for testing.**' || '🚀 **Official Stable Release!**' }}
+          files: |
+            target/release/lightvm
