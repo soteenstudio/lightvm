@@ -1,32 +1,87 @@
-name: Domloo Release Trigger
-
-concurrency:
-  group: domloo-release-${{ github.ref }}
-  cancel-in-progress: true
+name: Release (RC & Stable)
 
 on:
-  workflow_dispatch:
-  issue_comment:
-    types: [created]
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+-rc*'
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
-  release:
+  publish-release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
     steps:
-      - name: Checkout Source Code
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false
 
-      - name: Run Domloo Release
-        uses: domlooorgs/release-action@main
+      - name: Determine Release Type
+        id: rel_type
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          if [[ "$TAG" == *"-rc"* ]]; then
+            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+            echo "title_prefix=Release Candidate" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+            echo "title_prefix=Stable Release" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Rust / Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Binary
+        run: cargo build --release
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.LIGHTVM_PAT }}
+          tag_name: ${{ github.ref_name }}
+          name: "LightVM ${{ steps.rel_type.outputs.title_prefix }}${{ github.ref_name }}"
+          prerelease: ${{ steps.rel_type.outputs.is_prerelease == 'true' }}
+          generate_release_notes: ${{ steps.rel_type.outputs.is_prerelease == 'false' }}
+          body: |
+            ${{ steps.rel_type.outputs.is_prerelease == 'true' && 'NOTICE: This distribution is a Release Candidate build intended strictly for pre-production testing, validation, and evaluation. It may contain unresolved defects, experimental features, or breaking changes.' || 'NOTICE: This distribution is an official stable release, fully verified and recommended for production environments.' }}
+
+            ### Overview
+            LightVM is a capability-based virtual machine written in Rust with Node.js and WebAssembly support, featuring Gazle optimization passes, security controls, and custom bytecode compilation. This release includes the compiled binaries, standard runtime updates, and full packaging synchronization.
+
+            ### Risk Assessment and Stability Analysis
+            - **Release Candidate Builds:** Pre-release versions carry inherent risks regarding stability and backward compatibility. They are not recommended for mission-critical production workloads until a stable tag is officially issued. Bug reports and feedback regarding unexpected behaviors are highly encouraged via the issue tracker.
+            - **Stable Releases:** Thoroughly validated through test suites, continuous integration workflows, and pre-release cycles. Upgrading from previous stable versions is safe, provided you review any documented breaking changes in the changelog.
+
+            ### Installation Instructions
+
+            #### 1. Installing via npm (Node.js Package)
+            To install LightVM as a dependency within your Node.js or TypeScript project, execute the following command in your terminal:
+
+            ```bash
+            npm install lightvm
+            ```
+
+            If you prefer to install it globally for command-line utilities or local development tasks:
+
+            ```bash
+            npm install -g lightvm
+            ```
+
+            #### 2. Installing via Cargo (Rust Crate)
+            To integrate LightVM as a dependency into your Rust project, add the following line to your `Cargo.toml` under dependencies:
+
+            ```toml
+            [dependencies]
+            lightvm = "${{ github.ref_name }}"
+            ```
+
+            Alternatively, if you want to install the binary executable directly from the crates.io registry using Cargo:
+
+            ```bash
+            cargo install lightvm
+            ```
+          files: |
+            target/release/lightvm
