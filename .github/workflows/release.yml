@@ -31,6 +31,10 @@ jobs:
             echo "title_prefix=Stable Release" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Strip v prefix
+        id: ver
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
       - name: Setup Rust / Toolchain
         uses: dtolnay/rust-toolchain@stable
 
@@ -69,7 +73,7 @@ jobs:
 
             ```toml
             [dependencies]
-            lightvm = "${{ github.ref_name }}"
+            lightvm = "${{ steps.rel_type.outputs.is_prerelease == 'true' && format('={0}', steps.ver.outputs.version) || steps.ver.outputs.version }}"
             ```
 
             Alternatively, if you want to install the binary executable directly from the crates.io registry using Cargo:

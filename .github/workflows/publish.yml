@@ -229,9 +229,13 @@ jobs:
 
       - name: Sync Assets and Version
         run: bash .github/scripts/publish/sync_assets_version.sh
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version_override }}
+          INPUT_RAW_VERSION: ${{ github.event.release.tag_name }}
 
       - name: Publish to Crates.io
         run: bash .github/scripts/publish/publish_crates.sh
         env:
           INPUT_VERSION: ${{ github.event.inputs.version_override }}
+          INPUT_RAW_VERSION: ${{ github.event.release.tag_name }}
           TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
