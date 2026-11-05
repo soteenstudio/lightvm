@@ -1,20 +1,15 @@
-VERSION="$INPUT_VERSION"
+VERSION="${INPUT_VERSION:-}"
+
 if [ -z "$VERSION" ]; then
-  RAW_VERSION="$INPUT_RAW_VERSION"
-  VERSION=${RAW_VERSION#v}
+  VERSION="${INPUT_RAW_VERSION:-}"
 fi
 
 if [ -z "$VERSION" ]; then
-  echo "Fetch latest release tag from GitHub API..."
-  LATEST_TAG=$(gh release view --json tagName --template '{{.tagName}}' 2>/dev/null || echo "")
-  if [ -n "$LATEST_TAG" ]; then
-    VERSION=${LATEST_TAG#v}
-    echo "Successfully resolved latest release version: $VERSION"
-  else
-    echo "No release found via API. Falling back to Cargo.toml..."
-    VERSION=$(grep '^version =' Cargo.toml | head -n1 | cut -d '"' -f2)
-  fi
+  echo "No version input. Falling back to Cargo.toml..."
+  VERSION=$(grep '^version =' Cargo.toml | head -n1 | cut -d '"' -f2)
 fi
+
+VERSION="${VERSION#v}"
 
 echo "Final Publishing Version: $VERSION"
 
@@ -53,28 +48,28 @@ for item in "${PLATFORMS[@]}"; do
   PKG_NAME="@lightvm/core-$PLATFORM"
   OS_VAL="${PLATFORM%-*}"
   mkdir -p "publish/$PLATFORM"
-  
+
   if [[ "$PLATFORM" == "browser-wasm" ]]; then
       echo "=== Contents of binaries/$ARTIFACT ==="
       ls -la "binaries/$ARTIFACT"
-      
+
       cp -r "binaries/$ARTIFACT"/. "publish/$PLATFORM/"
-      
+
       cd "publish/$PLATFORM"
-      
+
       WASM_JS_FILE=$(find . -maxdepth 1 -name "*.js" ! -name "index.js" | head -n 1)
       if [ -n "$WASM_JS_FILE" ]; then
           mv "$WASM_JS_FILE" "index.js"
       fi
-      
+
       WASM_BG_FILE=$(find . -maxdepth 1 -name "*_bg.wasm" | head -n 1)
       if [ -n "$WASM_BG_FILE" ]; then
           mv "$WASM_BG_FILE" "index.wasm"
       fi
-      
+
       cd ../..
-      
-      MAIN_FIELD="index.js" 
+
+      MAIN_FIELD="index.js"
       FILES_FIELD=$(jq -nc '["index.wasm", "index.js", "*.d.ts", "README.md", "LICENSE"]')
   else
     find "binaries/$ARTIFACT" -type f \( -name "*.node" -o -name "*.dll" -o -name "*.so" -o -name "*.dylib" \) -exec cp {} "publish/$PLATFORM/$BIN_NAME" \;
@@ -169,10 +164,10 @@ RUST_EOF
       FILES_FIELD=$(jq -nc --arg bin "$BIN_NAME" '[$bin, "README.md", "LICENSE"]')
     fi
   fi
-  
+
   cp -f README.md "publish/$PLATFORM/" || true
   cp -f LICENSE "publish/$PLATFORM/" || true
-  
+
   jq -n \
     --arg name "$PKG_NAME" \
     --arg ver "$VERSION" \
@@ -192,7 +187,7 @@ RUST_EOF
     }' > "publish/$PLATFORM/package.json"
 
   cd "publish/$PLATFORM"
-  
+
   if [[ "$EVENT_NAME" == "release" ]] || [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
     echo "Release or Manual Dispatch Event Detected: Running Real Publish to NPM..."
     npm publish --tag $TAG --access public || echo "Skip existing"
