@@ -1,5 +1,7 @@
-if [[ "$INPUT_VERSION" == *"nightly"* ]]; then
-  cargo publish --token "$TOKEN" --allow-dirty --no-verify
-else
-  cargo publish --token "$TOKEN" --allow-dirty
-fi
+#!/usr/bin/env bash
+set -euo pipefail
+
+VERSION=$(grep '^version =' Cargo.toml | head -n1 | cut -d '"' -f2)
+echo "Publishing version: $VERSION"
+
+cargo publish --allow-dirty --token "$TOKEN"
