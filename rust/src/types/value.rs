@@ -199,12 +199,12 @@ impl Value {
   pub fn as_string(&self) -> SmolStr {
     match self {
       Value::String(v) => v.clone(),
-      Value::Int16(v) => int_to_smol(*v as i64),
-      Value::Int32(v) => int_to_smol(*v as i64),
+      Value::Int16(v) => int_to_smol(*v),
+      Value::Int32(v) => int_to_smol(*v),
       Value::Int64(v) => int_to_smol(*v),
-      Value::Int128(v) => int_to_smol(*v as i64),
-      Value::Float16(v) => float_to_smol(v.to_f64()),
-      Value::Float32(v) => float_to_smol(*v as f64),
+      Value::Int128(v) => int_to_smol(*v),
+      Value::Float16(v) => float_to_smol(*v),
+      Value::Float32(v) => float_to_smol(*v),
       Value::Float64(v) => float_to_smol(*v),
       Value::Bool(v) => SmolStr::new(if *v { "true" } else { "false" }),
       Value::Null => SmolStr::new("null"),

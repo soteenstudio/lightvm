@@ -9,13 +9,36 @@
  */
 
 use smol_str::SmolStr;
-#[inline]
-pub fn int_to_smol<T: Into<i64>>(n: T) -> SmolStr {
-  let mut buffer = itoa::Buffer::new();
-  SmolStr::new(buffer.format(n.into()))
+pub trait ToRyuFloat {
+  fn format_to_smol(self) -> SmolStr;
+}
+impl ToRyuFloat for f32 {
+  #[inline]
+  fn format_to_smol(self) -> SmolStr {
+    let mut buffer = ryu::Buffer::new();
+    SmolStr::new(buffer.format(self))
+  }
+}
+impl ToRyuFloat for f64 {
+  #[inline]
+  fn format_to_smol(self) -> SmolStr {
+    let mut buffer = ryu::Buffer::new();
+    SmolStr::new(buffer.format(self))
+  }
+}
+impl ToRyuFloat for half::f16 {
+  #[inline]
+  fn format_to_smol(self) -> SmolStr {
+    let mut buffer = ryu::Buffer::new();
+    SmolStr::new(buffer.format(self.to_f32()))
+  }
 }
 #[inline]
-pub fn float_to_smol<T: Into<f64>>(f: T) -> SmolStr {
-  let mut buffer = ryu::Buffer::new();
-  SmolStr::new(buffer.format(f.into()))
+pub fn int_to_smol<T: itoa::Integer>(n: T) -> SmolStr {
+  let mut buffer = itoa::Buffer::new();
+  SmolStr::new(buffer.format(n))
+}
+#[inline]
+pub fn float_to_smol<T: ToRyuFloat>(f: T) -> SmolStr {
+  f.format_to_smol()
 }
