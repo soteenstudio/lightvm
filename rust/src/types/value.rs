@@ -268,13 +268,7 @@ impl From<serde_json::Value> for Value {
         let converted: Vec<Value> = a.into_iter().map(Value::from).collect();
         Value::Array(Arc::new(converted))
       }
-      serde_json::Value::Object(o) => {
-        let converted: AHashMap<SmolStr, Value> = o
-          .into_iter()
-          .map(|(k, v)| (SmolStr::from(k), Value::from(v)))
-          .collect();
-        Value::Object(Arc::new(converted))
-      }
+      _ => Value::Undefined,
     }
   }
 }
