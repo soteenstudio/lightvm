@@ -84,7 +84,12 @@ pub fn powi_values(
     }
     PrimitiveTypes::Dbl => {
       let base = a.as_f64();
-      let exponent = b.as_i64();
+      let exponent = i64::try_from(b.as_i128()).map_err(|_| VMError::ValueOutOfRange {
+        ip,
+        value: b.as_string(),
+        min: i64::MIN.to_string().into(),
+        max: i64::MAX.to_string().into(),
+      })?;
       if base == 0.0 && exponent < 0 {
         return Err(VMError::ValueOutOfRange {
           ip,
@@ -197,6 +202,61 @@ mod tests {
       ),
       Ok(Value::Float32(8.0))
     ));
+  }
+  #[test]
+  fn dbl_accepts_fitting_exponents_across_integer_widths() {
+    for exponent in [
+      Value::Int16(3),
+      Value::Int32(3),
+      Value::Int64(3),
+      Value::Int128(3),
+    ] {
+      assert_eq!(
+        powi_values(Value::Float64(2.0), exponent, PrimitiveTypes::Dbl, 27).unwrap(),
+        Value::Float64(8.0)
+      );
+    }
+    for exponent in [i64::MIN, -3, 0, i64::MAX] {
+      assert_eq!(
+        powi_values(
+          Value::Float64(-1.0),
+          Value::Int128(exponent as i128),
+          PrimitiveTypes::Dbl,
+          27
+        )
+        .unwrap(),
+        Value::Float64(if exponent % 2 == 0 { 1.0 } else { -1.0 })
+      );
+    }
+  }
+  #[test]
+  fn dbl_rejects_out_of_range_exponents_without_mutating_stack() {
+    for exponent in [
+      i64::MIN as i128 - 1,
+      i64::MAX as i128 + 1,
+      1_i128 << 64,
+      -(1_i128 << 64),
+      i128::MIN,
+      i128::MAX,
+    ] {
+      let mut stack = Stack::from_vec(vec![Value::Float64(2.0), Value::Int128(exponent)]);
+      let original = stack.clone();
+      match powi_func(&mut stack, PrimitiveTypes::Dbl, 28) {
+        Err(VMError::ValueOutOfRange {
+          ip,
+          value,
+          min,
+          max,
+        }) => {
+          assert_eq!(ip, 28);
+          assert_eq!(value.as_str(), exponent.to_string());
+          assert_eq!(min.as_str(), i64::MIN.to_string());
+          assert_eq!(max.as_str(), i64::MAX.to_string());
+        }
+        result => panic!("expected exponent range error, got {result:?}"),
+      }
+      assert_eq!(stack, original);
+    }
   }
   #[test]
   fn rejects_float_exponent_without_mutating_stack() {
