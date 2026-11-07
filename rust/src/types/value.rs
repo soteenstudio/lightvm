@@ -256,6 +256,14 @@ impl From<serde_json::Value> for Value {
       serde_json::Value::Number(n) => {
         if let Some(i) = n.as_i64() {
           Value::Int64(i)
+        } else if let Some(u) = n.as_u64() {
+          if let Ok(i) = i64::try_from(u) {
+            Value::Int64(i)
+          } else {
+            Value::Int128(u as i128)
+          }
+        } else if let Some(i) = n.as_i128() {
+          Value::Int128(i)
         } else if let Some(f) = n.as_f64() {
           Value::Float64(f)
         } else {
