@@ -6,7 +6,7 @@ Security updates are prioritized for the latest active development releases. Ple
 
 | Version         | Supported          |
 | --------------- | ------------------ |
-| > 0.1.1-rc.2 | :white_check_mark:
+| > 0.1.1-rc.2 | :white_check_mark: |
 | 0.1.1-rc.1 | :white_check_mark: |
 | < 0.1.1-rc.1 | :x:                |
 
