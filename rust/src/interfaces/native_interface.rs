@@ -39,13 +39,11 @@ use std::sync::atomic::AtomicBool;
 fn unescape(s: &str) -> Option<String> {
   let mut queue: VecDeque<_> = String::from(s).chars().collect();
   let mut out = String::new();
-
   while let Some(c) = queue.pop_front() {
     if c != '\\' {
       out.push(c);
       continue;
     }
-
     match queue.pop_front() {
       Some('b') => out.push('\u{0008}'),
       Some('f') => out.push('\u{000C}'),
@@ -63,10 +61,8 @@ fn unescape(s: &str) -> Option<String> {
       _ => return None,
     }
   }
-
   Some(out)
 }
-
 #[cfg(not(target_arch = "wasm32"))]
 fn unescape_unicode(queue: &mut VecDeque<char>) -> Option<char> {
   let mut s = String::new();
@@ -76,7 +72,6 @@ fn unescape_unicode(queue: &mut VecDeque<char>) -> Option<char> {
   let u = u32::from_str_radix(&s, 16).ok()?;
   char::from_u32(u)
 }
-
 #[cfg(not(target_arch = "wasm32"))]
 fn unescape_byte(queue: &mut VecDeque<char>) -> Option<char> {
   let mut s = String::new();
@@ -86,35 +81,32 @@ fn unescape_byte(queue: &mut VecDeque<char>) -> Option<char> {
   let u = u32::from_str_radix(&s, 16).ok()?;
   char::from_u32(u)
 }
-
 #[cfg(not(target_arch = "wasm32"))]
 fn unescape_octal(c: char, queue: &mut VecDeque<char>) -> Option<char> {
-  // Try 3-digit octal when leading digit is 0-3 and enough digits follow.
-  if c <= '3' {
-    if let (Some(a), Some(b)) = (queue.get(0).copied(), queue.get(1).copied()) {
-      if a.is_digit(8) && b.is_digit(8) {
-        let mut s = String::new();
-        s.push(c);
-        s.push(a);
-        s.push(b);
-        if let Ok(u) = u32::from_str_radix(&s, 8) {
-          if let Some(ch) = char::from_u32(u) {
-            queue.pop_front();
-            queue.pop_front();
-            return Some(ch);
-          }
-        }
-      }
+  if c <= '3'
+    && let Some(a) = queue.front().copied()
+    && let Some(b) = queue.get(1).copied()
+    && a.is_digit(8)
+    && b.is_digit(8)
+  {
+    let mut s = String::new();
+    s.push(c);
+    s.push(a);
+    s.push(b);
+    if let Ok(u) = u32::from_str_radix(&s, 8)
+      && let Some(ch) = char::from_u32(u)
+    {
+      queue.pop_front();
+      queue.pop_front();
+      return Some(ch);
     }
   }
-
   let mut s = String::new();
   s.push(c);
   s.push(queue.pop_front()?);
   let u = u32::from_str_radix(&s, 8).ok()?;
   char::from_u32(u)
 }
-
 #[cfg(not(target_arch = "wasm32"))]
 fn parse_paniclog(records: &str) -> Result<serde_json::Value, VMError> {
   serde_json::from_str(records)
