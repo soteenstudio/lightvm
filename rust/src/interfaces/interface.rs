@@ -534,6 +534,7 @@ impl LightVM {
     self.require(Capability::Debug)?;
     paniclog::clear().map_err(|_| VMError::SystemError("Paniclog unavailable".into()))
   }
+  #[allow(dead_code)]
   pub fn optimize_bytecode_internal(
     &mut self,
     bytecode_raw: serde_json::Value,
