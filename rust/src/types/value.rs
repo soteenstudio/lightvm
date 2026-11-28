@@ -50,6 +50,7 @@ pub struct FuncMetadata {
   pub params_count: u32,
   pub param_names: Vec<SmolStr>,
   pub start: usize,
+  #[allow(dead_code)]
   pub end: usize,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -216,6 +217,7 @@ impl Value {
     }
   }
   #[inline(always)]
+  #[allow(dead_code)]
   pub fn as_object(&self) -> Option<&AHashMap<SmolStr, Value>> {
     match self {
       Value::Object(map) => Some(map.as_ref()),

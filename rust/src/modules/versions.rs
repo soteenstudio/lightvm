@@ -55,11 +55,11 @@ fn humanize_version(raw_version: &str) -> String {
 }
 fn fetch_latest_github_version() -> Option<String> {
   let url = "https://api.github.com/repos/soteenstudio/lightvm/releases?per_page=1";
-  let response = ureq::get(url)
-    .set("User-Agent", "lightvm-cli")
+  let mut response = ureq::get(url)
+    .header("User-Agent", "lightvm-cli")
     .call()
     .ok()?;
-  let body: String = response.into_string().ok()?;
+  let body: String = response.body_mut().read_to_string().ok()?;
   let releases: Vec<GitHubRelease> = serde_json::from_str(&body).ok()?;
   let release = releases.into_iter().next()?;
   let mut version = release.tag_name;

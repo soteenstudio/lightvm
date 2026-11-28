@@ -124,7 +124,8 @@ export default {
     'paniclog',
     'xcbf',
     'yymm',
-    'softprops'
+    'softprops',
+    'deque'
   ],
   ignorePaths: [
     'node_modules/**',

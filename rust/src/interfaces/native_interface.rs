@@ -32,9 +32,81 @@ use ahash::AHashMap;
 use half::f16;
 use smol_str::SmolStr;
 use std::collections::HashSet;
+use std::collections::VecDeque;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
-use unescape::unescape;
+#[cfg(not(target_arch = "wasm32"))]
+fn unescape(s: &str) -> Option<String> {
+  let mut queue: VecDeque<_> = String::from(s).chars().collect();
+  let mut out = String::new();
+  while let Some(c) = queue.pop_front() {
+    if c != '\\' {
+      out.push(c);
+      continue;
+    }
+    match queue.pop_front() {
+      Some('b') => out.push('\u{0008}'),
+      Some('f') => out.push('\u{000C}'),
+      Some('n') => out.push('\n'),
+      Some('r') => out.push('\r'),
+      Some('t') => out.push('\t'),
+      Some('\'') => out.push('\''),
+      Some('\"') => out.push('\"'),
+      Some('\\') => out.push('\\'),
+      Some('u') => out.push(unescape_unicode(&mut queue)?),
+      Some('x') => out.push(unescape_byte(&mut queue)?),
+      Some(c) if c.is_ascii_digit() && c != '8' && c != '9' => {
+        out.push(unescape_octal(c, &mut queue)?)
+      }
+      _ => return None,
+    }
+  }
+  Some(out)
+}
+#[cfg(not(target_arch = "wasm32"))]
+fn unescape_unicode(queue: &mut VecDeque<char>) -> Option<char> {
+  let mut s = String::new();
+  for _ in 0..4 {
+    s.push(queue.pop_front()?);
+  }
+  let u = u32::from_str_radix(&s, 16).ok()?;
+  char::from_u32(u)
+}
+#[cfg(not(target_arch = "wasm32"))]
+fn unescape_byte(queue: &mut VecDeque<char>) -> Option<char> {
+  let mut s = String::new();
+  for _ in 0..2 {
+    s.push(queue.pop_front()?);
+  }
+  let u = u32::from_str_radix(&s, 16).ok()?;
+  char::from_u32(u)
+}
+#[cfg(not(target_arch = "wasm32"))]
+fn unescape_octal(c: char, queue: &mut VecDeque<char>) -> Option<char> {
+  if c <= '3'
+    && let Some(a) = queue.front().copied()
+    && let Some(b) = queue.get(1).copied()
+    && a.is_digit(8)
+    && b.is_digit(8)
+  {
+    let mut s = String::new();
+    s.push(c);
+    s.push(a);
+    s.push(b);
+    if let Ok(u) = u32::from_str_radix(&s, 8)
+      && let Some(ch) = char::from_u32(u)
+    {
+      queue.pop_front();
+      queue.pop_front();
+      return Some(ch);
+    }
+  }
+  let mut s = String::new();
+  s.push(c);
+  s.push(queue.pop_front()?);
+  let u = u32::from_str_radix(&s, 8).ok()?;
+  char::from_u32(u)
+}
 #[cfg(not(target_arch = "wasm32"))]
 fn parse_paniclog(records: &str) -> Result<serde_json::Value, VMError> {
   serde_json::from_str(records)
